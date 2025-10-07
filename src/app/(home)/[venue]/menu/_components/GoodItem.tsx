@@ -28,9 +28,9 @@ const FoodItem: FC<Props> = ({ name, price, weight, img }) => {
   };
 
   return (
-    <div className='w-40'>
-      <div className='w-full h-40 rounded-2xl overflow-hidden flex justify-center items-center relative'>
-        <Image src={img} alt='qwerty' className='h-full object-cover' />
+    <div className='w-full flex flex-col justify-center'>
+      <div className='relative w-full aspect-square rounded-2xl overflow-hidden'>
+        <Image src={img} alt='qwerty' fill className='object-cover' />
         <div
           className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
           onClick={() => handleClick('plus')}
