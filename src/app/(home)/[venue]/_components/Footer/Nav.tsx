@@ -36,7 +36,7 @@ const Nav = () => {
   const items = getNavItems(venueRoot || '');
 
   return (
-    <nav className='flex bg-white border-t-[1px] border-[#E5E7EB] py-6'>
+    <nav className='flex justify-center bg-white border-t-[1px] border-[#E5E7EB] py-3 w-full'>
       {items.map(({ icon, label, href }) => (
         <Link
           href={href}

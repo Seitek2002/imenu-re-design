@@ -16,7 +16,7 @@ const Category = () => {
   };
 
   return (
-    <nav className='flex gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto rounded-4xl sticky top-16 z-20 bg-white'>
+    <nav className='flex gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto rounded-4xl sticky top-12 z-20 bg-white'>
       {categoryItems.map((item) => (
         <button
           key={item.slug}
