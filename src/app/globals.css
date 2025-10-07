@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+html {
+  font-size: 16px;
+}
+
+@theme {
+  /* Tailwind v4 font token to use Cruinn via class font-cruinn-tw */
+  --font-cruinn-tw: 'Cruinn';
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: #F8F6F7;
+  color: #21201F;
+  font-family: var(--font-geist-inter), var(--font-cruinn);
+}
