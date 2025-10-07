@@ -18,13 +18,13 @@ const Footer: FC = () => {
     <footer className='fixed bottom-0 left-0 right-0 flex flex-col items-center z-10'>
       <button
         aria-label='Позвать официанта'
-        className={`group flex items-center bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-300 ${
-          collapsed ? 'p-3.5' : 'py-4 px-8 gap-2'
+        className={`group flex items-center bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
+          collapsed ? 'p-3.5 ml-[80%]' : 'py-4 px-8 gap-2'
         }`}
       >
         <Image src={bellIcon} alt='bell icon' />
         <span
-          className={`whitespace-nowrap transition-all duration-300 ${
+          className={`whitespace-nowrap transition-all duration-1000 ${
             collapsed
               ? 'max-w-0 opacity-0 ml-0'
               : 'max-w-[300px] opacity-100 ml-2'
