@@ -1,22 +1,17 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-
-import { PAGES } from '@/config/pages.config';
 import { type Category } from '@/lib/api/types';
 import { FC } from 'react';
 
 type Props = {
   categories: Category[];
+  activeSlug?: string;
+  onSelect?: (slug: string, index: number) => void;
 };
 
-const Category: FC<Props> = ({ categories }) => {
-  const router = useRouter();
-  const searchParams = useSearchParams().get('category');
-
-  const handleClick = (slug: string) => {
-    router.replace(PAGES.MENU(slug));
-
+const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
+  const handleClick = (slug: string, index: number) => {
+    onSelect?.(slug, index);
     if (navigator.vibrate) navigator.vibrate(50);
   };
 
@@ -25,9 +20,9 @@ const Category: FC<Props> = ({ categories }) => {
       {categories?.map((item, i) => (
         <button
           key={i}
-          onClick={() => handleClick(item.categoryName)}
+          onClick={() => handleClick(item.categoryName, i)}
           className={`text-nowrap text-xl ${
-            searchParams === item.categoryName
+            activeSlug === item.categoryName
               ? 'text-[#21201F] border-b-2 border-[#000]'
               : 'text-[#A2A2A2]'
           }`}
