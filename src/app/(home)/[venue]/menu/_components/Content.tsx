@@ -20,7 +20,6 @@ const Content = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const swiperRef = useRef<any>(null);
 
-  // Sync initial slide with URL param and keep in sync when categories change
   useEffect(() => {
     if (!categories || categories.length === 0) return;
     const idx = categories.findIndex((c) => c.categoryName === searchCategory);
@@ -45,9 +44,9 @@ const Content = () => {
       <Swiper
         modules={[Pagination]}
         className='px-4'
+        spaceBetween={30}
         onSwiper={(s) => {
           swiperRef.current = s;
-          // ensure initial alignment once swiper is ready
           if (activeIndex) s.slideTo(activeIndex, 0);
         }}
         onSlideChange={(s) => {
