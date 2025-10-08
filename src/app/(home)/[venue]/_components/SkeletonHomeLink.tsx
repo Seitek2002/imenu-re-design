@@ -4,7 +4,7 @@ export default function SkeletonHomeLink() {
   return (
     <div className="text-center relative">
       <div className="w-full overflow-hidden rounded-2xl bg-[#F3F3F3]">
-        <div className="relative aspect-[328/216] w-full">
+        <div className="relative aspect-[368/286] w-full h-32">
           <svg className="absolute inset-0 h-full w-full" role="img" aria-label="Загрузка...">
             <defs>
               <linearGradient id="home-link-skeleton">
