@@ -9,7 +9,7 @@ import ContentItem from './ContentItem';
 import { chunkByPattern, defaultGridPattern } from './Content.helpers';
 
 const Content = () => {
-  const { data } = useCategories();
+  const { data } = useCategories('ustukan');
   const { setCategories } = useCart();
   const rows = chunkByPattern(data || [], defaultGridPattern);
 

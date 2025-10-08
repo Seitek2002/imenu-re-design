@@ -3,12 +3,16 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PAGES } from '@/config/pages.config';
-import { useCart } from '@/store/cart';
+import { type Category } from '@/lib/api/types';
+import { FC } from 'react';
 
-const Category = () => {
+type Props = {
+  categories: Category[];
+};
+
+const Category: FC<Props> = ({ categories }) => {
   const router = useRouter();
   const searchParams = useSearchParams().get('category');
-  const { categories } = useCart();
 
   const handleClick = (slug: string) => {
     router.replace(PAGES.MENU(slug));
