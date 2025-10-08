@@ -1,6 +1,9 @@
-import { FC } from 'react';
+'use client';
+
+import { FC, useEffect, useState } from 'react';
 
 import HomeLink from './HomeLink';
+import SkeletonHomeLink from './SkeletonHomeLink';
 
 import homeLinksImg1 from '@/assets/HomeLinks/home-links-1.png';
 import homeLinksImg2 from '@/assets/HomeLinks/home-links-2.png';
@@ -29,6 +32,13 @@ const sections = [
 ];
 
 const HomeLinks: FC = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div className='home-links bg-white mt-2 rounded-4xl p-4'>
       {sections.map((section, i) => (
@@ -38,9 +48,13 @@ const HomeLinks: FC = () => {
             i > 0 ? 'mt-3' : ''
           } ${section.textSize}`}
         >
-          {section.items.map(({ img, label }) => (
-            <HomeLink key={label} img={img} label={label} />
-          ))}
+          {loading
+            ? Array.from({ length: section.items.length }).map((_, idx) => (
+                <SkeletonHomeLink key={idx} />
+              ))
+            : section.items.map(({ img, label }) => (
+                <HomeLink key={label} img={img} label={label} />
+              ))}
         </div>
       ))}
     </div>
