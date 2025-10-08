@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
+import QueryProvider from "./query-provider";
 
 const geistInter = Inter({
   variable: "--font-geist-inter",
@@ -35,9 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistInter.variable} ${cruinn.variable} antialiased`}
+        className={`${cruinn.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );

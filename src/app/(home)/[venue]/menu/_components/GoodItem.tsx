@@ -9,7 +9,7 @@ import minus from '@/assets/Goods/minus.svg';
 type Props = { item: ApiItem };
 
 const FoodItem: FC<Props> = ({ item }) => {
-  const [quantity, setQuantity] = useState(0);
+  const [qnty, setQnty] = useState(0);
 
   const name = item.productName;
   const price = item.productPrice ? `${item.productPrice} сом` : '';
@@ -20,13 +20,12 @@ const FoodItem: FC<Props> = ({ item }) => {
     item.productPhotoLarge ||
     '/placeholder-dish.svg';
 
-  const handleClick = (str: string) => {
-    if (str === 'plus') {
-      setQuantity(quantity + 1);
+  const handleClick = (op: 'plus' | 'minus') => {
+    if (op === 'plus') {
+      setQnty(qnty + 1);
     } else {
-      setQuantity(quantity - 1);
+      setQnty(qnty - 1);
     }
-
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
@@ -44,13 +43,13 @@ const FoodItem: FC<Props> = ({ item }) => {
             src={plus}
             alt='plus icon'
             className={`transition-all duration-500 ${
-              quantity ? 'rotate-180' : 'rotate-0'
+              qnty ? 'rotate-180' : 'rotate-0'
             }`}
           />
         </div>
         <div
           className={`absolute bottom-1.5 right-1.5 pr-10 h-10 overflow-hidden cursor-pointer bg-white rounded-full flex items-center justify-between transition-all duration-500 ${
-            quantity ? ' w-[93%]' : ' w-[3%]'
+            qnty ? ' w-[93%]' : ' w-[3%]'
           }`}
         >
           <div className='h-full p-3.5'>
@@ -60,9 +59,7 @@ const FoodItem: FC<Props> = ({ item }) => {
               onClick={() => handleClick('minus')}
             />
           </div>
-          <span className='text-[#21201F] text-lg font-semibold'>
-            {quantity}
-          </span>
+          <span className='text-[#21201F] text-lg font-semibold'>{qnty}</span>
           <div></div>
         </div>
       </div>
