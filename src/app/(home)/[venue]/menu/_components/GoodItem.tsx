@@ -1,19 +1,24 @@
 'use client';
 import { FC, useState } from 'react';
-import Image, { StaticImageData } from 'next/image';
+import Image from 'next/image';
+import type { ApiItem } from './Goods.helpers';
 
 import plus from '@/assets/Goods/plus.svg';
 import minus from '@/assets/Goods/minus.svg';
 
-type Props = {
-  name: string;
-  price: string;
-  weight: string;
-  img: StaticImageData;
-};
+type Props = { item: ApiItem };
 
-const FoodItem: FC<Props> = ({ name, price, weight, img }) => {
+const FoodItem: FC<Props> = ({ item }) => {
   const [quantity, setQuantity] = useState(0);
+
+  const name = item.productName;
+  const price = item.productPrice ? `${item.productPrice} сом` : '';
+  const weight = item.weight ? `${item.weight}` : '';
+  const img =
+    item.productPhotoSmall ||
+    item.productPhoto ||
+    item.productPhotoLarge ||
+    '/placeholder-dish.svg';
 
   const handleClick = (str: string) => {
     if (str === 'plus') {
@@ -28,7 +33,7 @@ const FoodItem: FC<Props> = ({ name, price, weight, img }) => {
   };
 
   return (
-    <div className='w-full flex flex-col justify-center'>
+    <div className='w-full'>
       <div className='relative w-full aspect-square rounded-2xl overflow-hidden'>
         <Image src={img} alt='qwerty' fill className='object-cover' />
         <div

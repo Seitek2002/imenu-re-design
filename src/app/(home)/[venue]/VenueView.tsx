@@ -6,7 +6,7 @@ import './style.css';
 
 const VenueView = () => {
   return (
-    <main className='home px-2.5 bg-[#F8F6F7] h-svh'>
+    <main className='home px-2.5 bg-[#F8F6F7] min-h-svh'>
       <MainHeader />
       <HomeLinks />
       <Widgets />

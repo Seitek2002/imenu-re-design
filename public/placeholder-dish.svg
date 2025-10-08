@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Изображение временно отсутствует">
+  <!-- Soft background -->
+  <rect width="512" height="512" rx="48" fill="#F6F6F6"/>
+  <!-- Plate -->
+  <circle cx="256" cy="230" r="150" fill="white" stroke="#E6E6E6" stroke-width="8"/>
+  <circle cx="256" cy="230" r="110" fill="#FBFBFB" stroke="#F0F0F0" stroke-width="4"/>
+  <!-- Steam -->
+  <path d="M212 160c-12 18 12 26 0 44" stroke="#D1D5DB" stroke-width="6" stroke-linecap="round"/>
+  <path d="M256 150c-12 18 12 26 0 44" stroke="#D1D5DB" stroke-width="6" stroke-linecap="round"/>
+  <path d="M300 160c-12 18 12 26 0 44" stroke="#D1D5DB" stroke-width="6" stroke-linecap="round"/>
+  <!-- Generic food silhouette -->
+  <path d="M170 270c20-35 60-50 86-50s66 15 86 50c-10 8-35 20-86 20s-76-12-86-20z" fill="#EAEAEA"/>
+  <path d="M186 274c15-22 47-33 70-33s55 11 70 33c-8 6-28 13-70 13s-62-7-70-13z" fill="#DFDFDF"/>
+  <!-- Cutlery (fork and knife) -->
+  <g transform="translate(112,340)">
+    <rect x="0" y="0" width="8" height="70" rx="4" fill="#D1D5DB"/>
+    <rect x="14" y="0" width="8" height="50" rx="4" fill="#D1D5DB"/>
+    <rect x="28" y="0" width="8" height="45" rx="4" fill="#D1D5DB"/>
+    <rect x="42" y="0" width="10" height="70" rx="5" fill="#D1D5DB"/>
+  </g>
+  <g transform="translate(356,340)">
+    <rect x="0" y="0" width="12" height="70" rx="6" fill="#D1D5DB"/>
+    <path d="M0 0h12c6 0 10 6 8 12l-6 18h-8l-6-18c-2-6 2-12 8-12z" fill="#D1D5DB"/>
+  </g>
+  <!-- Accent badge (brand color) -->
+  <g transform="translate(372,372)">
+    <circle cx="56" cy="56" r="48" fill="#FF8127" opacity="0.12"/>
+    <circle cx="56" cy="56" r="30" fill="#FF8127"/>
+    <path d="M47 56h18" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <!-- Caption -->
+  <g aria-hidden="true">
+    <rect x="156" y="430" width="200" height="18" rx="9" fill="#E5E7EB"/>
+    <rect x="196" y="456" width="120" height="12" rx="6" fill="#ECECEC"/>
+  </g>
+</svg>
