@@ -9,7 +9,7 @@ import { useCart } from '@/store/cart';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-import Category from './Category';
+import Category, { type CategoryHandle } from './Category';
 import Goods from './Goods';
 
 import { PAGES } from '@/config/pages.config';
@@ -20,6 +20,7 @@ const Content = () => {
   const searchCategory = useSearchParams().get('category');
   const [activeIndex, setActiveIndex] = useState(0);
   const swiperRef = useRef<any>(null);
+  const categoryRef = useRef<CategoryHandle | null>(null);
 
   useEffect(() => {
     if (!categories || categories.length === 0) return;
@@ -34,6 +35,7 @@ const Content = () => {
   return (
     <div className='bg-white rounded-4xl mt-1.5 min-h-[120svh]'>
       <Category
+        ref={categoryRef}
         categories={categories}
         activeSlug={categories[activeIndex]?.categoryName}
         onSelect={(slug, index) => {
@@ -48,12 +50,16 @@ const Content = () => {
         spaceBetween={30}
         onSwiper={(s) => {
           swiperRef.current = s;
-          if (activeIndex) s.slideTo(activeIndex, 0);
+          s.slideTo(activeIndex, 0);
+          categoryRef.current?.scrollToSlug(categories[activeIndex]?.categoryName);
         }}
         onSlideChange={(s) => {
           setActiveIndex(s.activeIndex);
           const slug = categories[s.activeIndex]?.categoryName;
-          if (slug) router.replace(PAGES.MENU(slug));
+          if (slug) {
+            router.replace(PAGES.MENU(slug));
+            categoryRef.current?.scrollToSlug(slug);
+          }
         }}
       >
         {categories.map((category, i) => (

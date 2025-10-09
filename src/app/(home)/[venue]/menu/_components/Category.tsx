@@ -1,7 +1,7 @@
 'use client';
 
 import { type Category } from '@/lib/api/types';
-import { FC } from 'react';
+import { FC, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 
 type Props = {
   categories: Category[];
@@ -9,17 +9,39 @@ type Props = {
   onSelect?: (slug: string, index: number) => void;
 };
 
-const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
+export type CategoryHandle = { scrollToSlug: (slug?: string) => void };
+
+const Category = forwardRef<CategoryHandle, Props>(({ categories, activeSlug, onSelect }, ref) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const scrollToSlug = (slug?: string) => {
+    const key = slug ?? activeSlug;
+    if (!key) return;
+    const el = itemRefs.current[key];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  };
+
+  useImperativeHandle(ref, () => ({ scrollToSlug }));
+
+  useEffect(() => {
+    scrollToSlug();
+  }, [activeSlug]);
   const handleClick = (slug: string, index: number) => {
     onSelect?.(slug, index);
     if (navigator.vibrate) navigator.vibrate(50);
   };
 
   return (
-    <nav className='flex gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto rounded-4xl sticky top-12 z-20 bg-white'>
+    <nav ref={containerRef} className='flex gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto rounded-4xl sticky top-12 z-20 bg-white'>
       {categories?.map((item, i) => (
         <button
           key={i}
+          ref={(el) => {
+            itemRefs.current[item.categoryName] = el;
+          }}
           onClick={() => handleClick(item.categoryName, i)}
           className={`text-nowrap text-xl ${
             activeSlug === item.categoryName
@@ -32,6 +54,6 @@ const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
       ))}
     </nav>
   );
-};
+});
 
 export default Category;
