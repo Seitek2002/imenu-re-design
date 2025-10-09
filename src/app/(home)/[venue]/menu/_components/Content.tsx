@@ -1,16 +1,17 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
+import { useCart } from '@/store/cart';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
 
 import Category from './Category';
 import Goods from './Goods';
-import { useCart } from '@/store/cart';
-import { useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+
 import { PAGES } from '@/config/pages.config';
 
 const Content = () => {
