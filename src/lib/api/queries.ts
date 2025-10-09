@@ -70,6 +70,17 @@ export const qk = {
       opts?.spotId ?? '',
       opts?.venueSlug ?? '',
     ] as QueryKey,
+  v2Products: (opts?: {
+    search?: string;
+    spotId?: string | number;
+    venueSlug?: string;
+  }) =>
+    [
+      'v2-products',
+      opts?.search ?? '',
+      String(opts?.spotId ?? ''),
+      opts?.venueSlug ?? '',
+    ] as QueryKey,
   venue: (slug: string) => ['venue', slug] as QueryKey,
   orders: (opts?: {
     phone?: string;
@@ -150,6 +161,24 @@ export function useProducts(
     queryKey: qk.products(params),
     queryFn: () =>
       fetchJSON<ListResponse<Product>>('/api/products/', {
+        search: params?.search,
+        spotId: params?.spotId,
+        venueSlug: params?.venueSlug,
+      }),
+    enabled: options?.enabled ?? true,
+    ...options,
+  });
+}
+
+/** GET /api/v2/products/?search=&spotId=&venueSlug= */
+export function useProductsV2(
+  params?: { search?: string; spotId?: string | number; venueSlug?: string },
+  options?: Omit<UseQueryOptions<ListResponse<Product>>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<ListResponse<Product>>({
+    queryKey: qk.v2Products(params),
+    queryFn: () =>
+      fetchJSON<ListResponse<Product>>('/api/v2/products/', {
         search: params?.search,
         spotId: params?.spotId,
         venueSlug: params?.venueSlug,
