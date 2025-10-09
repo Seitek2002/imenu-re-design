@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useCategories } from '@/lib/api/queries';
+import { useParams } from 'next/navigation';
+import { useCategoriesV2 } from '@/lib/api/queries';
 import { useCart } from '@/store/cart';
 
 import ContentItem from './ContentItem';
@@ -10,7 +11,17 @@ import SkeletonCategoryCard from './SkeletonCategoryCard';
 import { chunkByPattern, defaultGridPattern } from './Content.helpers';
 
 const Content = () => {
-  const { data, isLoading } = useCategories('ustukan');
+  const params = useParams<{ venue?: string }>();
+  const venueSlug =
+    params?.venue ??
+    (typeof window !== 'undefined'
+      ? (localStorage.getItem('venueRoot') || '').replace(/^\//, '')
+      : undefined);
+
+  const { data, isLoading } = useCategoriesV2(
+    { venueSlug },
+    { enabled: !!venueSlug }
+  );
   const { setCategories } = useCart();
   const rows = chunkByPattern(data || [], defaultGridPattern);
   const skeletonRows = chunkByPattern(

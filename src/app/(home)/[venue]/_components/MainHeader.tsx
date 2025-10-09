@@ -1,4 +1,8 @@
+'use client';
+
 import Image from 'next/image';
+import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
 import LanguageDropdown from './LanguageDropdown';
 
@@ -8,6 +12,28 @@ import wifiIcon from '@/assets/Header/wifi-icon.svg';
 import searchIcon from '@/assets/Header/search.svg';
 
 const MainHeader = () => {
+  const params = useParams<{ venue?: string }>();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const slug = params?.venue ? `/${params.venue}` : '';
+
+    if (slug) {
+      localStorage.setItem('venueRoot', slug);
+    } else {
+      const existing = localStorage.getItem('venueRoot');
+      if (!existing) {
+        try {
+          const path = window.location.pathname;
+          const m = path.match(/^\/([^/]+)/);
+          if (m) localStorage.setItem('venueRoot', `/${m[1]}`);
+        } catch {
+          // no-op
+        }
+      }
+    }
+  }, [params?.venue]);
+
   return (
     <header className='header-main flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white'>
       <div className='header-left flex items-center'>

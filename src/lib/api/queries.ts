@@ -61,6 +61,8 @@ async function fetchJSON<T>(
 export const qk = {
   banners: (venueSlug?: string) => ['banners', venueSlug] as QueryKey,
   categories: (venueSlug?: string) => ['categories', venueSlug] as QueryKey,
+  v2Categories: (params?: { venueSlug?: string; sectionId?: number }) =>
+    ['v2-categories', params?.venueSlug ?? '', params?.sectionId ?? ''] as QueryKey,
   products: (opts?: { search?: string; spotId?: string; venueSlug?: string }) =>
     [
       'products',
@@ -114,6 +116,26 @@ export function useCategories(
     queryKey: qk.categories(venueSlug),
     queryFn: () =>
       fetchJSON<ListResponse<Category>>('/api/categories/', { venueSlug }),
+    enabled: options?.enabled ?? true,
+    ...options,
+  });
+}
+
+/** GET /api/v2/categories/?venueSlug=&sectionId= */
+export function useCategoriesV2(
+  params?: { venueSlug?: string; sectionId?: number },
+  options?: Omit<
+    UseQueryOptions<ListResponse<Category>>,
+    'queryKey' | 'queryFn'
+  >
+) {
+  return useQuery<ListResponse<Category>>({
+    queryKey: qk.v2Categories(params),
+    queryFn: () =>
+      fetchJSON<ListResponse<Category>>('/api/v2/categories/', {
+        venueSlug: params?.venueSlug,
+        sectionId: params?.sectionId,
+      }),
     enabled: options?.enabled ?? true,
     ...options,
   });

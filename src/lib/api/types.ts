@@ -48,6 +48,9 @@ export type Spot = {
   id: number;
   name: string;
   address: string | null;
+  // Not required in schema, но присутствуют в OpenAPI (nullable)
+  wifiText?: string | null;
+  wifiUrl?: string | null;
 };
 
 export type WorkSchedule = {

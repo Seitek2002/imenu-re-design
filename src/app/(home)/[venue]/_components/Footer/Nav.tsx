@@ -11,27 +11,18 @@ const Nav = () => {
   const pathname = usePathname();
   const params = useParams<{ venue?: string }>();
 
-  const initialVenueRoot = params?.venue ? `/${params.venue}` : '';
-  const [venueRoot, setVenueRoot] = useState<string>(initialVenueRoot);
+  const [venueRoot, setVenueRoot] = useState<string>('');
 
   useEffect(() => {
-    if (!initialVenueRoot) {
-      const stored =
-        typeof window !== 'undefined'
-          ? sessionStorage.getItem('venueRoot')
-          : null;
-      if (stored && stored !== venueRoot) {
-        setVenueRoot(stored);
-      }
+    if (typeof window === 'undefined') return;
+    const stored = localStorage.getItem('venueRoot');
+    if (stored) {
+      setVenueRoot(stored);
     } else {
-      if (initialVenueRoot !== venueRoot) {
-        setVenueRoot(initialVenueRoot);
-      }
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('venueRoot', initialVenueRoot);
-      }
+      const fallback = params?.venue ? `/${params.venue}` : '';
+      setVenueRoot(fallback);
     }
-  }, [initialVenueRoot, venueRoot]);
+  }, [pathname, params?.venue]);
 
   const items = getNavItems(venueRoot || '');
 
