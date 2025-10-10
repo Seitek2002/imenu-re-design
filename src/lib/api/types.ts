@@ -21,6 +21,14 @@ export type Product = {
   productName: string;
   weight: number;
   productPhoto: string;
+  // Дополнительные поля, которые приходят с сервера и используются в UI (опционально)
+  productPrice?: string | number;
+  productPhotoSmall?: string;
+  productPhotoLarge?: string;
+  category?: {
+    id: number;
+    categoryName: string;
+  };
 };
 
 export type OrderProduct = {

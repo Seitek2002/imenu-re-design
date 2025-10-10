@@ -1,12 +1,12 @@
 'use client';
 import { FC, useState } from 'react';
 import Image from 'next/image';
-import type { ApiItem } from './Goods.helpers';
+import type { Product } from '@/lib/api/types';
 
 import plus from '@/assets/Goods/plus.svg';
 import minus from '@/assets/Goods/minus.svg';
 
-type Props = { item: ApiItem };
+type Props = { item: Product };
 
 const FoodItem: FC<Props> = ({ item }) => {
   const [qnty, setQnty] = useState(0);
@@ -14,11 +14,7 @@ const FoodItem: FC<Props> = ({ item }) => {
   const name = item.productName;
   const price = item.productPrice ? `${item.productPrice} сом` : '';
   const weight = item.weight ? `${item.weight}` : '';
-  const img =
-    item.productPhotoSmall ||
-    item.productPhoto ||
-    item.productPhotoLarge ||
-    '/placeholder-dish.svg';
+  const img = item.productPhotoSmall || '/placeholder-dish.svg';
 
   const handleClick = (op: 'plus' | 'minus') => {
     if (op === 'plus') {
@@ -34,7 +30,7 @@ const FoodItem: FC<Props> = ({ item }) => {
   return (
     <div className='w-full'>
       <div className='relative w-full aspect-square rounded-2xl overflow-hidden'>
-        <Image src={img} alt='qwerty' fill className='object-cover' />
+        <Image src={img} alt={item.productName} className='object-cover' fill />
         <div
           className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
           onClick={() => handleClick('plus')}
