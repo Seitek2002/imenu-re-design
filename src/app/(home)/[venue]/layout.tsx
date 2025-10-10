@@ -25,7 +25,7 @@ export async function generateMetadata({
 
     const venue = await res.json();
 
-    const title = venue?.companyName || 'QR menu';
+    const title = venue?.companyName || 'iMenu.kg';
     const description: string | undefined = venue?.description || undefined;
     const logo: string | undefined = venue?.logo || undefined;
 
