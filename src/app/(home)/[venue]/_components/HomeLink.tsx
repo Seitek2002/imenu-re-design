@@ -1,8 +1,12 @@
-import { FC } from 'react';
+'use client';
 
+import { FC, useEffect } from 'react';
+
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
+import { useVenueQuery } from '@/store/venue';
 
 interface IProps {
   img: StaticImport;
@@ -10,6 +14,13 @@ interface IProps {
 }
 
 const HomeLink: FC<IProps> = ({ img, label }) => {
+  const router = useRouter();
+  const venue = useVenueQuery(state => state.venue);
+
+  useEffect(() => {
+    router.prefetch(venue.slug + '/foods');
+  }, [router]);
+
   return (
     <Link href={'/ustukan/foods'} key={label} className='text-center relative'>
       <Image src={img} alt={label} />

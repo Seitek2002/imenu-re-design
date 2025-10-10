@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useVenue } from '@/lib/api/queries';
+import { useVenueQuery } from '@/store/venue';
 
 import LanguageDropdown from './LanguageDropdown';
 
@@ -15,6 +16,7 @@ import searchIcon from '@/assets/Header/search.svg';
 const MainHeader = () => {
   const params = useParams<{ venue?: string }>();
   const { data: venue } = useVenue(params.venue!);
+  const { setVenue } = useVenueQuery();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -37,7 +39,7 @@ const MainHeader = () => {
   }, [params?.venue]);
 
   useEffect(() => {
-    console.log(venue);
+    if (venue) setVenue(venue);
   }, [venue]);
 
   return (
