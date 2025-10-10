@@ -18,7 +18,7 @@ const Content = () => {
       ? (localStorage.getItem('venueRoot') || '').replace(/^\//, '')
       : undefined);
 
-  const { data, isLoading } = useCategoriesV2(
+  const { data } = useCategoriesV2(
     { venueSlug },
     { enabled: !!venueSlug }
   );

@@ -1,6 +1,10 @@
-import { FC } from 'react';
+'use client';
+
+import { FC, use, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+
 import { PAGES } from '@/config/pages.config';
 
 type Props = {
@@ -10,6 +14,12 @@ type Props = {
 };
 
 const ContentItem: FC<Props> = ({ name, img, slug }) => {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.prefetch(PAGES.MENU(slug));
+  }, [router]);
+
   return (
     <Link
       className='content-item h-28 rounded-2xl overflow-hidden relative'
