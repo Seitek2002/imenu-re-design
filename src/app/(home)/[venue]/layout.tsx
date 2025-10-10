@@ -43,7 +43,7 @@ export async function generateMetadata({
         description,
         images: logo ? [logo] : undefined,
       },
-      icons: logo ? { icon: logo } : undefined,
+      icons: { icon: logo },
     };
   } catch {
     return {
