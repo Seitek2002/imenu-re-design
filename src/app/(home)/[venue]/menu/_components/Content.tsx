@@ -16,7 +16,7 @@ import Goods from './Goods';
 
 import { PAGES } from '@/config/pages.config';
 
-const Content = () => {
+const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
   const { categories } = useCart();
   const router = useRouter();
   const searchCategory = useSearchParams().get('category');
@@ -51,6 +51,7 @@ const Content = () => {
       <Category
         ref={categoryRef}
         categories={categories}
+        headerHidden={headerHidden}
         activeSlug={categories[activeIndex]?.categoryName}
         onSelect={(slug, index) => {
           setActiveIndex(index);

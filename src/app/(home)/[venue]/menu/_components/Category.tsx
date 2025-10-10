@@ -7,11 +7,12 @@ type Props = {
   categories: Category[];
   activeSlug?: string;
   onSelect?: (slug: string, index: number) => void;
+  headerHidden?: boolean;
 };
 
 export type CategoryHandle = { scrollToSlug: (slug?: string) => void };
 
-const Category = forwardRef<CategoryHandle, Props>(({ categories, activeSlug, onSelect }, ref) => {
+const Category = forwardRef<CategoryHandle, Props>(({ categories, activeSlug, onSelect, headerHidden }, ref) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -35,7 +36,10 @@ const Category = forwardRef<CategoryHandle, Props>(({ categories, activeSlug, on
   };
 
   return (
-    <nav ref={containerRef} className='flex gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto rounded-4xl sticky top-12 z-20 bg-white'>
+    <nav
+      ref={containerRef}
+      className={`flex transition-all duration-300 gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto rounded-4xl sticky ${headerHidden ? 'top-0' : 'top-12'} z-20 bg-white`}
+    >
       {categories?.map((item, i) => (
         <button
           key={i}

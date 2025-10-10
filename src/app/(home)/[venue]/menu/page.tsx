@@ -1,11 +1,21 @@
+'use client';
+
+import { useState } from 'react';
 import Header from '../_components/Header';
 import Content from './_components/Content';
 
 const MenuPage = () => {
+  const [headerHidden, setHeaderHidden] = useState(false);
+
   return (
     <main className='px-2.5 bg-[#F8F6F7]'>
-      <Header title='Меню' showSearch />
-      <Content />
+      <Header
+        title='Меню'
+        showSearch
+        hideOnScroll
+        onVisibilityChange={setHeaderHidden}
+      />
+      <Content headerHidden={headerHidden} />
     </main>
   );
 };
