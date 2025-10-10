@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useVenue } from '@/lib/api/queries';
 
 import LanguageDropdown from './LanguageDropdown';
 
@@ -13,6 +14,7 @@ import searchIcon from '@/assets/Header/search.svg';
 
 const MainHeader = () => {
   const params = useParams<{ venue?: string }>();
+  const { data: venue } = useVenue(params.venue!);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -33,6 +35,10 @@ const MainHeader = () => {
       }
     }
   }, [params?.venue]);
+
+  useEffect(() => {
+    console.log(venue);
+  }, [venue]);
 
   return (
     <header className='header-main flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white'>
