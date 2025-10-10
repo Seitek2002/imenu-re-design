@@ -42,7 +42,7 @@ const Content = () => {
   }, [categories, searchCategory]);
 
   return (
-    <div className='bg-white rounded-4xl mt-1.5'>
+    <div className='bg-white rounded-4xl mt-1.5 pb-22'>
       <FoodDetail
         open={isDetailOpen}
         product={selectedProduct}
@@ -60,7 +60,7 @@ const Content = () => {
       />
       <Swiper
         modules={[Pagination]}
-        className='px-4'
+        className='pb-10'
         spaceBetween={30}
         onSwiper={(s) => {
           swiperRef.current = s;
@@ -77,6 +77,7 @@ const Content = () => {
             categoryRef.current?.scrollToSlug(slug);
           }
         }}
+        wrapperClass='items-start'
       >
         {categories.map((category, i) => (
           <SwiperSlide key={i}>

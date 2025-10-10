@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import SkeletonGoodItem from './SkeletonGoodItem';
 import plusIcon from '@/assets/Goods/plus.svg';
 import minusIcon from '@/assets/Goods/minus.svg';
 import type { Product } from '@/lib/api/types';
@@ -15,6 +14,8 @@ type Props = {
 
 export default function FoodDetail({ open, product, onClose }: Props) {
   const startY = useRef<number | null>(null);
+
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   // Body scroll lock while sheet is open
   useEffect(() => {
@@ -58,6 +59,10 @@ export default function FoodDetail({ open, product, onClose }: Props) {
     (product?.productPhoto && product.productPhoto.trim()) ||
     (product?.productPhotoSmall && product.productPhotoSmall.trim()) ||
     '';
+
+  useEffect(() => {
+    setImgLoaded(false);
+  }, [imgSrc]);
 
   // Sizes/modificators presence (optional; depends on backend)
   // We only use this to show/hide related blocks (no logic here)
@@ -105,17 +110,28 @@ export default function FoodDetail({ open, product, onClose }: Props) {
             <div className="w-full">
               {imgSrc ? (
                 <div className="relative w-full aspect-[3/2] rounded-2xl overflow-hidden">
+                  {!imgLoaded && (
+                    <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                  )}
                   <Image
                     src={imgSrc}
                     alt={product?.productName || 'product'}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    priority
+                    onLoadingComplete={() => setImgLoaded(true)}
                   />
                 </div>
               ) : (
-                <SkeletonGoodItem />
+                <div className="relative w-full aspect-[3/2] rounded-2xl overflow-hidden">
+                  <Image
+                    src="/placeholder-dish.svg"
+                    alt="placeholder"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
               )}
             </div>
           </div>
