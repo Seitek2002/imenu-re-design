@@ -6,7 +6,8 @@ export async function generateMetadata({
 }: {
   params: { venue: string };
 }): Promise<Metadata> {
-  const slug = params.venue;
+  const paramsRest = await params;
+  const slug = paramsRest.venue;
 
   try {
     const res = await fetch(

@@ -23,7 +23,7 @@ const HomeLink: FC<IProps> = ({ img, label }) => {
 
   return (
     <Link href={venue.slug + '/foods'} key={label} className='text-center relative'>
-      <Image src={img} alt={label} />
+      <Image priority src={img} alt={label} />
       <div className='mt-2 font-semibold'>{label}</div>
     </Link>
   );
