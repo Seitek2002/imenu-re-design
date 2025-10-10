@@ -3,7 +3,7 @@ import Content from './_components/Content';
 
 const MenuPage = () => {
   return (
-    <main className='px-2.5 bg-[#F8F6F7] min-h-svh'>
+    <main className='px-2.5 bg-[#F8F6F7]'>
       <Header title='Меню' showSearch />
       <Content />
     </main>

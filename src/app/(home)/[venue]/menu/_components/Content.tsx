@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import { useCart } from '@/store/cart';
+import FoodDetail from './FoodDetail';
+import { type Product } from '@/lib/api/types';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -19,6 +21,13 @@ const Content = () => {
   const router = useRouter();
   const searchCategory = useSearchParams().get('category');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const handleOpenProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsDetailOpen(true);
+  };
   const swiperRef = useRef<any>(null);
   const categoryRef = useRef<CategoryHandle | null>(null);
 
@@ -33,7 +42,12 @@ const Content = () => {
   }, [categories, searchCategory]);
 
   return (
-    <div className='bg-white rounded-4xl mt-1.5 min-h-[120svh]'>
+    <div className='bg-white rounded-4xl mt-1.5'>
+      <FoodDetail
+        open={isDetailOpen}
+        product={selectedProduct}
+        onClose={() => setIsDetailOpen(false)}
+      />
       <Category
         ref={categoryRef}
         categories={categories}
@@ -51,7 +65,9 @@ const Content = () => {
         onSwiper={(s) => {
           swiperRef.current = s;
           s.slideTo(activeIndex, 0);
-          categoryRef.current?.scrollToSlug(categories[activeIndex]?.categoryName);
+          categoryRef.current?.scrollToSlug(
+            categories[activeIndex]?.categoryName
+          );
         }}
         onSlideChange={(s) => {
           setActiveIndex(s.activeIndex);
@@ -64,7 +80,10 @@ const Content = () => {
       >
         {categories.map((category, i) => (
           <SwiperSlide key={i}>
-            <Goods category={category.categoryName} />
+            <Goods
+              category={category.categoryName}
+              onOpen={handleOpenProduct}
+            />
           </SwiperSlide>
         ))}
       </Swiper>

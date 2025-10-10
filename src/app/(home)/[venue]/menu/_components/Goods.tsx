@@ -8,9 +8,10 @@ import { useParams } from 'next/navigation';
 
 type Props = {
   category: Category['categoryName'];
+  onOpen?: (product: Product) => void;
 };
 
-const Goods: FC<Props> = ({ category }) => {
+const Goods: FC<Props> = ({ category, onOpen }) => {
   const params = useParams<{ venue?: string }>();
   const venueSlug =
     params?.venue ??
@@ -29,7 +30,9 @@ const Goods: FC<Props> = ({ category }) => {
       {isLoading ? (
         Array.from({ length: 8 }).map((_, i) => <SkeletonGoodItem key={i} />)
       ) : items.length > 0 ? (
-        items.map((item: Product) => <GoodItem key={item.id} item={item} />)
+        items.map((item: Product) => (
+          <GoodItem key={item.id} item={item} onOpen={onOpen} />
+        ))
       ) : (
         <h1>Пусто</h1>
       )}

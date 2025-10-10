@@ -25,6 +25,7 @@ export type Product = {
   productPrice?: string | number;
   productPhotoSmall?: string;
   productPhotoLarge?: string;
+  productDescription?: string | null;
   category?: {
     id: number;
     categoryName: string;

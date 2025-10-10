@@ -6,9 +6,9 @@ import type { Product } from '@/lib/api/types';
 import plus from '@/assets/Goods/plus.svg';
 import minus from '@/assets/Goods/minus.svg';
 
-type Props = { item: Product };
+type Props = { item: Product; onOpen?: (product: Product) => void };
 
-const FoodItem: FC<Props> = ({ item }) => {
+const FoodItem: FC<Props> = ({ item, onOpen }) => {
   const [qnty, setQnty] = useState(0);
 
   const name = item.productName;
@@ -29,11 +29,17 @@ const FoodItem: FC<Props> = ({ item }) => {
 
   return (
     <div className='w-full'>
-      <div className='relative w-full aspect-square rounded-2xl overflow-hidden'>
+      <div
+        className='relative w-full aspect-square rounded-2xl overflow-hidden'
+        onClick={() => onOpen?.(item)}
+      >
         <Image src={img} alt={item.productName} className='object-cover' fill />
         <div
           className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
-          onClick={() => handleClick('plus')}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClick('plus');
+          }}
         >
           <Image
             src={plus}
@@ -47,12 +53,16 @@ const FoodItem: FC<Props> = ({ item }) => {
           className={`absolute bottom-1.5 right-1.5 pr-10 h-10 overflow-hidden cursor-pointer bg-white rounded-full flex items-center justify-between transition-all duration-500 ${
             qnty ? ' w-[93%]' : ' w-[3%]'
           }`}
+          onClick={(e) => e.stopPropagation()}
         >
           <div className='h-full p-3.5'>
             <Image
               src={minus}
               alt='minus icon'
-              onClick={() => handleClick('minus')}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClick('minus');
+              }}
             />
           </div>
           <span className='text-[#21201F] text-lg font-semibold'>{qnty}</span>
