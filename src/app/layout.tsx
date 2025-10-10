@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${cruinn.variable} antialiased`}
+        className={`${cruinn.variable} ${geistInter.variable} antialiased`}
       >
         <QueryProvider>{children}</QueryProvider>
       </body>
