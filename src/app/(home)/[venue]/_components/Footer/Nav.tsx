@@ -32,6 +32,7 @@ const Nav = () => {
         <Link
           href={href}
           key={label}
+          prefetch
           className={`flex flex-col items-center px-4 ${
             !!match(href)(pathname) ? '' : 'opacity-50'
           }`}

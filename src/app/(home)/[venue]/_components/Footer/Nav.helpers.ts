@@ -7,7 +7,7 @@ import profileIcon from '@/assets/Footer/profile.svg';
 
 export const getNavItems = (basePath: string) => [
   { icon: homeIcon, label: 'Главная', href: PAGES.HOME(basePath) },
-  { icon: basketIcon, label: 'Корзина', href: PAGES.BASKET },
-  { icon: historyIcon, label: 'История', href: PAGES.HISTORY },
-  { icon: profileIcon, label: 'Профиль', href: PAGES.PROFILE },
+  { icon: basketIcon, label: 'Корзина', href: PAGES.BASKET(basePath) },
+  { icon: historyIcon, label: 'История', href: PAGES.HISTORY(basePath) },
+  { icon: profileIcon, label: 'Профиль', href: PAGES.PROFILE(basePath) },
 ];
