@@ -1,7 +1,8 @@
 'use client';
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import Image from 'next/image';
 import type { Product } from '@/lib/api/types';
+import { useBasket } from '@/store/basket';
 
 import plus from '@/assets/Goods/plus.svg';
 import minus from '@/assets/Goods/minus.svg';
@@ -9,23 +10,13 @@ import minus from '@/assets/Goods/minus.svg';
 type Props = { item: Product; onOpen?: (product: Product) => void };
 
 const FoodItem: FC<Props> = ({ item, onOpen }) => {
-  const [qnty, setQnty] = useState(0);
+  const { add, decrement, getQuantity } = useBasket();
 
   const name = item.productName;
   const price = item.productPrice ? `${item.productPrice} сом` : '';
   const weight = item.weight ? `${item.weight}` : '';
   const img = item.productPhotoSmall || '/placeholder-dish.svg';
-
-  const handleClick = (op: 'plus' | 'minus') => {
-    if (op === 'plus') {
-      setQnty(qnty + 1);
-    } else {
-      setQnty(qnty - 1);
-    }
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-  };
+  const qnty = getQuantity(item.id, null);
 
   return (
     <div className='w-full'>
@@ -38,7 +29,12 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
           className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
           onClick={(e) => {
             e.stopPropagation();
-            handleClick('plus');
+            if (Array.isArray(item.modificators) && item.modificators.length > 0) {
+              onOpen?.(item);
+            } else {
+              add(item, { modifierId: null, quantity: 1 });
+            }
+            if (navigator.vibrate) navigator.vibrate(50);
           }}
         >
           <Image
@@ -61,7 +57,8 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
               alt='minus icon'
               onClick={(e) => {
                 e.stopPropagation();
-                handleClick('minus');
+                decrement(item.id, null, 1);
+                if (navigator.vibrate) navigator.vibrate(50);
               }}
             />
           </div>

@@ -26,6 +26,12 @@ export type Product = {
   productPhotoSmall?: string;
   productPhotoLarge?: string;
   productDescription?: string | null;
+  // Модификаторы (размеры и т.п.) могут приходить вместе с продуктом
+  modificators?: Array<{
+    id: number;
+    name?: string;
+    price?: number | string;
+  }>;
   category?: {
     id: number;
     categoryName: string;

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import plusIcon from '@/assets/Goods/plus.svg';
 import minusIcon from '@/assets/Goods/minus.svg';
 import type { Product } from '@/lib/api/types';
+import { useBasket } from '@/store/basket';
 
 type Props = {
   open: boolean;
@@ -64,13 +65,23 @@ export default function FoodDetail({ open, product, onClose }: Props) {
     setImgLoaded(false);
   }, [imgSrc]);
 
+  // Basket
+  const { add } = useBasket();
+
   // Sizes/modificators presence (optional; depends on backend)
-  // We only use this to show/hide related blocks (no logic here)
-  const sizes: Array<{ id?: number; name?: string; price?: number | string }> =
-    (Array.isArray((product as any)?.modificators)
-      ? (product as any)?.modificators
-      : []) || [];
+  const sizes = product?.modificators ?? [];
   const hasSizes = sizes.length > 0;
+
+  // Local selection and quantity
+  const [selectedId, setSelectedId] = useState<number | null>(sizes[0]?.id ?? null);
+  const [qnty, setQnty] = useState(1);
+
+  // Reset selection on product change
+  useEffect(() => {
+    const firstId = product?.modificators?.[0]?.id ?? null;
+    setSelectedId((firstId ?? null) as number | null);
+    setQnty(1);
+  }, [product]);
 
   return (
     <>
@@ -163,38 +174,68 @@ export default function FoodDetail({ open, product, onClose }: Props) {
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  {sizes.map((s, i) => (
-                    <div
-                      key={`${s.id ?? i}`}
-                      className={`p-3 rounded-[8px] mt-2 ${
-                        i === 0 ? 'bg-white border border-[#0D6EFD]' : 'bg-[#F1F2F3]'
-                      }`}
-                    >
-                      <span className="block text-[14px]">
-                        {s.name ?? 'Опция'}
-                      </span>
-                      <div className="text-[14px]">
-                        {s.price != null ? `${s.price} c` : ''}
-                      </div>
-                    </div>
-                  ))}
+                  {sizes.map((s, i) => {
+                    const isActive = (s.id ?? i) === selectedId;
+                    return (
+                      <button
+                        type="button"
+                        key={`${s.id ?? i}`}
+                        onClick={() => setSelectedId((s.id ?? null) as number | null)}
+                        className={`p-3 rounded-[8px] mt-2 transition-colors ${
+                          isActive ? 'bg-white border border-[#0D6EFD]' : 'bg-[#F1F2F3]'
+                        }`}
+                      >
+                        <span className="block text-[14px]">
+                          {s.name ?? 'Опция'}
+                        </span>
+                        <div className="text-[14px]">
+                          {s.price != null ? `${s.price} c` : ''}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Footer: counter + add (UI only; conditions как в исходнике: показываем, когда есть размеры) */}
+            {/* Footer: counter + add (UI only; показываем, когда есть размеры) */}
             {hasSizes && (
               <footer className="grid grid-cols-2 items-center gap-3 pt-8 pb-10 sticky bottom-0 md:static bg-white">
                 <div className="flex items-center justify-between gap-8 px-2 py-4 rounded-[12px] font-semibold bg-[#F1F2F3]">
-                  <Image src={minusIcon} alt="minus" width={24} height={24} />
-                  <span className="text-[16px]">1</span>
-                  <Image src={plusIcon} alt="plus" width={24} height={24} />
+                  <button
+                    type="button"
+                    aria-label="minus"
+                    onClick={() => setQnty((v) => Math.max(1, v - 1))}
+                  >
+                    <Image src={minusIcon} alt="minus" width={24} height={24} />
+                  </button>
+                  <span className="text-[16px]">{qnty}</span>
+                  <button
+                    type="button"
+                    aria-label="plus"
+                    onClick={() => setQnty((v) => v + 1)}
+                  >
+                    <Image src={plusIcon} alt="plus" width={24} height={24} />
+                  </button>
                 </div>
                 <div className="rounded-[12px]">
                   <button
                     type="button"
                     className="w-full font-semibold py-4 rounded-[12px] text-white"
                     style={{ backgroundColor: '#FF7A00' }}
+                    onClick={() => {
+                      const modId = selectedId ?? null;
+                      const modName =
+                        sizes.find((m) => m.id === selectedId)?.name ?? undefined;
+                      if (product) {
+                        add(product, {
+                          modifierId: modId,
+                          modifierName: modName,
+                          quantity: qnty,
+                        });
+                      }
+                      onClose();
+                    }}
                   >
                     Добавить
                   </button>
