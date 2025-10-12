@@ -69,7 +69,6 @@ export default function FoodDetail({ open, product, onClose }: Props) {
 
   return (
     <>
-      {/* Overlay */}
       <div
         className={`fixed inset-0 w-full z-10 transition-all duration-500 ${
           open
