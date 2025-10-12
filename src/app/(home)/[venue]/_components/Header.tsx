@@ -50,7 +50,6 @@ const Header: FC<IProps> = ({ title, showSearch, hideOnScroll, onVisibilityChang
     return () => window.removeEventListener('scroll', onScroll);
   }, [hideOnScroll]);
 
-  // notify parent about visibility changes
   useEffect(() => {
     onVisibilityChange?.(hidden);
   }, [hidden, onVisibilityChange]);
