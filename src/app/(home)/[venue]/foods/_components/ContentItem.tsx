@@ -11,9 +11,10 @@ type Props = {
   name: string;
   img: string;
   slug: string;
+  imgWidth: string;
 };
 
-const ContentItem: FC<Props> = ({ name, img, slug }) => {
+const ContentItem: FC<Props> = ({ name, img, slug, imgWidth }) => {
   const router = useRouter();
 
   useEffect(() => {
@@ -25,10 +26,15 @@ const ContentItem: FC<Props> = ({ name, img, slug }) => {
       className='content-item h-28 rounded-2xl bg-[#F6F6F6] overflow-hidden relative flex justify-end items-end'
       href={PAGES.MENU(slug)}
     >
-      <span className='text-[#21201F] bg-[#F6F6F6] text-sm z-10 font-semibold absolute top-3 left-3 line-clamp-2'>
+      <span className='text-[#21201F] bg-[#F6F6F6] text-sm z-10 font-semibold absolute top-1.5 left-3 line-clamp-2'>
         {name}
       </span>
-      <Image src={img || '/placeholder-dish.svg'} fill alt='photo category' className='!w-auto !h-auto !static' />
+      <Image
+        fill
+        src={img || '/placeholder-dish.svg'}
+        alt='photo category'
+        className={`!w-auto !max-w-full !max-h-[80%] !h-auto !static`}
+      />
     </Link>
   );
 };
