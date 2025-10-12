@@ -51,16 +51,6 @@ export default function FoodDetail({ open, product, onClose }: Props) {
     startY.current = null;
   };
 
-  const imgSrc =
-    (product?.productPhotoLarge && product.productPhotoLarge) ||
-    (product?.productPhoto && product.productPhoto) ||
-    (product?.productPhotoSmall && product.productPhotoSmall) ||
-    '';
-
-  useEffect(() => {
-    setImgLoaded(false);
-  }, [imgSrc]);
-
   const { add } = useBasket();
 
   const sizes = product?.modificators ?? [];
