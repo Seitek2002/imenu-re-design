@@ -16,9 +16,14 @@ import type {
   Venue,
   OrderList,
   ListResponse,
+  Client,
+  OrderCreate,
 } from './types';
 
 const API_BASE = 'https://imenu.kg';
+
+type UnknownObject = Record<string, unknown>;
+export type ClientBonusResponse = UnknownObject;
 
 /* Basic JSON fetcher with query params support */
 async function fetchJSON<T>(
@@ -60,9 +65,12 @@ async function fetchJSON<T>(
 /* Query Keys */
 export const qk = {
   banners: (venueSlug?: string) => ['banners', venueSlug] as QueryKey,
+  v2Banners: (venueSlug?: string) => ['v2-banners', venueSlug] as QueryKey,
+
   categories: (venueSlug?: string) => ['categories', venueSlug] as QueryKey,
   v2Categories: (params?: { venueSlug?: string; sectionId?: number }) =>
     ['v2-categories', params?.venueSlug ?? '', params?.sectionId ?? ''] as QueryKey,
+
   products: (opts?: { search?: string; spotId?: string; venueSlug?: string }) =>
     [
       'products',
@@ -81,7 +89,14 @@ export const qk = {
       String(opts?.spotId ?? ''),
       opts?.venueSlug ?? '',
     ] as QueryKey,
+
   venue: (slug: string) => ['venue', slug] as QueryKey,
+  v2Venue: (slug: string) => ['v2-venue', slug] as QueryKey,
+  venueTable: (slug: string, tableId: string | number) =>
+    ['venue-table', slug, String(tableId)] as QueryKey,
+  v2VenueTable: (slug: string, tableId: string | number) =>
+    ['v2-venue-table', slug, String(tableId)] as QueryKey,
+
   orders: (opts?: {
     phone?: string;
     spotId?: number;
@@ -95,8 +110,34 @@ export const qk = {
       opts?.tableId ?? '',
       opts?.venueSlug ?? '',
     ] as QueryKey,
+  v2Orders: (opts?: {
+    phone?: string;
+    spotId?: number;
+    tableId?: number;
+    venueSlug?: string;
+  }) =>
+    [
+      'v2-orders',
+      opts?.phone ?? '',
+      opts?.spotId ?? '',
+      opts?.tableId ?? '',
+      opts?.venueSlug ?? '',
+    ] as QueryKey,
+  v2OrderById: (id: number) => ['v2-order', id] as QueryKey,
+
   mainButtons: (venueSlug: string) => ['main-buttons', venueSlug] as QueryKey,
+  v2MainButtons: (venueSlug: string) =>
+    ['v2-main-buttons', venueSlug] as QueryKey,
+
   callWaiter: (tableId: number) => ['call-waiter', tableId] as QueryKey,
+  v2CallWaiter: (tableId: number) => ['v2-call-waiter', tableId] as QueryKey,
+
+  clientBonus: (phone?: string, venueSlug?: string) =>
+    ['client-bonus', phone ?? '', venueSlug ?? ''] as QueryKey,
+  v2ClientBonus: (phone?: string, venueSlug?: string) =>
+    ['v2-client-bonus', phone ?? '', venueSlug ?? ''] as QueryKey,
+
+  v2Client: (phoneNumber: string) => ['v2-client', phoneNumber] as QueryKey,
 } as const;
 
 /* Endpoints (typed) */
@@ -110,6 +151,20 @@ export function useBanners(
     queryKey: qk.banners(venueSlug),
     queryFn: () =>
       fetchJSON<ListResponse<Banner>>('/api/banners/', { venueSlug }),
+    enabled: options?.enabled ?? true,
+    ...options,
+  });
+}
+
+/** GET /api/v2/banners/?venueSlug=... */
+export function useBannersV2(
+  venueSlug?: string,
+  options?: Omit<UseQueryOptions<ListResponse<Banner>>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<ListResponse<Banner>>({
+    queryKey: qk.v2Banners(venueSlug),
+    queryFn: () =>
+      fetchJSON<ListResponse<Banner>>('/api/v2/banners/', { venueSlug }),
     enabled: options?.enabled ?? true,
     ...options,
   });
@@ -201,6 +256,58 @@ export function useVenue(
   });
 }
 
+/** GET /api/v2/venues/{slug}/ */
+export function useVenueV2(
+  slug: string,
+  options?: Omit<UseQueryOptions<Venue>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<Venue>({
+    queryKey: qk.v2Venue(slug),
+    queryFn: () =>
+      fetchJSON<Venue>(`/api/v2/venues/${encodeURIComponent(slug)}/`),
+    enabled: (options?.enabled ?? true) && !!slug,
+    ...options,
+  });
+}
+
+/** GET /api/venues/{slug}/table/{tableId}/ */
+export function useVenueTable(
+  params: { slug: string; tableId: string | number },
+  options?: Omit<UseQueryOptions<Venue>, 'queryKey' | 'queryFn'>
+) {
+  const { slug, tableId } = params;
+  return useQuery<Venue>({
+    queryKey: qk.venueTable(slug, tableId),
+    queryFn: () =>
+      fetchJSON<Venue>(
+        `/api/venues/${encodeURIComponent(slug)}/table/${encodeURIComponent(
+          String(tableId)
+        )}/`
+      ),
+    enabled: (options?.enabled ?? true) && !!slug && !!tableId,
+    ...options,
+  });
+}
+
+/** GET /api/v2/venues/{slug}/table/{tableId}/ */
+export function useVenueTableV2(
+  params: { slug: string; tableId: string | number },
+  options?: Omit<UseQueryOptions<Venue>, 'queryKey' | 'queryFn'>
+) {
+  const { slug, tableId } = params;
+  return useQuery<Venue>({
+    queryKey: qk.v2VenueTable(slug, tableId),
+    queryFn: () =>
+      fetchJSON<Venue>(
+        `/api/v2/venues/${encodeURIComponent(slug)}/table/${encodeURIComponent(
+          String(tableId)
+        )}/`
+      ),
+    enabled: (options?.enabled ?? true) && !!slug && !!tableId,
+    ...options,
+  });
+}
+
 /** GET /api/orders/?phone=&spotId=&tableId=&venueSlug= */
 export function useOrders(
   params?: {
@@ -228,6 +335,60 @@ export function useOrders(
   });
 }
 
+/** GET /api/v2/orders/?phone=&spotId=&tableId=&venueSlug= */
+export function useOrdersV2(
+  params?: {
+    phone?: string;
+    spotId?: number;
+    tableId?: number;
+    venueSlug?: string;
+  },
+  options?: Omit<
+    UseQueryOptions<ListResponse<OrderList>>,
+    'queryKey' | 'queryFn'
+  >
+) {
+  return useQuery<ListResponse<OrderList>>({
+    queryKey: qk.v2Orders(params),
+    queryFn: () =>
+      fetchJSON<ListResponse<OrderList>>('/api/v2/orders/', {
+        phone: params?.phone,
+        spotId: params?.spotId,
+        tableId: params?.tableId,
+        venueSlug: params?.venueSlug,
+      }),
+    enabled: options?.enabled ?? true,
+    ...options,
+  });
+}
+
+/** GET /api/v2/orders/{id}/ */
+export function useOrderByIdV2(
+  id: number,
+  options?: Omit<UseQueryOptions<OrderList>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<OrderList>({
+    queryKey: qk.v2OrderById(id),
+    queryFn: () => fetchJSON<OrderList>(`/api/v2/orders/${id}/`),
+    enabled: (options?.enabled ?? true) && !!id,
+    ...options,
+  });
+}
+
+/** POST /api/v2/orders/ */
+export function useCreateOrderV2() {
+  return useMutation<OrderCreate, Error, OrderCreate>({
+    mutationKey: ['v2-create-order'],
+    mutationFn: (payload) =>
+      fetchJSON<OrderCreate>('/api/v2/orders/', {
+        // no query params
+      }, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+  });
+}
+
 /** GET /api/main-buttons/?venueSlug=... (schema unspecified) */
 export type MainButtonsResponse = unknown;
 export function useMainButtons(
@@ -243,6 +404,20 @@ export function useMainButtons(
   });
 }
 
+/** GET /api/v2/main-buttons/?venueSlug=... (schema unspecified) */
+export function useMainButtonsV2(
+  venueSlug: string,
+  options?: Omit<UseQueryOptions<MainButtonsResponse>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<MainButtonsResponse>({
+    queryKey: qk.v2MainButtons(venueSlug),
+    queryFn: () =>
+      fetchJSON<MainButtonsResponse>('/api/v2/main-buttons/', { venueSlug }),
+    enabled: (options?.enabled ?? true) && !!venueSlug,
+    ...options,
+  });
+}
+
 /** GET /api/call-waiter/?tableId=... (returns unspecified object) */
 export type CallWaiterResponse = unknown;
 /* As this is an action, expose a mutation for clarity. */
@@ -251,5 +426,88 @@ export function useCallWaiter() {
     mutationKey: ['call-waiter'],
     mutationFn: ({ tableId }) =>
       fetchJSON<CallWaiterResponse>('/api/call-waiter/', { tableId }),
+  });
+}
+
+/** GET /api/v2/call-waiter/?tableId=... (returns unspecified object) */
+export function useCallWaiterV2() {
+  return useMutation<CallWaiterResponse, Error, { tableId: number }>({
+    mutationKey: ['v2-call-waiter'],
+    mutationFn: ({ tableId }) =>
+      fetchJSON<CallWaiterResponse>('/api/v2/call-waiter/', { tableId }),
+  });
+}
+
+/** GET /api/client/bonus/?phone=&venueSlug= */
+export function useClientBonus(
+  params?: { phone?: string; venueSlug?: string },
+  options?: Omit<UseQueryOptions<ClientBonusResponse>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<ClientBonusResponse>({
+    queryKey: qk.clientBonus(params?.phone, params?.venueSlug),
+    queryFn: () =>
+      fetchJSON<ClientBonusResponse>('/api/client/bonus/', {
+        phone: params?.phone,
+        venueSlug: params?.venueSlug,
+      }),
+    enabled: (options?.enabled ?? true) && !!params?.phone && !!params?.venueSlug,
+    ...options,
+  });
+}
+
+/** GET /api/v2/client/bonus/?phone=&venueSlug= */
+export function useClientBonusV2(
+  params?: { phone?: string; venueSlug?: string },
+  options?: Omit<UseQueryOptions<ClientBonusResponse>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<ClientBonusResponse>({
+    queryKey: qk.v2ClientBonus(params?.phone, params?.venueSlug),
+    queryFn: () =>
+      fetchJSON<ClientBonusResponse>('/api/v2/client/bonus/', {
+        phone: params?.phone,
+        venueSlug: params?.venueSlug,
+      }),
+    enabled: (options?.enabled ?? true) && !!params?.phone && !!params?.venueSlug,
+    ...options,
+  });
+}
+
+/** GET /api/v2/clients/{phoneNumber}/ */
+export function useClientV2(
+  phoneNumber: string,
+  options?: Omit<UseQueryOptions<Client>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<Client>({
+    queryKey: qk.v2Client(phoneNumber),
+    queryFn: () =>
+      fetchJSON<Client>(`/api/v2/clients/${encodeURIComponent(phoneNumber)}/`),
+    enabled: (options?.enabled ?? true) && !!phoneNumber,
+    ...options,
+  });
+}
+
+/** PUT /api/v2/clients/{phoneNumber}/ */
+export function useUpdateClientV2() {
+  return useMutation<Client, Error, { phoneNumber: string; body: Client }>({
+    mutationKey: ['v2-client-update'],
+    mutationFn: ({ phoneNumber, body }) =>
+      fetchJSON<Client>(
+        `/api/v2/clients/${encodeURIComponent(phoneNumber)}/`,
+        undefined,
+        { method: 'PUT', body: JSON.stringify(body) }
+      ),
+  });
+}
+
+/** PATCH /api/v2/clients/{phoneNumber}/ */
+export function usePatchClientV2() {
+  return useMutation<Client, Error, { phoneNumber: string; body: Partial<Client> }>({
+    mutationKey: ['v2-client-patch'],
+    mutationFn: ({ phoneNumber, body }) =>
+      fetchJSON<Client>(
+        `/api/v2/clients/${encodeURIComponent(phoneNumber)}/`,
+        undefined,
+        { method: 'PATCH', body: JSON.stringify(body) }
+      ),
   });
 }

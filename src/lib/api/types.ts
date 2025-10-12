@@ -1,5 +1,11 @@
-// Types derived from the provided OpenAPI schema (simplified to relevant fields)
+// Types aligned with the latest OpenAPI spec provided by backend,
+// with additional optional fields preserved to keep current UI working.
 
+export type ListResponse<T> = T[];
+
+/* Schemas */
+
+// Banner (unchanged)
 export type Banner = {
   id: number;
   title: string;
@@ -9,6 +15,7 @@ export type Banner = {
   url: string | null;
 };
 
+// Category
 export type Category = {
   id: number;
   categoryName: string;
@@ -16,17 +23,18 @@ export type Category = {
   categoryPhotoSmall: string; // readOnly uri
 };
 
+// Product (spec lists a minimal set; UI relies on extra fields - keep them optional)
 export type Product = {
-  id: number;
+  id: number; // readOnly
   productName: string;
   weight: number;
-  productPhoto: string;
-  // Дополнительные поля, которые приходят с сервера и используются в UI (опционально)
+  productPhoto: string; // readOnly
+
+  // Non-spec but used by UI or may appear in payloads
   productPrice?: string | number;
   productPhotoSmall?: string;
   productPhotoLarge?: string;
   productDescription?: string | null;
-  // Модификаторы (размеры и т.п.) могут приходить вместе с продуктом
   modificators?: Array<{
     id: number;
     name?: string;
@@ -38,6 +46,7 @@ export type Product = {
   };
 };
 
+// OrderProduct (readOnly in OrderList)
 export type OrderProduct = {
   product: Product; // readOnly in OrderList
   count: number;
@@ -45,6 +54,7 @@ export type OrderProduct = {
   modificator: number | null;
 };
 
+// OrderList (response)
 export type OrderList = {
   id: number;
   totalPrice: string; // decimal as string
@@ -54,29 +64,90 @@ export type OrderList = {
   address: string | null;
   comment: string | null;
   phone: string;
-  orderProducts: OrderProduct[];
+  orderProducts: OrderProduct[]; // readOnly
   tableNum: string;
   statusText: string;
 };
 
+// OrderProductCreate (request item)
+export type OrderProductCreate = {
+  product: number;
+  count: number;
+  modificator?: number | null;
+};
+
+// OrderCreate (request/response union type)
+// Backend marks some fields as writeOnly/readOnly; we keep as optional to fit both directions.
+export type OrderCreate = {
+  // readOnly in responses
+  id?: number;
+  paymentUrl?: string;
+  phoneVerificationHash?: string;
+
+  // writeOnly/request fields
+  phone?: string;
+  comment?: string | null;
+  serviceMode?: 1 | 2 | 3;
+  address?: string | null;
+  servicePrice?: string; // decimal as string
+  tipsPrice?: number;
+  bonus?: number;
+  spot?: number | null;
+  table?: number | null;
+  isTgBot?: boolean;
+  tgRedirectUrl?: string | null;
+  orderProducts?: OrderProductCreate[];
+  code?: string | null;
+  hash?: string | null;
+  useBonus?: boolean;
+};
+
+// Client (simplified to relevant fields from spec)
+export type Client = {
+  id: number;
+  firstname?: string | null;
+  lastname?: string | null;
+  patronymic?: string | null;
+  email?: string | null;
+};
+
+// PatchedClient (partial update shape)
+export type PatchedClient = Partial<Client> & {
+  id?: number; // still present as readOnly in responses
+};
+
+// PosterWebhook (request)
+export type PosterWebhook = {
+  account: string;
+  accountNumber: string;
+  object: string;
+  objectId: number;
+  action: string;
+  time: number;
+  verify: string;
+  data?: string;
+};
+
+// Spot (spec has wifiText and wifiUrl as nullable)
 export type Spot = {
   id: number;
   name: string;
   address: string | null;
-  // Not required in schema, но присутствуют в OpenAPI (nullable)
   wifiText?: string | null;
   wifiUrl?: string | null;
 };
 
+// WorkSchedule
 export type WorkSchedule = {
   dayOfWeek: 1 | 2 | 3 | 4 | 5 | 6 | 7;
-  dayName: string;
+  dayName: string; // readOnly
   workStart: string; // time
   workEnd: string; // time
   isDayOff: boolean;
   is24h: boolean;
 };
 
+// Venue (kept with fields used by UI; aligns with spec enums and properties)
 export type Venue = {
   colorTheme:
     | "#008B68"
@@ -88,7 +159,7 @@ export type Venue = {
     | "#AF00A3"
     | "#000000"
     | "#00BFB2"
-    | ""; // from enum
+    | ""; // enum
   companyName: string;
   slug: string;
   logo: string | null; // uri
@@ -101,11 +172,11 @@ export type Venue = {
   isDeliveryAvailable: boolean;
   isTakeoutAvailable: boolean;
   isDineinAvailable: boolean;
-  deliveryFixedFee: string;
-  deliveryFreeFrom: string | null;
+  deliveryFixedFee: string; // decimal
+  deliveryFreeFrom: string | null; // decimal or null
   terms: string | null;
   description: string | null;
-};
 
-// Generic API response helpers
-export type ListResponse<T> = T[];
+  // Non-spec fields sometimes present in older payloads; kept optional for compatibility
+  // serviceFeePercent?: number;
+};
