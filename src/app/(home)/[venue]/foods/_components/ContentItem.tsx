@@ -22,13 +22,13 @@ const ContentItem: FC<Props> = ({ name, img, slug }) => {
 
   return (
     <Link
-      className='content-item h-28 rounded-2xl bg-[#F6F6F6] overflow-hidden relative flex justify-end items-end text-right'
+      className='content-item h-28 rounded-2xl bg-[#F6F6F6] overflow-hidden relative flex justify-end items-end'
       href={PAGES.MENU(slug)}
     >
-      <span className='text-[#21201F] bg-white text-sm z-10 font-semibold absolute top-3 left-3 line-clamp-2'>
+      <span className='text-[#21201F] bg-[#F6F6F6] text-sm z-10 font-semibold absolute top-3 left-3 line-clamp-2'>
         {name}
       </span>
-      <Image src={img || '/placeholder-dish.svg'} fill alt='photo category' className='object-contain !w-auto !static' />
+      <Image src={img || '/placeholder-dish.svg'} fill alt='photo category' className='!w-auto !h-auto !static' />
     </Link>
   );
 };
