@@ -21,9 +21,10 @@ const HomeLinks: FC = () => {
       return;
     }
     try {
-      const stored = typeof window !== 'undefined'
-        ? (localStorage.getItem('venueRoot') || '').replace(/^\//, '')
-        : '';
+      const stored =
+        typeof window !== 'undefined'
+          ? (localStorage.getItem('venueRoot') || '').replace(/^\//, '')
+          : '';
       setVenueSlug(stored || undefined);
     } catch {
       setVenueSlug(undefined);
