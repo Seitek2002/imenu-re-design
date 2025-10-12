@@ -64,6 +64,7 @@ const Header: FC<IProps> = ({ title, showSearch, hideOnScroll, onVisibilityChang
           height={24}
           alt='arrowIcon'
           onClick={() => router.back()}
+          className='z-10'
         />
         <h2 className='text-2xl font-semibold absolute right-0 left-0 text-center'>{title}</h2>
         <div>

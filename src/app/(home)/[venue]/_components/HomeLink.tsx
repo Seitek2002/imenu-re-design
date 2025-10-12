@@ -9,8 +9,8 @@ import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { useVenueQuery } from '@/store/venue';
 
 interface IProps {
-  img: StaticImport;
-  label: string;
+  img: StaticImport | string;
+  label?: string | null;
 }
 
 const HomeLink: FC<IProps> = ({ img, label }) => {
@@ -18,12 +18,20 @@ const HomeLink: FC<IProps> = ({ img, label }) => {
   const venue = useVenueQuery(state => state.venue);
 
   useEffect(() => {
-    router.prefetch(venue.slug + '/foods');
-  }, [router]);
+    if (venue?.slug) {
+      router.prefetch(venue.slug + '/foods');
+    }
+  }, [router, venue?.slug]);
 
   return (
-    <Link href={venue.slug + '/foods'} key={label} className='text-center relative'>
-      <Image priority src={img} alt={label} />
+    <Link
+      href={(venue?.slug ? venue.slug : '') + '/foods'}
+      key={String(label ?? '')}
+      className='text-center relative'
+    >
+      <div className='h-[170px] relative'>
+        <Image priority fill src={img} alt={String(label ?? '')} />
+      </div>
       <div className='mt-2 font-semibold'>{label}</div>
     </Link>
   );
