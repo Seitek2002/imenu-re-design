@@ -11,10 +11,9 @@ type Props = {
   name: string;
   img: string;
   slug: string;
-  imgWidth: string;
 };
 
-const ContentItem: FC<Props> = ({ name, img, slug, imgWidth }) => {
+const ContentItem: FC<Props> = ({ name, img, slug }) => {
   const router = useRouter();
 
   useEffect(() => {

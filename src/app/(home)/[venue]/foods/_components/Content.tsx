@@ -18,10 +18,7 @@ const Content = () => {
       ? (localStorage.getItem('venueRoot') || '').replace(/^\//, '')
       : undefined);
 
-  const { data } = useCategoriesV2(
-    { venueSlug },
-    { enabled: !!venueSlug }
-  );
+  const { data } = useCategoriesV2({ venueSlug }, { enabled: !!venueSlug });
   const { setCategories } = useCart();
   const rows = chunkByPattern(data || [], defaultGridPattern);
   const skeletonRows = chunkByPattern(
@@ -49,7 +46,6 @@ const Content = () => {
                   name={item.categoryName}
                   img={item.categoryPhotoSmall}
                   slug={item.categoryName}
-                  imgWidth={row.length === 3 ? '300' : '200'}
                 />
               ))
             : row.map((_, i) => <SkeletonCategoryCard key={i} />)}
