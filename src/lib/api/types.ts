@@ -21,6 +21,7 @@ export type Category = {
   categoryName: string;
   categoryPhoto: string; // readOnly uri
   categoryPhotoSmall: string; // readOnly uri
+  sections: number[];
 };
 
 // Product (spec lists a minimal set; UI relies on extra fields - keep them optional)

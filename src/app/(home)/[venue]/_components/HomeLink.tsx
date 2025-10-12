@@ -11,21 +11,22 @@ import { useVenueQuery } from '@/store/venue';
 interface IProps {
   img: StaticImport | string;
   label?: string | null;
+  sectionId: number;
 }
 
-const HomeLink: FC<IProps> = ({ img, label }) => {
+const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
   const router = useRouter();
   const venue = useVenueQuery(state => state.venue);
 
   useEffect(() => {
     if (venue?.slug) {
-      router.prefetch(venue.slug + '/foods');
+      router.prefetch(venue.slug + '/foods' + sectionId);
     }
   }, [router, venue?.slug]);
 
   return (
     <Link
-      href={(venue?.slug ? venue.slug : '') + '/foods'}
+      href={(venue?.slug ? venue.slug : '') + '/foods/' + sectionId}
       key={String(label ?? '')}
       className='text-center relative'
     >

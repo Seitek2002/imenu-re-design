@@ -1,4 +1,4 @@
-import Header from '../_components/Header';
+import Header from '../../_components/Header';
 import Content from './_components/Content';
 
 const FoodsPage = () => {

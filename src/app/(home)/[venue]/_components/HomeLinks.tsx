@@ -63,6 +63,7 @@ const HomeLinks: FC = () => {
                     key={btn.id}
                     img={btn.photo ?? '/placeholder-dish.svg'}
                     label={btn.name ?? ''}
+                    sectionId={btn.section?.id ?? 0}
                   />
                 ))}
           </div>

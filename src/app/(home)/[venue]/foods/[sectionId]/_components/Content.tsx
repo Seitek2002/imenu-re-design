@@ -11,7 +11,8 @@ import SkeletonCategoryCard from './SkeletonCategoryCard';
 import { chunkByPattern, defaultGridPattern } from './Content.helpers';
 
 const Content = () => {
-  const params = useParams<{ venue?: string }>();
+  const params = useParams<{ venue?: string; sectionId?: string }>();
+  console.log(params.sectionId);
   const venueSlug =
     params?.venue ??
     (typeof window !== 'undefined'
@@ -20,14 +21,19 @@ const Content = () => {
 
   const { data } = useCategoriesV2({ venueSlug }, { enabled: !!venueSlug });
   const { setCategories } = useCart();
-  const rows = chunkByPattern(data || [], defaultGridPattern);
+  const rows = chunkByPattern(
+    data?.filter((item) => item.sections?.includes(+params.sectionId!)) || [],
+    defaultGridPattern
+  );
   const skeletonRows = chunkByPattern(
     new Array(10).fill(null),
     defaultGridPattern
   );
 
   useEffect(() => {
-    if (data) setCategories(data);
+    if (data) {
+      setCategories(data);
+    }
   }, [data]);
 
   return (
