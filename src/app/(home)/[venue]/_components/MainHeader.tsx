@@ -49,7 +49,7 @@ const MainHeader = () => {
         <div className='flex flex-col'>
           <Image width={90} src={venueName} alt='venue name' />
           <span className='font-cruinn-tw font-bold text-[10px]'>
-            Работает на iMenu.kg
+            Powered by iMenu.kg
           </span>
         </div>
       </div>
