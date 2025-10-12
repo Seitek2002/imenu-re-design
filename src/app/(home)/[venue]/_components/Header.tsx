@@ -67,7 +67,7 @@ const Header: FC<IProps> = ({ title, showSearch, hideOnScroll, onVisibilityChang
           alt='arrowIcon'
           onClick={() => router.back()}
         />
-        <h2 className='text-2xl font-semibold'>{title}</h2>
+        <h2 className='text-2xl font-semibold absolute right-0 left-0 text-center'>{title}</h2>
         <div>
           {showSearch && (
             <Image src={searchIcon} width={24} height={24} alt='searchIcon' />
