@@ -52,7 +52,7 @@ const HomeLinks: FC = () => {
           key={i}
           className={`home-links-content grid ${section.cols} gap-3 ${
             i > 0 ? 'mt-3' : ''
-          } ${section.textSize}`}
+          } text-base`}
         >
           {loading
             ? Array.from({ length: section.items.length }).map((_, idx) => (
