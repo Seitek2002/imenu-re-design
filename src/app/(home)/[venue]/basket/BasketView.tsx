@@ -44,7 +44,7 @@ export default function BasketView() {
   }, [detailsOpen, phone, address, comment, promoCode, orderType, subtotal, items.length]);
 
   return (
-    <main className="px-2.5 bg-[#F8F6F7] min-h-[100svh] pb-40">
+    <main className="px-2.5 bg-[#F8F6F7] min-h-[100svh] pb-20">
       {/* Local header */}
       <header className="sticky top-0 z-20 bg-white rounded-b-4xl">
         <div className="flex items-center justify-between px-5 pt-2.5 pb-4">
