@@ -82,7 +82,7 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
         wrapperClass='items-start'
       >
         {categories.map((category, i) => (
-          <SwiperSlide key={i}>
+          <SwiperSlide key={i} className='min-h-[30vh]'>
             <Goods
               category={category.categoryName}
               onOpen={handleOpenProduct}
