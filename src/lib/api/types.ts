@@ -180,3 +180,31 @@ export type Venue = {
   // Non-spec fields sometimes present in older payloads; kept optional for compatibility
   // serviceFeePercent?: number;
 };
+
+/* Main Buttons (typed by provided sample shape) */
+export type MainButtonCategory = {
+  id: number;
+  categoryName: string;
+  slug: string;
+  categoryPhoto: string | null;
+  categoryPhotoSmall: string | null;
+  sections: number[]; // section ids
+};
+
+export type MainButtonSectionRef = {
+  id: number;
+};
+
+export type MainButton = {
+  id: number;
+  buttonType: 'section' | 'category' | string;
+  section: MainButtonSectionRef | null;
+  category: MainButtonCategory | null;
+  order: number;
+  name: string | null;
+  photo: string | null;
+  categories: MainButtonCategory[] | null;
+};
+
+// Two rows: first with 2 items, second with 3 (per description), but type stays generic
+export type MainButtonsResponse = [MainButton[], MainButton[]];

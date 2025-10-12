@@ -10,6 +10,7 @@ import homeLinksImg2 from '@/assets/HomeLinks/home-links-2.png';
 import homeLinksImg3 from '@/assets/HomeLinks/home-links-3.png';
 import homeLinksImg4 from '@/assets/HomeLinks/home-links-4.png';
 import homeLinksImg5 from '@/assets/HomeLinks/home-links-5.png';
+import { useMainButtonsV2 } from '@/lib/api/queries';
 
 const sections = [
   {
@@ -33,11 +34,16 @@ const sections = [
 
 const HomeLinks: FC = () => {
   const [loading, setLoading] = useState(true);
+  const { data } = useMainButtonsV2(localStorage.getItem('venueRoot')!.replace('/', ''));
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    console.log(data);
+  }, [data])
 
   return (
     <div className='home-links bg-white mt-2 rounded-4xl p-4'>

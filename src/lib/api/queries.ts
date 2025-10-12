@@ -18,6 +18,7 @@ import type {
   ListResponse,
   Client,
   OrderCreate,
+  MainButtonsResponse,
 } from './types';
 
 const API_BASE = 'https://imenu.kg';
@@ -390,7 +391,6 @@ export function useCreateOrderV2() {
 }
 
 /** GET /api/main-buttons/?venueSlug=... (schema unspecified) */
-export type MainButtonsResponse = unknown;
 export function useMainButtons(
   venueSlug: string,
   options?: Omit<UseQueryOptions<MainButtonsResponse>, 'queryKey' | 'queryFn'>
