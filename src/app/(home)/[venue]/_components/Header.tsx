@@ -1,12 +1,11 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { FC, useEffect, useRef, useState } from 'react';
-
 import Image from 'next/image';
 
 import searchIcon from '@/assets/Header/search.svg';
 import arrowIcon from '@/assets/Header/arrow.svg';
-import { useRouter } from 'next/navigation';
 
 interface IProps {
   title: string;
