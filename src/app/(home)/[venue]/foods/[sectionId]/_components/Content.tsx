@@ -31,7 +31,6 @@ const Content = () => {
   );
 
   useEffect(() => {
-    console.log(venueSlug);
     if (data) {
       setCategories(data);
     }

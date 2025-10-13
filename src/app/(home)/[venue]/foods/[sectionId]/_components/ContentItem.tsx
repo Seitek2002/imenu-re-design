@@ -18,7 +18,6 @@ const ContentItem: FC<Props> = ({ name, img, slug, venueSlug }) => {
   const router = useRouter();
 
   useEffect(() => {
-    console.log(PAGES.MENU(slug));
     router.prefetch(PAGES.MENU(slug));
   }, [router]);
 
