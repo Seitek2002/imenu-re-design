@@ -53,7 +53,7 @@ const Content = () => {
                   name={item.categoryName}
                   img={item.categoryPhotoSmall}
                   slug={item.categoryName}
-                  venueSlug={venueSlug}
+                  venueSlug={venueSlug || ''}
                 />
               ))
             : row.map((_, i) => <SkeletonCategoryCard key={i} />)}
