@@ -31,6 +31,7 @@ const Content = () => {
   );
 
   useEffect(() => {
+    console.log(venueSlug);
     if (data) {
       setCategories(data);
     }
@@ -52,6 +53,7 @@ const Content = () => {
                   name={item.categoryName}
                   img={item.categoryPhotoSmall}
                   slug={item.categoryName}
+                  venueSlug={venueSlug}
                 />
               ))
             : row.map((_, i) => <SkeletonCategoryCard key={i} />)}
