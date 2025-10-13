@@ -30,8 +30,8 @@ const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
       key={String(label ?? '')}
       className='text-center relative'
     >
-      <div className='h-[170px] relative'>
-        <Image priority fill src={img} alt={String(label ?? '')} />
+      <div className='relative aspect-square rounded-2xl overflow-hidden'>
+        <Image priority src={img} alt={String(label ?? '')} className='object-contain m-auto' fill />
       </div>
       <div className='mt-2 font-semibold'>{label}</div>
     </Link>
