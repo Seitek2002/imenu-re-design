@@ -62,7 +62,6 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
       <Swiper
         modules={[Pagination]}
         className='pb-10'
-        autoHeight={true}
         spaceBetween={30}
         onSwiper={(s) => {
           swiperRef.current = s;
