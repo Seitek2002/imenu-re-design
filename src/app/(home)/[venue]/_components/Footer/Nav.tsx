@@ -43,19 +43,21 @@ const Nav = () => {
           href={href}
           key={label}
           prefetch
-          className={`flex flex-col items-center px-4 ${
-            !!match(href)(pathname) ? '' : 'opacity-50'
-          }`}
+          className={`flex flex-col items-center px-4`}
         >
-          <div className="relative">
-            <Image src={icon} alt='basketIcon icon' />
+          <div className='relative'>
+            <Image
+              src={icon}
+              alt='basketIcon icon'
+              className={`${!!match(href)(pathname) ? '' : 'opacity-50'}`}
+            />
             {hydrated && cartCount > 0 && /\/basket$/.test(href) && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[10px] leading-[16px] text-center">
+              <span className='absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[10px] leading-[16px] text-center'>
                 {cartCount > 99 ? '99+' : cartCount}
               </span>
             )}
           </div>
-          <span className='text-[#5B5B5B]'>{label}</span>
+          <span className={`text-[#5B5B5B] ${!!match(href)(pathname) ? '' : 'opacity-50'}`}>{label}</span>
         </Link>
       ))}
     </nav>
