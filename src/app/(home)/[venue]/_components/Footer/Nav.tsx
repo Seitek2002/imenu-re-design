@@ -1,9 +1,10 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useParams } from 'next/navigation';
 import { getNavItems } from './Nav.helpers';
+import { useBasket } from '@/store/basket';
 
 import { match } from 'path-to-regexp';
 
@@ -26,6 +27,15 @@ const Nav = () => {
 
   const items = getNavItems(venueRoot || '');
 
+  // basket count with hydration guard
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const itemsMap = useBasket((s) => s.items);
+  const cartCount = useMemo(
+    () => Object.values(itemsMap).reduce((acc, it) => acc + it.quantity, 0),
+    [itemsMap]
+  );
+
   return (
     <nav className='flex justify-center bg-white border-t-[1px] border-[#E5E7EB] py-3 w-full'>
       {items.map(({ icon, label, href }) => (
@@ -37,7 +47,14 @@ const Nav = () => {
             !!match(href)(pathname) ? '' : 'opacity-50'
           }`}
         >
-          <Image src={icon} alt='basketIcon icon' />
+          <div className="relative">
+            <Image src={icon} alt='basketIcon icon' />
+            {hydrated && cartCount > 0 && /\/basket$/.test(href) && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[10px] leading-[16px] text-center">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </div>
           <span className='text-[#5B5B5B]'>{label}</span>
         </Link>
       ))}
