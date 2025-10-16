@@ -36,7 +36,7 @@ const Content = () => {
   }, [data]);
 
   return (
-    <div className='bg-white rounded-4xl p-4 pb-36 flex flex-col gap-2 mt-1.5'>
+    <div className='bg-white rounded-b-4xl p-4 pb-36 flex flex-col gap-2'>
       {(data && rows.length ? rows : skeletonRows).map((row, rowIndex) => (
         <div
           key={rowIndex}

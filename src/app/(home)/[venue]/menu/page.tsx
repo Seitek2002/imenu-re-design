@@ -8,7 +8,7 @@ const MenuPage = () => {
   const [headerHidden, setHeaderHidden] = useState(false);
 
   return (
-    <main className='px-2.5 bg-[#F8F6F7]'>
+    <main className='px-2.5'>
       <Header
         title='Меню'
         showSearch

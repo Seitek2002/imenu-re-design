@@ -30,6 +30,7 @@ const Category = forwardRef<CategoryHandle, Props>(({ categories, activeSlug, on
   useEffect(() => {
     scrollToSlug();
   }, [activeSlug]);
+
   const handleClick = (slug: string, index: number) => {
     onSelect?.(slug, index);
     if (navigator.vibrate) navigator.vibrate(50);
@@ -38,7 +39,7 @@ const Category = forwardRef<CategoryHandle, Props>(({ categories, activeSlug, on
   return (
     <nav
       ref={containerRef}
-      className={`flex transition-all duration-300 gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto rounded-4xl sticky ${headerHidden ? 'top-0' : 'top-12'} z-20 bg-white`}
+      className={`flex transition-all duration-300 gap-4 p-4 pb-3.5 mb-3.5 overflow-x-auto sticky ${headerHidden ? 'top-0' : 'top-12'} z-20 bg-white`}
     >
       {categories?.map((item, i) => (
         <button

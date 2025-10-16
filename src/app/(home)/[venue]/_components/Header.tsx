@@ -15,6 +15,7 @@ interface IProps {
 }
 
 const Header: FC<IProps> = ({ title, showSearch, hideOnScroll, onVisibilityChange }) => {
+  const router = useRouter();
   const [hidden, setHidden] = useState(false);
   const lastYRef = useRef(0);
   const tickingRef = useRef(false);
@@ -53,10 +54,9 @@ const Header: FC<IProps> = ({ title, showSearch, hideOnScroll, onVisibilityChang
   useEffect(() => {
     onVisibilityChange?.(hidden);
   }, [hidden, onVisibilityChange]);
-  const router = useRouter();
 
   return (
-    <header className={`header sticky top-0 bg-white rounded-b-4xl z-20 transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'}`}>
+    <header className={`header sticky top-0 bg-white z-20 transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'}`}>
       <div className='header__content flex justify-between items-center px-5 pt-2.5 pb-4'>
         <Image
           src={arrowIcon}

@@ -3,7 +3,7 @@ import Content from './_components/Content';
 
 const FoodsPage = () => {
   return (
-    <main className='px-2.5 bg-[#F8F6F7] min-h-svh'>
+    <main className='px-2.5 min-h-svh'>
       <Header title='Напитки' />
       <Content />
     </main>
