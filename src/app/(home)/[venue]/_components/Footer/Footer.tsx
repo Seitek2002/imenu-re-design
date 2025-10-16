@@ -65,7 +65,18 @@ const Footer: FC = () => {
             }}
             aria-hidden={!showNext}
             >
-              Перейти в корзину · {Math.round(subtotal * 100) / 100} c
+              {hydrated ? (
+                <>Перейти в корзину · {Math.round(subtotal * 100) / 100} c</>
+              ) : (
+                'Перейти в корзину'
+              )}
+            </Link>
+            >
+              {hydrated ? (
+                <>Перейти в корзину · {Math.round(subtotal * 100) / 100} c</>
+              ) : (
+                'Перейти в корзину'
+              )}
             </Link>
         </div>
       ) : ( */}
