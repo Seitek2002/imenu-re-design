@@ -35,6 +35,12 @@ const Footer: FC = () => {
   );
   const showNext = hydrated && itemCount > 0 && !isBasket && allowNext;
 
+  // subtotal for "Перейти в корзину"
+  const subtotal = useMemo(
+    () => Object.values(itemsMap).reduce((acc, it) => acc + it.unitPrice * it.quantity, 0),
+    [itemsMap]
+  );
+
   return (
     <footer className='fixed bottom-0 left-0 right-0 flex flex-col items-center z-10'>
       {/* {isHome ? (
@@ -58,9 +64,9 @@ const Footer: FC = () => {
               pointerEvents: showNext ? 'auto' : 'none',
             }}
             aria-hidden={!showNext}
-          >
-            Далее
-          </Link>
+            >
+              Перейти в корзину · {Math.round(subtotal * 100) / 100} c
+            </Link>
         </div>
       ) : ( */}
         <>
@@ -91,7 +97,7 @@ const Footer: FC = () => {
               className="block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold"
               style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
             >
-              Перейти в корзину
+              Перейти в корзину · {Math.round(subtotal * 100) / 100} c
             </Link>
           </div>
         </>
