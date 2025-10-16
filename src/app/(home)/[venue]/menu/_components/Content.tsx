@@ -79,10 +79,9 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
             categoryRef.current?.scrollToSlug(slug);
           }
         }}
-        wrapperClass='items-start'
       >
         {categories.map((category, i) => (
-          <SwiperSlide key={i} className='min-h-[30vh]'>
+          <SwiperSlide key={i}>
             <Goods
               category={category.categoryName}
               onOpen={handleOpenProduct}
