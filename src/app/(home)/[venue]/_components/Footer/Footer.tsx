@@ -19,6 +19,11 @@ const Footer: FC = () => {
 
   const isBasket = pathname === PAGES.BASKET(venueRoot);
 
+  // pages allowed for Next button (/menu and /foods)
+  const isMenuPage = pathname.startsWith(`${venueRoot}/menu`);
+  const isFoodsPage = pathname.startsWith(`${venueRoot}/foods`);
+  const allowNext = isMenuPage || isFoodsPage;
+
   // basket/hydration
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
@@ -28,7 +33,7 @@ const Footer: FC = () => {
     () => Object.values(itemsMap).reduce((acc, it) => acc + it.quantity, 0),
     [itemsMap]
   );
-  const showNext = hydrated && itemCount > 0 && !isBasket;
+  const showNext = hydrated && itemCount > 0 && !isBasket && allowNext;
 
   return (
     <footer className='fixed bottom-0 left-0 right-0 flex flex-col items-center z-10'>
@@ -77,13 +82,13 @@ const Footer: FC = () => {
             </span>
           </button>
           <div
-            className="w-full px-4 overflow-hidden transition-[max-height] duration-500"
-            style={{ maxHeight: showNext ? 80 : 0 }}
+            className="w-full p-2.5 overflow-hidden transition-[max-height] duration-500"
+            style={{ maxHeight: showNext ? 80 : 0, paddingBottom: showNext ? '10px' : '0' }}
             aria-hidden={!showNext}
           >
             <Link
               href={PAGES.BASKET(venueRoot)}
-              className="block text-center bg-[#FF7A00] text-white rounded-3xl py-4 font-semibold"
+              className="block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold"
               style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
             >
               Далее
