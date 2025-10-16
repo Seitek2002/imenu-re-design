@@ -37,7 +37,7 @@ const Nav = () => {
   );
 
   return (
-    <nav className='flex justify-center bg-white border-t-[1px] border-[#E5E7EB] py-3 w-full'>
+    <nav className='flex justify-center bg-white border-t-[1px] border-[#E5E7EB] py-3 w-full pb-9'>
       {items.map(({ icon, label, href }) => (
         <Link
           href={href}
