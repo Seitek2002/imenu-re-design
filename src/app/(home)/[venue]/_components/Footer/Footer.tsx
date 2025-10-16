@@ -32,11 +32,12 @@ const Footer: FC = () => {
 
   return (
     <footer className='fixed bottom-0 left-0 right-0 flex flex-col items-center z-10'>
-      {isHome && showNext ? (
+      {/* {isHome ? (
         <div className="w-full flex items-center gap-2 px-4">
           <button
             aria-label="Позвать официанта"
-            className="flex-1 flex items-center bg-[#FF8127] text-white rounded-3xl py-4 px-4 gap-2"
+            className="flex items-center bg-[#FF8127] text-white rounded-3xl py-4 px-4 gap-2 transition-[width] duration-500"
+            style={{ width: showNext ? '50%' : '100%' }}
           >
             <Image src={bellIcon} alt="bell icon" />
             <span className="whitespace-nowrap">
@@ -45,12 +46,18 @@ const Footer: FC = () => {
           </button>
           <Link
             href={PAGES.BASKET(venueRoot)}
-            className="flex-1 text-center bg-[#FF7A00] text-white rounded-3xl py-4 font-semibold"
+            className="text-center bg-[#FF7A00] text-white rounded-3xl py-4 font-semibold overflow-hidden transition-all duration-500"
+            style={{
+              width: showNext ? '50%' : '0%',
+              opacity: showNext ? 1 : 0,
+              pointerEvents: showNext ? 'auto' : 'none',
+            }}
+            aria-hidden={!showNext}
           >
             Далее
           </Link>
         </div>
-      ) : (
+      ) : ( */}
         <>
           <button
             aria-label="Позвать официанта"
@@ -69,16 +76,21 @@ const Footer: FC = () => {
               Позвать официанта к <b>12 столику</b>
             </span>
           </button>
-          {showNext && (
+          <div
+            className="w-full px-4 overflow-hidden transition-[max-height] duration-500"
+            style={{ maxHeight: showNext ? 80 : 0 }}
+            aria-hidden={!showNext}
+          >
             <Link
               href={PAGES.BASKET(venueRoot)}
-              className="py-4 px-8 bg-[#FF7A00] text-white rounded-3xl mb-1 font-semibold"
+              className="block text-center bg-[#FF7A00] text-white rounded-3xl py-4 font-semibold"
+              style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
             >
               Далее
             </Link>
-          )}
+          </div>
         </>
-      )}
+      // )}
       <Nav />
     </footer>
   );
