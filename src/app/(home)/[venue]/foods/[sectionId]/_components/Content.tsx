@@ -12,7 +12,6 @@ import { chunkByPattern, defaultGridPattern } from './Content.helpers';
 
 const Content = () => {
   const params = useParams<{ venue?: string; sectionId?: string }>();
-  console.log(params.sectionId);
   const venueSlug =
     params?.venue ??
     (typeof window !== 'undefined'
