@@ -56,7 +56,7 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
         onSelect={(slug, index) => {
           setActiveIndex(index);
           swiperRef.current?.slideTo(index);
-          router.replace(PAGES.MENU(slug));
+          router.replace(PAGES.MENU(slug), { scroll: false });
         }}
       />
       <Swiper
@@ -75,7 +75,7 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
           setActiveIndex(s.activeIndex);
           const slug = categories[s.activeIndex]?.categoryName;
           if (slug) {
-            router.replace(PAGES.MENU(slug));
+            router.replace(PAGES.MENU(slug), { scroll: false });
             categoryRef.current?.scrollToSlug(slug);
           }
         }}
