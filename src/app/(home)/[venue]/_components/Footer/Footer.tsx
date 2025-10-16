@@ -73,7 +73,7 @@ const Footer: FC = () => {
           <button
             aria-label="Позвать официанта"
             className={`group flex items-center bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
-              collapsed ? 'p-3.5 ml-[80%]' : 'py-4 px-8 gap-2'
+              collapsed ? 'p-3.5 ml-[80%]' : 'py-4 px-11 gap-2'
             }`}
           >
             <Image src={bellIcon} alt="bell icon" />
