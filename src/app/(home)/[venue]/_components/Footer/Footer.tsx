@@ -91,7 +91,7 @@ const Footer: FC = () => {
               className="block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold"
               style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
             >
-              Далее
+              Перейти в корзину
             </Link>
           </div>
         </>
