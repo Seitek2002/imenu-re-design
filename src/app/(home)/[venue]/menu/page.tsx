@@ -12,7 +12,6 @@ const MenuPage = () => {
       <Header
         title='Меню'
         showSearch
-        hideOnScroll
         onVisibilityChange={setHeaderHidden}
       />
       <Content headerHidden={headerHidden} />
