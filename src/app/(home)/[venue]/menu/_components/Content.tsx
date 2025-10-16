@@ -42,7 +42,7 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
   }, [categories, searchCategory]);
 
   return (
-    <div className='bg-white rounded-4xl mt-1.5 pb-22'>
+    <div className='bg-white rounded-4xl mt-1.5 pb-40'>
       <FoodDetail
         open={isDetailOpen}
         product={selectedProduct}
@@ -62,6 +62,7 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
       <Swiper
         modules={[Pagination]}
         className='pb-10'
+        autoHeight={true}
         spaceBetween={30}
         onSwiper={(s) => {
           swiperRef.current = s;
