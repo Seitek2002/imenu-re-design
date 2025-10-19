@@ -181,10 +181,6 @@ export default function BasketView() {
 
         {/* Контакты */}
         <div className="bg-white p-3 rounded-[12px] mt-3">
-          <div className="mb-3">
-            <h4 className="text-base font-semibold">Контакты</h4>
-          </div>
-
           <label htmlFor="phone" className="block space-y-1 mb-3">
             <span className="text-[14px]">Номер телефона</span>
             <input
