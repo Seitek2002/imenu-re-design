@@ -4,20 +4,16 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 const VenueGate = () => {
-  const params = useParams<{tableId: string; venue: string}>();
+  const params = useParams<{ tableId: string; venue: string }>();
   const route = useRouter();
 
-  console.log(params);
-
   useEffect(() => {
-    localStorage.setItem('tableId', params.tableId!);
-    localStorage.setItem('venueRoot', params.venue!);
-    route.push('/' + params.venue!)
-  }, [])
+    sessionStorage.setItem('tableId', params.tableId!);
+    localStorage.setItem('venueRoot', params.venue!.toLowerCase());
+    route.push('/' + params.venue!.toLowerCase());
+  }, []);
 
-  return (
-    <div></div>
-  )
-}
+  return <div></div>;
+};
 
-export default VenueGate
+export default VenueGate;
