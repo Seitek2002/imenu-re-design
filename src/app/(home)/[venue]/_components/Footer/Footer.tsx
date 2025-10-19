@@ -46,7 +46,7 @@ const Footer: FC = () => {
   );
 
   return (
-    <footer className='fixed -bottom-12 left-0 right-0 flex flex-col items-center z-10'>
+    <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
       <button
         aria-label='Позвать официанта'
         className={`group flex items-center bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
