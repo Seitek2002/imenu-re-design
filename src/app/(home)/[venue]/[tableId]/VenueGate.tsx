@@ -7,10 +7,12 @@ const VenueGate = () => {
   const params = useParams<{tableId: string; venue: string}>();
   const route = useRouter();
 
+  console.log(params);
+
   useEffect(() => {
     localStorage.setItem('tableId', params.tableId!);
     localStorage.setItem('venueRoot', params.venue!);
-    route.push(params.venue!)
+    route.push('/' + params.venue!)
   }, [])
 
   return (
