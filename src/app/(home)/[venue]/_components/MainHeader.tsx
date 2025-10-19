@@ -43,7 +43,7 @@ const MainHeader = () => {
   }, [venue]);
 
   return (
-    <header className='header-main sticky top-0 flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white'>
+    <header className='header-main sticky top-0 z-10 flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white'>
       <div className='header-left flex items-center'>
         <Image width={40} src={venueLogo} alt='venue logo' />
         <div className='flex flex-col'>
