@@ -47,15 +47,16 @@ const Footer: FC = () => {
 
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
-      <div className='flex w-full justify-center items-center'>
+      <div className='flex w-full items-center' style={{
+        justifyContent: showNext ? 'space-between' : 'center',
+      }}>
         <div
           className='p-2.5 overflow-hidden transition-all duration-500'
           style={{
             maxHeight: showNext ? 80 : 0,
             padding: showNext ? '10px' : '0',
             paddingBottom: showNext ? '10px' : '0',
-            flex: showNext ? 1 : 0,
-            width: showNext ? '80%' : '0%',
+            width: showNext ? '70%' : '0%',
           }}
         >
           <Link
@@ -68,8 +69,8 @@ const Footer: FC = () => {
         </div>
         <button
           aria-label='Позвать официанта'
-          className={`group flex items-center bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
-            collapsed ? 'p-2.5' : 'py-4 px-11 gap-2'
+          className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
+            collapsed ? 'py-5.5 px-5 mr-2' : 'py-4 px-11 gap-2'
           }`}
         >
           <Image src={bellIcon} alt='bell icon' />
