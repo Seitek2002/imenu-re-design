@@ -47,38 +47,42 @@ const Footer: FC = () => {
 
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
-      <button
-        aria-label='Позвать официанта'
-        className={`group flex items-center bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
-          collapsed ? 'p-3.5 ml-[80%]' : 'py-4 px-11 gap-2'
-        }`}
-      >
-        <Image src={bellIcon} alt='bell icon' />
-        <span
-          className={`whitespace-nowrap transition-all duration-1000 ${
-            collapsed
-              ? 'max-w-0 opacity-0 ml-0'
-              : 'max-w-[300px] opacity-100 ml-2'
+      <div className='flex w-full justify-center items-center'>
+        <div
+          className='p-2.5 overflow-hidden transition-all duration-500'
+          style={{
+            maxHeight: showNext ? 80 : 0,
+            padding: showNext ? '10px' : '0',
+            paddingBottom: showNext ? '10px' : '0',
+            flex: showNext ? 1 : 0,
+            width: showNext ? '80%' : '0%',
+          }}
+        >
+          <Link
+            href={PAGES.BASKET(venueRoot)}
+            className='block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold'
+            style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
+          >
+            Перейти в корзину · {Math.round(subtotal * 100) / 100} c
+          </Link>
+        </div>
+        <button
+          aria-label='Позвать официанта'
+          className={`group flex items-center bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
+            collapsed ? 'p-2.5' : 'py-4 px-11 gap-2'
           }`}
         >
-          Позвать официанта к <b>12 столику</b>
-        </span>
-      </button>
-      <div
-        className='w-full p-2.5 overflow-hidden transition-[max-height] duration-500'
-        style={{
-          maxHeight: showNext ? 80 : 0,
-          paddingBottom: showNext ? '10px' : '0',
-        }}
-        aria-hidden={!showNext}
-      >
-        <Link
-          href={PAGES.BASKET(venueRoot)}
-          className='block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold'
-          style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
-        >
-          Перейти в корзину · {Math.round(subtotal * 100) / 100} c
-        </Link>
+          <Image src={bellIcon} alt='bell icon' />
+          <span
+            className={`whitespace-nowrap transition-all duration-1000 ${
+              collapsed
+                ? 'max-w-0 opacity-0 ml-0'
+                : 'max-w-[300px] opacity-100 ml-2'
+            }`}
+          >
+            Позвать официанта к <b>12 столику</b>
+          </span>
+        </button>
       </div>
       <Nav />
     </footer>
