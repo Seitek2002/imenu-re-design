@@ -304,7 +304,7 @@ export default function BasketView() {
         </div>
 
         {/* Нижняя кнопка (UI only) */}
-        <footer className="fixed left-0 right-0 bottom-0 bg-white border-t border-[#E5E7EB] px-4 py-3">
+        <footer className="bg-white border-t border-[#E5E7EB] px-4 py-3 mt-4">
           <button
             type="button"
             className="w-full h-12 rounded-[12px] text-white font-semibold"
