@@ -1,9 +1,9 @@
 import VenueGate from './VenueGate'
 
-const VenueWithTableId = () => {
+const VenueWithSpotId = () => {
   return (
     <VenueGate />
   )
 }
 
-export default VenueWithTableId
+export default VenueWithSpotId

@@ -9,6 +9,7 @@ import { PAGES } from '@/config/pages.config';
 import { useBasket } from '@/store/basket';
 
 import bellIcon from '@/assets/Footer/bell.svg';
+import { useVenueTableV2 } from '@/lib/api/queries';
 
 const Footer: FC = () => {
   const pathname = usePathname();
@@ -16,6 +17,8 @@ const Footer: FC = () => {
   const venueRoot = params?.venue ? `/${params.venue}` : '';
   const isHome = pathname === venueRoot;
   const collapsed = !isHome;
+  const tableId = sessionStorage.getItem('spotId');
+  const { data } = useVenueTableV2({ slug: params?.venue!, tableId: tableId || ''});
 
   const isBasket = pathname === PAGES.BASKET(venueRoot);
 
@@ -45,11 +48,19 @@ const Footer: FC = () => {
     [itemsMap]
   );
 
+  useEffect(() => {
+    console.log(data);
+    
+  }, [data]);
+
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
-      <div className='flex w-full items-center' style={{
-        justifyContent: collapsed ? 'space-between' : 'center',
-      }}>
+      <div
+        className='flex w-full items-center'
+        style={{
+          justifyContent: collapsed ? 'space-between' : 'center',
+        }}
+      >
         <div
           className='p-2.5 overflow-hidden transition-all duration-500'
           style={{
@@ -67,23 +78,25 @@ const Footer: FC = () => {
             Перейти в корзину · {Math.round(subtotal * 100) / 100} c
           </Link>
         </div>
-        <button
-          aria-label='Позвать официанта'
-          className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
-            collapsed ? 'py-5.5 px-5 mr-2' : 'py-4 px-11 gap-2'
-          }`}
-        >
-          <Image src={bellIcon} alt='bell icon' />
-          <span
-            className={`whitespace-nowrap transition-all duration-1000 ${
-              collapsed
-                ? 'max-w-0 opacity-0 ml-0'
-                : 'max-w-[300px] opacity-100 ml-2'
+        {tableId && (
+          <button
+            aria-label='Позвать официанта'
+            className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
+              collapsed ? 'py-5.5 px-5 mr-2' : 'py-4 px-11 gap-2'
             }`}
           >
-            Позвать официанта к <b>12 столику</b>
-          </span>
-        </button>
+            <Image src={bellIcon} alt='bell icon' />
+            <span
+              className={`whitespace-nowrap transition-all duration-1000 ${
+                collapsed
+                  ? 'max-w-0 opacity-0 ml-0'
+                  : 'max-w-[300px] opacity-100 ml-2'
+              }`}
+            >
+              Позвать официанта к <b>12 столику</b>
+            </span>
+          </button>
+        )}
       </div>
       <Nav />
     </footer>
