@@ -48,7 +48,7 @@ const Footer: FC = () => {
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
       <div className='flex w-full items-center' style={{
-        justifyContent: showNext ? 'space-between' : 'center',
+        justifyContent: showNext ? 'space-between' : 'flex-end',
       }}>
         <div
           className='p-2.5 overflow-hidden transition-all duration-500'
