@@ -17,8 +17,21 @@ const Footer: FC = () => {
   const venueRoot = params?.venue ? `/${params.venue}` : '';
   const isHome = pathname === venueRoot;
   const collapsed = !isHome;
-  const tableId = sessionStorage.getItem('spotId');
-  const { data } = useVenueTableV2({ slug: params?.venue!, tableId: tableId || ''});
+
+  const [tableId, setTableId] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const id = sessionStorage.getItem('spotId');
+      setTableId(id);
+    } catch {
+      setTableId(null);
+    }
+  }, []);
+
+  const { data } = useVenueTableV2(
+    { slug: params?.venue!, tableId: tableId || '' },
+    { enabled: Boolean(tableId) }
+  );
 
   const isBasket = pathname === PAGES.BASKET(venueRoot);
 
@@ -93,7 +106,7 @@ const Footer: FC = () => {
                   : 'max-w-[300px] opacity-100 ml-2'
               }`}
             >
-              Позвать официанта к <b>12 столику</b>
+              Позвать официанта к <b>{tableId} столику</b>
             </span>
           </button>
         )}
