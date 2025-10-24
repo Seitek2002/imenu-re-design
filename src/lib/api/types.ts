@@ -151,16 +151,16 @@ export type WorkSchedule = {
 // Venue (kept with fields used by UI; aligns with spec enums and properties)
 export type Venue = {
   colorTheme:
-    | "#008B68"
-    | "#FFB200"
-    | "#F80101"
-    | "#FF4800"
-    | "#00BBFF"
-    | "#0717FF"
-    | "#AF00A3"
-    | "#000000"
-    | "#00BFB2"
-    | ""; // enum
+    | '#008B68'
+    | '#FFB200'
+    | '#F80101'
+    | '#FF4800'
+    | '#00BBFF'
+    | '#0717FF'
+    | '#AF00A3'
+    | '#000000'
+    | '#00BFB2'
+    | ''; // enum
   companyName: string;
   slug: string;
   logo: string | null; // uri
@@ -177,6 +177,8 @@ export type Venue = {
   deliveryFreeFrom: string | null; // decimal or null
   terms: string | null;
   description: string | null;
+  // extra fields that may be returned by /venues/{slug}/table/{tableId}/
+  tableNum?: string;
 
   // Non-spec fields sometimes present in older payloads; kept optional for compatibility
   // serviceFeePercent?: number;

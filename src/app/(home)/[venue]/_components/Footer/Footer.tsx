@@ -9,7 +9,7 @@ import { PAGES } from '@/config/pages.config';
 import { useBasket } from '@/store/basket';
 
 import bellIcon from '@/assets/Footer/bell.svg';
-import { useVenueTableV2 } from '@/lib/api/queries';
+import { useVenueQuery } from '@/store/venue';
 
 const Footer: FC = () => {
   const pathname = usePathname();
@@ -18,20 +18,7 @@ const Footer: FC = () => {
   const isHome = pathname === venueRoot;
   const collapsed = !isHome;
 
-  const [tableId, setTableId] = useState<string | null>(null);
-  useEffect(() => {
-    try {
-      const id = sessionStorage.getItem('spotId');
-      setTableId(id);
-    } catch {
-      setTableId(null);
-    }
-  }, []);
-
-  const { data } = useVenueTableV2(
-    { slug: params?.venue!, tableId: tableId || '' },
-    { enabled: Boolean(tableId) }
-  );
+  const { tableId, tableNum } = useVenueQuery();
 
   const isBasket = pathname === PAGES.BASKET(venueRoot);
 
@@ -60,11 +47,6 @@ const Footer: FC = () => {
       ),
     [itemsMap]
   );
-
-  useEffect(() => {
-    console.log(data);
-    
-  }, [data]);
 
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
@@ -106,7 +88,7 @@ const Footer: FC = () => {
                   : 'max-w-[300px] opacity-100 ml-2'
               }`}
             >
-              Позвать официанта к <b>{tableId} столику</b>
+              Позвать официанта к <b>{tableNum ?? tableId} столику</b>
             </span>
           </button>
         )}

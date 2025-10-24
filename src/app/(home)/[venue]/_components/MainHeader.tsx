@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useVenue } from '@/lib/api/queries';
+import { useVenue, useVenueTableV2 } from '@/lib/api/queries';
 import { useVenueQuery } from '@/store/venue';
 
 import LanguageDropdown from './LanguageDropdown';
@@ -16,7 +16,20 @@ import searchIcon from '@/assets/Header/search.svg';
 const MainHeader = () => {
   const params = useParams<{ venue?: string }>();
   const { data: venue } = useVenue(params.venue!);
-  const { setVenue } = useVenueQuery();
+  const { setVenue, setTableInfo, tableNum } = useVenueQuery();
+
+  // читаем tableId из sessionStorage только в браузере
+  const [tableId, setTableId] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const id = sessionStorage.getItem('spotId');
+      setTableId(id);
+      setTableInfo({ tableId: id });
+    } catch {
+      // no-op
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -42,6 +55,18 @@ const MainHeader = () => {
     if (venue) setVenue(venue);
   }, [venue]);
 
+  // если есть tableId, подтягиваем данные "заведение + стол" и сохраняем номер стола
+  const { data: venueTable } = useVenueTableV2(
+    { slug: params.venue!, tableId: tableId || '' },
+    { enabled: Boolean(tableId) }
+  );
+
+  useEffect(() => {
+    if (venueTable) {
+      setTableInfo({ tableNum: venueTable.tableNum ?? null });
+    }
+  }, [venueTable, setTableInfo]);
+
   return (
     <header className='header-main sticky top-0 z-10 flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white'>
       <div className='header-left flex items-center'>
@@ -51,6 +76,11 @@ const MainHeader = () => {
           <span className='font-cruinn-tw font-bold text-[10px]'>
             Powered by iMenu.kg
           </span>
+          {tableNum ? (
+            <span className='font-cruinn-tw font-bold text-[10px]'>
+              Стол № {tableNum}
+            </span>
+          ) : null}
         </div>
       </div>
       <div className='header-btns flex gap-[4px]'>
