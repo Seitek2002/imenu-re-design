@@ -177,7 +177,12 @@ export type Venue = {
   deliveryFreeFrom: string | null; // decimal or null
   terms: string | null;
   description: string | null;
-  // extra fields that may be returned by /venues/{slug}/table/{tableId}/
+  // из /venues/{slug}/table/{tableId}/ приходит table: { id, tableNum }
+  table?: {
+    id: number;
+    tableNum: string;
+  };
+  // на случай старых ответов оставим прямое поле
   tableNum?: string;
 
   // Non-spec fields sometimes present in older payloads; kept optional for compatibility

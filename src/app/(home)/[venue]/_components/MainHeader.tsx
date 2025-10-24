@@ -63,7 +63,8 @@ const MainHeader = () => {
 
   useEffect(() => {
     if (venueTable) {
-      setTableInfo({ tableNum: venueTable.tableNum ?? null });
+      const num = venueTable.table?.tableNum ?? venueTable.tableNum ?? null;
+      setTableInfo({ tableNum: num });
     }
   }, [venueTable, setTableInfo]);
 
