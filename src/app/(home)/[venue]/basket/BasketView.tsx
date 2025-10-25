@@ -41,6 +41,35 @@ export default function BasketView() {
   const { venue, tableId } = useVenueQuery();
   const createOrder = useCreateOrderV2();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [modal, setModal] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+
+  function extractBackendErrorMessage(err: unknown): string {
+    const defaultMsg = 'Ошибка при создании заказа';
+    try {
+      const msg =
+        typeof err === 'object' && err && 'message' in err
+          ? String((err as any).message)
+          : '';
+      const idx = msg.indexOf('- ');
+      const raw = idx >= 0 ? msg.slice(idx + 2).trim() : msg.trim();
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.error === 'string') return parsed.error;
+        } catch {
+          // not JSON
+        }
+        const m = raw.match(/\{"error"\s*:\s*"([^"]+)"\}/);
+        if (m) return m[1];
+      }
+      return msg || defaultMsg;
+    } catch {
+      return defaultMsg;
+    }
+  }
 
   // venueSlug: prefer localStorage 'venueRoot', fallback to persisted 'venue' store, then route params
   const params = useParams();
@@ -59,13 +88,20 @@ export default function BasketView() {
       try {
         const rawRoot = localStorage.getItem('venueRoot');
         if (rawRoot) {
-          const parsed = JSON.parse(rawRoot);
-          const v =
-            parsed?.slug ??
-            parsed?.venueSlug ??
-            parsed?.venue_slug ??
-            parsed?.venue?.slug ??
-            '';
+          let v: string | undefined;
+          const trimmed = rawRoot.trim();
+          if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            const parsed = JSON.parse(rawRoot);
+            v =
+              parsed?.slug ??
+              parsed?.venueSlug ??
+              parsed?.venue_slug ??
+              parsed?.venue?.slug ??
+              '';
+          } else {
+            // treat as plain string, possibly like "/ustukan" or "ustukan"
+            v = trimmed.split('/').filter(Boolean).pop() ?? trimmed;
+          }
           if (typeof v === 'string' && v) return v;
         }
       } catch {}
@@ -156,7 +192,9 @@ export default function BasketView() {
       console.log('order:create:success', res);
     } catch (e: any) {
       console.error('order:create:error', e);
-      setErrorMsg(e?.message ?? 'Ошибка при создании заказа');
+      const msg = extractBackendErrorMessage(e);
+      setErrorMsg(msg);
+      setModal({ open: true, message: msg });
     }
   }
 
@@ -437,9 +475,6 @@ export default function BasketView() {
             </label>
           )}
         </div>
-        {errorMsg && (
-          <div className='mt-3 text-sm text-red-600'>{errorMsg}</div>
-        )}
       </section>
 
       {/* Нижняя кнопка (UI only) */}
@@ -455,6 +490,27 @@ export default function BasketView() {
           {createOrder.isPending ? 'Отправка...' : 'Далее'}
         </button>
       </footer>
+      {modal.open && (
+        <div
+          role='dialog'
+          aria-modal='true'
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'
+        >
+          <div className='bg-white rounded-2xl p-4 w-[90%] max-w-sm shadow-xl'>
+            <div className='text-base text-[#111111]'>{modal.message}</div>
+            <div className='mt-4 flex justify-end'>
+              <button
+                type='button'
+                onClick={() => setModal({ open: false, message: '' })}
+                className='h-10 px-4 rounded-[10px] text-white font-semibold'
+                style={{ backgroundColor: '#FF7A00' }}
+              >
+                Ок
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
