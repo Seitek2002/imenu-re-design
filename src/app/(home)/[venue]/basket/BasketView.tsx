@@ -10,12 +10,15 @@ export default function BasketView() {
   const router = useRouter();
 
   // Basket store
-  const { getItemsArray, increment, decrement, remove, getSubtotal } = useBasket();
+  const { getItemsArray, increment, decrement, remove, getSubtotal } =
+    useBasket();
   const items = getItemsArray();
   const subtotal = getSubtotal();
 
   // UI state (local only, no requests)
-  const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>('takeout');
+  const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
+    'takeout'
+  );
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -41,26 +44,35 @@ export default function BasketView() {
     } else {
       setDetailsHeight(0);
     }
-  }, [detailsOpen, phone, address, comment, promoCode, orderType, subtotal, items.length]);
+  }, [
+    detailsOpen,
+    phone,
+    address,
+    comment,
+    promoCode,
+    orderType,
+    subtotal,
+    items.length,
+  ]);
 
   return (
-    <main className="px-2.5 bg-[#F8F6F7] min-h-[100svh] pb-20">
+    <main className='px-2.5 bg-[#F8F6F7] min-h-[100svh] pb-20'>
       {/* Local header */}
-      <header className="sticky top-0 z-20 bg-white rounded-b-4xl">
-        <div className="flex items-center justify-between px-5 pt-2.5 pb-4">
+      <header className='sticky top-0 z-20 bg-white rounded-b-4xl'>
+        <div className='flex items-center justify-between px-5 pt-2.5 pb-4'>
           <Image
             src={arrowIcon}
             width={24}
             height={24}
-            alt="Назад"
-            className="cursor-pointer"
+            alt='Назад'
+            className='cursor-pointer'
             onClick={() => router.back()}
           />
-          <h2 className="text-2xl font-semibold">Корзина</h2>
+          <h2 className='text-2xl font-semibold'>Корзина</h2>
           {/* Placeholder for "очистить корзину" (только UI) */}
           <button
-            type="button"
-            className="text-[#FF7A00] text-sm font-medium"
+            type='button'
+            className='text-[#FF7A00] text-sm font-medium'
             onClick={() => {
               // UI-only: нет действий
             }}
@@ -70,12 +82,11 @@ export default function BasketView() {
         </div>
       </header>
 
-      <section className="font-inter pt-4 pb-24 lg:max-w-[1140px] lg:mx-auto">
+      <section className='font-inter bg-white pt-4 mt-1.5 rounded-4xl pb-24 lg:max-w-[1140px] lg:mx-auto'>
         {/* Тип заказа */}
-        <div className="bg-white p-3 rounded-[12px]">
-          <div className="grid grid-cols-3 gap-2">
+        <div className='bg-[#FAFAFA] rounded-[12px]'>
+          <div className='grid grid-cols-2 gap-2 p-1'>
             {[
-              { key: 'takeout', label: 'Самовывоз' },
               { key: 'dinein', label: 'На месте' },
               { key: 'delivery', label: 'Доставка' },
             ].map((o) => {
@@ -83,12 +94,11 @@ export default function BasketView() {
               return (
                 <button
                   key={o.key}
-                  type="button"
                   onClick={() => setOrderType(o.key as typeof orderType)}
-                  className={`h-10 rounded-xl border text-sm transition-colors ${
+                  className={`py-2 rounded-full text-sm transition-colors ${
                     isActive
-                      ? 'border-[#FF7A00] text-[#FF7A00] bg-[#FFF4EB]'
-                      : 'border-[#E1E2E5] text-[#21201F]'
+                      ? 'text-[#111111] bg-[#EFEEEC] font-semibold'
+                      : 'text-[#6B6B6B]'
                   }`}
                 >
                   {o.label}
@@ -99,78 +109,79 @@ export default function BasketView() {
         </div>
 
         {/* Список товаров из корзины */}
-        <div className="bg-white p-3 rounded-[12px] mt-3">
-          <h4 className="text-base font-semibold mb-3">Товары</h4>
+        <div className='bg-white p-3 rounded-[12px] mt-3'>
+          {/* <h4 className='text-base font-semibold mb-3'>Товары</h4> */}
 
           {!hydrated ? (
             // Render the same placeholder that SSR rendered to avoid mismatch
-            <div className="text-sm text-[#80868B]">Корзина пуста</div>
+            <div className='text-sm text-[#80868B]'>Корзина пуста</div>
           ) : items.length === 0 ? (
-            <div className="text-sm text-[#80868B]">Корзина пуста</div>
+            <div className='text-sm text-[#80868B]'>Корзина пуста</div>
           ) : (
-            <ul className="space-y-3">
+            <ul className='space-y-3'>
               {items.map((it) => (
-                <li key={it.key} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative w-16 h-16 rounded-[12px] overflow-hidden bg-[#F1F2F3] flex-shrink-0">
+                <li
+                  key={it.key}
+                  className='flex items-center justify-between gap-3'
+                >
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <div className='relative w-16 h-16 rounded-[12px] overflow-hidden bg-[#F1F2F3] flex-shrink-0'>
                       {it.image ? (
                         <Image
                           src={it.image}
                           alt={it.name}
                           fill
-                          className="object-cover"
-                          sizes="64px"
+                          className='object-cover'
+                          sizes='64px'
                         />
                       ) : (
                         <Image
-                          src="/placeholder-dish.svg"
-                          alt="placeholder"
+                          src='/placeholder-dish.svg'
+                          alt='placeholder'
                           fill
-                          className="object-cover"
-                          sizes="64px"
+                          className='object-cover'
+                          sizes='64px'
                         />
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-[#21201F] truncate">
+                    <div className='min-w-0'>
+                      <div className='text-sm font-semibold text-[#21201F] truncate'>
                         {it.name}
                       </div>
                       {it.modifierName && (
-                        <div className="text-xs text-[#80868B] truncate">
+                        <div className='text-xs text-[#80868B] truncate'>
                           {it.modifierName}
                         </div>
                       )}
-                      <div className="text-sm text-[#21201F] mt-1">
+                      <div className='text-sm text-[#21201F] mt-1'>
                         {Math.round(it.unitPrice * it.quantity * 100) / 100} c
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className='flex items-center gap-3 bg-[#EFEEEC] rounded-full'>
                     <button
-                      type="button"
-                      aria-label="minus"
-                      className="w-8 h-8 rounded-full bg-[#F1F2F3] flex items-center justify-center"
-                      onClick={() => decrement(it.productId, it.modifierId ?? null, 1)}
+                      type='button'
+                      aria-label='minus'
+                      className='w-8 h-8 rounded-full bg-[#F1F2F3] flex items-center justify-center'
+                      onClick={() =>
+                        decrement(it.productId, it.modifierId ?? null, 1)
+                      }
                     >
                       −
                     </button>
-                    <span className="w-6 text-center font-semibold">{it.quantity}</span>
+                    <span className='w-6 text-center font-semibold'>
+                      {it.quantity}
+                    </span>
                     <button
-                      type="button"
-                      aria-label="plus"
-                      className="w-8 h-8 rounded-full bg-[#F1F2F3] flex items-center justify-center"
-                      onClick={() => increment(it.productId, it.modifierId ?? null, 1)}
+                      type='button'
+                      aria-label='plus'
+                      className='w-8 h-8 rounded-full bg-[#F1F2F3] flex items-center justify-center'
+                      onClick={() =>
+                        increment(it.productId, it.modifierId ?? null, 1)
+                      }
                     >
                       +
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="remove"
-                      className="text-[#FF3B30] text-xs ml-2"
-                      onClick={() => remove(it.productId, it.modifierId ?? null)}
-                    >
-                      Удалить
                     </button>
                   </div>
                 </li>
@@ -179,67 +190,14 @@ export default function BasketView() {
           )}
         </div>
 
-        {/* Контакты */}
-        <div className="bg-white p-3 rounded-[12px] mt-3">
-          <label htmlFor="phone" className="block space-y-1 mb-3">
-            <span className="text-[14px]">Номер телефона</span>
-            <input
-              id="phone"
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+996"
-              className="w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white"
-            />
-          </label>
-
-          {/* Адрес только для "Доставка" */}
-          {orderType === 'delivery' && (
-            <label htmlFor="address" className="block space-y-1 mb-3">
-              <span className="text-[14px]">Адрес доставки</span>
-              <input
-                id="address"
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Укажите адрес"
-                className="w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white"
-              />
-            </label>
-          )}
-
-          {/* Комментарий: скрыт по умолчанию, показывается по нажатию */}
-          {!showCommentInput ? (
-            <button
-              type="button"
-              className="text-[12px] text-[#FF7A00]"
-              onClick={() => setShowCommentInput(true)}
-            >
-              + добавить комментарий
-            </button>
-          ) : (
-            <label htmlFor="comment" className="block space-y-1">
-              <span className="text-[14px]">Комментарий</span>
-              <input
-                id="comment"
-                type="text"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Комментарий к заказу"
-                className="w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white"
-              />
-            </label>
-          )}
-        </div>
-
         {/* Итого с деталями (раскрытие по нажатию) */}
-        <div className="bg-white p-3 rounded-[12px] mt-3">
+        <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
           <button
-            type="button"
+            type='button'
             onClick={() => setDetailsOpen((v) => !v)}
-            className="w-full flex items-center justify-between text-[#80868B]"
+            className='w-full flex items-center justify-between text-[#80868B]'
           >
-            <span className="text-sm">Детали заказа</span>
+            <span className='text-sm'>Детали заказа</span>
             <span
               className={`inline-block transition-transform duration-300 ${
                 detailsOpen ? 'rotate-180' : 'rotate-0'
@@ -252,71 +210,124 @@ export default function BasketView() {
           <div
             ref={detailsRef}
             style={{ height: `${detailsHeight}px` }}
-            className="overflow-hidden transition-[height] duration-300 ease-in-out divide-y mt-2 rounded-[8px] border border-[#F3F3F3]"
+            className='overflow-hidden transition-[height] duration-300 ease-in-out divide-y mt-2 rounded-[8px] border-[#F3F3F3]'
           >
-            <div className="flex items-center justify-between px-3 py-2 text-[#80868B]">
+            <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
               <span>Сумма товаров</span>
               <span>{hydrated ? Math.round(subtotal * 100) / 100 : 0} c</span>
             </div>
-            <div className="flex items-center justify-between px-3 py-2 text-[#80868B]">
+            <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
               <span>Сервисный сбор</span>
               <span>0%</span>
             </div>
             {orderType === 'delivery' && (
-              <div className="flex items-center justify-between px-3 py-2 text-[#80868B]">
+              <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
                 <span>Доставка</span>
                 <span>0 c</span>
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between px-1 pt-3">
-            <span className="text-sm text-[#80868B]">Итого</span>
-            <span className="text-base font-semibold">
+          <div className='flex items-center justify-between px-1 pt-3'>
+            <span className='text-sm text-[#80868B]'>Итого</span>
+            <span className='text-base font-semibold'>
               {hydrated ? Math.round(subtotal * 100) / 100 : 0} c
             </span>
           </div>
         </div>
 
-        {/* Промокод: скрыт по умолчанию, показывается по нажатию */}
-        <div className="bg-white p-3 rounded-[12px] mt-3">
-          {!showPromoInput ? (
+        {/* Контакты */}
+        <div className='bg-white p-3 rounded-[12px] mt-3'>
+          <label htmlFor='phone' className='block space-y-1 mb-3'>
+            <span className='text-[14px]'>Номер телефона</span>
+            <input
+              id='phone'
+              type='text'
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder='+996'
+              className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
+            />
+          </label>
+
+          {/* Адрес только для "Доставка" */}
+          {orderType === 'delivery' && (
+            <label htmlFor='address' className='block space-y-1 mb-3'>
+              <span className='text-[14px]'>Адрес доставки</span>
+              <input
+                id='address'
+                type='text'
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder='Укажите адрес'
+                className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
+              />
+            </label>
+          )}
+
+          {/* Комментарий: скрыт по умолчанию, показывается по нажатию */}
+          {!showCommentInput ? (
             <button
-              type="button"
-              className="text-[12px] text-[#FF7A00]"
-              onClick={() => setShowPromoInput(true)}
+              type='button'
+              className='text-[12px] text-[#FF7A00]'
+              onClick={() => setShowCommentInput(true)}
             >
-              + указать промокод
+              + добавить комментарий
             </button>
           ) : (
-            <label htmlFor="promo" className="block space-y-1">
-              <span className="text-[14px]">Промокод</span>
+            <label htmlFor='comment' className='block space-y-1'>
+              <span className='text-[14px]'>Комментарий</span>
               <input
-                id="promo"
-                type="text"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                placeholder="Введите промокод"
-                className="w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white"
+                id='comment'
+                type='text'
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder='Комментарий к заказу'
+                className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
               />
             </label>
           )}
         </div>
 
-        {/* Нижняя кнопка (UI only) */}
-        <footer className="bg-white border-t border-[#E5E7EB] px-4 py-3 mt-4">
-          <button
-            type="button"
-            className="w-full h-12 rounded-[12px] text-white font-semibold"
-            style={{ backgroundColor: '#FF7A00' }}
-            onClick={() => {
-              // UI-only
-            }}
-          >
-            Далее
-          </button>
-        </footer>
+        {/* Промокод: скрыт по умолчанию, показывается по нажатию */}
+        <div className='bg-white p-3 rounded-[12px] mt-3'>
+          {!showPromoInput ? (
+            <button
+              type='button'
+              className='text-[12px] text-[#FF7A00]'
+              onClick={() => setShowPromoInput(true)}
+            >
+              + указать промокод
+            </button>
+          ) : (
+            <label htmlFor='promo' className='block space-y-1'>
+              <span className='text-[14px]'>Промокод</span>
+              <input
+                id='promo'
+                type='text'
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                placeholder='Введите промокод'
+                className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
+              />
+            </label>
+          )}
+        </div>
       </section>
+
+      {/* Нижняя кнопка (UI only) */}
+      <footer className='bg-white border-t border-[#E5E7EB] px-4 py-3 mt-4'>
+        <button
+          type='button'
+          className='w-full h-12 rounded-[12px] text-white font-semibold'
+          style={{ backgroundColor: '#FF7A00' }}
+          onClick={() => {
+            // UI-only
+          }}
+        >
+          Далее
+        </button>
+      </footer>
     </main>
   );
 }
