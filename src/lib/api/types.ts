@@ -101,6 +101,7 @@ export type OrderCreate = {
   code?: string | null;
   hash?: string | null;
   useBonus?: boolean;
+  venue_slug: string;
 };
 
 // Client (simplified to relevant fields from spec)

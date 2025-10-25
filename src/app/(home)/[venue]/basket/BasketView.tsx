@@ -2,9 +2,12 @@
 
 import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import arrowIcon from '@/assets/Header/arrow.svg';
 import { useBasket } from '@/store/basket';
+import { useCreateOrderV2 } from '@/lib/api/queries';
+import { useVenueQuery } from '@/store/venue';
+import type { OrderCreate } from '@/lib/api/types';
 
 export default function BasketView() {
   const router = useRouter();
@@ -33,6 +36,129 @@ export default function BasketView() {
   const [address, setAddress] = useState('');
   const [comment, setComment] = useState('');
   const [promoCode, setPromoCode] = useState('');
+
+  // Venue/table context and order mutation
+  const { venue, tableId } = useVenueQuery();
+  const createOrder = useCreateOrderV2();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // venueSlug: prefer localStorage 'venueRoot', fallback to persisted 'venue' store, then route params
+  const params = useParams();
+  const [venueSlug, setVenueSlug] = useState<string>('');
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const fromParams =
+      typeof (params as any)?.venue === 'string'
+        ? (params as any).venue
+        : Array.isArray((params as any)?.venue)
+        ? (params as any).venue[0]
+        : '';
+
+    const resolveVenueSlug = (): string => {
+      try {
+        const rawRoot = localStorage.getItem('venueRoot');
+        if (rawRoot) {
+          const parsed = JSON.parse(rawRoot);
+          const v =
+            parsed?.slug ??
+            parsed?.venueSlug ??
+            parsed?.venue_slug ??
+            parsed?.venue?.slug ??
+            '';
+          if (typeof v === 'string' && v) return v;
+        }
+      } catch {}
+      try {
+        // persisted Zustand store name 'venue' from src/store/venue.ts
+        const rawVenue = localStorage.getItem('venue');
+        if (rawVenue) {
+          const parsed = JSON.parse(rawVenue);
+          const st = parsed?.state ?? parsed;
+          const v =
+            st?.venue?.slug ??
+            st?.slug ??
+            st?.venueSlug ??
+            st?.venue_slug ??
+            '';
+          if (typeof v === 'string' && v) return v;
+        }
+      } catch {}
+      const fromStore =
+        typeof (venue as any)?.slug === 'string' ? (venue as any).slug : '';
+      return fromParams || fromStore || '';
+    };
+
+    setVenueSlug(resolveVenueSlug());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
+  // Map UI order type to API serviceMode
+  const serviceMode: 1 | 2 | 3 =
+    orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
+
+  // Basic validation for submit enabling
+  const canSubmit =
+    hydrated &&
+    !!venueSlug &&
+    items.length > 0 &&
+    phone.trim().length >= 5 &&
+    (orderType !== 'dinein' || !!tableId) &&
+    (orderType !== 'delivery' || address.trim().length > 0);
+
+  async function handleSubmit() {
+    try {
+      setErrorMsg(null);
+
+      if (!venueSlug) {
+        setErrorMsg('Не найден venue_slug');
+        return;
+      }
+
+      // Build items payload
+      const orderProducts = items.map((it) => ({
+        product: it.productId,
+        count: it.quantity,
+        modificator: it.modifierId ?? null,
+      }));
+
+      // Resolve table and spot
+      let tableIdNum: number | null = null;
+      if (orderType === 'dinein' && tableId != null) {
+        const n =
+          typeof tableId === 'string' ? Number.parseInt(tableId, 10) : tableId;
+        tableIdNum = Number.isFinite(n as number) ? (n as number) : null;
+      }
+
+      const defaultSpotId =
+        (venue as any)?.defaultDeliverySpot ?? null;
+      const firstSpotId =
+        Array.isArray((venue as any)?.spots) && (venue as any).spots.length > 0
+          ? (venue as any).spots[0].id
+          : null;
+      const spotId = defaultSpotId ?? firstSpotId ?? null;
+
+      const payload: OrderCreate = {
+        phone: phone.trim(),
+        comment: comment ? comment.trim() : null,
+        serviceMode,
+        address: orderType === 'delivery' ? address.trim() : null,
+        spot: spotId,
+        table: tableIdNum,
+        orderProducts,
+        code: promoCode ? promoCode.trim() : null,
+        isTgBot: false,
+        useBonus: false,
+        venue_slug: localStorage.getItem('venueRoot')?.replace('/', '') || ''
+      };
+
+      const res = await createOrder.mutateAsync({ body: payload, venueSlug });
+      console.log('order:create:success', res);
+    } catch (e: any) {
+      console.error('order:create:error', e);
+      setErrorMsg(e?.message ?? 'Ошибка при создании заказа');
+    }
+  }
 
   // Smooth expand/collapse for "Итого (детали)" block
   const detailsRef = useRef<HTMLDivElement | null>(null);
@@ -82,9 +208,9 @@ export default function BasketView() {
         </div>
       </header>
 
-      <section className='font-inter bg-white pt-4 mt-1.5 rounded-4xl pb-24 lg:max-w-[1140px] lg:mx-auto'>
+      <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl pb-24 lg:max-w-[1140px] lg:mx-auto'>
         {/* Тип заказа */}
-        <div className='bg-[#FAFAFA] rounded-[12px]'>
+        <div className='bg-[#FAFAFA] rounded-full'>
           <div className='grid grid-cols-2 gap-2 p-1'>
             {[
               { key: 'dinein', label: 'На месте' },
@@ -237,30 +363,29 @@ export default function BasketView() {
         </div>
 
         {/* Контакты */}
-        <div className='bg-white p-3 rounded-[12px] mt-3'>
+        <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
+          <h4 className='text-base font-semibold mb-3'>Ваши данные к заказу</h4>
           <label htmlFor='phone' className='block space-y-1 mb-3'>
-            <span className='text-[14px]'>Номер телефона</span>
             <input
               id='phone'
               type='text'
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder='+996'
-              className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
+              className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
             />
           </label>
 
           {/* Адрес только для "Доставка" */}
           {orderType === 'delivery' && (
             <label htmlFor='address' className='block space-y-1 mb-3'>
-              <span className='text-[14px]'>Адрес доставки</span>
               <input
                 id='address'
                 type='text'
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder='Укажите адрес'
-                className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
+                className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
               />
             </label>
           )}
@@ -276,14 +401,13 @@ export default function BasketView() {
             </button>
           ) : (
             <label htmlFor='comment' className='block space-y-1'>
-              <span className='text-[14px]'>Комментарий</span>
               <input
                 id='comment'
                 type='text'
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder='Комментарий к заказу'
-                className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
+                className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
               />
             </label>
           )}
@@ -313,19 +437,22 @@ export default function BasketView() {
             </label>
           )}
         </div>
+        {errorMsg && (
+          <div className='mt-3 text-sm text-red-600'>{errorMsg}</div>
+        )}
       </section>
 
       {/* Нижняя кнопка (UI only) */}
       <footer className='bg-white border-t border-[#E5E7EB] px-4 py-3 mt-4'>
         <button
           type='button'
-          className='w-full h-12 rounded-[12px] text-white font-semibold'
+          className='w-full h-12 rounded-[12px] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
           style={{ backgroundColor: '#FF7A00' }}
-          onClick={() => {
-            // UI-only
-          }}
+          onClick={handleSubmit}
+          disabled={!canSubmit || createOrder.isPending}
+          aria-busy={createOrder.isPending}
         >
-          Далее
+          {createOrder.isPending ? 'Отправка...' : 'Далее'}
         </button>
       </footer>
     </main>

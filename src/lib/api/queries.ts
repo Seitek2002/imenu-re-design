@@ -378,15 +378,19 @@ export function useOrderByIdV2(
 
 /** POST /api/v2/orders/ */
 export function useCreateOrderV2() {
-  return useMutation<OrderCreate, Error, OrderCreate>({
+  // Accept venueSlug to satisfy backend requirement (some environments expect venue_slug as query)
+  return useMutation<OrderCreate, Error, { body: OrderCreate; venueSlug?: string }>({
     mutationKey: ['v2-create-order'],
-    mutationFn: (payload) =>
-      fetchJSON<OrderCreate>('/api/v2/orders/', {
-        // no query params
-      }, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }),
+    mutationFn: ({ body, venueSlug }) =>
+      fetchJSON<OrderCreate>(
+        '/api/v2/orders/',
+        // Send both camelCase and snake_case to be safe across envs
+        venueSlug ? { venueSlug, venue_slug: venueSlug } : undefined,
+        {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }
+      ),
   });
 }
 
