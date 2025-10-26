@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useBasket } from '@/store/basket';
-import { useVenueQuery } from '@/store/venue';
+import React, { useEffect, useRef, useState } from 'react';
+import { useBasketTotals } from '@/lib/hooks/use-basket-totals';
+import { formatCurrency } from '@/lib/utils/pricing';
 
 import arrow from '@/assets/Basket/details-arrow.svg';
 import Image from 'next/image';
@@ -10,18 +10,10 @@ type DetailsProps = {
 };
 
 const Details = ({ orderType }: DetailsProps) => {
-  const { getSubtotal } = useBasket();
-  const { venue } = useVenueQuery();
-
   const detailsRef = useRef<HTMLDivElement | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsHeight, setDetailsHeight] = useState(0);
-  const [hydrated, setHydrated] = useState(false);
-  const subtotal = getSubtotal();
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
+  const { hydrated, subtotal, deliveryFee } = useBasketTotals(orderType);
 
   useEffect(() => {
     if (detailsOpen) {
@@ -31,28 +23,6 @@ const Details = ({ orderType }: DetailsProps) => {
       setDetailsHeight(0);
     }
   }, [detailsOpen]);
-
-  // Parse venue delivery fee and free-from threshold
-  const { deliveryFeeApplied, deliveryFeeRaw } = useMemo(() => {
-    const fee = typeof (venue as any)?.deliveryFixedFee === 'string'
-      ? parseFloat((venue as any).deliveryFixedFee)
-      : Number((venue as any)?.deliveryFixedFee ?? 0);
-
-    const freeFrom = typeof (venue as any)?.deliveryFreeFrom === 'string'
-      ? parseFloat((venue as any).deliveryFreeFrom)
-      : (venue as any)?.deliveryFreeFrom != null
-      ? Number((venue as any).deliveryFreeFrom)
-      : null;
-
-    const applied = orderType === 'delivery'
-      ? (freeFrom != null && subtotal >= freeFrom ? 0 : (Number.isFinite(fee) ? fee : 0))
-      : 0;
-
-    return {
-      deliveryFeeApplied: Number.isFinite(applied) ? applied : 0,
-      deliveryFeeRaw: Number.isFinite(fee) ? fee : 0,
-    };
-  }, [orderType, subtotal, venue]);
 
   return (
     <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
@@ -78,7 +48,7 @@ const Details = ({ orderType }: DetailsProps) => {
       >
         <div className='flex items-center justify-between px-3 py-2 text-[#80868B] border-t-[#E7E7E7] border-t pt-3'>
           <span>Сумма товаров</span>
-          <span>{hydrated ? Math.round(subtotal * 100) / 100 : 0} c</span>
+          <span>{hydrated ? formatCurrency(subtotal) : formatCurrency(0)}</span>
         </div>
         <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
           <span>Сервисный сбор</span>
@@ -87,9 +57,7 @@ const Details = ({ orderType }: DetailsProps) => {
         {orderType === 'delivery' && (
           <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
             <span>Доставка</span>
-            <span>
-              {hydrated ? Math.round(deliveryFeeApplied * 100) / 100 : 0} c
-            </span>
+            <span>{hydrated ? formatCurrency(deliveryFee) : formatCurrency(0)}</span>
           </div>
         )}
       </div>
