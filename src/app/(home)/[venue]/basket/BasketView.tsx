@@ -218,7 +218,7 @@ export default function BasketView() {
         <Items />
 
         {/* Итого с деталями (раскрытие по нажатию) */}
-        <Details />
+        <Details orderType={orderType} />
 
         {/* Контакты */}
         <Contacts

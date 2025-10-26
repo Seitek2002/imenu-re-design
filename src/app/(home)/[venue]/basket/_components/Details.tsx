@@ -1,20 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useBasket } from '@/store/basket';
+import { useVenueQuery } from '@/store/venue';
 
 import arrow from '@/assets/Basket/details-arrow.svg';
 import Image from 'next/image';
 
-const Details = () => {
-  const { getItemsArray, increment, decrement, remove, getSubtotal } =
-    useBasket();
+type DetailsProps = {
+  orderType: 'takeout' | 'dinein' | 'delivery';
+};
+
+const Details = ({ orderType }: DetailsProps) => {
+  const { getSubtotal } = useBasket();
+  const { venue } = useVenueQuery();
+
   const detailsRef = useRef<HTMLDivElement | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsHeight, setDetailsHeight] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const subtotal = getSubtotal();
-  const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
-    'dinein'
-  );
 
   useEffect(() => {
     setHydrated(true);
@@ -28,6 +31,28 @@ const Details = () => {
       setDetailsHeight(0);
     }
   }, [detailsOpen]);
+
+  // Parse venue delivery fee and free-from threshold
+  const { deliveryFeeApplied, deliveryFeeRaw } = useMemo(() => {
+    const fee = typeof (venue as any)?.deliveryFixedFee === 'string'
+      ? parseFloat((venue as any).deliveryFixedFee)
+      : Number((venue as any)?.deliveryFixedFee ?? 0);
+
+    const freeFrom = typeof (venue as any)?.deliveryFreeFrom === 'string'
+      ? parseFloat((venue as any).deliveryFreeFrom)
+      : (venue as any)?.deliveryFreeFrom != null
+      ? Number((venue as any).deliveryFreeFrom)
+      : null;
+
+    const applied = orderType === 'delivery'
+      ? (freeFrom != null && subtotal >= freeFrom ? 0 : (Number.isFinite(fee) ? fee : 0))
+      : 0;
+
+    return {
+      deliveryFeeApplied: Number.isFinite(applied) ? applied : 0,
+      deliveryFeeRaw: Number.isFinite(fee) ? fee : 0,
+    };
+  }, [orderType, subtotal, venue]);
 
   return (
     <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
@@ -62,7 +87,9 @@ const Details = () => {
         {orderType === 'delivery' && (
           <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
             <span>Доставка</span>
-            <span>0 c</span>
+            <span>
+              {hydrated ? Math.round(deliveryFeeApplied * 100) / 100 : 0} c
+            </span>
           </div>
         )}
       </div>
