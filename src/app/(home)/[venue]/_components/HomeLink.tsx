@@ -20,13 +20,16 @@ const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
 
   useEffect(() => {
     if (venue?.slug) {
-      router.prefetch(venue.slug + '/foods' + sectionId);
+      router.prefetch(`${venue.slug}/foods/${sectionId}?title=${encodeURIComponent(label ?? '')}`);
     }
-  }, [router, venue?.slug]);
+  }, [router, venue?.slug, label, sectionId]);
 
   return (
     <Link
-      href={(venue?.slug ? venue.slug : '') + '/foods/' + sectionId}
+      href={{
+        pathname: `${venue?.slug ?? ''}/foods/${sectionId}`,
+        query: { title: label ?? '' },
+      }}
       key={String(label ?? '')}
       className='text-center relative'
     >
