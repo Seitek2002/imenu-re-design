@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 import { useParams } from 'next/navigation';
@@ -10,33 +10,21 @@ import { useVenueQuery } from '@/store/venue';
 import type { OrderCreate } from '@/lib/api/types';
 import Header from './_components/Header';
 import Details from './_components/Details';
+import Items from './_components/Items';
 
-import plusIcon from '@/assets/Basket/plus.svg';
-import minusIcon from '@/assets/Basket/minus.svg';
-import trashRed from '@/assets/Basket/trash-red.svg';
+import warningIcon from '@/assets/Basket/warning.svg';
+import OrderType from './_components/OrderType';
 
 export default function BasketView() {
   // Basket store
-  const { getItemsArray, increment, decrement, remove } = useBasket();
+  const { getItemsArray } = useBasket();
   const items = getItemsArray();
-
-  // Per-item horizontal scroll refs to reveal delete action
-  const itemRefs = useRef<Record<string, HTMLLIElement | null>>({});
-  const revealDelete = (key: string) => {
-    const el = itemRefs.current[key];
-    if (!el) return;
-    try {
-      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
-    } catch {
-      el.scrollLeft = el.scrollWidth;
-    }
-  };
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
-    'dinein'
+    'takeout'
   );
-  const [showCommentInput, setShowCommentInput] = useState(false);
+
   // Hydration guard to avoid SSR/CSR mismatch with persisted store
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
@@ -231,133 +219,10 @@ export default function BasketView() {
 
       <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto'>
         {/* Тип заказа */}
-        <div className='bg-[#FAFAFA] rounded-full'>
-          <div className='grid grid-cols-2 gap-2 p-1'>
-            {[
-              { key: 'dinein', label: 'На месте' },
-              { key: 'delivery', label: 'Доставка' },
-            ].map((o) => {
-              const isActive = orderType === (o.key as typeof orderType);
-              return (
-                <button
-                  key={o.key}
-                  onClick={() => setOrderType(o.key as typeof orderType)}
-                  className={`py-2 rounded-full text-sm transition-colors ${
-                    isActive
-                      ? 'text-[#111111] bg-[#EFEEEC] font-semibold'
-                      : 'text-[#6B6B6B]'
-                  }`}
-                >
-                  {o.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <OrderType orderType={orderType} setOrderType={setOrderType} />
 
         {/* Список товаров из корзины */}
-        <div className='bg-white p-3 rounded-[12px] mt-3'>
-          {/* <h4 className='text-base font-semibold mb-3'>Товары</h4> */}
-
-          {!hydrated ? (
-            // Render the same placeholder that SSR rendered to avoid mismatch
-            <div className='text-sm text-[#80868B]'>Корзина пуста</div>
-          ) : items.length === 0 ? (
-            <div className='text-sm text-[#80868B]'>Корзина пуста</div>
-          ) : (
-            <ul className='divide-y divide-[#E7E7E7]'>
-              {items.map((it) => (
-                <li
-                  key={it.key}
-                  ref={(el) => {
-                    itemRefs.current[it.key] = el;
-                  }}
-                  className='flex items-center justify-between gap-3 overflow-x-scroll relative min-h-[72px] no-scrollbar py-3'
-                >
-                  <div className='flex items-center gap-3 min-w-[200px]'>
-                    <div className='relative w-16 h-16 rounded-[12px] overflow-hidden bg-[#F1F2F3] flex-shrink-0'>
-                      {it.image ? (
-                        <Image
-                          src={it.image}
-                          alt={it.name}
-                          fill
-                          className='object-cover'
-                          sizes='64px'
-                        />
-                      ) : (
-                        <Image
-                          src='/placeholder-dish.svg'
-                          alt='placeholder'
-                          fill
-                          className='object-cover'
-                          sizes='64px'
-                        />
-                      )}
-                    </div>
-                    <div className='min-w-0'>
-                      <div className='text-sm font-semibold text-[#21201F] truncate'>
-                        {it.name}
-                      </div>
-                      {it.modifierName && (
-                        <div className='text-xs text-[#80868B] truncate'>
-                          {it.modifierName}
-                        </div>
-                      )}
-                      <div className='text-sm text-[#21201F] mt-1'>
-                        {Math.round(it.unitPrice * it.quantity * 100) / 100} c
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className='flex items-center gap-3 bg-[#EFEEEC] rounded-full'>
-                    <button
-                      type='button'
-                      aria-label='minus'
-                      className='w-8 h-8 flex items-center justify-center'
-                      onClick={() => {
-                        if (it.quantity <= 1) {
-                          revealDelete(it.key);
-                        } else {
-                          decrement(it.productId, it.modifierId ?? null, 1);
-                        }
-                      }}
-                    >
-                      <Image src={minusIcon} alt='minusIcon' />
-                    </button>
-                    <span className='w-6 text-center font-semibold'>
-                      {it.quantity}
-                    </span>
-                    <button
-                      type='button'
-                      aria-label='plus'
-                      className='w-8 h-8 flex items-center justify-center'
-                      onClick={() =>
-                        increment(it.productId, it.modifierId ?? null, 1)
-                      }
-                    >
-                      <Image src={plusIcon} alt='plusIcon' />
-                    </button>
-                  </div>
-
-                  <button
-                    type='button'
-                    aria-label='Удалить товар'
-                    onClick={() => remove(it.productId, it.modifierId ?? null)}
-                    className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px]'
-                  >
-                    <Image
-                      width={24}
-                      height={24}
-                      src={trashRed}
-                      alt='trash-icon'
-                      className='!max-w-[24px]'
-                    />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <Items />
 
         {/* Итого с деталями (раскрытие по нажатию) */}
         <Details />
@@ -366,31 +231,13 @@ export default function BasketView() {
         <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
           <div className='flex justify-between items-center mb-3'>
             <h4 className='text-base font-semibold'>Ваши данные к заказу</h4>
-            <svg
-              width='20'
-              height='20'
-              viewBox='0 0 20 20'
-              fill='none'
-              xmlns='http://www.w3.org/2000/svg'
+            <Image
+              src={warningIcon}
+              alt='warningIcon'
               style={{
                 display: !isPhoneValid ? 'inline' : 'none',
               }}
-            >
-              <g clipPath='url(#clip0_55_24324)'>
-                <path
-                  d='M10.0001 13.3334V10M10.0001 6.66669H10.0084M18.3334 10C18.3334 14.6024 14.6025 18.3334 10.0001 18.3334C5.39771 18.3334 1.66675 14.6024 1.66675 10C1.66675 5.39765 5.39771 1.66669 10.0001 1.66669C14.6025 1.66669 18.3334 5.39765 18.3334 10Z'
-                  stroke='#F53527'
-                  strokeWidth='1.5'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                />
-              </g>
-              <defs>
-                <clipPath id='clip0_55_24324'>
-                  <rect width='20' height='20' fill='white' />
-                </clipPath>
-              </defs>
-            </svg>
+            />
           </div>
           <label htmlFor='phone' className='block space-y-1 mb-3'>
             <input
