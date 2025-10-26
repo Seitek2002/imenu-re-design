@@ -114,7 +114,7 @@ const Footer: FC = () => {
             className='block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold'
             style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
           >
-            Перейти в корзину · {Math.round(subtotal * 100) / 100} c
+            Перейти в корзину · {Math.round(total * 100) / 100} c
           </Link>
         </div>
         {tableId && (
