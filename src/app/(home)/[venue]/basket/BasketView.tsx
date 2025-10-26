@@ -9,13 +9,13 @@ import { useCreateOrderV2 } from '@/lib/api/queries';
 import { useVenueQuery } from '@/store/venue';
 import type { OrderCreate } from '@/lib/api/types';
 import Header from './_components/Header';
+import Details from './_components/Details';
 
 export default function BasketView() {
   // Basket store
-  const { getItemsArray, increment, decrement, remove, getSubtotal } =
+  const { getItemsArray, increment, decrement, remove } =
     useBasket();
   const items = getItemsArray();
-  const subtotal = getSubtotal();
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
@@ -23,7 +23,6 @@ export default function BasketView() {
   );
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   // Hydration guard to avoid SSR/CSR mismatch with persisted store
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
@@ -215,27 +214,6 @@ export default function BasketView() {
     }
   }
 
-  // Smooth expand/collapse for "Итого (детали)" block
-  const detailsRef = useRef<HTMLDivElement | null>(null);
-  const [detailsHeight, setDetailsHeight] = useState(0);
-  useEffect(() => {
-    if (detailsOpen) {
-      const h = detailsRef.current?.scrollHeight ?? 0;
-      setDetailsHeight(h);
-    } else {
-      setDetailsHeight(0);
-    }
-  }, [
-    detailsOpen,
-    phone,
-    address,
-    comment,
-    promoCode,
-    orderType,
-    subtotal,
-    items.length,
-  ]);
-
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-[100svh] pb-20'>
       {/* Local header */}
@@ -350,50 +328,7 @@ export default function BasketView() {
         </div>
 
         {/* Итого с деталями (раскрытие по нажатию) */}
-        <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
-          <button
-            type='button'
-            onClick={() => setDetailsOpen((v) => !v)}
-            className='w-full flex items-center justify-between text-[#80868B]'
-          >
-            <span className='text-sm'>Детали заказа</span>
-            <span
-              className={`inline-block transition-transform duration-300 ${
-                detailsOpen ? 'rotate-180' : 'rotate-0'
-              }`}
-            >
-              ▲
-            </span>
-          </button>
-
-          <div
-            ref={detailsRef}
-            style={{ height: `${detailsHeight}px` }}
-            className='overflow-hidden transition-[height] duration-300 ease-in-out divide-y mt-2 rounded-[8px] border-[#F3F3F3]'
-          >
-            <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
-              <span>Сумма товаров</span>
-              <span>{hydrated ? Math.round(subtotal * 100) / 100 : 0} c</span>
-            </div>
-            <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
-              <span>Сервисный сбор</span>
-              <span>0%</span>
-            </div>
-            {orderType === 'delivery' && (
-              <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
-                <span>Доставка</span>
-                <span>0 c</span>
-              </div>
-            )}
-          </div>
-
-          <div className='flex items-center justify-between px-1 pt-3'>
-            <span className='text-sm text-[#80868B]'>Итого</span>
-            <span className='text-base font-semibold'>
-              {hydrated ? Math.round(subtotal * 100) / 100 : 0} c
-            </span>
-          </div>
-        </div>
+        <Details />
 
         {/* Контакты */}
         <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
