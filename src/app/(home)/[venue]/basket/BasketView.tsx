@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 import { useParams } from 'next/navigation';
@@ -11,10 +11,12 @@ import type { OrderCreate } from '@/lib/api/types';
 import Header from './_components/Header';
 import Details from './_components/Details';
 
+import plusIcon from '@/assets/Basket/plus.svg';
+import minusIcon from '@/assets/Basket/minus.svg';
+
 export default function BasketView() {
   // Basket store
-  const { getItemsArray, increment, decrement, remove } =
-    useBasket();
+  const { getItemsArray, increment, decrement, remove } = useBasket();
   const items = getItemsArray();
 
   // UI state (local only, no requests)
@@ -22,7 +24,6 @@ export default function BasketView() {
     'dinein'
   );
   const [showCommentInput, setShowCommentInput] = useState(false);
-  const [showPromoInput, setShowPromoInput] = useState(false);
   // Hydration guard to avoid SSR/CSR mismatch with persisted store
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
@@ -32,8 +33,6 @@ export default function BasketView() {
   // Inputs (no validation logic per request)
   const [phone, setPhone] = useState('+996');
   const [address, setAddress] = useState('');
-  const [comment, setComment] = useState('');
-  const [promoCode, setPromoCode] = useState('');
 
   // Venue/table context and order mutation
   const { venue, tableId } = useVenueQuery();
@@ -193,13 +192,11 @@ export default function BasketView() {
 
       const payload: OrderCreate = {
         phone: phone.trim(),
-        comment: comment ? comment.trim() : null,
         serviceMode,
         address: orderType === 'delivery' ? address.trim() : null,
         spot: spotId,
         table: tableIdNum,
         orderProducts,
-        code: promoCode ? promoCode.trim() : null,
         isTgBot: false,
         useBonus: false,
       };
@@ -305,7 +302,7 @@ export default function BasketView() {
                         decrement(it.productId, it.modifierId ?? null, 1)
                       }
                     >
-                      −
+                      <Image src={plusIcon} alt='plusIcon' />
                     </button>
                     <span className='w-6 text-center font-semibold'>
                       {it.quantity}
@@ -318,7 +315,7 @@ export default function BasketView() {
                         increment(it.productId, it.modifierId ?? null, 1)
                       }
                     >
-                      +
+                      <Image src={minusIcon} alt='minusIcon' />
                     </button>
                   </div>
                 </li>
@@ -390,53 +387,6 @@ export default function BasketView() {
                       ? '1px solid red'
                       : undefined,
                 }}
-              />
-            </label>
-          )}
-
-          {/* Комментарий: скрыт по умолчанию, показывается по нажатию */}
-          {!showCommentInput ? (
-            <button
-              type='button'
-              className='text-[12px] text-[#FF7A00]'
-              onClick={() => setShowCommentInput(true)}
-            >
-              + добавить комментарий
-            </button>
-          ) : (
-            <label htmlFor='comment' className='block space-y-1'>
-              <input
-                id='comment'
-                type='text'
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder='Комментарий к заказу'
-                className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
-              />
-            </label>
-          )}
-        </div>
-
-        {/* Промокод: скрыт по умолчанию, показывается по нажатию */}
-        <div className='bg-white p-3 rounded-[12px] mt-3'>
-          {!showPromoInput ? (
-            <button
-              type='button'
-              className='text-[12px] text-[#FF7A00]'
-              onClick={() => setShowPromoInput(true)}
-            >
-              + указать промокод
-            </button>
-          ) : (
-            <label htmlFor='promo' className='block space-y-1'>
-              <span className='text-[14px]'>Промокод</span>
-              <input
-                id='promo'
-                type='text'
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                placeholder='Введите промокод'
-                className='w-full h-11 rounded-xl border border-[#E1E2E5] px-3 outline-none focus:border-[#FF7A00] bg-white'
               />
             </label>
           )}
