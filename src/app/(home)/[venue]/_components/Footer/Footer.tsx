@@ -76,8 +76,8 @@ const Footer: FC = () => {
         {tableId && (
           <button
             aria-label='Позвать официанта'
-            className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl mb-1 overflow-hidden transition-all duration-1000 ${
-              collapsed ? 'py-5.5 px-5 mr-2' : 'py-4 px-11 gap-2'
+            className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl overflow-hidden transition-all duration-1000 ${
+              collapsed ? 'p-4 mr-2' : 'py-4 px-11 gap-2'
             }`}
           >
             <Image src={bellIcon} alt='bell icon' />
