@@ -10,6 +10,7 @@ import { useBasket } from '@/store/basket';
 
 import bellIcon from '@/assets/Footer/bell.svg';
 import { useVenueQuery } from '@/store/venue';
+import { useCallWaiterV2 } from '@/lib/api/queries';
 
 const Footer: FC = () => {
   const pathname = usePathname();
@@ -19,6 +20,23 @@ const Footer: FC = () => {
   const collapsed = !isHome;
 
   const { tableId, tableNum } = useVenueQuery();
+  const callWaiter = useCallWaiterV2();
+
+  async function handleCallWaiter() {
+    try {
+      if (!tableId) return;
+      const id =
+        typeof tableId === 'string' ? Number.parseInt(tableId, 10) : tableId;
+      if (!Number.isFinite(id as number)) {
+        console.warn('Invalid tableId for call-waiter:', tableId);
+        return;
+      }
+      const res = await callWaiter.mutateAsync({ tableId: id as number });
+      console.log('call-waiter:v2:success', res);
+    } catch (e) {
+      console.error('call-waiter:v2:error', e);
+    }
+  }
 
   const isBasket = pathname === PAGES.BASKET(venueRoot);
 
@@ -76,9 +94,12 @@ const Footer: FC = () => {
         {tableId && (
           <button
             aria-label='Позвать официанта'
+            onClick={handleCallWaiter}
+            disabled={callWaiter.isPending}
+            aria-busy={callWaiter.isPending}
             className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl overflow-hidden transition-all duration-1000 ${
               collapsed ? 'p-4 mr-2' : 'py-4 px-11 gap-2'
-            }`}
+            } ${callWaiter.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             <Image src={bellIcon} alt='bell icon' />
             <span

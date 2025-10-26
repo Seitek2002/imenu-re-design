@@ -290,7 +290,7 @@ export function useVenueTable(
   });
 }
 
-/** GET /api/v2/venues/{slug}/table/{tableId}/ */
+/** GET /api/v2/venues/{slug}/?tableId=... */
 export function useVenueTableV2(
   params: { slug: string; tableId: string | number },
   options?: Omit<UseQueryOptions<Venue>, 'queryKey' | 'queryFn'>
@@ -299,11 +299,9 @@ export function useVenueTableV2(
   return useQuery<Venue>({
     queryKey: qk.v2VenueTable(slug, tableId),
     queryFn: () =>
-      fetchJSON<Venue>(
-        `/api/v2/venues/${encodeURIComponent(slug)}/table/${encodeURIComponent(
-          String(tableId)
-        )}/`
-      ),
+      fetchJSON<Venue>(`/api/v2/venues/${encodeURIComponent(slug)}/`, {
+        tableId: String(tableId),
+      }),
     enabled: (options?.enabled ?? true) && !!slug && !!tableId,
     ...options,
   });
