@@ -13,13 +13,13 @@ const Widgets = () => {
             <Image src={widget1} alt='widget 1' />
         </div>
       </div>
-      <div className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
+      {/* <div className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
         <h3 className='text-[#0404138C] text-nowrap'>Бонусные баллы</h3>
         <div className='flex items-center mt-2.5'>
             <Image src={widget2} alt='widget 2' width={24} />
             <span className='text-2xl font-extrabold'>2 450</span>
         </div>
-      </div>
+      </div> */}
       <div className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
         <h3 className='text-[#0404138C] text-nowrap'>График работы</h3>
         <div className='h-[50px]'>

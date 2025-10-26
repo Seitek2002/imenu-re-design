@@ -68,33 +68,6 @@ const MainHeader = () => {
     }
   }, [venueTable, setTableInfo]);
 
-  // Wi‑Fi QR modal state and helpers
-  const [wifiOpen, setWifiOpen] = useState(false);
-  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
-
-  // Example credentials (replace with real ones or fetch from API/store when available)
-  const ssid = 'Oriental';
-  const pass = '123456789';
-  const auth = 'WPA'; // 'WPA', 'WEP' or '' for open network
-
-  // WIFI QR content and URL (Google Charts)
-  const wifiString = `WIFI:T:${auth};S:${ssid};P:${pass};;`;
-  const qrUrl =
-    'https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=' +
-    encodeURIComponent(wifiString) +
-    '&choe=UTF-8';
-
-  async function handleCopyWifi() {
-    try {
-      await navigator.clipboard.writeText(wifiString);
-      setCopyState('copied');
-    } catch {
-      setCopyState('error');
-    } finally {
-      setTimeout(() => setCopyState('idle'), 1500);
-    }
-  }
-
   return (
     <header className='header-main sticky top-0 z-10 flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white'>
       <div className='header-left flex items-center'>
@@ -113,77 +86,13 @@ const MainHeader = () => {
       </div>
       <div className='header-btns flex gap-[4px]'>
         <div className='header-icon'>
-          <button
-            type='button'
-            aria-label='Wi‑Fi QR'
-            onClick={() => setWifiOpen(true)}
-            className='cursor-pointer'
-          >
-            <Image src={wifiIcon} alt='wifi icon' />
-          </button>
+          <Image src={wifiIcon} alt='Wi‑Fi QR' />
         </div>
         {/* <div className='header-icon'>
           <Image src={searchIcon} alt='search icon' />
         </div> */}
         <LanguageDropdown />
       </div>
-
-      {wifiOpen && (
-        <div
-          role='dialog'
-          aria-modal='true'
-          className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'
-        >
-          <div className='bg-white rounded-2xl p-4 w-[90%] max-w-sm shadow-xl'>
-            <div className='text-base font-semibold mb-3'>Wi‑Fi QR</div>
-
-            <div className='flex justify-center'>
-              <Image
-                src={qrUrl}
-                alt='Wi‑Fi QR'
-                className='w-[240px] h-[240px]'
-              />
-            </div>
-
-            <div className='mt-3 break-all text-xs text-[#6B6B6B]'>
-              {wifiString}
-            </div>
-
-            <div className='mt-4 flex items-center justify-between gap-2'>
-              <button
-                type='button'
-                onClick={handleCopyWifi}
-                className='h-10 px-4 rounded-[10px] text-white font-semibold'
-                style={{ backgroundColor: '#FF7A00' }}
-              >
-                {copyState === 'copied'
-                  ? 'Скопировано'
-                  : copyState === 'error'
-                  ? 'Ошибка копирования'
-                  : 'Копировать'}
-              </button>
-              <a
-                href={qrUrl}
-                download={`wifi-${ssid}.png`}
-                target='_blank'
-                rel='noreferrer'
-                className='h-10 px-4 rounded-[10px] text-white font-semibold flex items-center justify-center'
-                style={{ backgroundColor: '#111111' }}
-              >
-                Скачать
-              </a>
-              <button
-                type='button'
-                onClick={() => setWifiOpen(false)}
-                className='h-10 px-4 rounded-[10px] text-white font-semibold'
-                style={{ backgroundColor: '#FF7A00' }}
-              >
-                Ок
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 };
