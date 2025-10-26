@@ -93,11 +93,6 @@ const MainHeader = () => {
           <span className='font-cruinn-tw font-bold text-[10px]'>
             Powered by iMenu.kg
           </span>
-          {tableNum ? (
-            <span className='font-cruinn-tw font-bold text-[10px]'>
-              Стол № {tableNum}
-            </span>
-          ) : null}
         </div>
       </div>
       <div className='header-btns flex gap-[4px]'>
