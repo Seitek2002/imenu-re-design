@@ -2,16 +2,15 @@
 
 import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter, useParams } from 'next/navigation';
-import arrowIcon from '@/assets/Header/arrow.svg';
+
+import { useParams } from 'next/navigation';
 import { useBasket } from '@/store/basket';
 import { useCreateOrderV2 } from '@/lib/api/queries';
 import { useVenueQuery } from '@/store/venue';
 import type { OrderCreate } from '@/lib/api/types';
+import Header from './_components/Header';
 
 export default function BasketView() {
-  const router = useRouter();
-
   // Basket store
   const { getItemsArray, increment, decrement, remove, getSubtotal } =
     useBasket();
@@ -135,7 +134,8 @@ export default function BasketView() {
 
   // Basic validation for submit enabling
   const isPhoneValid = phone.trim().length >= 5;
-  const isAddressValid = orderType === 'delivery' ? address.trim().length > 0 : true;
+  const isAddressValid =
+    orderType === 'delivery' ? address.trim().length > 0 : true;
   const canSubmit =
     hydrated &&
     !!venueSlug &&
@@ -239,29 +239,7 @@ export default function BasketView() {
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-[100svh] pb-20'>
       {/* Local header */}
-      <header className='sticky top-0 z-20 bg-white rounded-b-4xl'>
-        <div className='flex items-center justify-between px-5 pt-2.5 pb-4'>
-          <Image
-            src={arrowIcon}
-            width={24}
-            height={24}
-            alt='Назад'
-            className='cursor-pointer'
-            onClick={() => router.back()}
-          />
-          <h2 className='text-2xl font-semibold'>Корзина</h2>
-          {/* Placeholder for "очистить корзину" (только UI) */}
-          <button
-            type='button'
-            className='text-[#FF7A00] text-sm font-medium'
-            onClick={() => {
-              // UI-only: нет действий
-            }}
-          >
-            Очистить
-          </button>
-        </div>
-      </header>
+      <Header />
 
       <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl pb-24 lg:max-w-[1140px] lg:mx-auto'>
         {/* Тип заказа */}
@@ -420,9 +398,7 @@ export default function BasketView() {
         {/* Контакты */}
         <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
           <div className='flex justify-between items-center mb-3'>
-            <h4 className='text-base font-semibold'>
-              Ваши данные к заказу
-            </h4>
+            <h4 className='text-base font-semibold'>Ваши данные к заказу</h4>
             <svg
               width='20'
               height='20'
@@ -430,16 +406,16 @@ export default function BasketView() {
               fill='none'
               xmlns='http://www.w3.org/2000/svg'
               style={{
-                display: !isPhoneValid ? 'inline' : 'none'
+                display: !isPhoneValid ? 'inline' : 'none',
               }}
             >
-              <g clip-path='url(#clip0_55_24324)'>
+              <g clipPath='url(#clip0_55_24324)'>
                 <path
                   d='M10.0001 13.3334V10M10.0001 6.66669H10.0084M18.3334 10C18.3334 14.6024 14.6025 18.3334 10.0001 18.3334C5.39771 18.3334 1.66675 14.6024 1.66675 10C1.66675 5.39765 5.39771 1.66669 10.0001 1.66669C14.6025 1.66669 18.3334 5.39765 18.3334 10Z'
                   stroke='#F53527'
-                  stroke-width='1.5'
-                  stroke-linecap='round'
-                  stroke-linejoin='round'
+                  strokeWidth='1.5'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
                 />
               </g>
               <defs>
@@ -458,7 +434,7 @@ export default function BasketView() {
               placeholder='+996'
               className='w-full h-11 rounded-xl p-4 outline-none border border-[transparent] bg-[#F5F5F5]'
               style={{
-                borderColor: isPhoneValid ? '' : 'red'
+                borderColor: isPhoneValid ? '' : 'red',
               }}
             />
           </label>
@@ -474,7 +450,10 @@ export default function BasketView() {
                 placeholder='Укажите адрес'
                 className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
                 style={{
-                  border: orderType === 'delivery' && !isAddressValid ? '1px solid red' : undefined
+                  border:
+                    orderType === 'delivery' && !isAddressValid
+                      ? '1px solid red'
+                      : undefined,
                 }}
               />
             </label>
