@@ -11,6 +11,7 @@ import { useBasket } from '@/store/basket';
 import bellIcon from '@/assets/Footer/bell.svg';
 import { useVenueQuery } from '@/store/venue';
 import { useCallWaiterV2 } from '@/lib/api/queries';
+import { useCheckout } from '@/store/checkout';
 
 const Footer: FC = () => {
   const pathname = usePathname();
@@ -19,7 +20,7 @@ const Footer: FC = () => {
   const isHome = pathname === venueRoot;
   const collapsed = !isHome;
 
-  const { tableId, tableNum } = useVenueQuery();
+  const { venue, tableId, tableNum } = useVenueQuery();
   const callWaiter = useCallWaiterV2();
 
   async function handleCallWaiter() {
@@ -43,6 +44,7 @@ const Footer: FC = () => {
   // pages allowed for Next button (/menu and /foods)
   const isMenuPage = pathname.startsWith(`${venueRoot}/menu`);
   const isFoodsPage = pathname.startsWith(`${venueRoot}/foods`);
+  const isBasketPage = pathname.startsWith(`${venueRoot}/basket`);
   const allowNext = isMenuPage || isFoodsPage;
 
   // basket/hydration
@@ -65,6 +67,30 @@ const Footer: FC = () => {
       ),
     [itemsMap]
   );
+
+  // Order type shared from checkout store
+  const orderType = useCheckout((s) => s.orderType);
+
+  // Delivery fee calculation using venue data when delivery mode
+  const deliveryFee = useMemo(() => {
+    const fee =
+      typeof (venue as any)?.deliveryFixedFee === 'string'
+        ? parseFloat((venue as any).deliveryFixedFee)
+        : Number((venue as any)?.deliveryFixedFee ?? 0);
+
+    const freeFrom =
+      typeof (venue as any)?.deliveryFreeFrom === 'string'
+        ? parseFloat((venue as any).deliveryFreeFrom)
+        : (venue as any)?.deliveryFreeFrom != null
+        ? Number((venue as any).deliveryFreeFrom)
+        : null;
+
+    if (orderType !== 'delivery') return 0;
+    if (freeFrom != null && subtotal >= freeFrom) return 0;
+    return Number.isFinite(fee) ? fee : 0;
+  }, [orderType, subtotal, venue]);
+
+  const total = useMemo(() => subtotal + deliveryFee, [subtotal, deliveryFee]);
 
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
@@ -112,6 +138,19 @@ const Footer: FC = () => {
               Позвать официанта к <b>{tableNum ?? tableId} столику</b>
             </span>
           </button>
+        )}
+        {isBasketPage && (
+          <div className='w-full flex items-center gap-3 p-4 bg-white rounded-t-2xl'>
+            <div className='total-price'>
+              <div className='font-semibold text-xl'>
+                {Math.round(total * 100) / 100} с
+              </div>
+              <div className='text-[#939393] text-xs'>Итого</div>
+            </div>
+            <button className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'>
+              К оформлению
+            </button>
+          </div>
         )}
       </div>
       <Nav />

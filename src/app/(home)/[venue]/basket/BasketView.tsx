@@ -7,6 +7,7 @@ import { useBasket } from '@/store/basket';
 import { useCreateOrderV2 } from '@/lib/api/queries';
 import { useVenueQuery } from '@/store/venue';
 import type { OrderCreate } from '@/lib/api/types';
+import { useCheckout } from '@/store/checkout';
 
 import { Contacts, Details, Header, Items, OrderType } from './_components';
 
@@ -18,6 +19,10 @@ export default function BasketView() {
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
     'takeout'
   );
+  const setCheckoutOrderType = useCheckout((s) => s.setOrderType);
+  useEffect(() => {
+    setCheckoutOrderType(orderType);
+  }, [orderType, setCheckoutOrderType]);
 
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
