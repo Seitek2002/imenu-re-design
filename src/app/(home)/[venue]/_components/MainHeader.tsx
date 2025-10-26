@@ -85,12 +85,12 @@ const MainHeader = () => {
         </div>
       </div>
       <div className='header-btns flex gap-[4px]'>
-        <div className='header-icon'>
+        {/* <div className='header-icon'>
           <Image src={wifiIcon} alt='wifi icon' />
         </div>
         <div className='header-icon'>
           <Image src={searchIcon} alt='search icon' />
-        </div>
+        </div> */}
         <LanguageDropdown />
       </div>
     </header>
