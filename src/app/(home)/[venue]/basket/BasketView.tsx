@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import arrowIcon from '@/assets/Header/arrow.svg';
@@ -20,7 +20,7 @@ export default function BasketView() {
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
-    'takeout'
+    'dinein'
   );
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
@@ -134,13 +134,15 @@ export default function BasketView() {
     orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
 
   // Basic validation for submit enabling
+  const isPhoneValid = phone.trim().length >= 5;
+  const isAddressValid = orderType === 'delivery' ? address.trim().length > 0 : true;
   const canSubmit =
     hydrated &&
     !!venueSlug &&
     items.length > 0 &&
-    phone.trim().length >= 5 &&
-    (orderType !== 'dinein' || !!tableId) &&
-    (orderType !== 'delivery' || address.trim().length > 0);
+    isPhoneValid &&
+    isAddressValid &&
+    (orderType !== 'dinein' || !!tableId);
 
   async function handleSubmit() {
     try {
@@ -148,6 +150,23 @@ export default function BasketView() {
 
       if (!venueSlug) {
         setErrorMsg('Не найден venue_slug');
+        return;
+      }
+
+      // Pre-submit validation per mode:
+      // - Always require phone
+      // - Additionally require address in "delivery" mode
+      const phoneVal = phone.trim();
+      if (phoneVal.length < 5) {
+        setModal({ open: true, message: 'Укажите номер телефона' });
+        return;
+      }
+      if (orderType === 'delivery' && !address.trim()) {
+        setModal({ open: true, message: 'Укажите адрес доставки' });
+        return;
+      }
+      if (orderType === 'dinein' && !tableId) {
+        setModal({ open: true, message: 'Не указан номер стола' });
         return;
       }
 
@@ -184,7 +203,6 @@ export default function BasketView() {
         code: promoCode ? promoCode.trim() : null,
         isTgBot: false,
         useBonus: false,
-        venue_slug: localStorage.getItem('venueRoot')?.replace('/', '') || '',
       };
 
       const res = await createOrder.mutateAsync({ body: payload, venueSlug });
@@ -250,7 +268,7 @@ export default function BasketView() {
         <div className='bg-[#FAFAFA] rounded-full'>
           <div className='grid grid-cols-2 gap-2 p-1'>
             {[
-              { key: 'takeout', label: 'На вынос' },
+              { key: 'dinein', label: 'На месте' },
               { key: 'delivery', label: 'Доставка' },
             ].map((o) => {
               const isActive = orderType === (o.key as typeof orderType);
@@ -412,7 +430,7 @@ export default function BasketView() {
               fill='none'
               xmlns='http://www.w3.org/2000/svg'
               style={{
-                display: phone.replace('+996', '') ? 'inline' : 'none'
+                display: !isPhoneValid ? 'inline' : 'none'
               }}
             >
               <g clip-path='url(#clip0_55_24324)'>
@@ -440,7 +458,7 @@ export default function BasketView() {
               placeholder='+996'
               className='w-full h-11 rounded-xl p-4 outline-none border border-[transparent] bg-[#F5F5F5]'
               style={{
-                borderColor: phone.replace('+996', '') ? '' : 'red'
+                borderColor: isPhoneValid ? '' : 'red'
               }}
             />
           </label>
@@ -455,6 +473,9 @@ export default function BasketView() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder='Укажите адрес'
                 className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
+                style={{
+                  border: orderType === 'delivery' && !isAddressValid ? '1px solid red' : undefined
+                }}
               />
             </label>
           )}
@@ -515,6 +536,7 @@ export default function BasketView() {
           className='w-full h-12 rounded-[12px] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
           style={{ backgroundColor: '#FF7A00' }}
           onClick={handleSubmit}
+          disabled={!canSubmit || createOrder.isPending}
           aria-busy={createOrder.isPending}
         >
           {createOrder.isPending ? 'Отправка...' : 'Далее'}
