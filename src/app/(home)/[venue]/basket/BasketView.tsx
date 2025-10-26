@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import arrowIcon from '@/assets/Header/arrow.svg';
@@ -166,8 +166,7 @@ export default function BasketView() {
         tableIdNum = Number.isFinite(n as number) ? (n as number) : null;
       }
 
-      const defaultSpotId =
-        (venue as any)?.defaultDeliverySpot ?? null;
+      const defaultSpotId = (venue as any)?.defaultDeliverySpot ?? null;
       const firstSpotId =
         Array.isArray((venue as any)?.spots) && (venue as any).spots.length > 0
           ? (venue as any).spots[0].id
@@ -185,7 +184,7 @@ export default function BasketView() {
         code: promoCode ? promoCode.trim() : null,
         isTgBot: false,
         useBonus: false,
-        venue_slug: localStorage.getItem('venueRoot')?.replace('/', '') || ''
+        venue_slug: localStorage.getItem('venueRoot')?.replace('/', '') || '',
       };
 
       const res = await createOrder.mutateAsync({ body: payload, venueSlug });
@@ -251,7 +250,7 @@ export default function BasketView() {
         <div className='bg-[#FAFAFA] rounded-full'>
           <div className='grid grid-cols-2 gap-2 p-1'>
             {[
-              { key: 'dinein', label: 'На месте' },
+              { key: 'takeout', label: 'На вынос' },
               { key: 'delivery', label: 'Доставка' },
             ].map((o) => {
               const isActive = orderType === (o.key as typeof orderType);
@@ -327,7 +326,7 @@ export default function BasketView() {
                     <button
                       type='button'
                       aria-label='minus'
-                      className='w-8 h-8 rounded-full bg-[#F1F2F3] flex items-center justify-center'
+                      className='w-8 h-8 flex items-center justify-center'
                       onClick={() =>
                         decrement(it.productId, it.modifierId ?? null, 1)
                       }
@@ -340,7 +339,7 @@ export default function BasketView() {
                     <button
                       type='button'
                       aria-label='plus'
-                      className='w-8 h-8 rounded-full bg-[#F1F2F3] flex items-center justify-center'
+                      className='w-8 h-8 flex items-center justify-center'
                       onClick={() =>
                         increment(it.productId, it.modifierId ?? null, 1)
                       }
@@ -402,7 +401,36 @@ export default function BasketView() {
 
         {/* Контакты */}
         <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
-          <h4 className='text-base font-semibold mb-3'>Ваши данные к заказу</h4>
+          <div className='flex justify-between items-center mb-3'>
+            <h4 className='text-base font-semibold'>
+              Ваши данные к заказу
+            </h4>
+            <svg
+              width='20'
+              height='20'
+              viewBox='0 0 20 20'
+              fill='none'
+              xmlns='http://www.w3.org/2000/svg'
+              style={{
+                display: phone.replace('+996', '') ? 'inline' : 'none'
+              }}
+            >
+              <g clip-path='url(#clip0_55_24324)'>
+                <path
+                  d='M10.0001 13.3334V10M10.0001 6.66669H10.0084M18.3334 10C18.3334 14.6024 14.6025 18.3334 10.0001 18.3334C5.39771 18.3334 1.66675 14.6024 1.66675 10C1.66675 5.39765 5.39771 1.66669 10.0001 1.66669C14.6025 1.66669 18.3334 5.39765 18.3334 10Z'
+                  stroke='#F53527'
+                  stroke-width='1.5'
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                />
+              </g>
+              <defs>
+                <clipPath id='clip0_55_24324'>
+                  <rect width='20' height='20' fill='white' />
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
           <label htmlFor='phone' className='block space-y-1 mb-3'>
             <input
               id='phone'
@@ -410,7 +438,10 @@ export default function BasketView() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder='+996'
-              className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
+              className='w-full h-11 rounded-xl p-4 outline-none border border-[transparent] bg-[#F5F5F5]'
+              style={{
+                borderColor: phone.replace('+996', '') ? '' : 'red'
+              }}
             />
           </label>
 
@@ -484,12 +515,12 @@ export default function BasketView() {
           className='w-full h-12 rounded-[12px] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
           style={{ backgroundColor: '#FF7A00' }}
           onClick={handleSubmit}
-          disabled={!canSubmit || createOrder.isPending}
           aria-busy={createOrder.isPending}
         >
           {createOrder.isPending ? 'Отправка...' : 'Далее'}
         </button>
       </footer>
+
       {modal.open && (
         <div
           role='dialog'
