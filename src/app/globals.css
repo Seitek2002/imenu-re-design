@@ -9,6 +9,17 @@ html {
   --font-cruinn-tw: 'Cruinn';
 }
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* для IE и Edge */
+    scrollbar-width: none;     /* для Firefox */
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

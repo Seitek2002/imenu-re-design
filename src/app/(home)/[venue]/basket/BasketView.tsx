@@ -13,6 +13,7 @@ import Details from './_components/Details';
 
 import plusIcon from '@/assets/Basket/plus.svg';
 import minusIcon from '@/assets/Basket/minus.svg';
+import trashRed from '@/assets/Basket/trash-red.svg';
 
 export default function BasketView() {
   // Basket store
@@ -216,7 +217,7 @@ export default function BasketView() {
       {/* Local header */}
       <Header />
 
-      <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl pb-24 lg:max-w-[1140px] lg:mx-auto'>
+      <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto'>
         {/* Тип заказа */}
         <div className='bg-[#FAFAFA] rounded-full'>
           <div className='grid grid-cols-2 gap-2 p-1'>
@@ -252,13 +253,13 @@ export default function BasketView() {
           ) : items.length === 0 ? (
             <div className='text-sm text-[#80868B]'>Корзина пуста</div>
           ) : (
-            <ul className='space-y-3'>
+            <ul className='divide-y divide-[#E7E7E7]'>
               {items.map((it) => (
                 <li
                   key={it.key}
-                  className='flex items-center justify-between gap-3'
+                  className='flex items-center justify-between gap-3 overflow-x-scroll relative min-h-[72px] no-scrollbar py-3'
                 >
-                  <div className='flex items-center gap-3 min-w-0'>
+                  <div className='flex items-center gap-3 min-w-[200px]'>
                     <div className='relative w-16 h-16 rounded-[12px] overflow-hidden bg-[#F1F2F3] flex-shrink-0'>
                       {it.image ? (
                         <Image
@@ -302,7 +303,7 @@ export default function BasketView() {
                         decrement(it.productId, it.modifierId ?? null, 1)
                       }
                     >
-                      <Image src={plusIcon} alt='plusIcon' />
+                      <Image src={minusIcon} alt='minusIcon' />
                     </button>
                     <span className='w-6 text-center font-semibold'>
                       {it.quantity}
@@ -315,8 +316,18 @@ export default function BasketView() {
                         increment(it.productId, it.modifierId ?? null, 1)
                       }
                     >
-                      <Image src={minusIcon} alt='minusIcon' />
+                      <Image src={plusIcon} alt='plusIcon' />
                     </button>
+                  </div>
+
+                  <div className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px]'>
+                    <Image
+                      width={24}
+                      height={24}
+                      src={trashRed}
+                      alt='trash-icon'
+                      className='!max-w-[24px]'
+                    />
                   </div>
                 </li>
               ))}
