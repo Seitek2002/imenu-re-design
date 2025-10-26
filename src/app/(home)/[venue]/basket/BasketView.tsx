@@ -1,22 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
-
 import { useParams } from 'next/navigation';
+
 import { useBasket } from '@/store/basket';
 import { useCreateOrderV2 } from '@/lib/api/queries';
 import { useVenueQuery } from '@/store/venue';
 import type { OrderCreate } from '@/lib/api/types';
-import Header from './_components/Header';
-import Details from './_components/Details';
-import Items from './_components/Items';
 
-import warningIcon from '@/assets/Basket/warning.svg';
-import OrderType from './_components/OrderType';
+import { Contacts, Details, Header, Items, OrderType } from './_components';
 
 export default function BasketView() {
-  // Basket store
   const { getItemsArray } = useBasket();
   const items = getItemsArray();
 
@@ -25,7 +19,6 @@ export default function BasketView() {
     'takeout'
   );
 
-  // Hydration guard to avoid SSR/CSR mismatch with persisted store
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     setHydrated(true);
@@ -228,51 +221,13 @@ export default function BasketView() {
         <Details />
 
         {/* Контакты */}
-        <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
-          <div className='flex justify-between items-center mb-3'>
-            <h4 className='text-base font-semibold'>Ваши данные к заказу</h4>
-            <Image
-              src={warningIcon}
-              alt='warningIcon'
-              style={{
-                display: !isPhoneValid ? 'inline' : 'none',
-              }}
-            />
-          </div>
-          <label htmlFor='phone' className='block space-y-1 mb-3'>
-            <input
-              id='phone'
-              type='text'
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder='+996'
-              className='w-full h-11 rounded-xl p-4 outline-none border border-[transparent] bg-[#F5F5F5]'
-              style={{
-                borderColor: isPhoneValid ? '' : 'red',
-              }}
-            />
-          </label>
-
-          {/* Адрес только для "Доставка" */}
-          {orderType === 'delivery' && (
-            <label htmlFor='address' className='block space-y-1 mb-3'>
-              <input
-                id='address'
-                type='text'
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder='Укажите адрес'
-                className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
-                style={{
-                  border:
-                    orderType === 'delivery' && !isAddressValid
-                      ? '1px solid red'
-                      : undefined,
-                }}
-              />
-            </label>
-          )}
-        </div>
+        <Contacts
+          setPhone={setPhone}
+          setAddress={setAddress}
+          orderType={orderType}
+          phone={phone}
+          address={address}
+        />
       </section>
 
       {/* Нижняя кнопка (UI only) */}
