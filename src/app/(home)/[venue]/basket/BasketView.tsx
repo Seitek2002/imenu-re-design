@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
 import { useParams } from 'next/navigation';
@@ -19,6 +19,18 @@ export default function BasketView() {
   // Basket store
   const { getItemsArray, increment, decrement, remove } = useBasket();
   const items = getItemsArray();
+
+  // Per-item horizontal scroll refs to reveal delete action
+  const itemRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const revealDelete = (key: string) => {
+    const el = itemRefs.current[key];
+    if (!el) return;
+    try {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    } catch {
+      el.scrollLeft = el.scrollWidth;
+    }
+  };
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
@@ -257,6 +269,9 @@ export default function BasketView() {
               {items.map((it) => (
                 <li
                   key={it.key}
+                  ref={(el) => {
+                    itemRefs.current[it.key] = el;
+                  }}
                   className='flex items-center justify-between gap-3 overflow-x-scroll relative min-h-[72px] no-scrollbar py-3'
                 >
                   <div className='flex items-center gap-3 min-w-[200px]'>
@@ -299,9 +314,13 @@ export default function BasketView() {
                       type='button'
                       aria-label='minus'
                       className='w-8 h-8 flex items-center justify-center'
-                      onClick={() =>
-                        decrement(it.productId, it.modifierId ?? null, 1)
-                      }
+                      onClick={() => {
+                        if (it.quantity <= 1) {
+                          revealDelete(it.key);
+                        } else {
+                          decrement(it.productId, it.modifierId ?? null, 1);
+                        }
+                      }}
                     >
                       <Image src={minusIcon} alt='minusIcon' />
                     </button>
@@ -320,7 +339,12 @@ export default function BasketView() {
                     </button>
                   </div>
 
-                  <div className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px]'>
+                  <button
+                    type='button'
+                    aria-label='Удалить товар'
+                    onClick={() => remove(it.productId, it.modifierId ?? null)}
+                    className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px]'
+                  >
                     <Image
                       width={24}
                       height={24}
@@ -328,7 +352,7 @@ export default function BasketView() {
                       alt='trash-icon'
                       className='!max-w-[24px]'
                     />
-                  </div>
+                  </button>
                 </li>
               ))}
             </ul>
