@@ -30,8 +30,5 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "engines": {
-    "node": ">=20.x"
-  },
-  "packageManager": "npm@10"
+  "packageManager": "bun@1.2.22"
 }
