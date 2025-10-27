@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "bun install",
-  "buildCommand": "NEXT_TELEMETRY_DISABLED=1 bun run build"
+  "installCommand": "npm install",
+  "buildCommand": "npm run build"
 }
