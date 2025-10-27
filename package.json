@@ -4,9 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "start": "next start",
-    "postinstall": "npm rebuild lightningcss",
-    "build": "npm rebuild lightningcss && next build"
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.14.3",
