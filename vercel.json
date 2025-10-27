@@ -2,10 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "bun install",
-  "buildCommand": "bun run build",
-  "build": {
-    "env": {
-      "NEXT_DISABLE_LIGHTNINGCSS": "1"
-    }
-  }
+  "buildCommand": "NEXT_TELEMETRY_DISABLED=1 bun run build"
 }
