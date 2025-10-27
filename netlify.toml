@@ -1,6 +1,6 @@
 # Netlify build config for Next.js with image optimization via plugin
 [build]
-  command = "bun run build"
+  command = "npm run build"
   publish = ".next"
 
 [[plugins]]
