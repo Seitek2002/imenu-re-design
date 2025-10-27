@@ -97,7 +97,7 @@ const Item: FC<IProps> = ({ it }) => {
         type='button'
         aria-label='Удалить товар'
         onClick={() => remove(it.productId, it.modifierId ?? null)}
-        className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px]'
+        className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px] flex justify-center'
       >
         <Image
           width={24}
