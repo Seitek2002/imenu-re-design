@@ -1,6 +1,6 @@
 import { FC, useEffect, useState, useRef } from 'react';
 import { useBasketTotals } from '@/lib/hooks/use-basket-totals';
-import TakeOut from './TakeOut';
+import Form from './Form';
 
 import elqr from '@/assets/Basket/Drawer/elqr.svg';
 import Image from 'next/image';
@@ -81,6 +81,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const orderType = useCheckout((s) => s.orderType);
   const selectedSpotId = useCheckout((s) => s.selectedSpotId);
   const address = useCheckout((s) => s.address);
+  const pickupMode = useCheckout((s) => s.pickupMode);
+  const pickupTime = useCheckout((s) => s.pickupTime);
   const { venue, tableId } = useVenueQuery();
   const { getItemsArray } = useBasket();
   const itemsArr = getItemsArray();
@@ -148,7 +150,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         useBonus: false,
       };
 
-      console.log('order:payload', { venueSlug, body });
+      console.log('order:payload', { venueSlug, body, clientMeta: { pickupMode, pickupTime, total } });
     } catch (e) {
       // noop
     }
@@ -195,7 +197,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           <div className='h-[calc(100%)] overflow-y-auto flex flex-col justify-between'>
             <div>
               <div className='rounded-2xl bg-white p-5'>
-                <TakeOut />
+                <Form />
                 <label
                   htmlFor='phoneNumber'
                   className='bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4'

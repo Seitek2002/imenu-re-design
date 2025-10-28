@@ -15,7 +15,7 @@ import SpotList from './SpotList';
 import TimePickerContent from './TimePickerContent';
 import { Spot, formatSpotSubtitle, formatSpotTitle, nextNearest15Min } from './helpers';
 
-const TakeOut = () => {
+const Form = () => {
   const { venue } = useVenueQuery();
   const spots = useMemo<Spot[]>(
     () => (Array.isArray((venue as any)?.spots) ? (venue as any).spots : []),
@@ -124,7 +124,7 @@ const TakeOut = () => {
       </ModalPortal>
 
       {/* Pickup time modal */}
-      <ModalPortal open={openTime} onClose={() => setOpenTime(false)} zIndex={70}>
+      <ModalPortal open={openTime} onClose={() => setOpenTime(false)} zIndex={100}>
         <button
           type='button'
           aria-label='Закрыть'
@@ -146,4 +146,4 @@ const TakeOut = () => {
   );
 };
 
-export default TakeOut;
+export default Form;
