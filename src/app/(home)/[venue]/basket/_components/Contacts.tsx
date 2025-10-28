@@ -41,14 +41,19 @@ const Contacts: FC<IProps> = ({
   }, [shakeKey, isPhoneValid, isAddressValid, orderType]);
 
   return (
-    <div id='contacts-card' className={`bg-[#FAFAFA] p-3 rounded-[12px] mt-3 ${shaking ? 'shake-animate' : ''}`}>
+    <div
+      id='contacts-card'
+      className={`bg-[#FAFAFA] p-3 rounded-[12px] mt-3 ${
+        shaking ? 'shake-animate' : ''
+      }`}
+    >
       <div className='flex justify-between items-center mb-3'>
         <h4 className='text-base font-semibold'>Ваши данные к заказу</h4>
         <Image
           src={warningIcon}
           alt='warningIcon'
           style={{
-            display: (!!isPhoneValid && !!isAddressValid) ? 'none' : 'inline',
+            display: !!isPhoneValid && !!isAddressValid ? 'none' : 'inline',
           }}
         />
       </div>
