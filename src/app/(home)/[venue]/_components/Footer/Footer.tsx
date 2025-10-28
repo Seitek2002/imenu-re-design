@@ -62,9 +62,29 @@ const Footer: FC = () => {
   // Order type and checkout sheet signal from shared store
   const orderType = useCheckout((s) => s.orderType);
   const { openSheet } = useCheckout();
+  const { phone, address, bumpShake } = useCheckout();
 
   // Single source of truth for totals
   const { total } = useBasketTotals(orderType);
+
+  function handleOpenCheckout() {
+    const isPhoneValid = (phone ?? '').trim().length >= 5;
+    const isAddressValid =
+      orderType !== 'delivery' || (address ?? '').trim().length > 0;
+
+    if (!isPhoneValid || !isAddressValid) {
+      try {
+        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+          // strong haptic feedback on mobile
+          navigator.vibrate?.([80, 80, 120]);
+        }
+      } catch {}
+      bumpShake();
+      return;
+    }
+
+    openSheet();
+  }
 
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
@@ -123,7 +143,7 @@ const Footer: FC = () => {
             </div>
             <button
               className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
-              onClick={openSheet}
+              onClick={handleOpenCheckout}
             >
               К оформлению
             </button>

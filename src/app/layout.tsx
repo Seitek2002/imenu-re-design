@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
+import "./shake.css";
 import QueryProvider from "./query-provider";
 
 const geistInter = Inter({

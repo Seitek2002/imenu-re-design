@@ -41,9 +41,11 @@ export default function BasketView() {
     setHydrated(true);
   }, []);
 
-  // Inputs (no validation logic per request)
-  const [phone, setPhone] = useState('+996');
-  const [address, setAddress] = useState('');
+  // Inputs synced with checkout store
+  const phone = useCheckout((s) => s.phone);
+  const setPhone = useCheckout((s) => s.setPhone);
+  const address = useCheckout((s) => s.address);
+  const setAddress = useCheckout((s) => s.setAddress);
 
   // Venue/table context and order mutation
   const { venue, tableId } = useVenueQuery();
@@ -194,12 +196,13 @@ export default function BasketView() {
         tableIdNum = Number.isFinite(n as number) ? (n as number) : null;
       }
 
+      const selectedSpotId = useCheckout((s) => s.selectedSpotId);
       const defaultSpotId = (venue as any)?.defaultDeliverySpot ?? null;
       const firstSpotId =
         Array.isArray((venue as any)?.spots) && (venue as any).spots.length > 0
           ? (venue as any).spots[0].id
           : null;
-      const spotId = defaultSpotId ?? firstSpotId ?? null;
+      const spotId = selectedSpotId ?? defaultSpotId ?? firstSpotId ?? null;
 
       const payload: OrderCreate = {
         phone: phone.trim(),

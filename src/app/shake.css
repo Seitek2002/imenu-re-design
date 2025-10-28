@@ -1,0 +1,15 @@
+/* Global shake animation utilities */
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+
+.shake-animate {
+  animation: shake-x 500ms ease-in-out;
+  will-change: transform;
+}

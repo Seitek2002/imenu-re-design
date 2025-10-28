@@ -1,7 +1,8 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import Image from 'next/image';
 
 import warningIcon from '@/assets/Basket/warning.svg';
+import { useCheckout } from '@/store/checkout';
 
 interface IProps {
   setPhone: (phone: string) => void;
@@ -22,8 +23,18 @@ const Contacts: FC<IProps> = ({
   const isAddressValid =
     orderType === 'delivery' ? address.trim().length > 0 : true;
 
+  // Shake on demand (from store signal)
+  const shakeKey = useCheckout((s) => s.shakeKey);
+  const [shaking, setShaking] = useState(false);
+  useEffect(() => {
+    // trigger shake animation for 500ms on each bump
+    setShaking(true);
+    const t = setTimeout(() => setShaking(false), 500);
+    return () => clearTimeout(t);
+  }, [shakeKey]);
+
   return (
-    <div className='bg-[#FAFAFA] p-3 rounded-[12px] mt-3'>
+    <div id='contacts-card' className={`bg-[#FAFAFA] p-3 rounded-[12px] mt-3 ${shaking ? 'shake-animate' : ''}`}>
       <div className='flex justify-between items-center mb-3'>
         <h4 className='text-base font-semibold'>Ваши данные к заказу</h4>
         <Image
