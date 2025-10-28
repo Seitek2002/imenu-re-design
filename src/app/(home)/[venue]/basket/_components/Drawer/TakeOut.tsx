@@ -97,7 +97,15 @@ const TakeOut = () => {
               />
               {/* Centered modal with list of spots */}
               <div className='relative w-full flex items-center justify-center'>
-                <div className='bg-white rounded-2xl p-4 w-[90%] max-w-md max-h-[70vh] overflow-y-auto shadow-2xl'>
+                <div className='bg-white rounded-2xl p-4 w-[90%] max-w-md max-h-[70vh] overflow-y-auto shadow-2xl relative'>
+                  <button
+                    type='button'
+                    aria-label='Закрыть'
+                    onClick={() => setOpen(false)}
+                    className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center'
+                  >
+                    ✕
+                  </button>
                   <h2>Выберите филиал:</h2>
                   <div role='listbox'>
                     {spots.map((s: any) => {
