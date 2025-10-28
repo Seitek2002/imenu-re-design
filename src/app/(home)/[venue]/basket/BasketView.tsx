@@ -17,15 +17,26 @@ export default function BasketView() {
   const { sheetOpen, closeSheet } = useCheckout();
   const [sheetAnim, setSheetAnim] = useState(false);
 
-  // Animate bottom sheet appearance
+  // Animate bottom sheet appearance (always mounted: toggle classes only)
   useEffect(() => {
     if (sheetOpen) {
-      // ensure first frame renders translated, then animate to 0
       const id = requestAnimationFrame(() => setSheetAnim(true));
       return () => cancelAnimationFrame(id);
+    } else {
+      setSheetAnim(false);
     }
-    setSheetAnim(false);
   }, [sheetOpen]);
+
+  // Close on Escape
+  useEffect(() => {
+    const active = sheetOpen || sheetAnim;
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeSheet();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sheetOpen, sheetAnim, closeSheet]);
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
@@ -270,29 +281,41 @@ export default function BasketView() {
       )}
 
       {/* Bottom Sheet Checkout Modal (shell only) */}
-      {sheetOpen && (
-        <div role='dialog' aria-modal='true' className='fixed inset-0 z-50'>
-          {/* Backdrop */}
+      <div
+        role='dialog'
+        aria-modal='true'
+        className={`fixed inset-0 z-50 ${
+          sheetOpen || sheetAnim ? 'pointer-events-auto' : 'pointer-events-none'
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
+            sheetAnim ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={closeSheet}
+        />
+        {/* Sheet */}
+        <div
+          className='absolute inset-x-0 bottom-0'
+          aria-label='Checkout bottom sheet'
+        >
           <div
-            className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${sheetAnim ? 'opacity-100' : 'opacity-0'}`}
-            onClick={closeSheet}
-          />
-          {/* Sheet */}
-          <div
-            className='absolute inset-x-0 bottom-0'
-            aria-label='Checkout bottom sheet'
+            className={`w-full bg-white rounded-t-2xl shadow-2xl p-4 transform transition-all duration-300 ease-out ${
+              sheetAnim
+                ? 'translate-y-0 opacity-100'
+                : 'translate-y-full opacity-0'
+            }`}
           >
-            <div className={`w-full bg-white rounded-t-2xl shadow-2xl p-4 transform transition-transform duration-300 ease-out ${sheetAnim ? 'translate-y-0' : 'translate-y-full'}`}>
-              {/* Drag handle */}
-              <div className='mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#E5E7EB]' />
-              {/* Placeholder: inner content will be implemented by you */}
-              <div className='min-h-[40vh]'>
-                {/* TODO: Form/summary UI goes here */}
-              </div>
+            {/* Drag handle */}
+            <div className='mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#E5E7EB]' />
+            {/* Placeholder: inner content will be implemented by you */}
+            <div className='min-h-[40vh]'>
+              {/* TODO: Form/summary UI goes here */}
             </div>
           </div>
         </div>
-      )}
+      </div>
     </main>
   );
 }
