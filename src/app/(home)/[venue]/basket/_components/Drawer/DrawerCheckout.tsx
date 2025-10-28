@@ -81,10 +81,9 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const orderType = useCheckout((s) => s.orderType);
   const selectedSpotId = useCheckout((s) => s.selectedSpotId);
   const address = useCheckout((s) => s.address);
+  const setAddress = useCheckout((s) => s.setAddress);
   const pickupMode = useCheckout((s) => s.pickupMode);
   const pickupTime = useCheckout((s) => s.pickupTime);
-  const deliveryStreet = useCheckout((s) => s.deliveryStreet);
-  const setDeliveryStreet = useCheckout((s) => s.setDeliveryStreet);
   const deliveryEntrance = useCheckout((s) => s.deliveryEntrance);
   const setDeliveryEntrance = useCheckout((s) => s.setDeliveryEntrance);
   const deliveryFloor = useCheckout((s) => s.deliveryFloor);
@@ -168,7 +167,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           pickupTime: effectivePickupTime, // ASAP shows "Быстрее всего"
           delivery: orderType === 'delivery'
             ? {
-                street: deliveryStreet || null,
+                street: address || null,
                 entrance: deliveryEntrance || null,
                 floor: deliveryFloor || null,
                 apartment: deliveryApartment || null,
@@ -234,8 +233,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                       <input
                         id='deliveryStreet'
                         type='text'
-                        value={deliveryStreet}
-                        onChange={(e) => setDeliveryStreet(e.target.value)}
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
                         className='bg-transparent'
                         placeholder='Укажите улицу'
                       />
