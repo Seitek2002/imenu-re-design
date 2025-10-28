@@ -33,8 +33,7 @@ const Footer: FC = () => {
         console.warn('Invalid tableId for call-waiter:', tableId);
         return;
       }
-      const res = await callWaiter.mutateAsync({ tableId: id as number });
-      console.log('call-waiter:v2:success', res);
+      await callWaiter.mutateAsync({ tableId: id as number });
     } catch (e) {
       console.error('call-waiter:v2:error', e);
     }
@@ -82,7 +81,6 @@ const Footer: FC = () => {
       bumpShake();
       return;
     } else {
-      localStorage.setItem('userInfo', { phone, address }.toString());
       // Persist phone/address to localStorage per requirement
     try {
       if (typeof window !== 'undefined') {

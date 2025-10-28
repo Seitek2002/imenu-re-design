@@ -75,7 +75,6 @@ export default function BasketView() {
   // Venue/table context and order mutation
   const { venue, tableId } = useVenueQuery();
   const createOrder = useCreateOrderV2();
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [modal, setModal] = useState<{ open: boolean; message: string }>({
     open: false,
     message: '',
@@ -182,10 +181,9 @@ export default function BasketView() {
 
   async function handleSubmit() {
     try {
-      setErrorMsg(null);
 
       if (!venueSlug) {
-        setErrorMsg('Не найден venue_slug');
+        setModal({ open: true, message: 'Не найден venue_slug' });
         return;
       }
 
@@ -240,12 +238,10 @@ export default function BasketView() {
         useBonus: false,
       };
 
-      const res = await createOrder.mutateAsync({ body: payload, venueSlug });
-      console.log('order:create:success', res);
+      await createOrder.mutateAsync({ body: payload, venueSlug });
     } catch (e: any) {
       console.error('order:create:error', e);
       const msg = extractBackendErrorMessage(e);
-      setErrorMsg(msg);
       setModal({ open: true, message: msg });
     }
   }

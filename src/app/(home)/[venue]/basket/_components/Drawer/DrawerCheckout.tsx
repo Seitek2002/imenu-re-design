@@ -5,6 +5,8 @@ import TakeOut from './TakeOut';
 import elqr from '@/assets/Basket/Drawer/elqr.svg';
 import Image from 'next/image';
 import { useCheckout } from '@/store/checkout';
+import { useBasket } from '@/store/basket';
+import { useVenueQuery } from '@/store/venue';
 
 interface IProps {
   sheetOpen: boolean;
@@ -75,6 +77,82 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     });
     window.addEventListener('pointerup', onPointerUp as any, { passive: true });
   };
+
+  const orderType = useCheckout((s) => s.orderType);
+  const selectedSpotId = useCheckout((s) => s.selectedSpotId);
+  const address = useCheckout((s) => s.address);
+  const { venue, tableId } = useVenueQuery();
+  const { getItemsArray } = useBasket();
+  const itemsArr = getItemsArray();
+
+  const serviceMode: 1 | 2 | 3 =
+    orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
+
+  function resolveVenueSlug(): string {
+    const slug = (venue as any)?.slug;
+    if (typeof slug === 'string' && slug) return slug;
+    try {
+      const rawRoot = localStorage.getItem('venueRoot');
+      if (rawRoot) {
+        const trimmed = rawRoot.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          const parsed = JSON.parse(rawRoot);
+          const s =
+            parsed?.slug ??
+            parsed?.venueSlug ??
+            parsed?.venue_slug ??
+            parsed?.venue?.slug ??
+            '';
+          if (s) return s;
+        } else {
+          const s = trimmed.split('/').filter(Boolean).pop() ?? '';
+          if (s) return s;
+        }
+      }
+    } catch {}
+    return '';
+  }
+
+  function handlePay() {
+    try {
+      const orderProducts = itemsArr.map((it: any) => ({
+        product: it.productId,
+        count: it.quantity,
+        modificator: it.modifierId ?? null,
+      }));
+
+      let tableIdNum: number | null = null;
+      if (orderType === 'dinein' && tableId != null) {
+        const n =
+          typeof tableId === 'string' ? Number.parseInt(tableId, 10) : tableId;
+        tableIdNum = Number.isFinite(n as number) ? (n as number) : null;
+      }
+
+      const defaultSpotId = (venue as any)?.defaultDeliverySpot ?? null;
+      const firstSpotId =
+        Array.isArray((venue as any)?.spots) && (venue as any).spots.length > 0
+          ? (venue as any).spots[0].id
+          : null;
+      const spotId = selectedSpotId ?? defaultSpotId ?? firstSpotId ?? null;
+
+      const venueSlug = resolveVenueSlug();
+
+      const body = {
+        phone: phone.trim(),
+        serviceMode,
+        address: orderType === 'delivery' ? address.trim() : null,
+        spot: spotId,
+        table: tableIdNum,
+        orderProducts,
+        isTgBot: false,
+        useBonus: false,
+      };
+
+      console.log('order:payload', { venueSlug, body });
+    } catch (e) {
+      // noop
+    }
+  }
 
   return (
     <div
@@ -155,10 +233,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   </div>
                   <div className='text-[#939393] text-xs'>Итого</div>
                 </div>
-                <button
-                  className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
-                  onClick={() => {}}
-                >
+                  <button
+                    className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
+                    onClick={handlePay}
+                  >
                   Оплатить
                 </button>
               </div>
