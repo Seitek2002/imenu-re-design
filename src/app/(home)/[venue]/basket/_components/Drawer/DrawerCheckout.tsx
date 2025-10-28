@@ -9,13 +9,13 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [sheetAnim, setSheetAnim] = useState(false);
 
   // Resizable bottom sheet state (in vh)
-  const [heightPct, setHeightPct] = useState(60); // default ~40vh
-  const minPct = 24; // below this → close
-  const maxPct = 92; // do not exceed nearly full screen
+  const [heightPct, setHeightPct] = useState(70);
+  const minPct = 30;
+  const maxPct = 92;
 
   const [dragging, setDragging] = useState(false);
   const startYRef = useRef(0);
-  const startHeightRef = useRef(40);
+  const startHeightRef = useRef(70);
 
   const clamp = (v: number, min: number, max: number) =>
     Math.min(max, Math.max(min, v));
@@ -27,7 +27,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     } else {
       setSheetAnim(false);
       setDragging(false);
-      setHeightPct(40); // reset to default when hiding
+      setHeightPct(70); // reset to default when hiding
     }
   }, [sheetOpen]);
 
