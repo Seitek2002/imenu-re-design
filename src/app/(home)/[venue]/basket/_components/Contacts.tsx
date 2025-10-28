@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 import warningIcon from '@/assets/Basket/warning.svg';
@@ -23,15 +23,22 @@ const Contacts: FC<IProps> = ({
   const isAddressValid =
     orderType === 'delivery' ? address.trim().length > 0 : true;
 
-  // Shake on demand (from store signal)
+  // Shake on demand (from store signal) — only after button press AND if invalid
   const shakeKey = useCheckout((s) => s.shakeKey);
   const [shaking, setShaking] = useState(false);
+  const didMountRef = useRef(false);
   useEffect(() => {
-    // trigger shake animation for 500ms on each bump
+    if (!didMountRef.current) {
+      didMountRef.current = true; // skip initial render to avoid shaking on reload
+      return;
+    }
+    const requireAddress = orderType === 'delivery';
+    const invalid = !isPhoneValid || (requireAddress && !isAddressValid);
+    if (!invalid) return; // shake only when something is missing
     setShaking(true);
     const t = setTimeout(() => setShaking(false), 500);
     return () => clearTimeout(t);
-  }, [shakeKey]);
+  }, [shakeKey, isPhoneValid, isAddressValid, orderType]);
 
   return (
     <div id='contacts-card' className={`bg-[#FAFAFA] p-3 rounded-[12px] mt-3 ${shaking ? 'shake-animate' : ''}`}>
