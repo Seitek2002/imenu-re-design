@@ -109,7 +109,11 @@ const TakeOut = () => {
           aria-haspopup='dialog'
           aria-expanded={openTime}
         >
-          <span className={pickupMode === 'time' ? 'text-[#111111]' : 'text-[#A4A4A4]'}>
+          <span
+            className={
+              pickupMode === 'time' ? 'text-[#111111]' : 'text-[#A4A4A4]'
+            }
+          >
             {timeLabel}
           </span>
           <Image src={selectArrow} alt='selectArrow' />
@@ -235,14 +239,18 @@ const TakeOut = () => {
                       type='button'
                       onClick={chooseAsap}
                       className={`w-full px-4 py-3 text-left rounded-lg border ${
-                        pickupMode === 'asap' ? 'border-[#FF7A00] bg-[#FFF5EE]' : 'border-[#E5E7EB]'
+                        pickupMode === 'asap'
+                          ? 'border-[#FF7A00] bg-[#FFF5EE]'
+                          : 'border-[#E5E7EB]'
                       }`}
                     >
                       Быстрее всего
                     </button>
 
                     <div className='rounded-lg border border-[#E5E7EB] p-3'>
-                      <div className='text-sm text-[#6B7280] mb-2'>Указать время</div>
+                      <div className='text-sm text-[#6B7280] mb-2'>
+                        Указать время
+                      </div>
                       <input
                         type='time'
                         value={timeInput}
