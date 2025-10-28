@@ -32,7 +32,7 @@ const Item: FC<IProps> = ({ it }) => {
       }}
       className='flex items-center justify-between gap-3 overflow-x-scroll relative min-h-[72px] no-scrollbar py-3'
     >
-      <div className='flex items-center gap-3 min-w-[200px]'>
+      <div className='flex items-center gap-3 min-w-[0]'>
         <div className='relative w-16 h-16 rounded-[12px] overflow-hidden bg-[#F1F2F3] flex-shrink-0'>
           {it.image ? (
             <Image
