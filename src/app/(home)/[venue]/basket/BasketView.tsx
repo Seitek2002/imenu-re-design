@@ -15,6 +15,17 @@ export default function BasketView() {
   const { getItemsArray } = useBasket();
   const items = getItemsArray();
   const { sheetOpen, closeSheet } = useCheckout();
+  const [sheetAnim, setSheetAnim] = useState(false);
+
+  // Animate bottom sheet appearance
+  useEffect(() => {
+    if (sheetOpen) {
+      // ensure first frame renders translated, then animate to 0
+      const id = requestAnimationFrame(() => setSheetAnim(true));
+      return () => cancelAnimationFrame(id);
+    }
+    setSheetAnim(false);
+  }, [sheetOpen]);
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
@@ -263,7 +274,7 @@ export default function BasketView() {
         <div role='dialog' aria-modal='true' className='fixed inset-0 z-50'>
           {/* Backdrop */}
           <div
-            className='absolute inset-0 bg-black/50'
+            className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${sheetAnim ? 'opacity-100' : 'opacity-0'}`}
             onClick={closeSheet}
           />
           {/* Sheet */}
@@ -271,7 +282,7 @@ export default function BasketView() {
             className='absolute inset-x-0 bottom-0'
             aria-label='Checkout bottom sheet'
           >
-            <div className='w-full bg-white rounded-t-2xl shadow-2xl p-4'>
+            <div className={`w-full bg-white rounded-t-2xl shadow-2xl p-4 transform transition-transform duration-300 ease-out ${sheetAnim ? 'translate-y-0' : 'translate-y-full'}`}>
               {/* Drag handle */}
               <div className='mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#E5E7EB]' />
               {/* Placeholder: inner content will be implemented by you */}
