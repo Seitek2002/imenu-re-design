@@ -4,6 +4,7 @@ import TakeOut from './TakeOut';
 
 import elqr from '@/assets/Basket/Drawer/elqr.svg';
 import Image from 'next/image';
+import { useCheckout } from '@/store/checkout';
 
 interface IProps {
   sheetOpen: boolean;
@@ -26,6 +27,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     Math.min(max, Math.max(min, v));
 
   const { total } = useBasketTotals();
+  const phone = useCheckout((s) => s.phone);
+  const setPhone = useCheckout((s) => s.setPhone);
 
   useEffect(() => {
     if (sheetOpen) {
@@ -125,7 +128,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <input
                     id='phoneNumber'
                     type='text'
-                    defaultValue={'+996'}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     className='bg-transparent'
                   />
                 </label>
