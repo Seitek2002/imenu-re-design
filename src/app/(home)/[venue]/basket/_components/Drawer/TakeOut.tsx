@@ -15,8 +15,17 @@ const TakeOut = () => {
     [venue]
   );
 
-  const { selectedSpotId, setSelectedSpotId } = useCheckout();
-  const [open, setOpen] = useState(false);
+  const {
+    selectedSpotId,
+    setSelectedSpotId,
+    pickupMode,
+    pickupTime,
+    setPickupMode,
+    setPickupTime,
+  } = useCheckout();
+
+  const [open, setOpen] = useState(false); // spots modal
+  const [openTime, setOpenTime] = useState(false); // time modal
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
 
@@ -52,14 +61,59 @@ const TakeOut = () => {
     setOpen(false);
   }
 
+  // Helpers for pickup time
+  const timeLabel =
+    pickupMode === 'asap'
+      ? 'Быстрее всего'
+      : pickupTime
+      ? pickupTime
+      : 'Выбрать время';
+
+  const [timeInput, setTimeInput] = useState<string>(() => {
+    // default nearest 15-min slot as HH:MM
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + 15 - (d.getMinutes() % 15));
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  });
+
+  useEffect(() => {
+    if (pickupMode === 'time' && pickupTime) {
+      setTimeInput(pickupTime);
+    }
+  }, [pickupMode, pickupTime]);
+
+  const saveTime = () => {
+    if (timeInput) {
+      setPickupMode('time');
+      setPickupTime(timeInput);
+      setOpenTime(false);
+    }
+  };
+
+  const chooseAsap = () => {
+    setPickupMode('asap');
+    setPickupTime(null);
+    setOpenTime(false);
+  };
+
   return (
     <div className='flex flex-col gap-1.5'>
       <div className='flex items-center gap-3'>
         <Image src={clockIcon} alt='clockIcon' />
-        <div className='bg-[#F5F5F5] flex items-center justify-between p-4 rounded-lg flex-1'>
-          <span className='text-[#A4A4A4]'>Время выдачи</span>
+        <button
+          type='button'
+          className='bg-[#F5F5F5] flex items-center justify-between p-4 rounded-lg flex-1 text-left'
+          onClick={() => setOpenTime(true)}
+          aria-haspopup='dialog'
+          aria-expanded={openTime}
+        >
+          <span className={pickupMode === 'time' ? 'text-[#111111]' : 'text-[#A4A4A4]'}>
+            {timeLabel}
+          </span>
           <Image src={selectArrow} alt='selectArrow' />
-        </div>
+        </button>
       </div>
 
       <div className='flex items-center gap-3'>
@@ -142,6 +196,76 @@ const TakeOut = () => {
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
+
+      {/* Pickup time modal */}
+      {openTime && isClient
+        ? createPortal(
+            <div
+              role='dialog'
+              aria-modal='true'
+              className='fixed inset-0 z-[70] flex items-center justify-center'
+            >
+              {/* Backdrop */}
+              <div
+                className='absolute inset-0 bg-black/50'
+                onClick={() => setOpenTime(false)}
+              />
+              {/* Centered modal */}
+              <div className='relative w-full flex items-center justify-center'>
+                <div className='bg-white rounded-2xl p-4 w-[90%] max-w-sm shadow-2xl relative'>
+                  <button
+                    type='button'
+                    aria-label='Закрыть'
+                    onClick={() => setOpenTime(false)}
+                    className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center'
+                  >
+                    ✕
+                  </button>
+                  <h2 className='text-base font-semibold mb-3'>Время выдачи</h2>
+
+                  <div className='flex flex-col gap-2'>
+                    <button
+                      type='button'
+                      onClick={chooseAsap}
+                      className={`w-full px-4 py-3 text-left rounded-lg border ${
+                        pickupMode === 'asap' ? 'border-[#FF7A00] bg-[#FFF5EE]' : 'border-[#E5E7EB]'
+                      }`}
+                    >
+                      Быстрее всего
+                    </button>
+
+                    <div className='rounded-lg border border-[#E5E7EB] p-3'>
+                      <div className='text-sm text-[#6B7280] mb-2'>Указать время</div>
+                      <input
+                        type='time'
+                        value={timeInput}
+                        onChange={(e) => setTimeInput(e.target.value)}
+                        className='w-full rounded-md border border-[#E5E7EB] p-2'
+                      />
+                      <div className='mt-3 flex justify-end gap-2'>
+                        <button
+                          type='button'
+                          className='px-4 py-2 rounded-md bg-[#F5F5F5] text-[#111111]'
+                          onClick={() => setOpenTime(false)}
+                        >
+                          Отмена
+                        </button>
+                        <button
+                          type='button'
+                          className='px-4 py-2 rounded-md bg-[#FF7A00] text-white'
+                          onClick={saveTime}
+                        >
+                          Сохранить
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
