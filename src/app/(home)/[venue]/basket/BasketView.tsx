@@ -10,33 +10,22 @@ import type { OrderCreate } from '@/lib/api/types';
 import { useCheckout } from '@/store/checkout';
 
 import { Contacts, Details, Header, Items, OrderType } from './_components';
+import DrawerCheckout from './_components/DrawerCheckout';
 
 export default function BasketView() {
   const { getItemsArray } = useBasket();
   const items = getItemsArray();
   const { sheetOpen, closeSheet } = useCheckout();
-  const [sheetAnim, setSheetAnim] = useState(false);
-
-  // Animate bottom sheet appearance (always mounted: toggle classes only)
-  useEffect(() => {
-    if (sheetOpen) {
-      const id = requestAnimationFrame(() => setSheetAnim(true));
-      return () => cancelAnimationFrame(id);
-    } else {
-      setSheetAnim(false);
-    }
-  }, [sheetOpen]);
 
   // Close on Escape
   useEffect(() => {
-    const active = sheetOpen || sheetAnim;
-    if (!active) return;
+    if (!sheetOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeSheet();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [sheetOpen, sheetAnim, closeSheet]);
+  }, [sheetOpen, closeSheet]);
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
@@ -280,42 +269,7 @@ export default function BasketView() {
         </div>
       )}
 
-      {/* Bottom Sheet Checkout Modal (shell only) */}
-      <div
-        role='dialog'
-        aria-modal='true'
-        className={`fixed inset-0 z-50 ${
-          sheetOpen || sheetAnim ? 'pointer-events-auto' : 'pointer-events-none'
-        }`}
-      >
-        {/* Backdrop */}
-        <div
-          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
-            sheetAnim ? 'opacity-100' : 'opacity-0'
-          }`}
-          onClick={closeSheet}
-        />
-        {/* Sheet */}
-        <div
-          className='absolute inset-x-0 bottom-0'
-          aria-label='Checkout bottom sheet'
-        >
-          <div
-            className={`w-full bg-white rounded-t-2xl shadow-2xl p-4 transform transition-all duration-300 ease-out ${
-              sheetAnim
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-full opacity-0'
-            }`}
-          >
-            {/* Drag handle */}
-            <div className='mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#E5E7EB]' />
-            {/* Placeholder: inner content will be implemented by you */}
-            <div className='min-h-[40vh]'>
-              {/* TODO: Form/summary UI goes here */}
-            </div>
-          </div>
-        </div>
-      </div>
+      <DrawerCheckout sheetOpen={sheetOpen} closeSheet={closeSheet} />
     </main>
   );
 }
