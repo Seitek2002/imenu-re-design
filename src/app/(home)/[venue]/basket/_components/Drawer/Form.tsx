@@ -30,10 +30,16 @@ const Form = () => {
     setPickupMode,
     setPickupTime,
   } = useCheckout();
+  const orderType = useCheckout((s) => s.orderType);
 
   // Modals
   const [openSpots, setOpenSpots] = useState(false);
   const [openTime, setOpenTime] = useState(false);
+
+  // Close spots modal if switched to delivery (spot picking hidden for delivery)
+  useEffect(() => {
+    if (orderType === 'delivery' && openSpots) setOpenSpots(false);
+  }, [orderType, openSpots]);
 
   // Ensure first spot is chosen by default
   useEffect(() => {
@@ -97,31 +103,35 @@ const Form = () => {
         ariaExpanded={openTime}
       />
 
-      {/* Филиал */}
-      <SelectField
-        leftIcon={<Image src={geoIcon} alt='geoIcon' />}
-        rightIcon={<Image src={selectArrow} alt='selectArrow' />}
-        value={label}
-        placeholder='Выбрать филиал'
-        subLabel={selected ? subtitle ?? undefined : undefined}
-        onClick={() => setOpenSpots(true)}
-        ariaHasPopup='listbox'
-        ariaExpanded={openSpots}
-      />
+      {/* Филиал (скрыт для доставки) */}
+      {orderType !== 'delivery' && (
+        <SelectField
+          leftIcon={<Image src={geoIcon} alt='geoIcon' />}
+          rightIcon={<Image src={selectArrow} alt='selectArrow' />}
+          value={label}
+          placeholder='Выбрать филиал'
+          subLabel={selected ? subtitle ?? undefined : undefined}
+          onClick={() => setOpenSpots(true)}
+          ariaHasPopup='listbox'
+          ariaExpanded={openSpots}
+        />
+      )}
 
-      {/* Spots modal */}
-      <ModalPortal open={openSpots} onClose={() => setOpenSpots(false)}>
-        <button
-          type='button'
-          aria-label='Закрыть'
-          onClick={() => setOpenSpots(false)}
-          className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center'
-        >
-          ✕
-        </button>
-        <h2 className='text-base font-semibold mb-3'>Выберите филиал</h2>
-        <SpotList spots={spots} selectedId={selectedSpotId} onSelect={handlePickSpot} />
-      </ModalPortal>
+      {/* Spots modal (скрыт для доставки) */}
+      {orderType !== 'delivery' && (
+        <ModalPortal open={openSpots} onClose={() => setOpenSpots(false)}>
+          <button
+            type='button'
+            aria-label='Закрыть'
+            onClick={() => setOpenSpots(false)}
+            className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center'
+          >
+            ✕
+          </button>
+          <h2 className='text-base font-semibold mb-3'>Выберите филиал</h2>
+          <SpotList spots={spots} selectedId={selectedSpotId} onSelect={handlePickSpot} />
+        </ModalPortal>
+      )}
 
       {/* Pickup time modal */}
       <ModalPortal open={openTime} onClose={() => setOpenTime(false)} zIndex={100}>

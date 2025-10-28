@@ -83,6 +83,14 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const address = useCheckout((s) => s.address);
   const pickupMode = useCheckout((s) => s.pickupMode);
   const pickupTime = useCheckout((s) => s.pickupTime);
+  const deliveryStreet = useCheckout((s) => s.deliveryStreet);
+  const setDeliveryStreet = useCheckout((s) => s.setDeliveryStreet);
+  const deliveryEntrance = useCheckout((s) => s.deliveryEntrance);
+  const setDeliveryEntrance = useCheckout((s) => s.setDeliveryEntrance);
+  const deliveryFloor = useCheckout((s) => s.deliveryFloor);
+  const setDeliveryFloor = useCheckout((s) => s.setDeliveryFloor);
+  const deliveryApartment = useCheckout((s) => s.deliveryApartment);
+  const setDeliveryApartment = useCheckout((s) => s.setDeliveryApartment);
   const { venue, tableId } = useVenueQuery();
   const { getItemsArray } = useBasket();
   const itemsArr = getItemsArray();
@@ -157,7 +165,15 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         body,
         clientMeta: {
           pickupMode,
-          pickupTime: effectivePickupTime, // show computed time window for ASAP instead of null
+          pickupTime: effectivePickupTime, // ASAP shows "Быстрее всего"
+          delivery: orderType === 'delivery'
+            ? {
+                street: deliveryStreet || null,
+                entrance: deliveryEntrance || null,
+                floor: deliveryFloor || null,
+                apartment: deliveryApartment || null,
+              }
+            : null,
           total,
         },
       });
@@ -208,6 +224,53 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
             <div>
               <div className='rounded-2xl bg-white p-5'>
                 <Form />
+                {orderType === 'delivery' && (
+                  <div className='mt-2'>
+                    <label
+                      htmlFor='deliveryStreet'
+                      className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'
+                    >
+                      <span className='text-[#A4A4A4] text-[8px]'>Улица</span>
+                      <input
+                        id='deliveryStreet'
+                        type='text'
+                        value={deliveryStreet}
+                        onChange={(e) => setDeliveryStreet(e.target.value)}
+                        className='bg-transparent'
+                        placeholder='Укажите улицу'
+                      />
+                    </label>
+                    <div className='grid grid-cols-3 gap-2 mt-2'>
+                      <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
+                        <span className='text-[#A4A4A4] text-[8px]'>Подъезд</span>
+                        <input
+                          type='text'
+                          value={deliveryEntrance}
+                          onChange={(e) => setDeliveryEntrance(e.target.value)}
+                          className='bg-transparent'
+                        />
+                      </label>
+                      <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
+                        <span className='text-[#A4A4A4] text-[8px]'>Этаж</span>
+                        <input
+                          type='text'
+                          value={deliveryFloor}
+                          onChange={(e) => setDeliveryFloor(e.target.value)}
+                          className='bg-transparent'
+                        />
+                      </label>
+                      <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
+                        <span className='text-[#A4A4A4] text-[8px]'>Квартира</span>
+                        <input
+                          type='text'
+                          value={deliveryApartment}
+                          onChange={(e) => setDeliveryApartment(e.target.value)}
+                          className='bg-transparent'
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
                 <label
                   htmlFor='phoneNumber'
                   className='bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4'

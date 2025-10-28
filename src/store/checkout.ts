@@ -17,6 +17,16 @@ type CheckoutState = {
   address: string;
   setAddress: (v: string) => void;
 
+  // Delivery details (persisted)
+  deliveryStreet: string;
+  setDeliveryStreet: (v: string) => void;
+  deliveryEntrance: string;
+  setDeliveryEntrance: (v: string) => void;
+  deliveryFloor: string;
+  setDeliveryFloor: (v: string) => void;
+  deliveryApartment: string;
+  setDeliveryApartment: (v: string) => void;
+
   // Pickup time selection (нет данных с сервера — локальное состояние)
   // 'asap' — быстрее всего (40–55 минут); 'time' — пользователь выбрал конкретное время
   pickupMode: 'asap' | 'time';
@@ -50,6 +60,15 @@ export const useCheckout = create<CheckoutState>()(
         address: '',
         setAddress: (v) => set({ address: v }),
 
+        deliveryStreet: '',
+        setDeliveryStreet: (v) => set({ deliveryStreet: v }),
+        deliveryEntrance: '',
+        setDeliveryEntrance: (v) => set({ deliveryEntrance: v }),
+        deliveryFloor: '',
+        setDeliveryFloor: (v) => set({ deliveryFloor: v }),
+        deliveryApartment: '',
+        setDeliveryApartment: (v) => set({ deliveryApartment: v }),
+
         pickupMode: 'asap',
         pickupTime: null,
         setPickupMode: (m) => set({ pickupMode: m }),
@@ -76,6 +95,10 @@ export const useCheckout = create<CheckoutState>()(
           pickupTime: s.pickupTime,
           phone: s.phone,
           address: s.address,
+          deliveryStreet: s.deliveryStreet,
+          deliveryEntrance: s.deliveryEntrance,
+          deliveryFloor: s.deliveryFloor,
+          deliveryApartment: s.deliveryApartment,
         }),
       }
     ),
