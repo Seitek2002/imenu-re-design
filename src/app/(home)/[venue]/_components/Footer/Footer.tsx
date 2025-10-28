@@ -58,9 +58,6 @@ const Footer: FC = () => {
   );
   const showNext = hydrated && itemCount > 0 && !isBasket && allowNext;
 
-  // Bottom sheet checkout modal
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-
   // subtotal for "Перейти в корзину"
   const subtotal = useMemo(
     () =>
@@ -71,8 +68,9 @@ const Footer: FC = () => {
     [itemsMap]
   );
 
-  // Order type shared from checkout store
+  // Order type and checkout sheet signal from shared store
   const orderType = useCheckout((s) => s.orderType);
+  const { openSheet } = useCheckout();
 
   // Delivery fee calculation using venue data when delivery mode
   const deliveryFee = useMemo(() => {
@@ -152,37 +150,13 @@ const Footer: FC = () => {
             </div>
             <button
               className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
-              onClick={() => setCheckoutOpen(true)}
+              onClick={openSheet}
             >
               К оформлению
             </button>
           </div>
         )}
       </div>
-      {/* Bottom Sheet Checkout Modal (shell only) */}
-      {checkoutOpen && (
-        <div role='dialog' aria-modal='true' className='fixed inset-0 z-50'>
-          {/* Backdrop */}
-          <div
-            className='absolute inset-0 bg-black/50'
-            onClick={() => setCheckoutOpen(false)}
-          />
-          {/* Sheet */}
-          <div
-            className='absolute inset-x-0 bottom-0'
-            aria-label='Checkout bottom sheet'
-          >
-            <div className='w-full bg-white rounded-t-2xl shadow-2xl p-4'>
-              {/* Drag handle */}
-              <div className='mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#E5E7EB]' />
-              {/* Placeholder: inner content will be implemented by you */}
-              <div className='min-h-[40vh]'>
-                {/* TODO: Form/summary UI goes here */}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       <Nav />
     </footer>
   );

@@ -14,6 +14,7 @@ import { Contacts, Details, Header, Items, OrderType } from './_components';
 export default function BasketView() {
   const { getItemsArray } = useBasket();
   const items = getItemsArray();
+  const { sheetOpen, closeSheet } = useCheckout();
 
   // UI state (local only, no requests)
   const [orderType, setOrderType] = useState<'takeout' | 'dinein' | 'delivery'>(
@@ -215,7 +216,7 @@ export default function BasketView() {
       {/* Local header */}
       <Header />
 
-      <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto'>
+      <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto pb-5'>
         {/* Тип заказа */}
         <OrderType orderType={orderType} setOrderType={setOrderType} />
 
@@ -235,20 +236,6 @@ export default function BasketView() {
         />
       </section>
 
-      {/* Нижняя кнопка (UI only) */}
-      <footer className='bg-white border-t border-[#E5E7EB] px-4 py-3 mt-4'>
-        <button
-          type='button'
-          className='w-full h-12 rounded-[12px] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
-          style={{ backgroundColor: '#FF7A00' }}
-          onClick={handleSubmit}
-          disabled={!canSubmit || createOrder.isPending}
-          aria-busy={createOrder.isPending}
-        >
-          {createOrder.isPending ? 'Отправка...' : 'Далее'}
-        </button>
-      </footer>
-
       {modal.open && (
         <div
           role='dialog'
@@ -266,6 +253,31 @@ export default function BasketView() {
               >
                 Ок
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Sheet Checkout Modal (shell only) */}
+      {sheetOpen && (
+        <div role='dialog' aria-modal='true' className='fixed inset-0 z-50'>
+          {/* Backdrop */}
+          <div
+            className='absolute inset-0 bg-black/50'
+            onClick={closeSheet}
+          />
+          {/* Sheet */}
+          <div
+            className='absolute inset-x-0 bottom-0'
+            aria-label='Checkout bottom sheet'
+          >
+            <div className='w-full bg-white rounded-t-2xl shadow-2xl p-4'>
+              {/* Drag handle */}
+              <div className='mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#E5E7EB]' />
+              {/* Placeholder: inner content will be implemented by you */}
+              <div className='min-h-[40vh]'>
+                {/* TODO: Form/summary UI goes here */}
+              </div>
             </div>
           </div>
         </div>
