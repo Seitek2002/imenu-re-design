@@ -9,7 +9,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [sheetAnim, setSheetAnim] = useState(false);
 
   // Resizable bottom sheet state (in vh)
-  const [heightPct, setHeightPct] = useState(40); // default ~40vh
+  const [heightPct, setHeightPct] = useState(60); // default ~40vh
   const minPct = 24; // below this → close
   const maxPct = 92; // do not exceed nearly full screen
 
