@@ -48,7 +48,7 @@ const Contacts: FC<IProps> = ({
           src={warningIcon}
           alt='warningIcon'
           style={{
-            display: !isPhoneValid ? 'inline' : 'none',
+            display: (!!isPhoneValid && !!isAddressValid) ? 'none' : 'inline',
           }}
         />
       </div>
