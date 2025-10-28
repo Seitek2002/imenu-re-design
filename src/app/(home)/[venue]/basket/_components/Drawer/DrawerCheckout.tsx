@@ -45,7 +45,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           }`}
         >
           {/* Drag handle */}
-          <div className='mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#E5E7EB]' />
+          <div className='fixed -top-4 right-0 left-0 mx-auto mb-3 h-2 w-16 rounded-full bg-[#FFFFFF]' />
           {/* Placeholder: inner content will be implemented by you */}
           <div className='min-h-[40vh]'>
             {/* TODO: Form/summary UI goes here */}
