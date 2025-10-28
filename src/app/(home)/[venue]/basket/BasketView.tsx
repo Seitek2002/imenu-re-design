@@ -10,7 +10,7 @@ import type { OrderCreate } from '@/lib/api/types';
 import { useCheckout } from '@/store/checkout';
 
 import { Contacts, Details, Header, Items, OrderType } from './_components';
-import DrawerCheckout from './_components/DrawerCheckout';
+import DrawerCheckout from './_components/Drawer/DrawerCheckout';
 
 export default function BasketView() {
   const { getItemsArray } = useBasket();

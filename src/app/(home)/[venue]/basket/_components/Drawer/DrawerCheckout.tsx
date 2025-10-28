@@ -1,14 +1,13 @@
 import { FC, useEffect, useState } from 'react';
 
 interface IProps {
-    sheetOpen: boolean;
-    closeSheet: () => void
+  sheetOpen: boolean;
+  closeSheet: () => void;
 }
 
 const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [sheetAnim, setSheetAnim] = useState(false);
 
-  // Animate bottom sheet appearance (always mounted: toggle classes only)
   useEffect(() => {
     if (sheetOpen) {
       const id = requestAnimationFrame(() => setSheetAnim(true));
