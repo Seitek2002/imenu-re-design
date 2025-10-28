@@ -62,7 +62,7 @@ const Footer: FC = () => {
   // Order type and checkout sheet signal from shared store
   const orderType = useCheckout((s) => s.orderType);
   const { openSheet } = useCheckout();
-  const { phone, address, bumpShake } = useCheckout();
+  const { phone, address, bumpShake, setAddress } = useCheckout();
 
   // Single source of truth for totals
   const { total } = useBasketTotals(orderType);
@@ -83,7 +83,23 @@ const Footer: FC = () => {
       return;
     } else {
       localStorage.setItem('userInfo', { phone, address }.toString());
-      openSheet();
+      // Persist phone/address to localStorage per requirement
+    try {
+      if (typeof window !== 'undefined') {
+        const p = (phone ?? '').trim();
+        if (p) localStorage.setItem('phone', p);
+        if (orderType === 'delivery') {
+          const a = (address ?? '').trim();
+          if (a) localStorage.setItem('address', a);
+        } else {
+          // Not delivery: drop address from storage and store state
+          localStorage.removeItem('address');
+          setAddress('');
+        }
+      }
+    } catch {}
+
+    openSheet();
     }
   }
 

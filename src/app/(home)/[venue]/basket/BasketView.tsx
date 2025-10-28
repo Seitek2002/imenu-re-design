@@ -47,6 +47,31 @@ export default function BasketView() {
   const address = useCheckout((s) => s.address);
   const setAddress = useCheckout((s) => s.setAddress);
 
+  // Prefill from localStorage on hydrate; address only for delivery
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const p = localStorage.getItem('phone');
+      if (p && p.trim()) setPhone(p);
+      const a = localStorage.getItem('address');
+      if (orderType === 'delivery' && a && a.trim()) {
+        setAddress(a);
+      } else {
+        // ensure we don't keep address for non-delivery
+        localStorage.removeItem('address');
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
+  // When switching away from delivery, clear address in store and storage
+  useEffect(() => {
+    if (orderType !== 'delivery') {
+      setAddress('');
+      try { localStorage.removeItem('address'); } catch {}
+    }
+  }, [orderType, setAddress]);
+
   // Venue/table context and order mutation
   const { venue, tableId } = useVenueQuery();
   const createOrder = useCreateOrderV2();
