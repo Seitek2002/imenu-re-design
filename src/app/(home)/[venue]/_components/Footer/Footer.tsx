@@ -81,9 +81,10 @@ const Footer: FC = () => {
       } catch {}
       bumpShake();
       return;
+    } else {
+      localStorage.setItem('userInfo', { phone, address }.toString());
+      openSheet();
     }
-
-    openSheet();
   }
 
   return (
