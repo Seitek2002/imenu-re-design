@@ -115,6 +115,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     return '';
   }
 
+
   function handlePay() {
     try {
       const orderProducts = itemsArr.map((it: any) => ({
@@ -150,7 +151,16 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         useBonus: false,
       };
 
-      console.log('order:payload', { venueSlug, body, clientMeta: { pickupMode, pickupTime, total } });
+      const effectivePickupTime = pickupMode === 'asap' ? 'Быстрее всего' : pickupTime;
+      console.log('order:payload', {
+        venueSlug,
+        body,
+        clientMeta: {
+          pickupMode,
+          pickupTime: effectivePickupTime, // show computed time window for ASAP instead of null
+          total,
+        },
+      });
     } catch (e) {
       // noop
     }
