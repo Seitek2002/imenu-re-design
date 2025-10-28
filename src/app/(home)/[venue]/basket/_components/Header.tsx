@@ -19,7 +19,7 @@ const Header = () => {
   }
 
   return (
-    <header className='sticky top-0 z-20 bg-white rounded-b-4xl'>
+    <header className='sticky top-0 z-10 bg-white rounded-b-4xl'>
       <div className='flex items-center justify-between px-5 pt-2.5 pb-4'>
         <Image
           src={arrowIcon}
