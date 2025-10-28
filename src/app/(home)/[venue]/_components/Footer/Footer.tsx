@@ -12,6 +12,7 @@ import bellIcon from '@/assets/Footer/bell.svg';
 import { useVenueQuery } from '@/store/venue';
 import { useCallWaiterV2 } from '@/lib/api/queries';
 import { useCheckout } from '@/store/checkout';
+import { useBasketTotals } from '@/lib/hooks/use-basket-totals';
 
 const Footer: FC = () => {
   const pathname = usePathname();
@@ -20,7 +21,7 @@ const Footer: FC = () => {
   const isHome = pathname === venueRoot;
   const collapsed = !isHome;
 
-  const { venue, tableId, tableNum } = useVenueQuery();
+  const { tableId, tableNum } = useVenueQuery();
   const callWaiter = useCallWaiterV2();
 
   async function handleCallWaiter() {
@@ -58,40 +59,12 @@ const Footer: FC = () => {
   );
   const showNext = hydrated && itemCount > 0 && !isBasket && allowNext;
 
-  // subtotal for "Перейти в корзину"
-  const subtotal = useMemo(
-    () =>
-      Object.values(itemsMap).reduce(
-        (acc, it) => acc + it.unitPrice * it.quantity,
-        0
-      ),
-    [itemsMap]
-  );
-
   // Order type and checkout sheet signal from shared store
   const orderType = useCheckout((s) => s.orderType);
   const { openSheet } = useCheckout();
 
-  // Delivery fee calculation using venue data when delivery mode
-  const deliveryFee = useMemo(() => {
-    const fee =
-      typeof (venue as any)?.deliveryFixedFee === 'string'
-        ? parseFloat((venue as any).deliveryFixedFee)
-        : Number((venue as any)?.deliveryFixedFee ?? 0);
-
-    const freeFrom =
-      typeof (venue as any)?.deliveryFreeFrom === 'string'
-        ? parseFloat((venue as any).deliveryFreeFrom)
-        : (venue as any)?.deliveryFreeFrom != null
-        ? Number((venue as any).deliveryFreeFrom)
-        : null;
-
-    if (orderType !== 'delivery') return 0;
-    if (freeFrom != null && subtotal >= freeFrom) return 0;
-    return Number.isFinite(fee) ? fee : 0;
-  }, [orderType, subtotal, venue]);
-
-  const total = useMemo(() => subtotal + deliveryFee, [subtotal, deliveryFee]);
+  // Single source of truth for totals
+  const { total } = useBasketTotals(orderType);
 
   return (
     <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
