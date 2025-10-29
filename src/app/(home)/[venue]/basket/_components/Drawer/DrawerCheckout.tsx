@@ -34,6 +34,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const bumpShake = useCheckout((s) => s.bumpShake);
   const shakeKey = useCheckout((s) => s.shakeKey);
   const [shaking, setShaking] = useState(false);
+  const [showComment, setShowComment] = useState(false);
+  const [comment, setComment] = useState('');
   useEffect(() => {
     // trigger per-input shake for 500ms whenever bumpShake is called
     setShaking(true);
@@ -182,6 +184,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         phone: phone.trim(),
         serviceMode,
         address: orderType === 'delivery' ? address.trim() : null,
+        comment: comment ? comment.trim() : null,
         spot: spotId,
         table: tableIdNum,
         orderProducts,
@@ -318,9 +321,29 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                     className='bg-transparent'
                   />
                 </label>
-                <div className='text-[#FF8128] text-[12px] font-medium mt-2'>
-                  +добавить комментарий к заказу
-                </div>
+                <button
+                  type='button'
+                  className='text-[#FF8128] text-[12px] font-medium mt-2'
+                  onClick={() => setShowComment((v) => !v)}
+                >
+                  {showComment ? 'Скрыть комментарий' : '+добавить комментарий к заказу'}
+                </button>
+                {showComment && (
+                  <label
+                    htmlFor='orderComment'
+                    className='bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4'
+                  >
+                    <span className='text-[#A4A4A4] text-[8px]'>Комментарий</span>
+                    <input
+                      id='orderComment'
+                      type='text'
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      className='bg-transparent'
+                      placeholder='Комментарий к заказу'
+                    />
+                  </label>
+                )}
               </div>
               <div className='rounded-2xl bg-white p-5 flex items-center justify-between mt-1'>
                 <div className='flex items-center'>
