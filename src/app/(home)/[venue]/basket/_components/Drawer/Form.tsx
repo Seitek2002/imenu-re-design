@@ -125,7 +125,7 @@ const Form = () => {
 
       {/* Spots modal (скрыт для доставки; не показываем если единственный филиал) */}
       {canPickSpot && (
-        <ModalPortal open={openSpots} onClose={() => setOpenSpots(false)}>
+        <ModalPortal open={openSpots} onClose={() => setOpenSpots(false)} zIndex={100}>
           <button
             type='button'
             aria-label='Закрыть'
