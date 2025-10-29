@@ -67,38 +67,8 @@ const Footer: FC = () => {
   const { total } = useBasketTotals(orderType);
 
   function handleOpenCheckout() {
-    const isPhoneValid = (phone ?? '').trim().length >= 5;
-    const isAddressValid =
-      orderType !== 'delivery' || (address ?? '').trim().length > 0;
-
-    if (!isPhoneValid || !isAddressValid) {
-      try {
-        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-          // strong haptic feedback on mobile
-          navigator.vibrate?.([80, 80, 120]);
-        }
-      } catch {}
-      bumpShake();
-      return;
-    } else {
-      // Persist phone/address to localStorage per requirement
-    try {
-      if (typeof window !== 'undefined') {
-        const p = (phone ?? '').trim();
-        if (p) localStorage.setItem('phone', p);
-        if (orderType === 'delivery') {
-          const a = (address ?? '').trim();
-          if (a) localStorage.setItem('address', a);
-        } else {
-          // Not delivery: drop address from storage and store state
-          localStorage.removeItem('address');
-          setAddress('');
-        }
-      }
-    } catch {}
-
+    // Always open the drawer; validation, shaking, and vibration happen inside DrawerCheckout on Pay
     openSheet();
-    }
   }
 
   return (

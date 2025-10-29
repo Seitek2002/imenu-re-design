@@ -262,13 +262,13 @@ export default function BasketView() {
         <Details orderType={orderType} />
 
         {/* Контакты */}
-        <Contacts
+        {/* <Contacts
           setPhone={setPhone}
           setAddress={setAddress}
           orderType={orderType}
           phone={phone}
           address={address}
-        />
+        /> */}
       </section>
 
       {modal.open && (

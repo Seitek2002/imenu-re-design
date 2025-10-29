@@ -31,6 +31,15 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const { total } = useBasketTotals();
   const phone = useCheckout((s) => s.phone);
   const setPhone = useCheckout((s) => s.setPhone);
+  const bumpShake = useCheckout((s) => s.bumpShake);
+  const shakeKey = useCheckout((s) => s.shakeKey);
+  const [shaking, setShaking] = useState(false);
+  useEffect(() => {
+    // trigger per-input shake for 500ms whenever bumpShake is called
+    setShaking(true);
+    const t = setTimeout(() => setShaking(false), 500);
+    return () => clearTimeout(t);
+  }, [shakeKey]);
 
   useEffect(() => {
     if (sheetOpen) {
@@ -94,6 +103,12 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const { getItemsArray } = useBasket();
   const itemsArr = getItemsArray();
 
+  // Input validity flags for red borders and shake classes
+  const isPhoneInvalid = (phone ?? '').trim().length < 5;
+  const needAddress = orderType === 'delivery';
+  const isStreetInvalid = needAddress && !(address ?? '').trim();
+  const isFloorInvalid = needAddress && !(deliveryFloor ?? '').trim();
+
   const serviceMode: 1 | 2 | 3 =
     orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
 
@@ -125,6 +140,22 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
 
   function handlePay() {
     try {
+      // Validate required fields before logging/submit:
+      // Required: phone; when delivery: street(address) and floor
+      const isPhoneValid = (phone ?? '').trim().length >= 5;
+      const requireAddress = orderType === 'delivery';
+      const isAddressValid = !requireAddress || (address ?? '').trim().length > 0;
+      const isFloorValid = !requireAddress || (deliveryFloor ?? '').trim().length > 0;
+
+      if (!isPhoneValid || !isAddressValid || !isFloorValid) {
+        try {
+          if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+            navigator.vibrate?.([80, 80, 120]);
+          }
+        } catch {}
+        bumpShake();
+        return;
+      }
       const orderProducts = itemsArr.map((it: any) => ({
         product: it.productId,
         count: it.quantity,
@@ -227,7 +258,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <div className='mt-2'>
                     <label
                       htmlFor='deliveryStreet'
-                      className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'
+                      className={`bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4 ${shaking && isStreetInvalid ? 'shake-animate' : ''}`}
+                      style={{ border: isStreetInvalid ? '1px solid red' : undefined }}
                     >
                       <span className='text-[#A4A4A4] text-[8px]'>Улица</span>
                       <input
@@ -249,7 +281,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                           className='bg-transparent'
                         />
                       </label>
-                      <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
+                      <label
+                        className={`bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4 ${shaking && isFloorInvalid ? 'shake-animate' : ''}`}
+                        style={{ border: isFloorInvalid ? '1px solid red' : undefined }}
+                      >
                         <span className='text-[#A4A4A4] text-[8px]'>Этаж</span>
                         <input
                           type='text'
@@ -272,7 +307,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                 )}
                 <label
                   htmlFor='phoneNumber'
-                  className='bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4'
+                  className={`bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4 ${shaking && isPhoneInvalid ? 'shake-animate' : ''}`}
+                  style={{ border: isPhoneInvalid ? '1px solid red' : undefined }}
                 >
                   <span className='text-[#A4A4A4] text-[8px]'>
                     Номер телефона
