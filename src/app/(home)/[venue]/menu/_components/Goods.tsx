@@ -21,9 +21,15 @@ const Goods: FC<Props> = ({ category, onOpen }) => {
 
   const { data, isLoading } = useProductsV2({ venueSlug }, { enabled: !!venueSlug });
 
-  const items = (data || []).filter(
-    (p) => p.category?.categoryName === category
-  );
+  // Filter by category and sort: items without photo go to the bottom
+  const items = (data || [])
+    .filter((p) => p.category?.categoryName === category)
+    .sort((a, b) => {
+      const aHas = !!(a.productPhoto && String(a.productPhoto).trim());
+      const bHas = !!(b.productPhoto && String(b.productPhoto).trim());
+      // Want items WITH photo first => bHas - aHas (true=1, false=0)
+      return Number(bHas) - Number(aHas);
+    });
 
   return (
     <div className='grid grid-cols-2 gap-2'>
