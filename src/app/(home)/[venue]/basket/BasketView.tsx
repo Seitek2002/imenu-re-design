@@ -167,18 +167,6 @@ export default function BasketView() {
   const serviceMode: 1 | 2 | 3 =
     orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
 
-  // Basic validation for submit enabling
-  const isPhoneValid = phone.trim().length >= 5;
-  const isAddressValid =
-    orderType === 'delivery' ? address.trim().length > 0 : true;
-  const canSubmit =
-    hydrated &&
-    !!venueSlug &&
-    items.length > 0 &&
-    isPhoneValid &&
-    isAddressValid &&
-    (orderType !== 'dinein' || !!tableId);
-
   async function handleSubmit() {
     try {
 
@@ -251,7 +239,7 @@ export default function BasketView() {
       {/* Local header */}
       <Header />
 
-      <section className='font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto pb-5'>
+      <section className={`font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto ${items.length > 4 ? 'pb-28' : 'pb-5'}`}>
         {/* Тип заказа */}
         <OrderType orderType={orderType} setOrderType={setOrderType} />
 
