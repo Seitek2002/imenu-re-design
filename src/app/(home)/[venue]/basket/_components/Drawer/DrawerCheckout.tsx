@@ -264,7 +264,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                       className={`bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4 ${shaking && isStreetInvalid ? 'shake-animate' : ''}`}
                       style={{ border: isStreetInvalid ? '1px solid red' : undefined }}
                     >
-                      <span className='text-[#A4A4A4] text-[8px]'>Улица</span>
+                      <span className='text-[#A4A4A4] text-[16px]'>Улица</span>
                       <input
                         id='deliveryStreet'
                         type='text'
@@ -276,7 +276,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                     </label>
                     <div className='grid grid-cols-3 gap-2 mt-2'>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[8px]'>Подъезд</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>Подъезд</span>
                         <input
                           type='text'
                           value={deliveryEntrance}
@@ -285,7 +285,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[8px]'>Этаж</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>Этаж</span>
                         <input
                           type='text'
                           value={deliveryFloor}
@@ -294,7 +294,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[8px]'>Квартира</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>Квартира</span>
                         <input
                           type='text'
                           value={deliveryApartment}
@@ -310,7 +310,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   className={`bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4 ${shaking && isPhoneInvalid ? 'shake-animate' : ''}`}
                   style={{ border: isPhoneInvalid ? '1px solid red' : undefined }}
                 >
-                  <span className='text-[#A4A4A4] text-[8px]'>
+                  <span className='text-[#A4A4A4] text-[16px]'>
                     Номер телефона
                   </span>
                   <input
@@ -323,7 +323,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                 </label>
                 <button
                   type='button'
-                  className='text-[#FF8128] text-[12px] font-medium mt-2'
+                  className='text-[#FF8128] text-[16px] font-medium mt-2'
                   onClick={() => setShowComment((v) => !v)}
                 >
                   {showComment ? 'Скрыть комментарий' : '+добавить комментарий к заказу'}
@@ -333,7 +333,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                     htmlFor='orderComment'
                     className='bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4'
                   >
-                    <span className='text-[#A4A4A4] text-[8px]'>Комментарий</span>
+                    <span className='text-[#A4A4A4] text-[16px]'>Комментарий</span>
                     <input
                       id='orderComment'
                       type='text'
