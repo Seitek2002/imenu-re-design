@@ -107,7 +107,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const isPhoneInvalid = (phone ?? '').trim().length < 5;
   const needAddress = orderType === 'delivery';
   const isStreetInvalid = needAddress && !(address ?? '').trim();
-  const isFloorInvalid = needAddress && !(deliveryFloor ?? '').trim();
+  const isFloorInvalid = false;
 
   const serviceMode: 1 | 2 | 3 =
     orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
@@ -145,7 +145,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
       const isPhoneValid = (phone ?? '').trim().length >= 5;
       const requireAddress = orderType === 'delivery';
       const isAddressValid = !requireAddress || (address ?? '').trim().length > 0;
-      const isFloorValid = !requireAddress || (deliveryFloor ?? '').trim().length > 0;
+      const isFloorValid = true;
 
       if (!isPhoneValid || !isAddressValid || !isFloorValid) {
         try {
@@ -281,10 +281,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                           className='bg-transparent'
                         />
                       </label>
-                      <label
-                        className={`bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4 ${shaking && isFloorInvalid ? 'shake-animate' : ''}`}
-                        style={{ border: isFloorInvalid ? '1px solid red' : undefined }}
-                      >
+                      <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
                         <span className='text-[#A4A4A4] text-[8px]'>Этаж</span>
                         <input
                           type='text'
