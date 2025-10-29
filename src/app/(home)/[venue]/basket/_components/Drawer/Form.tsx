@@ -31,15 +31,18 @@ const Form = () => {
     setPickupTime,
   } = useCheckout();
   const orderType = useCheckout((s) => s.orderType);
+  const canPickSpot = orderType !== 'delivery' && spots.length > 1;
 
   // Modals
   const [openSpots, setOpenSpots] = useState(false);
   const [openTime, setOpenTime] = useState(false);
 
-  // Close spots modal if switched to delivery (spot picking hidden for delivery)
+  // Close spots modal if switched to delivery or there is only one spot (no choice)
   useEffect(() => {
-    if (orderType === 'delivery' && openSpots) setOpenSpots(false);
-  }, [orderType, openSpots]);
+    if ((orderType === 'delivery' || spots.length <= 1) && openSpots) {
+      setOpenSpots(false);
+    }
+  }, [orderType, spots.length, openSpots]);
 
   // Ensure first spot is chosen by default
   useEffect(() => {
@@ -103,22 +106,25 @@ const Form = () => {
         ariaExpanded={openTime}
       />
 
-      {/* Филиал (скрыт для доставки) */}
+      {/* Филиал (скрыт для доставки; если филиал один — не открываем модалку) */}
       {orderType !== 'delivery' && (
         <SelectField
           leftIcon={<Image src={geoIcon} alt='geoIcon' />}
-          rightIcon={<Image src={selectArrow} alt='selectArrow' />}
+          rightIcon={canPickSpot ? <Image src={selectArrow} alt='selectArrow' /> : null}
           value={label}
           placeholder='Выбрать филиал'
           subLabel={selected ? subtitle ?? undefined : undefined}
-          onClick={() => setOpenSpots(true)}
-          ariaHasPopup='listbox'
-          ariaExpanded={openSpots}
+          onClick={() => {
+            if (canPickSpot) setOpenSpots(true);
+          }}
+          ariaHasPopup={canPickSpot ? 'listbox' : undefined}
+          ariaExpanded={canPickSpot ? openSpots : undefined}
+          className={canPickSpot ? '' : 'opacity-70'}
         />
       )}
 
-      {/* Spots modal (скрыт для доставки) */}
-      {orderType !== 'delivery' && (
+      {/* Spots modal (скрыт для доставки; не показываем если единственный филиал) */}
+      {canPickSpot && (
         <ModalPortal open={openSpots} onClose={() => setOpenSpots(false)}>
           <button
             type='button'
