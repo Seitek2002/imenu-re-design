@@ -349,7 +349,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       className='bg-transparent'
-                      placeholder='Комментарий к заказу'
                     />
                   </label>
                 )}
