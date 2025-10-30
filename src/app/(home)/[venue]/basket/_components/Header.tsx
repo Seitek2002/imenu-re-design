@@ -7,11 +7,15 @@ import { useBasket } from '@/store/basket';
 
 import arrowIcon from '@/assets/Header/arrow.svg';
 import trashIcon from '@/assets/Basket/trash.svg';
+import { useVenueQuery } from '@/store/venue';
+import tableIcon from '@/assets/Basket/table.svg';
 
 const Header = () => {
   const router = useRouter();
   const { clear } = useBasket();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const { tableNum, tableId } = useVenueQuery();
+  const displayTable = tableNum ?? tableId;
 
   function handleClearConfirm() {
     clear();
@@ -40,6 +44,15 @@ const Header = () => {
           <Image src={trashIcon} alt='trashIcon' />
         </button>
       </div>
+
+      {displayTable != null && (
+        <div className='flex justify-center pb-3'>
+          <div className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white shadow-md'>
+            <Image src={tableIcon} alt='table icon' width={16} height={16} />
+            <span className='text-[#FF7A00] font-semibold'>Стол №{displayTable}</span>
+          </div>
+        </div>
+      )}
 
       {confirmOpen && (
         <div

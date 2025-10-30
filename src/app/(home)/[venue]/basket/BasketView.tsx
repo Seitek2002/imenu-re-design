@@ -68,12 +68,20 @@ export default function BasketView() {
   useEffect(() => {
     if (orderType !== 'delivery') {
       setAddress('');
-      try { localStorage.removeItem('address'); } catch {}
+      try {
+        localStorage.removeItem('address');
+      } catch {}
     }
   }, [orderType, setAddress]);
 
   // Venue/table context and order mutation
   const { venue, tableId } = useVenueQuery();
+
+  // Force dine-in when table is assigned; switching is locked in UI
+  useEffect(() => {
+    if (tableId) setOrderType('dinein');
+  }, [tableId]);
+
   const createOrder = useCreateOrderV2();
   const [modal, setModal] = useState<{ open: boolean; message: string }>({
     open: false,
@@ -169,7 +177,6 @@ export default function BasketView() {
 
   async function handleSubmit() {
     try {
-
       if (!venueSlug) {
         setModal({ open: true, message: 'Не найден venue_slug' });
         return;
@@ -239,9 +246,13 @@ export default function BasketView() {
       {/* Local header */}
       <Header />
 
-      <section className={`font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto ${items.length > 4 ? 'pb-28' : 'pb-5'}`}>
+      <section
+        className={`font-inter bg-white pt-4 mt-1.5 px-2 rounded-4xl lg:max-w-[1140px] lg:mx-auto ${
+          items.length > 4 ? 'pb-28' : 'pb-5'
+        }`}
+      >
         {/* Тип заказа */}
-        <OrderType orderType={orderType} setOrderType={setOrderType} />
+        <OrderType orderType={orderType} setOrderType={setOrderType} locked={!!tableId} />
 
         {/* Список товаров из корзины */}
         <Items />
