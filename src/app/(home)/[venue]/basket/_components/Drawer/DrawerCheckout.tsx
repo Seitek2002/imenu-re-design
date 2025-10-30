@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useCheckout } from '@/store/checkout';
 import { useBasket } from '@/store/basket';
 import { useVenueQuery } from '@/store/venue';
+import tableIcon from '@/assets/Basket/table.svg';
 
 interface IProps {
   sheetOpen: boolean;
@@ -101,7 +102,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const setDeliveryFloor = useCheckout((s) => s.setDeliveryFloor);
   const deliveryApartment = useCheckout((s) => s.deliveryApartment);
   const setDeliveryApartment = useCheckout((s) => s.setDeliveryApartment);
-  const { venue, tableId } = useVenueQuery();
+  const { venue, tableId, tableNum } = useVenueQuery();
+  const displayTable = tableNum ?? tableId;
   const { getItemsArray } = useBasket();
   const itemsArr = getItemsArray();
 
@@ -256,7 +258,14 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           <div className='h-[calc(100%)] overflow-y-auto flex flex-col justify-between'>
             <div>
               <div className='rounded-2xl bg-white p-5'>
-                <Form />
+                {orderType === 'dinein' ? (
+                  <div className='bg-[#F5F5F5] flex items-center gap-2 rounded-lg py-3 px-4 mb-2'>
+                    <Image src={tableIcon} alt='table icon' width={16} height={16} />
+                    <span className='text-[#111111] font-semibold'>Стол №{displayTable ?? '-'}</span>
+                  </div>
+                ) : (
+                  <Form />
+                )}
                 {orderType === 'delivery' && (
                   <div className='mt-2'>
                     <label
