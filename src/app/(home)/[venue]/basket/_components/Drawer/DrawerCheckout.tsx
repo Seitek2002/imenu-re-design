@@ -18,13 +18,13 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [sheetAnim, setSheetAnim] = useState(false);
 
   // Resizable bottom sheet state (in vh)
-  const [heightPct, setHeightPct] = useState(70);
-  const minPct = 30;
+  const [heightPct, setHeightPct] = useState<string | number>('auto');
+  const minPct = 15;
   const maxPct = 92;
 
   const [dragging, setDragging] = useState(false);
   const startYRef = useRef(0);
-  const startHeightRef = useRef(70);
+  const startHeightRef = useRef(40);
 
   const clamp = (v: number, min: number, max: number) =>
     Math.min(max, Math.max(min, v));
@@ -51,7 +51,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     } else {
       setSheetAnim(false);
       setDragging(false);
-      setHeightPct(70); // reset to default when hiding
+      setHeightPct('auto'); // reset to default when hiding
     }
   }, [sheetOpen]);
 
@@ -69,25 +69,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     window.removeEventListener('pointermove', onPointerMove as any);
     window.removeEventListener('pointerup', onPointerUp as any);
     setDragging(false);
-    if (heightPct <= minPct) {
+    if (+heightPct <= minPct) {
       // close if dragged far down
       closeSheet();
     }
-  };
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    // Primary pointer only; block native scroll
-    // @ts-ignore
-    if (typeof e.isPrimary !== 'undefined' && e.isPrimary === false) return;
-    e.preventDefault();
-    setDragging(true);
-    startYRef.current = e.clientY;
-    startHeightRef.current = heightPct;
-    // Use window listeners to avoid losing events outside handle
-    window.addEventListener('pointermove', onPointerMove as any, {
-      passive: false,
-    });
-    window.addEventListener('pointerup', onPointerUp as any, { passive: true });
   };
 
   const orderType = useCheckout((s) => s.orderType);
@@ -140,7 +125,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     } catch {}
     return '';
   }
-
 
   function handlePay() {
     try {
@@ -250,7 +234,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
             className={`fixed -top-8 right-0 left-0 mx-auto h-8 w-full flex items-center justify-center ${
               dragging ? 'cursor-grabbing' : 'cursor-grab'
             } select-none`}
-            onPointerDown={onPointerDown}
             style={{ touchAction: 'none' }}
           >
             <div className='h-1 w-16 rounded-full bg-[#fff]' />
