@@ -29,7 +29,7 @@ export type Product = {
   id: number; // readOnly
   productName: string;
   weight: number;
-  productPhoto: string; // readOnly
+  productPhoto: string | null; // readOnly (may be null in new payloads)
 
   // Non-spec but used by UI or may appear in payloads
   productPrice?: string | number;
@@ -45,6 +45,11 @@ export type Product = {
     id: number;
     categoryName: string;
   };
+  // New payload provides multiple categories per product
+  categories?: Array<{
+    id: number;
+    categoryName: string;
+  }>;
 };
 
 // OrderProduct (readOnly in OrderList)

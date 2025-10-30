@@ -21,9 +21,17 @@ const Goods: FC<Props> = ({ category, onOpen }) => {
 
   const { data, isLoading } = useProductsV2({ venueSlug }, { enabled: !!venueSlug });
 
-  // Filter by category and sort: items without photo go to the bottom
+  // Filter by category (supports both legacy "category" and new "categories[]"),
+  // then sort so items without photo go to the bottom
   const items = (data || [])
-    .filter((p) => p.category?.categoryName === category)
+    .filter((p) => {
+      // New payload: multiple categories
+      if (Array.isArray((p as any).categories) && (p as any).categories.length > 0) {
+        return (p as any).categories.some((c: any) => c?.categoryName === category);
+      }
+      // Legacy: single category object
+      return (p as any).category?.categoryName === category;
+    })
     .sort((a, b) => {
       const aHas = !!(a.productPhoto && String(a.productPhoto).trim());
       const bHas = !!(b.productPhoto && String(b.productPhoto).trim());
