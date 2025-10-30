@@ -357,7 +357,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
               <div className='rounded-2xl bg-white p-5 flex items-center justify-between mt-1'>
                 <div className='flex items-center'>
                   <Image src={elqr} alt='elqr' />
-                  <span className='text-[14px] font-medium'>ELQR</span>
+                  <span className='text-[14px] font-medium ml-1'> ELQR</span>
                 </div>
                 <span className='text-[14px] font-medium'>
                   Оплата доступна любым банком КР
