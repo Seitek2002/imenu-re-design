@@ -230,14 +230,14 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           data-total={total}
           style={{ height: `${heightPct}vh` }}
         >
-          <div
+          {/* <div
             className={`fixed -top-8 right-0 left-0 mx-auto h-8 w-full flex items-center justify-center ${
               dragging ? 'cursor-grabbing' : 'cursor-grab'
             } select-none`}
             style={{ touchAction: 'none' }}
           >
             <div className='h-1 w-16 rounded-full bg-[#fff]' />
-          </div>
+          </div> */}
           <div className='h-[calc(100%)] overflow-y-auto flex flex-col justify-between'>
             <div>
               <div className='rounded-2xl bg-white p-5'>
@@ -262,7 +262,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         type='text'
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        className='bg-transparent'
+                        className='bg-transparent outline-none'
                       />
                     </label>
                     <div className='grid grid-cols-3 gap-2 mt-2'>
@@ -272,7 +272,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                           type='text'
                           value={deliveryEntrance}
                           onChange={(e) => setDeliveryEntrance(e.target.value)}
-                          className='bg-transparent'
+                          className='bg-transparent outline-none'
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
@@ -281,7 +281,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                           type='text'
                           value={deliveryFloor}
                           onChange={(e) => setDeliveryFloor(e.target.value)}
-                          className='bg-transparent'
+                          className='bg-transparent outline-none'
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
@@ -290,7 +290,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                           type='text'
                           value={deliveryApartment}
                           onChange={(e) => setDeliveryApartment(e.target.value)}
-                          className='bg-transparent'
+                          className='bg-transparent outline-none'
                         />
                       </label>
                     </div>
@@ -306,10 +306,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   </span>
                   <input
                     id='phoneNumber'
-                    type='text'
+                    type='number'
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className='bg-transparent'
+                    className='bg-transparent outline-none'
                   />
                 </label>
                 <button
@@ -330,7 +330,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                       type='text'
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      className='bg-transparent'
+                      className='bg-transparent outline-none'
                     />
                   </label>
                 )}
