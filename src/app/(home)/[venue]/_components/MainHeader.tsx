@@ -71,8 +71,8 @@ const MainHeader = () => {
 
   // Wi‑Fi modal state and constants
   const [wifiOpen, setWifiOpen] = useState(false);
-  const ssid = 'Oriental';
-  const pass = '123456789';
+  const ssid = 'USTUKAN';
+  const pass = 'U20252025';
   const auth = 'WPA';
   const wifiString = `WIFI:T:${auth};S:${ssid};P:${pass};;`;
   const [qrUrl, setQrUrl] = useState<string>('');
