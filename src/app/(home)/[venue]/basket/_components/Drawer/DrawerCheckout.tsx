@@ -17,17 +17,10 @@ interface IProps {
 const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [sheetAnim, setSheetAnim] = useState(false);
 
-  // Resizable bottom sheet state (in vh)
-  const [heightPct, setHeightPct] = useState<string | number>('auto');
-  const minPct = 15;
-  const maxPct = 92;
-
+  // Simple swipe-to-close down gesture (no resizing)
   const [dragging, setDragging] = useState(false);
   const startYRef = useRef(0);
-  const startHeightRef = useRef(40);
-
-  const clamp = (v: number, min: number, max: number) =>
-    Math.min(max, Math.max(min, v));
+  const SWIPE_CLOSE_THRESHOLD = 60; // px
 
   const { total } = useBasketTotals();
   const phone = useCheckout((s) => s.phone);
@@ -37,6 +30,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [shaking, setShaking] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState('');
+
   useEffect(() => {
     // trigger per-input shake for 500ms whenever bumpShake is called
     setShaking(true);
@@ -51,29 +45,41 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     } else {
       setSheetAnim(false);
       setDragging(false);
-      setHeightPct('auto'); // reset to default when hiding
     }
   }, [sheetOpen]);
 
-  // Pointer handlers for drag-to-resize
-  const onPointerMove = (e: PointerEvent) => {
-    // prevent page scroll on mobile while dragging
-    if (e.cancelable) e.preventDefault();
-    const deltaY = startYRef.current - e.clientY; // up is positive
-    const deltaPct = (deltaY / window.innerHeight) * 100;
-    const next = clamp(startHeightRef.current + deltaPct, 12, maxPct);
-    setHeightPct(next);
-  };
+  // onPointerMove removed: swipe-to-close is handled on pointerup using start Y only
 
-  const onPointerUp = (_e: PointerEvent) => {
-    window.removeEventListener('pointermove', onPointerMove as any);
-    window.removeEventListener('pointerup', onPointerUp as any);
+  const handleStart = (y: number) => {
+    setDragging(true);
+    startYRef.current = y;
+  };
+  const handleEnd = (y: number) => {
     setDragging(false);
-    if (+heightPct <= minPct) {
-      // close if dragged far down
+    const deltaDown = y - startYRef.current;
+    if (deltaDown > SWIPE_CLOSE_THRESHOLD) {
       closeSheet();
     }
   };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    // @ts-ignore
+    if (typeof e.isPrimary !== 'undefined' && e.isPrimary === false) return;
+    handleStart(e.clientY);
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    handleEnd(e.clientY);
+  };
+  const onTouchStart = (e: React.TouchEvent) => {
+    const y = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
+    handleStart(y);
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const y = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : 0;
+    handleEnd(y);
+  };
+  const onMouseDown = (e: React.MouseEvent) => handleStart(e.clientY);
+  const onMouseUp = (e: React.MouseEvent) => handleEnd(e.clientY);
 
   const orderType = useCheckout((s) => s.orderType);
   const selectedSpotId = useCheckout((s) => s.selectedSpotId);
@@ -81,8 +87,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const setAddress = useCheckout((s) => s.setAddress);
   const pickupMode = useCheckout((s) => s.pickupMode);
   const pickupTime = useCheckout((s) => s.pickupTime);
-  const deliveryEntrance = useCheckout((s) => s.deliveryEntrance);
-  const setDeliveryEntrance = useCheckout((s) => s.setDeliveryEntrance);
+  const deliveryEntrance = useCheckout((s) => s.setDeliveryEntrance);
   const deliveryFloor = useCheckout((s) => s.deliveryFloor);
   const setDeliveryFloor = useCheckout((s) => s.setDeliveryFloor);
   const deliveryApartment = useCheckout((s) => s.deliveryApartment);
@@ -96,7 +101,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const isPhoneInvalid = (phone ?? '').trim().length < 5;
   const needAddress = orderType === 'delivery';
   const isStreetInvalid = needAddress && !(address ?? '').trim();
-  const isFloorInvalid = false;
+  const isFloorInvalid = false; // этаж необязателен
 
   const serviceMode: 1 | 2 | 3 =
     orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
@@ -129,13 +134,12 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   function handlePay() {
     try {
       // Validate required fields before logging/submit:
-      // Required: phone; when delivery: street(address) and floor
+      // Required: phone; when delivery: street(address)
       const isPhoneValid = (phone ?? '').trim().length >= 5;
       const requireAddress = orderType === 'delivery';
       const isAddressValid = !requireAddress || (address ?? '').trim().length > 0;
-      const isFloorValid = true;
 
-      if (!isPhoneValid || !isAddressValid || !isFloorValid) {
+      if (!isPhoneValid || !isAddressValid) {
         try {
           if (typeof window !== 'undefined' && 'vibrate' in navigator) {
             navigator.vibrate?.([80, 80, 120]);
@@ -188,7 +192,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           delivery: orderType === 'delivery'
             ? {
                 street: address || null,
-                entrance: deliveryEntrance || null,
+                // entrance / floor / apartment are optional, keep for reference if needed
+                // entrance: deliveryEntrance || null,
                 floor: deliveryFloor || null,
                 apartment: deliveryApartment || null,
               }
@@ -228,16 +233,15 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
               : 'translate-y-full opacity-0'
           } ${dragging ? 'cursor-grabbing' : ''}`}
           data-total={total}
-          style={{ height: `${heightPct}vh` }}
+          style={{ height: '70vh', touchAction: 'none' }}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
         >
-          {/* <div
-            className={`fixed -top-8 right-0 left-0 mx-auto h-8 w-full flex items-center justify-center ${
-              dragging ? 'cursor-grabbing' : 'cursor-grab'
-            } select-none`}
-            style={{ touchAction: 'none' }}
-          >
-            <div className='h-1 w-16 rounded-full bg-[#fff]' />
-          </div> */}
+          {/* Drag handle removed: swipe-to-close works on the entire block */}
           <div className='h-[calc(100%)] overflow-y-auto flex flex-col justify-between'>
             <div>
               <div className='rounded-2xl bg-white p-5'>
@@ -262,7 +266,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         type='text'
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        className='bg-transparent outline-none'
+                        className='bg-transparent'
+                        placeholder='Укажите улицу'
                       />
                     </label>
                     <div className='grid grid-cols-3 gap-2 mt-2'>
@@ -270,9 +275,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         <span className='text-[#A4A4A4] text-[16px]'>Подъезд</span>
                         <input
                           type='text'
-                          value={deliveryEntrance}
-                          onChange={(e) => setDeliveryEntrance(e.target.value)}
-                          className='bg-transparent outline-none'
+                          onChange={(e) => deliveryEntrance(e.target.value)}
+                          className='bg-transparent'
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
@@ -281,7 +285,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                           type='text'
                           value={deliveryFloor}
                           onChange={(e) => setDeliveryFloor(e.target.value)}
-                          className='bg-transparent outline-none'
+                          className='bg-transparent'
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
@@ -290,7 +294,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                           type='text'
                           value={deliveryApartment}
                           onChange={(e) => setDeliveryApartment(e.target.value)}
-                          className='bg-transparent outline-none'
+                          className='bg-transparent'
                         />
                       </label>
                     </div>
@@ -306,10 +310,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   </span>
                   <input
                     id='phoneNumber'
-                    type='number'
+                    type='text'
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className='bg-transparent outline-none'
+                    className='bg-transparent'
                   />
                 </label>
                 <button
@@ -330,7 +334,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                       type='text'
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      className='bg-transparent outline-none'
+                      className='bg-transparent'
+                      placeholder='Комментарий к заказу'
                     />
                   </label>
                 )}
@@ -338,7 +343,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
               <div className='rounded-2xl bg-white p-5 flex items-center justify-between mt-1'>
                 <div className='flex items-center'>
                   <Image src={elqr} alt='elqr' />
-                  <span className='text-[14px] font-medium ml-1'> ELQR</span>
+                  <span className='text-[14px] font-medium'>ELQR</span>
                 </div>
                 <span className='text-[14px] font-medium'>
                   Оплата доступна любым банком КР
@@ -353,10 +358,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   </div>
                   <div className='text-[#939393] text-xs'>Итого</div>
                 </div>
-                  <button
-                    className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
-                    onClick={handlePay}
-                  >
+                <button
+                  className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
+                  onClick={handlePay}
+                >
                   Оплатить
                 </button>
               </div>
