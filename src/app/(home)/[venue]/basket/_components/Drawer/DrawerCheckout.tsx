@@ -280,7 +280,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         className='bg-transparent'
-                        placeholder='Укажите улицу'
                       />
                     </label>
                     <div className='grid grid-cols-3 gap-2 mt-2'>
