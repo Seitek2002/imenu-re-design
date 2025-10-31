@@ -191,6 +191,12 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
       // Send request to server and log response (OrderCreate readOnly fields expected)
       const resp = await createOrder.mutateAsync({ body, venueSlug });
       console.log('order:create:success', resp);
+      try {
+        const url = (resp as any)?.paymentUrl;
+        if (typeof window !== 'undefined' && url && typeof url === 'string') {
+          window.open(url, '_blank', 'noopener');
+        }
+      } catch {}
     } catch (e: any) {
       console.error('order:create:error', e?.message || e);
       try {
