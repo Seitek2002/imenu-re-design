@@ -1,14 +1,20 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { setAppLanguage } from "@/i18n";
 
-type Lang = "RU" | "KG" | "ENG";
+type LangUI = "RU" | "KG" | "ENG";
+type LangCode = "ru" | "kg" | "en";
 
-const options: Lang[] = ["RU", "KG", "ENG"];
+// Mapping between UI labels and i18n language codes
+const uiToCode: Record<LangUI, LangCode> = { RU: "ru", KG: "kg", ENG: "en" };
+const codeToUi: Record<LangCode, LangUI> = { ru: "RU", kg: "KG", en: "ENG" };
+
+const options: LangUI[] = ["RU", "KG", "ENG"];
 
 export default function LanguageDropdown() {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Lang>("RU");
+  const [selected, setSelected] = useState<LangUI>("RU");
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -21,10 +27,29 @@ export default function LanguageDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const onSelect = (lang: Lang) => {
+  // Initialize selection from localStorage/lang
+  useEffect(() => {
+    try {
+      const stored = (localStorage.getItem("lang") as LangCode | null) || "ru";
+      setSelected(codeToUi[stored] || "RU");
+    } catch {
+      setSelected("RU");
+    }
+  }, []);
+
+  const onSelect = (lang: LangUI) => {
     setSelected(lang);
     setOpen(false);
-    // TODO: hook into i18n switcher here if needed
+    // Switch i18n language, persist, and reload to refetch backend data with Accept-Language
+    const code = uiToCode[lang];
+    try {
+      setAppLanguage(code);
+      // Force full reload to let SSR/queries refetch with new Accept-Language
+      if (typeof window !== "undefined") window.location.reload();
+    } catch {
+      // As a fallback still reload
+      if (typeof window !== "undefined") window.location.reload();
+    }
   };
 
   return (

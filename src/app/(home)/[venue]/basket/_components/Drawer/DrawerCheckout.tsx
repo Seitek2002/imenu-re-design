@@ -8,6 +8,7 @@ import { useCheckout } from '@/store/checkout';
 import { useBasket } from '@/store/basket';
 import { useVenueQuery } from '@/store/venue';
 import tableIcon from '@/assets/Basket/table.svg';
+import { useTranslation } from 'react-i18next';
 
 interface IProps {
   sheetOpen: boolean;
@@ -23,6 +24,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const SWIPE_CLOSE_THRESHOLD = 60; // px
 
   const { total } = useBasketTotals();
+  const { t } = useTranslation();
   const phone = useCheckout((s) => s.phone);
   const setPhone = useCheckout((s) => s.setPhone);
   const bumpShake = useCheckout((s) => s.bumpShake);
@@ -248,7 +250,9 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                 {orderType === 'dinein' ? (
                   <div className='bg-[#F5F5F5] flex items-center gap-2 rounded-lg py-3 px-4 mb-2'>
                     <Image src={tableIcon} alt='table icon' width={16} height={16} />
-                    <span className='text-[#111111] font-semibold'>Стол №{displayTable ?? '-'}</span>
+                    <span className='text-[#111111] font-semibold'>
+                      {t('tableLabel', { num: displayTable ?? '-' })}
+                    </span>
                   </div>
                 ) : (
                   <Form />
@@ -260,7 +264,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                       className={`bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4 ${shaking && isStreetInvalid ? 'shake-animate' : ''}`}
                       style={{ border: isStreetInvalid ? '1px solid red' : undefined }}
                     >
-                      <span className='text-[#A4A4A4] text-[16px]'>Улица</span>
+                      <span className='text-[#A4A4A4] text-[16px]'>{t('street')}</span>
                       <input
                         id='deliveryStreet'
                         type='text'
@@ -272,7 +276,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                     </label>
                     <div className='grid grid-cols-3 gap-2 mt-2'>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[16px]'>Подъезд</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>{t('entrance')}</span>
                         <input
                           type='text'
                           onChange={(e) => deliveryEntrance(e.target.value)}
@@ -280,7 +284,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[16px]'>Этаж</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>{t('floor')}</span>
                         <input
                           type='text'
                           value={deliveryFloor}
@@ -289,7 +293,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[16px]'>Квартира</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>{t('apartment')}</span>
                         <input
                           type='text'
                           value={deliveryApartment}
@@ -306,7 +310,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   style={{ border: isPhoneInvalid ? '1px solid red' : undefined }}
                 >
                   <span className='text-[#A4A4A4] text-[16px]'>
-                    Номер телефона
+                    {t('phoneNumber')}
                   </span>
                   <input
                     id='phoneNumber'
@@ -321,14 +325,14 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   className='text-[#FF8128] text-[16px] font-medium mt-2'
                   onClick={() => setShowComment((v) => !v)}
                 >
-                  {showComment ? 'Скрыть комментарий' : '+добавить комментарий к заказу'}
+                  {showComment ? t('hideComment') : t('addComment')}
                 </button>
                 {showComment && (
                   <label
                     htmlFor='orderComment'
                     className='bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4'
                   >
-                    <span className='text-[#A4A4A4] text-[16px]'>Комментарий</span>
+                    <span className='text-[#A4A4A4] text-[16px]'>{t('comment')}</span>
                     <input
                       id='orderComment'
                       type='text'
@@ -346,7 +350,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <span className='text-[14px] font-medium'>ELQR</span>
                 </div>
                 <span className='text-[14px] font-medium'>
-                  Оплата доступна любым банком КР
+                  {t('elqrInfo')}
                 </span>
               </div>
             </div>
@@ -356,13 +360,13 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <div className='font-semibold text-xl'>
                     {Math.round(total * 100) / 100} с
                   </div>
-                  <div className='text-[#939393] text-xs'>Итого</div>
+                  <div className='text-[#939393] text-xs'>{t('total')}</div>
                 </div>
                 <button
                   className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
                   onClick={handlePay}
                 >
-                  Оплатить
+                  {t('pay')}
                 </button>
               </div>
             </div>

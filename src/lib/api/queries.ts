@@ -43,6 +43,8 @@ async function fetchJSON<T>(
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      'Accept-Language':
+        (typeof window !== 'undefined' && (localStorage.getItem('lang') || 'ru')) || 'ru',
       ...(init?.headers ?? {}),
     },
   });

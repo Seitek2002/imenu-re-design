@@ -13,11 +13,13 @@ import venueLogo from '@/assets/Header/venue-logo.png';
 import venueName from '@/assets/Header/venue-name.png';
 import wifiIcon from '@/assets/Header/wifi-icon.svg';
 // import searchIcon from '@/assets/Header/search.svg';
+import { useTranslation } from 'react-i18next';
 
 const MainHeader = () => {
   const params = useParams<{ venue?: string }>();
   const { data: venue } = useVenue(params.venue!);
   const { setVenue, setTableInfo, tableNum } = useVenueQuery();
+  const { t } = useTranslation();
 
   // читаем tableId из sessionStorage только в браузере
   const [tableId, setTableId] = useState<string | null>(null);
@@ -127,18 +129,18 @@ const MainHeader = () => {
             >
               ✕
             </button>
-            <div className='text-base font-semibold mb-2'>Wi‑Fi</div>
+            <div className='text-base font-semibold mb-2'>{t('wifi')}</div>
             {qrUrl ? (
               <div className='flex justify-center mb-3'>
                 <img src={qrUrl} alt='Wi‑Fi QR' className='w-[240px] h-[240px]' />
               </div>
             ) : null}
             <div className='text-sm'>
-              <span className='text-[#6B6B6B]'>Название сети: </span>
+              <span className='text-[#6B6B6B]'>{t('wifiName')} </span>
               <span className='font-medium break-all'>{ssid}</span>
             </div>
             <div className='text-sm mt-2'>
-              <span className='text-[#6B6B6B]'>Пароль: </span>
+              <span className='text-[#6B6B6B]'>{t('wifiPass')} </span>
               <span className='font-medium break-all'>{pass}</span>
             </div>
           </div>

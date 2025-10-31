@@ -8,6 +8,7 @@ import ModalPortal from '@/components/ui/ModalPortal';
 import widget1 from '@/assets/Widgets/widget-1.png';
 import widget2 from '@/assets/Widgets/widget-2.png';
 import widget3 from '@/assets/Widgets/widget-3.png';
+import { useTranslation } from 'react-i18next';
 
 function formatTime(t?: string) {
   if (!t) return '';
@@ -24,6 +25,7 @@ function weekdayIndex1to7(d: Date) {
 
 const Widgets = () => {
   const { venue } = useVenueQuery();
+  const { t } = useTranslation();
   const [openSchedule, setOpenSchedule] = useState(false);
 
   const schedules = useMemo(() => {
@@ -58,7 +60,7 @@ const Widgets = () => {
           className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center hover:shadow-sm transition'
           onClick={() => setOpenSchedule(true)}
         >
-          <h3 className='text-[#0404138C] text-nowrap'>График работы</h3>
+          <h3 className='text-[#0404138C] text-nowrap'>{t('schedule')}</h3>
           <div className='h-[50px]'>
             <Image src={widget3} alt='widget 3' />
           </div>
@@ -75,10 +77,10 @@ const Widgets = () => {
           ✕
         </button>
 
-        <h2 className='text-base font-semibold mb-3'>График работы</h2>
+        <h2 className='text-base font-semibold mb-3'>{t('schedule')}</h2>
 
         {schedules.length === 0 ? (
-          <div className='text-[#6B7280]'>Информация о графике не указана.</div>
+          <div className='text-[#6B7280]'>{t('infoNotProvided')}</div>
         ) : (
           <ul className='divide-y divide-[#E5E7EB]'>
             {schedules.map((s: any) => {
@@ -87,8 +89,8 @@ const Widgets = () => {
               const isDayOff = !!s?.isDayOff;
 
               let timeText = '';
-              if (isDayOff) timeText = 'Выходной';
-              else if (is24h) timeText = 'Круглосуточно';
+              if (isDayOff) timeText = t('dayOff');
+              else if (is24h) timeText = t('roundTheClock');
               else timeText = `${formatTime(s?.workStart)} – ${formatTime(s?.workEnd)}`;
 
               return (

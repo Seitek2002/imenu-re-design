@@ -13,8 +13,10 @@ import { useVenueQuery } from '@/store/venue';
 import { useCallWaiterV2 } from '@/lib/api/queries';
 import { useCheckout } from '@/store/checkout';
 import { useBasketTotals } from '@/lib/hooks/use-basket-totals';
+import { useTranslation } from 'react-i18next';
 
 const Footer: FC = () => {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const params = useParams<{ venue?: string }>();
   const venueRoot = params?.venue ? `/${params.venue}` : '';
@@ -93,7 +95,7 @@ const Footer: FC = () => {
             className='block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold'
             style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
           >
-            Перейти в корзину · {Math.round(total * 100) / 100} c
+            {t('goToBasket')} · {Math.round(total * 100) / 100} c
           </Link>
         </div>
         {tableId && (
@@ -114,7 +116,7 @@ const Footer: FC = () => {
                   : 'max-w-[300px] opacity-100 ml-2'
               }`}
             >
-              Позвать официанта к <b>{tableNum ?? tableId} столику</b>
+              {t('callWaiter', { table: tableNum ?? tableId })}
             </span>
           </button>
         )}
@@ -124,13 +126,13 @@ const Footer: FC = () => {
               <div className='font-semibold text-xl'>
                 {Math.round(total * 100) / 100} с
               </div>
-              <div className='text-[#939393] text-xs'>Итого</div>
+              <div className='text-[#939393] text-xs'>{t('total')}</div>
             </div>
             <button
               className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
               onClick={handleOpenCheckout}
             >
-              К оформлению
+              {t('checkoutProceed')}
             </button>
           </div>
         )}

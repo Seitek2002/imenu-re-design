@@ -9,9 +9,11 @@ import arrowIcon from '@/assets/Header/arrow.svg';
 import trashIcon from '@/assets/Basket/trash.svg';
 import { useVenueQuery } from '@/store/venue';
 import tableIcon from '@/assets/Basket/table.svg';
+import { useTranslation } from 'react-i18next';
 
 const Header = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const { clear } = useBasket();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { tableNum, tableId } = useVenueQuery();
@@ -33,7 +35,7 @@ const Header = () => {
           className='cursor-pointer'
           onClick={() => router.back()}
         />
-        <h2 className='text-2xl font-semibold'>Корзина</h2>
+        <h2 className='text-2xl font-semibold'>{t('basket')}</h2>
         {/* Placeholder for "очистить корзину" (только UI) */}
         <button
           type='button'
@@ -49,7 +51,9 @@ const Header = () => {
         <div className='flex justify-center pb-3'>
           <div className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white shadow-md'>
             <Image src={tableIcon} alt='table icon' width={16} height={16} />
-            <span className='text-[#FF7A00] font-semibold'>Стол №{displayTable}</span>
+            <span className='text-[#FF7A00] font-semibold'>
+              {t('tableLabel', { num: displayTable })}
+            </span>
           </div>
         </div>
       )}
@@ -62,7 +66,7 @@ const Header = () => {
         >
           <div className='bg-white rounded-2xl p-4 w-[90%] max-w-sm shadow-xl'>
             <div className='text-xl font-semibold text-center mb-4'>
-              Очистить корзину?
+              {t('clearBasketConfirm')}
             </div>
             <div className='grid grid-cols-2 gap-4'>
               <button
@@ -70,7 +74,7 @@ const Header = () => {
                 onClick={handleClearConfirm}
                 className='py-3 px-6 rounded-[10px] bg-[#F5F5F5] text-[#111111] font-semibold'
               >
-                Да
+                {t('yes')}
               </button>
               <button
                 type='button'
@@ -78,7 +82,7 @@ const Header = () => {
                 className='py-3 px-6 rounded-[10px] text-white font-semibold'
                 style={{ backgroundColor: '#FF7A00' }}
               >
-                Отменить
+                {t('cancel')}
               </button>
             </div>
           </div>
