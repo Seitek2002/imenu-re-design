@@ -115,8 +115,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
 
   function handlePay() {
     try {
-      // Validate required fields before logging/submit:
-      // Required: phone; when delivery: street(address)
       const isPhoneValid = (phone ?? '').trim().length >= 5;
       const requireAddress = orderType === 'delivery';
       const isAddressValid = !requireAddress || (address ?? '').trim().length > 0;
