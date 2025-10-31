@@ -44,7 +44,9 @@ async function fetchJSON<T>(
     headers: {
       'Content-Type': 'application/json',
       'Accept-Language':
-        (typeof window !== 'undefined' && (localStorage.getItem('lang') || 'ru')) || 'ru',
+        (typeof window !== 'undefined' &&
+          (localStorage.getItem('lang') || 'ru')) ||
+        'ru',
       ...(init?.headers ?? {}),
     },
   });
@@ -72,7 +74,11 @@ export const qk = {
 
   categories: (venueSlug?: string) => ['categories', venueSlug] as QueryKey,
   v2Categories: (params?: { venueSlug?: string; sectionId?: number }) =>
-    ['v2-categories', params?.venueSlug ?? '', params?.sectionId ?? ''] as QueryKey,
+    [
+      'v2-categories',
+      params?.venueSlug ?? '',
+      params?.sectionId ?? '',
+    ] as QueryKey,
 
   products: (opts?: { search?: string; spotId?: string; venueSlug?: string }) =>
     [
@@ -379,53 +385,17 @@ export function useOrderByIdV2(
 /** POST /api/v2/orders/ */
 export function useCreateOrderV2() {
   // Accept venueSlug to satisfy backend requirement (some environments expect venue_slug as query)
-  return useMutation<OrderCreate, Error, { body: OrderCreate; venueSlug?: string }>({
+  return useMutation<
+    OrderCreate,
+    Error,
+    { body: OrderCreate; venueSlug?: string }
+  >({
     mutationKey: ['v2-create-order'],
     mutationFn: ({ body, venueSlug }) => {
-      // Encode as application/x-www-form-urlencoded using bracket notation
-      // to pass nested orderProducts[] items, per Swagger UI behavior.
-      const form = new URLSearchParams();
-
-      const set = (k: string, v: unknown) => {
-        if (v === undefined || v === null || v === '') return;
-        form.append(k, String(v));
-      };
-console.log(body);
-
-      set('phone', body.phone);
-      set('comment', body.comment);
-      set('serviceMode', body.serviceMode);
-      // Address: include only when provided (delivery), allow full concatenated string
-      if (body.address !== undefined && body.address !== null) set('address', body.address);
-
-      set('servicePrice', body.servicePrice);
-      set('tipsPrice', body.tipsPrice);
-      set('bonus', body.bonus);
-      set('spot', body.spot);
-      set('table', body.table);
-      if (typeof body.isTgBot === 'boolean') set('isTgBot', body.isTgBot ? 'true' : 'false');
-      set('tgRedirectUrl', body.tgRedirectUrl);
-
-      // orderProducts is required: send as JSON string form field (per Swagger form-url-encoded support)
-      if (Array.isArray(body.orderProducts)) {
-        form.set('orderProducts', JSON.stringify(body.orderProducts));
-      }
-
-      set('code', body.code);
-      set('hash', body.hash);
-      if (typeof body.useBonus === 'boolean') set('useBonus', body.useBonus ? 'true' : 'false');
-
-      return fetchJSON<OrderCreate>(
-        '/api/v2/orders/',
-        undefined,
-        {
-          method: 'POST',
-          // headers: {
-          //   'Content-Type': 'application/x-www-form-urlencoded',
-          // },
-          body: JSON.stringify({...body, venue_slug: venueSlug}),
-        }
-      );
+      return fetchJSON<OrderCreate>('/api/v2/orders/', undefined, {
+        method: 'POST',
+        body: JSON.stringify({ ...body, venue_slug: venueSlug }),
+      });
     },
   });
 }
@@ -490,7 +460,8 @@ export function useClientBonus(
         phone: params?.phone,
         venueSlug: params?.venueSlug,
       }),
-    enabled: (options?.enabled ?? true) && !!params?.phone && !!params?.venueSlug,
+    enabled:
+      (options?.enabled ?? true) && !!params?.phone && !!params?.venueSlug,
     ...options,
   });
 }
@@ -507,7 +478,8 @@ export function useClientBonusV2(
         phone: params?.phone,
         venueSlug: params?.venueSlug,
       }),
-    enabled: (options?.enabled ?? true) && !!params?.phone && !!params?.venueSlug,
+    enabled:
+      (options?.enabled ?? true) && !!params?.phone && !!params?.venueSlug,
     ...options,
   });
 }
@@ -541,7 +513,11 @@ export function useUpdateClientV2() {
 
 /** PATCH /api/v2/clients/{phoneNumber}/ */
 export function usePatchClientV2() {
-  return useMutation<Client, Error, { phoneNumber: string; body: Partial<Client> }>({
+  return useMutation<
+    Client,
+    Error,
+    { phoneNumber: string; body: Partial<Client> }
+  >({
     mutationKey: ['v2-client-patch'],
     mutationFn: ({ phoneNumber, body }) =>
       fetchJSON<Client>(
