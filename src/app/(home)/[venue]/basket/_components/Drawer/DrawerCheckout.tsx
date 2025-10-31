@@ -148,8 +148,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           : null;
       const spotId = selectedSpotId ?? defaultSpotId ?? firstSpotId ?? null;
 
-      const venueSlug = resolveVenueSlug();
-
       const body = {
         phone: phone.trim(),
         serviceMode,
@@ -162,25 +160,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         useBonus: false,
       };
 
-      const effectivePickupTime = pickupMode === 'asap' ? 'Быстрее всего' : pickupTime;
-      console.log('order:payload', {
-        venueSlug,
-        body,
-        clientMeta: {
-          pickupMode,
-          pickupTime: effectivePickupTime, // ASAP shows "Быстрее всего"
-          delivery: orderType === 'delivery'
-            ? {
-                street: address || null,
-                // entrance / floor / apartment are optional, keep for reference if needed
-                // entrance: deliveryEntrance || null,
-                floor: deliveryFloor || null,
-                apartment: deliveryApartment || null,
-              }
-            : null,
-          total,
-        },
-      });
+      // Log payload exactly in the server format (OrderCreate schema)
+      // POST /api/v2/orders/ with JSON body = OrderCreate
+      // { phone, comment, serviceMode, address, spot, table, orderProducts, isTgBot, useBonus }
+      console.log('order:payload', body);
     } catch (e) {
       // noop
     }
