@@ -21,7 +21,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   // Simple swipe-to-close down gesture (no resizing)
   const [dragging, setDragging] = useState(false);
   const startYRef = useRef(0);
-  const SWIPE_CLOSE_THRESHOLD = 60; // px
 
   const { total } = useBasketTotals();
   const { t } = useTranslation();
