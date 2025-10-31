@@ -56,32 +56,12 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     setDragging(true);
     startYRef.current = y;
   };
-  const handleEnd = (y: number) => {
-    setDragging(false);
-    const deltaDown = y - startYRef.current;
-    if (deltaDown > SWIPE_CLOSE_THRESHOLD) {
-      closeSheet();
-    }
-  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     // @ts-ignore
     if (typeof e.isPrimary !== 'undefined' && e.isPrimary === false) return;
     handleStart(e.clientY);
   };
-  const onPointerUp = (e: React.PointerEvent) => {
-    handleEnd(e.clientY);
-  };
-  const onTouchStart = (e: React.TouchEvent) => {
-    const y = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
-    handleStart(y);
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const y = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : 0;
-    handleEnd(y);
-  };
-  const onMouseDown = (e: React.MouseEvent) => handleStart(e.clientY);
-  const onMouseUp = (e: React.MouseEvent) => handleEnd(e.clientY);
 
   const orderType = useCheckout((s) => s.orderType);
   const selectedSpotId = useCheckout((s) => s.selectedSpotId);
@@ -237,11 +217,6 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           data-total={total}
           style={{ height: '70vh', touchAction: 'none' }}
           onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-          onMouseDown={onMouseDown}
-          onMouseUp={onMouseUp}
         >
           {/* Drag handle removed: swipe-to-close works on the entire block */}
           <div className='h-[calc(100%)] overflow-y-auto flex flex-col justify-between'>

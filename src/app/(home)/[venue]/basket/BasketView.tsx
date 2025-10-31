@@ -1,15 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
 
 import { useBasket } from '@/store/basket';
-import { useCreateOrderV2 } from '@/lib/api/queries';
 import { useVenueQuery } from '@/store/venue';
-import type { OrderCreate } from '@/lib/api/types';
 import { useCheckout } from '@/store/checkout';
 
-import { Contacts, Details, Header, Items, OrderType } from './_components';
+import { Details, Header, Items, OrderType } from './_components';
 import DrawerCheckout from './_components/Drawer/DrawerCheckout';
 
 export default function BasketView() {
@@ -42,9 +39,7 @@ export default function BasketView() {
   }, []);
 
   // Inputs synced with checkout store
-  const phone = useCheckout((s) => s.phone);
   const setPhone = useCheckout((s) => s.setPhone);
-  const address = useCheckout((s) => s.address);
   const setAddress = useCheckout((s) => s.setAddress);
 
   // Prefill from localStorage on hydrate; address only for delivery
@@ -75,171 +70,17 @@ export default function BasketView() {
   }, [orderType, setAddress]);
 
   // Venue/table context and order mutation
-  const { venue, tableId } = useVenueQuery();
+  const { tableId } = useVenueQuery();
 
   // Force dine-in when table is assigned; switching is locked in UI
   useEffect(() => {
     if (tableId) setOrderType('dinein');
   }, [tableId]);
 
-  const createOrder = useCreateOrderV2();
   const [modal, setModal] = useState<{ open: boolean; message: string }>({
     open: false,
     message: '',
   });
-
-  function extractBackendErrorMessage(err: unknown): string {
-    const defaultMsg = 'Ошибка при создании заказа';
-    try {
-      const msg =
-        typeof err === 'object' && err && 'message' in err
-          ? String((err as any).message)
-          : '';
-      const idx = msg.indexOf('- ');
-      const raw = idx >= 0 ? msg.slice(idx + 2).trim() : msg.trim();
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed.error === 'string') return parsed.error;
-        } catch {
-          // not JSON
-        }
-        const m = raw.match(/\{"error"\s*:\s*"([^"]+)"\}/);
-        if (m) return m[1];
-      }
-      return msg || defaultMsg;
-    } catch {
-      return defaultMsg;
-    }
-  }
-
-  // venueSlug: prefer localStorage 'venueRoot', fallback to persisted 'venue' store, then route params
-  const params = useParams();
-  const [venueSlug, setVenueSlug] = useState<string>('');
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const fromParams =
-      typeof (params as any)?.venue === 'string'
-        ? (params as any).venue
-        : Array.isArray((params as any)?.venue)
-        ? (params as any).venue[0]
-        : '';
-
-    const resolveVenueSlug = (): string => {
-      try {
-        const rawRoot = localStorage.getItem('venueRoot');
-        if (rawRoot) {
-          let v: string | undefined;
-          const trimmed = rawRoot.trim();
-          if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-            const parsed = JSON.parse(rawRoot);
-            v =
-              parsed?.slug ??
-              parsed?.venueSlug ??
-              parsed?.venue_slug ??
-              parsed?.venue?.slug ??
-              '';
-          } else {
-            // treat as plain string, possibly like "/ustukan" or "ustukan"
-            v = trimmed.split('/').filter(Boolean).pop() ?? trimmed;
-          }
-          if (typeof v === 'string' && v) return v;
-        }
-      } catch {}
-      try {
-        // persisted Zustand store name 'venue' from src/store/venue.ts
-        const rawVenue = localStorage.getItem('venue');
-        if (rawVenue) {
-          const parsed = JSON.parse(rawVenue);
-          const st = parsed?.state ?? parsed;
-          const v =
-            st?.venue?.slug ??
-            st?.slug ??
-            st?.venueSlug ??
-            st?.venue_slug ??
-            '';
-          if (typeof v === 'string' && v) return v;
-        }
-      } catch {}
-      const fromStore =
-        typeof (venue as any)?.slug === 'string' ? (venue as any).slug : '';
-      return fromParams || fromStore || '';
-    };
-
-    setVenueSlug(resolveVenueSlug());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
-
-  // Map UI order type to API serviceMode
-  const serviceMode: 1 | 2 | 3 =
-    orderType === 'dinein' ? 1 : orderType === 'delivery' ? 3 : 2;
-
-  async function handleSubmit() {
-    try {
-      if (!venueSlug) {
-        setModal({ open: true, message: 'Не найден venue_slug' });
-        return;
-      }
-
-      // Pre-submit validation per mode:
-      // - Always require phone
-      // - Additionally require address in "delivery" mode
-      const phoneVal = phone.trim();
-      if (phoneVal.length < 5) {
-        setModal({ open: true, message: 'Укажите номер телефона' });
-        return;
-      }
-      if (orderType === 'delivery' && !address.trim()) {
-        setModal({ open: true, message: 'Укажите адрес доставки' });
-        return;
-      }
-      if (orderType === 'dinein' && !tableId) {
-        setModal({ open: true, message: 'Не указан номер стола' });
-        return;
-      }
-
-      // Build items payload
-      const orderProducts = items.map((it) => ({
-        product: it.productId,
-        count: it.quantity,
-        modificator: it.modifierId ?? null,
-      }));
-
-      // Resolve table and spot
-      let tableIdNum: number | null = null;
-      if (orderType === 'dinein' && tableId != null) {
-        const n =
-          typeof tableId === 'string' ? Number.parseInt(tableId, 10) : tableId;
-        tableIdNum = Number.isFinite(n as number) ? (n as number) : null;
-      }
-
-      const selectedSpotId = useCheckout((s) => s.selectedSpotId);
-      const defaultSpotId = (venue as any)?.defaultDeliverySpot ?? null;
-      const firstSpotId =
-        Array.isArray((venue as any)?.spots) && (venue as any).spots.length > 0
-          ? (venue as any).spots[0].id
-          : null;
-      const spotId = selectedSpotId ?? defaultSpotId ?? firstSpotId ?? null;
-
-      const payload: OrderCreate = {
-        phone: phone.trim(),
-        serviceMode,
-        address: orderType === 'delivery' ? address.trim() : null,
-        spot: spotId,
-        table: tableIdNum,
-        orderProducts,
-        isTgBot: false,
-        useBonus: false,
-      };
-
-      await createOrder.mutateAsync({ body: payload, venueSlug });
-    } catch (e: any) {
-      console.error('order:create:error', e);
-      const msg = extractBackendErrorMessage(e);
-      setModal({ open: true, message: msg });
-    }
-  }
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-[100svh] pb-20'>
