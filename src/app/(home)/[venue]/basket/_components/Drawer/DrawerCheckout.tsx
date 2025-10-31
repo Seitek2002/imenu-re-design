@@ -26,6 +26,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const { total } = useBasketTotals();
   const { t } = useTranslation();
   const createOrder = useCreateOrderV2();
+  const isSubmitting = createOrder.isPending;
   const phone = useCheckout((s) => s.phone);
   const setPhone = useCheckout((s) => s.setPhone);
   const bumpShake = useCheckout((s) => s.bumpShake);
@@ -379,10 +380,19 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <div className='text-[#939393] text-xs'>{t('total')}</div>
                 </div>
                 <button
-                  className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
+                  className={`bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium disabled:opacity-70 disabled:cursor-not-allowed`}
                   onClick={handlePay}
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
                 >
-                  {t('pay')}
+                  {isSubmitting ? (
+                    <span className='inline-flex items-center gap-2'>
+                      {t('loading')}
+                      <span className='inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/80 border-t-transparent' />
+                    </span>
+                  ) : (
+                    t('pay')
+                  )}
                 </button>
               </div>
             </div>
