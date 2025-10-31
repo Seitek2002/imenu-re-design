@@ -381,16 +381,52 @@ export function useCreateOrderV2() {
   // Accept venueSlug to satisfy backend requirement (some environments expect venue_slug as query)
   return useMutation<OrderCreate, Error, { body: OrderCreate; venueSlug?: string }>({
     mutationKey: ['v2-create-order'],
-    mutationFn: ({ body, venueSlug }) =>
-      fetchJSON<OrderCreate>(
+    mutationFn: ({ body, venueSlug }) => {
+      // Encode as application/x-www-form-urlencoded using bracket notation
+      // to pass nested orderProducts[] items, per Swagger UI behavior.
+      const form = new URLSearchParams();
+
+      const set = (k: string, v: unknown) => {
+        if (v === undefined || v === null || v === '') return;
+        form.append(k, String(v));
+      };
+console.log(body);
+
+      set('phone', body.phone);
+      set('comment', body.comment);
+      set('serviceMode', body.serviceMode);
+      // Address: include only when provided (delivery), allow full concatenated string
+      if (body.address !== undefined && body.address !== null) set('address', body.address);
+
+      set('servicePrice', body.servicePrice);
+      set('tipsPrice', body.tipsPrice);
+      set('bonus', body.bonus);
+      set('spot', body.spot);
+      set('table', body.table);
+      if (typeof body.isTgBot === 'boolean') set('isTgBot', body.isTgBot ? 'true' : 'false');
+      set('tgRedirectUrl', body.tgRedirectUrl);
+
+      // orderProducts is required: send as JSON string form field (per Swagger form-url-encoded support)
+      if (Array.isArray(body.orderProducts)) {
+        form.set('orderProducts', JSON.stringify(body.orderProducts));
+      }
+
+      set('code', body.code);
+      set('hash', body.hash);
+      if (typeof body.useBonus === 'boolean') set('useBonus', body.useBonus ? 'true' : 'false');
+
+      return fetchJSON<OrderCreate>(
         '/api/v2/orders/',
-        // Send both camelCase and snake_case to be safe across envs
-        venueSlug ? { venueSlug, venue_slug: venueSlug } : undefined,
+        undefined,
         {
           method: 'POST',
-          body: JSON.stringify(body),
+          // headers: {
+          //   'Content-Type': 'application/x-www-form-urlencoded',
+          // },
+          body: JSON.stringify({...body, venue_slug: venueSlug}),
         }
-      ),
+      );
+    },
   });
 }
 

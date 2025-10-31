@@ -9,6 +9,7 @@ import { useBasket } from '@/store/basket';
 import { useVenueQuery } from '@/store/venue';
 import tableIcon from '@/assets/Basket/table.svg';
 import { useTranslation } from 'react-i18next';
+import { useCreateOrderV2 } from '@/lib/api/queries';
 
 interface IProps {
   sheetOpen: boolean;
@@ -24,6 +25,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
 
   const { total } = useBasketTotals();
   const { t } = useTranslation();
+  const createOrder = useCreateOrderV2();
   const phone = useCheckout((s) => s.phone);
   const setPhone = useCheckout((s) => s.setPhone);
   const bumpShake = useCheckout((s) => s.bumpShake);
@@ -113,7 +115,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     return '';
   }
 
-  function handlePay() {
+  async function handlePay() {
     try {
       const isPhoneValid = (phone ?? '').trim().length >= 5;
       const requireAddress = orderType === 'delivery';
@@ -134,6 +136,11 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         count: it.quantity,
         modificator: it.modifierId ?? null,
       }));
+      if (!orderProducts.length) {
+        bumpShake();
+        console.error('order:create:validation', 'orderProducts is empty');
+        return;
+      }
 
       let tableIdNum: number | null = null;
       if (orderType === 'dinein' && tableId != null) {
@@ -164,6 +171,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
       const timeStr = pickupMode === 'asap' || !pickupTime ? 'Быстрее всего' : pickupTime!;
       const addressString = `Адрес: ${(address ?? '').trim() || 'Не указано'} | Подъезд: ${entranceStr} | Этаж: ${floorStr} | Квартира: ${apartmentStr} | Время: ${timeStr}`;
 
+      const venueSlug = resolveVenueSlug();
+
       const body = {
         phone: phone.trim(),
         serviceMode,
@@ -176,12 +185,20 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         useBonus: false,
       };
 
-      // Log payload exactly in the server format (OrderCreate schema)
-      // POST /api/v2/orders/ with JSON body = OrderCreate
-      // { phone, comment, serviceMode, address, spot, table, orderProducts, isTgBot, useBonus }
+      // Debug: log exact payload we send (must include orderProducts array)
       console.log('order:payload', body);
-    } catch (e) {
-      // noop
+
+      // Send request to server and log response (OrderCreate readOnly fields expected)
+      const resp = await createOrder.mutateAsync({ body, venueSlug });
+      console.log('order:create:success', resp);
+    } catch (e: any) {
+      console.error('order:create:error', e?.message || e);
+      try {
+        const msg = typeof e?.message === 'string' ? e.message : '';
+        const idx = msg.indexOf('- ');
+        const raw = idx >= 0 ? msg.slice(idx + 2).trim() : msg.trim();
+        if (raw) console.error('order:create:error:raw', raw);
+      } catch {}
     }
   }
 
