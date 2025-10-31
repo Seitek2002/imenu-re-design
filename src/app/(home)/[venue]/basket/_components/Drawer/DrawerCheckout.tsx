@@ -70,6 +70,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const pickupMode = useCheckout((s) => s.pickupMode);
   const pickupTime = useCheckout((s) => s.pickupTime);
   const deliveryEntrance = useCheckout((s) => s.setDeliveryEntrance);
+  const deliveryEntranceVal = useCheckout((s) => s.deliveryEntrance);
   const deliveryFloor = useCheckout((s) => s.deliveryFloor);
   const setDeliveryFloor = useCheckout((s) => s.setDeliveryFloor);
   const deliveryApartment = useCheckout((s) => s.deliveryApartment);
@@ -117,7 +118,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     try {
       const isPhoneValid = (phone ?? '').trim().length >= 5;
       const requireAddress = orderType === 'delivery';
-      const isAddressValid = !requireAddress || (address ?? '').trim().length > 0;
+      const isAddressValid =
+        !requireAddress || (address ?? '').trim().length > 0;
 
       if (!isPhoneValid || !isAddressValid) {
         try {
@@ -148,10 +150,25 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           : null;
       const spotId = selectedSpotId ?? defaultSpotId ?? firstSpotId ?? null;
 
+      const entranceStr =
+        (deliveryEntranceVal && deliveryEntranceVal.trim())
+          ? deliveryEntranceVal.trim()
+          : 'Не указано';
+      const floorStr =
+        (deliveryFloor && String(deliveryFloor).trim())
+          ? String(deliveryFloor).trim()
+          : 'Не указано';
+      const apartmentStr =
+        (deliveryApartment && String(deliveryApartment).trim())
+          ? String(deliveryApartment).trim()
+          : 'Не указано';
+      const timeStr = pickupMode === 'asap' || !pickupTime ? 'Быстрее всего' : pickupTime!;
+      const addressString = `Адрес: ${(address ?? '').trim() || 'Не указано'} | Подъезд: ${entranceStr} | Этаж: ${floorStr} | Квартира: ${apartmentStr} | Время: ${timeStr}`;
+
       const body = {
         phone: phone.trim(),
         serviceMode,
-        address: orderType === 'delivery' ? address.trim() : null,
+        address: orderType === 'delivery' ? addressString : null,
         comment: comment ? comment.trim() : null,
         spot: spotId,
         table: tableIdNum,
@@ -205,7 +222,12 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
               <div className='rounded-2xl bg-white p-5'>
                 {orderType === 'dinein' ? (
                   <div className='bg-[#F5F5F5] flex items-center gap-2 rounded-lg py-3 px-4 mb-2'>
-                    <Image src={tableIcon} alt='table icon' width={16} height={16} />
+                    <Image
+                      src={tableIcon}
+                      alt='table icon'
+                      width={16}
+                      height={16}
+                    />
                     <span className='text-[#111111] font-semibold'>
                       {t('tableLabel', { num: displayTable ?? '-' })}
                     </span>
@@ -217,10 +239,16 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <div className='mt-2'>
                     <label
                       htmlFor='deliveryStreet'
-                      className={`bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4 ${shaking && isStreetInvalid ? 'shake-animate' : ''}`}
-                      style={{ border: isStreetInvalid ? '1px solid red' : undefined }}
+                      className={`bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4 ${
+                        shaking && isStreetInvalid ? 'shake-animate' : ''
+                      }`}
+                      style={{
+                        border: isStreetInvalid ? '1px solid red' : undefined,
+                      }}
                     >
-                      <span className='text-[#A4A4A4] text-[16px]'>{t('street')}</span>
+                      <span className='text-[#A4A4A4] text-[16px]'>
+                        {t('street')}
+                      </span>
                       <input
                         id='deliveryStreet'
                         type='text'
@@ -232,7 +260,9 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                     </label>
                     <div className='grid grid-cols-3 gap-2 mt-2'>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[16px]'>{t('entrance')}</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>
+                          {t('entrance')}
+                        </span>
                         <input
                           type='text'
                           onChange={(e) => deliveryEntrance(e.target.value)}
@@ -240,7 +270,9 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[16px]'>{t('floor')}</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>
+                          {t('floor')}
+                        </span>
                         <input
                           type='text'
                           value={deliveryFloor}
@@ -249,7 +281,9 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         />
                       </label>
                       <label className='bg-[#F5F5F5] flex flex-col rounded-lg py-2 px-4'>
-                        <span className='text-[#A4A4A4] text-[16px]'>{t('apartment')}</span>
+                        <span className='text-[#A4A4A4] text-[16px]'>
+                          {t('apartment')}
+                        </span>
                         <input
                           type='text'
                           value={deliveryApartment}
@@ -262,8 +296,12 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                 )}
                 <label
                   htmlFor='phoneNumber'
-                  className={`bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4 ${shaking && isPhoneInvalid ? 'shake-animate' : ''}`}
-                  style={{ border: isPhoneInvalid ? '1px solid red' : undefined }}
+                  className={`bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4 ${
+                    shaking && isPhoneInvalid ? 'shake-animate' : ''
+                  }`}
+                  style={{
+                    border: isPhoneInvalid ? '1px solid red' : undefined,
+                  }}
                 >
                   <span className='text-[#A4A4A4] text-[16px]'>
                     {t('phoneNumber')}
@@ -288,7 +326,9 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                     htmlFor='orderComment'
                     className='bg-[#F5F5F5] flex flex-col rounded-lg mt-2 py-2 px-4'
                   >
-                    <span className='text-[#A4A4A4] text-[16px]'>{t('comment')}</span>
+                    <span className='text-[#A4A4A4] text-[16px]'>
+                      {t('comment')}
+                    </span>
                     <input
                       id='orderComment'
                       type='text'
@@ -305,9 +345,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <Image src={elqr} alt='elqr' />
                   <span className='text-[14px] font-medium'>ELQR</span>
                 </div>
-                <span className='text-[14px] font-medium'>
-                  {t('elqrInfo')}
-                </span>
+                <span className='text-[14px] font-medium'>{t('elqrInfo')}</span>
               </div>
             </div>
             <div>
