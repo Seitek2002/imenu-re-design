@@ -31,5 +31,6 @@
   "loading": "Идет загрузка",
   "notSpecified": "Не указано",
   "enterStreet": "Укажите улицу",
-  "orderCommentPlaceholder": "Комментарий к заказу"
+  "orderCommentPlaceholder": "Комментарий к заказу",
+  "myOrder": "Мой заказ"
 }

@@ -31,5 +31,6 @@
   "loading": "Жүктөлүүдө",
   "notSpecified": "Көрсөтүлгөн эмес",
   "enterStreet": "Көчөнү белгилеңиз",
-  "orderCommentPlaceholder": "Заказга комментарий"
+  "orderCommentPlaceholder": "Заказга комментарий",
+  "myOrder": "Мой заказ"
 }

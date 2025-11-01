@@ -31,5 +31,6 @@
   "loading": "Loading...",
   "notSpecified": "Not specified",
   "enterStreet": "Enter street",
-  "orderCommentPlaceholder": "Order comment"
+  "orderCommentPlaceholder": "Order comment",
+  "myOrder": "Мой заказ"
 }
