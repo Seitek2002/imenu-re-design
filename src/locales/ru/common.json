@@ -28,5 +28,8 @@
   "ordersHistorySoon": "Скоро здесь появится история ваших заказов.",
   "profileSoon": "Профиль скоро будет доступен.",
   "elqrInfo": "Оплата доступна любым банком КР",
-  "loading": "Идет загрузка"
+  "loading": "Идет загрузка",
+  "notSpecified": "Не указано",
+  "enterStreet": "Укажите улицу",
+  "orderCommentPlaceholder": "Комментарий к заказу"
 }

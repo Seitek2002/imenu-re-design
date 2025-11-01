@@ -22,6 +22,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   // Simple swipe-to-close down gesture (no resizing)
   const [dragging, setDragging] = useState(false);
   const startYRef = useRef(0);
+  const SWIPE_CLOSE_THRESHOLD = 60;
 
   const { total } = useBasketTotals();
   const { t } = useTranslation();
@@ -64,6 +65,26 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     if (typeof e.isPrimary !== 'undefined' && e.isPrimary === false) return;
     handleStart(e.clientY);
   };
+  const handleEnd = (y: number) => {
+    setDragging(false);
+    const deltaDown = y - startYRef.current;
+    if (deltaDown > SWIPE_CLOSE_THRESHOLD) {
+      closeSheet();
+    }
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    handleEnd(e.clientY);
+  };
+  const onTouchStart = (e: React.TouchEvent) => {
+    const y = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
+    handleStart(y);
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const y = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : 0;
+    handleEnd(y);
+  };
+  const onMouseDown = (e: React.MouseEvent) => handleStart(e.clientY);
+  const onMouseUp = (e: React.MouseEvent) => handleEnd(e.clientY);
 
   const orderType = useCheckout((s) => s.orderType);
   const selectedSpotId = useCheckout((s) => s.selectedSpotId);
@@ -157,20 +178,20 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           : null;
       const spotId = selectedSpotId ?? defaultSpotId ?? firstSpotId ?? null;
 
-      const entranceStr =
+  const entranceStr =
         (deliveryEntranceVal && deliveryEntranceVal.trim())
           ? deliveryEntranceVal.trim()
-          : 'Не указано';
-      const floorStr =
+          : t('notSpecified');
+  const floorStr =
         (deliveryFloor && String(deliveryFloor).trim())
           ? String(deliveryFloor).trim()
-          : 'Не указано';
-      const apartmentStr =
+          : t('notSpecified');
+  const apartmentStr =
         (deliveryApartment && String(deliveryApartment).trim())
           ? String(deliveryApartment).trim()
-          : 'Не указано';
-      const timeStr = pickupMode === 'asap' || !pickupTime ? 'Быстрее всего' : pickupTime!;
-      const addressString = `Адрес: ${(address ?? '').trim() || 'Не указано'} | Подъезд: ${entranceStr} | Этаж: ${floorStr} | Квартира: ${apartmentStr} | Время: ${timeStr}`;
+          : t('notSpecified');
+  const timeStr = pickupMode === 'asap' || !pickupTime ? t('asap') : pickupTime!;
+  const addressString = `Адрес: ${(address ?? '').trim() || t('notSpecified')} | Подъезд: ${entranceStr} | Этаж: ${floorStr} | Квартира: ${apartmentStr} | Время: ${timeStr}`;
 
       const venueSlug = resolveVenueSlug();
 
@@ -238,6 +259,11 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           data-total={total}
           style={{ height: '70vh', touchAction: 'none' }}
           onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
         >
           {/* Drag handle removed: swipe-to-close works on the entire block */}
           <div className='h-[calc(100%)] overflow-y-auto flex flex-col justify-between'>
@@ -278,7 +304,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         className='bg-transparent'
-                        placeholder='Укажите улицу'
+                        placeholder={t('enterStreet')}
                       />
                     </label>
                     <div className='grid grid-cols-3 gap-2 mt-2'>
@@ -358,7 +384,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       className='bg-transparent'
-                      placeholder='Комментарий к заказу'
+                      placeholder={t('orderCommentPlaceholder')}
                     />
                   </label>
                 )}

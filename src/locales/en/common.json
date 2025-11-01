@@ -27,5 +27,9 @@
   "wifiPass": "Password:",
   "ordersHistorySoon": "Order history will appear here soon.",
   "profileSoon": "Profile will be available soon.",
-  "elqrInfo": "Payment is available via any bank in KG"
+  "elqrInfo": "Payment is available via any bank in KG",
+  "loading": "Loading...",
+  "notSpecified": "Not specified",
+  "enterStreet": "Enter street",
+  "orderCommentPlaceholder": "Order comment"
 }
