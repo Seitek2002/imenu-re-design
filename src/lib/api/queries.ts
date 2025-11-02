@@ -19,6 +19,7 @@ import type {
   Client,
   OrderCreate,
   MainButtonsResponse,
+  OrderByIdResponse,
 } from './types';
 
 const API_BASE = 'https://imenu.kg';
@@ -132,7 +133,7 @@ export const qk = {
       opts?.tableId ?? '',
       opts?.venueSlug ?? '',
     ] as QueryKey,
-  v2OrderById: (id: number) => ['v2-order', id] as QueryKey,
+  v2OrderById: (id: string) => ['v2-order', id] as QueryKey,
 
   mainButtons: (venueSlug: string) => ['main-buttons', venueSlug] as QueryKey,
   v2MainButtons: (venueSlug: string) =>
@@ -369,14 +370,43 @@ export function useOrdersV2(
   });
 }
 
-/** GET /api/v2/orders/{id}/ */
+/** GET /api/v2/orders/{id}/ (safe union: success or ApiErrorDetail) */
+async function fetchOrderByIdV2Safe(id: string): Promise<OrderByIdResponse> {
+  const u = new URL(`/api/v2/orders/${id}/`, API_BASE);
+  const res = await fetch(u.toString(), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept-Language':
+        (typeof window !== 'undefined' &&
+          (localStorage.getItem('lang') || 'ru')) ||
+        'ru',
+    },
+  });
+  const ct = res.headers.get('content-type') || '';
+  if (!res.ok) {
+    try {
+      if (ct.includes('application/json')) {
+        const data = await res.json();
+        if (data && typeof (data as any).detail === 'string') {
+          return data as OrderByIdResponse;
+        }
+      }
+    } catch {}
+    return { detail: `HTTP ${res.status} ${res.statusText}` };
+  }
+  if (!ct.includes('application/json')) {
+    return { detail: 'Invalid content-type' };
+  }
+  return (await res.json()) as OrderByIdResponse;
+}
+
 export function useOrderByIdV2(
-  id: number,
-  options?: Omit<UseQueryOptions<OrderList>, 'queryKey' | 'queryFn'>
+  id: string,
+  options?: Omit<UseQueryOptions<OrderByIdResponse>, 'queryKey' | 'queryFn'>
 ) {
-  return useQuery<OrderList>({
+  return useQuery<OrderByIdResponse>({
     queryKey: qk.v2OrderById(id),
-    queryFn: () => fetchJSON<OrderList>(`/api/v2/orders/${id}/`),
+    queryFn: () => fetchOrderByIdV2Safe(id),
     enabled: (options?.enabled ?? true) && !!id,
     ...options,
   });

@@ -64,7 +64,9 @@ export type OrderProduct = {
 export type OrderList = {
   id: number;
   totalPrice: string; // decimal as string
-  status: 0 | 1 | 2 | 3 | 4 | 7;
+  // NOTE: Расширено до number, чтобы точно соответствовать схеме бекенда.
+  // Ранее было 0 | 1 | 2 | 3 | 4 | 7, но согласно фидбеку приводим к числу.
+  status: number;
   createdAt: string; // date-time
   serviceMode: 1 | 2 | 3;
   address: string | null;
@@ -74,7 +76,30 @@ export type OrderList = {
   tableNum: string;
   statusText: string;
 };
+ 
+// Aliases for GET /api/v2/orders/{id} response typing
+export type OrderStatusV2 = OrderList['status'];
+export type ServiceModeV2 = OrderList['serviceMode'];
+export type OrderProductV2 = OrderProduct;
+/**
+ * OrderV2 matches GET /api/v2/orders/{id}
+ * Fields: id, totalPrice (string), status, createdAt (ISO string), serviceMode,
+ * address, comment, phone, orderProducts, tableNum, statusText
+ */
+export type OrderV2 = OrderList;
 
+// Common API error shape (e.g., {"detail": "No Order matches the given query."})
+export type ApiErrorDetail = {
+  detail: string;
+};
+
+// Union type for GET /api/v2/orders/{id}
+export type OrderByIdResponse = OrderV2 | ApiErrorDetail;
+
+// Type guard to distinguish ApiErrorDetail
+export const isApiErrorDetail = (v: unknown): v is ApiErrorDetail =>
+  !!v && typeof v === 'object' && 'detail' in v && typeof (v as any).detail === 'string';
+ 
 // OrderProductCreate (request item)
 export type OrderProductCreate = {
   product: number;
