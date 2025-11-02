@@ -71,7 +71,7 @@ const Item: FC<IProps> = ({ it, statusMode = false }) => {
       </div>
 
       {statusMode ? (
-        <div className='text-sm text-[#21201F] mt-1'>
+        <div className='text-base text-[#21201F] mt-1 font-semibold'>
           {Math.round(it.unitPrice * it.quantity * 100) / 100} c
         </div>
       ) : (
