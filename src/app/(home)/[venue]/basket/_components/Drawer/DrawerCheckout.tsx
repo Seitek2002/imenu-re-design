@@ -274,7 +274,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           onMouseUp={onMouseUp}
         >
           {/* Drag handle removed: swipe-to-close works on the entire block */}
-          <div className='h-[calc(100%)] overflow-y-auto flex flex-col justify-between'>
+          <div className='h-auto overflow-y-auto flex flex-col justify-between'>
             <div>
               <div className='rounded-2xl bg-white p-5'>
                 {orderType === 'dinein' ? (
