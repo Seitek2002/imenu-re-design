@@ -5,7 +5,6 @@ import Header from './_components/Header';
 import type { CartItem } from '@/store/basket';
 import { useParams } from 'next/navigation';
 import { useOrderByIdV2 } from '@/lib/api/queries';
-import { isApiErrorDetail } from '@/lib/api/types';
 import OrderItems from './_components/OrderItems';
 
 const OrderStatusView = () => {
@@ -14,7 +13,7 @@ const OrderStatusView = () => {
   const isNotFound = !data;
 
   const itemsFromOrder: CartItem[] = (() => {
-    if (!data || isApiErrorDetail(data)) return [];
+    if (!data) return [];
     return data.orderProducts.map((op) => {
       const p = op.product;
       const image =
@@ -43,7 +42,7 @@ const OrderStatusView = () => {
   return (
     <div className='bg-[#F8F6F7] min-h-svh pb-40'>
       <Header />
-      <CurrentStatus serviceMode={data?.serviceMode} />
+      <CurrentStatus serviceMode={data?.serviceMode} status={data?.status} />
       <OrderItems
         isNotFound={isNotFound}
         orderItemsCount={orderItemsCount}

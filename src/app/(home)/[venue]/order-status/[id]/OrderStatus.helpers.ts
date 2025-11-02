@@ -3,7 +3,7 @@ import chefIcon from '@/assets/OrderStatus/chef-hat.svg';
 import checkIcon from '@/assets/OrderStatus/check.svg';
 import geoIcon from '@/assets/OrderStatus/geo.svg';
 
-export type StepsKey = 1 | 2 | 3;
+export type StepsKey = number;
 
 export type Step = {
   key: number;
