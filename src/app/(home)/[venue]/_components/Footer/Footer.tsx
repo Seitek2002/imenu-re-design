@@ -128,12 +128,14 @@ const Footer: FC = () => {
               </div>
               <div className='text-[#939393] text-xs'>{t('total')}</div>
             </div>
-            <button
-              className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
-              onClick={handleOpenCheckout}
-            >
-              {t('checkoutProceed')}
-            </button>
+            {hydrated && itemCount > 0 && (
+              <button
+                className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
+                onClick={handleOpenCheckout}
+              >
+                {t('checkoutProceed')}
+              </button>
+            )}
           </div>
         )}
       </div>
