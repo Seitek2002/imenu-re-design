@@ -18,7 +18,7 @@ type Step = {
 const steps: Step[] = [
   {
     key: 0,
-    title: 'Заказ оформлен',
+    title: 'Спасибо, ваш заказ оформлен!',
     desc: 'Мы приняли ваш заказ и передали на кухню',
     icon: clockIcon,
   },
@@ -65,18 +65,10 @@ const CurrentStatus = () => {
           {/* Title + subtitle like on mock */}
           <div className='mb-4'>
             <h3 className='text-[22px] leading-7 font-semibold'>
-              {active === 0 && 'Спасибо, заказ принят!'}
-              {active === 1 && 'Курьер везёт ваш заказ'}
-              {active === 2 && 'Заказ готов'}
-              {active === 3 && 'Заказ выполнен'}
+              {steps[active]?.title}
             </h3>
             <p className='text-[#9CA3AF] text-[14px] leading-5 mt-1'>
-              {active === 0 &&
-                'Мы уже начинаем готовить — совсем скоро он будет у вас!'}
-              {active === 1 &&
-                'Следите за перемещением в реальном времени. Ваш обед уже на дороге!'}
-              {active === 2 && 'Можно забирать на стойке'}
-              {active === 3 && 'Приятного аппетита!'}
+              {steps[active]?.desc}
             </p>
           </div>
 
