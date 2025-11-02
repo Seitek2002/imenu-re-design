@@ -1,60 +1,37 @@
 'use client';
 
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 
-import clockIcon from '@/assets/OrderStatus/clock.svg';
-import chefIcon from '@/assets/OrderStatus/chef-hat.svg';
-import checkIcon from '@/assets/OrderStatus/check.svg';
-import geoIcon from '@/assets/OrderStatus/geo.svg';
+import { steps } from '../OrderStatus.helpers';
 
-type Step = {
-  key: number;
-  title: string;
-  desc: string;
-  icon: any;
-};
+interface IProps {
+  serviceMode?: number;
+}
 
-const steps: Step[] = [
-  {
-    key: 0,
-    title: 'Спасибо, ваш заказ оформлен!',
-    desc: 'Мы приняли ваш заказ и передали на кухню',
-    icon: clockIcon,
-  },
-  {
-    key: 1,
-    title: 'Готовим заказ',
-    desc: 'Наши повара уже занимаются вашим блюдом',
-    icon: chefIcon,
-  },
-  {
-    key: 2,
-    title: 'Заказ готов',
-    desc: 'Можно забирать на стойке',
-    icon: checkIcon,
-  },
-  {
-    key: 3,
-    title: 'Заказ выполнен',
-    desc: 'Приятного аппетита!',
-    icon: geoIcon,
-  },
-];
-
-const CurrentStatus = () => {
+const CurrentStatus: FC<IProps> = ({ serviceMode }) => {
   const [active, setActive] = useState(0);
 
-  const isLast = active >= steps.length - 1;
+  const VALID_KEYS = [1, 2, 3] as const;
+  type StepsKey = (typeof VALID_KEYS)[number];
+  const DEFAULT_KEY: StepsKey = 2;
+  const key: StepsKey = (VALID_KEYS as readonly number[]).includes(
+    serviceMode ?? -1
+  )
+    ? (serviceMode as StepsKey)
+    : DEFAULT_KEY;
+  const modeSteps = steps[key];
+
+  const isLast = active >= modeSteps.length - 1;
 
   const progress = useMemo(() => {
-    if (steps.length <= 1) return 0;
+    if (modeSteps.length <= 1) return 0;
     // 4 steps: 25%, 50%, 75%, 100%
-    return ((active + 1) / steps.length) * 100;
-  }, [active]);
+    return ((active + 1) / modeSteps.length) * 100;
+  }, [active, modeSteps.length]);
 
   function handleNext() {
-    if (!isLast) setActive((i) => Math.min(i + 1, steps.length - 1));
+    if (!isLast) setActive((i) => Math.min(i + 1, modeSteps.length - 1));
   }
 
   return (
@@ -65,16 +42,16 @@ const CurrentStatus = () => {
           {/* Title + subtitle like on mock */}
           <div className='mb-4'>
             <h3 className='text-[22px] leading-7 font-semibold'>
-              {steps[active]?.title}
+              {modeSteps[active]?.title}
             </h3>
             <p className='text-[#9CA3AF] text-[14px] leading-5 mt-1'>
-              {steps[active]?.desc}
+              {modeSteps[active]?.desc}
             </p>
           </div>
 
           {/* Icons row (grid so dots align exactly under icons) */}
           <div className='flex justify-around items-center mb-3 gap-2'>
-            {steps.map((s, i) => {
+            {modeSteps.map((s, i) => {
               const current = i === active;
               const bg = current ? '#FF8127' : '#ECECF1';
 
@@ -106,7 +83,7 @@ const CurrentStatus = () => {
             />
             {/* dots aligned under each grid column */}
             <div className='absolute inset-0 flex justify-around'>
-              {steps.map((_, i) => {
+              {modeSteps.map((_, i) => {
                 const activeDot = i <= active;
                 return (
                   <span

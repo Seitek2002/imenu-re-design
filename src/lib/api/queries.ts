@@ -20,9 +20,11 @@ import type {
   OrderCreate,
   MainButtonsResponse,
   OrderByIdResponse,
+  OrderV2,
 } from './types';
 
 const API_BASE = 'https://imenu.kg';
+import { isApiErrorDetail } from './types';
 
 type UnknownObject = Record<string, unknown>;
 export type ClientBonusResponse = UnknownObject;
@@ -402,11 +404,16 @@ async function fetchOrderByIdV2Safe(id: string): Promise<OrderByIdResponse> {
 
 export function useOrderByIdV2(
   id: string,
-  options?: Omit<UseQueryOptions<OrderByIdResponse>, 'queryKey' | 'queryFn'>
+  options?: Omit<
+    UseQueryOptions<OrderByIdResponse, Error, OrderV2 | undefined>,
+    'queryKey' | 'queryFn' | 'select'
+  >
 ) {
-  return useQuery<OrderByIdResponse>({
+  return useQuery<OrderByIdResponse, Error, OrderV2 | undefined>({
     queryKey: qk.v2OrderById(id),
     queryFn: () => fetchOrderByIdV2Safe(id),
+    select: (r): OrderV2 | undefined =>
+      isApiErrorDetail(r) ? undefined : (r as OrderV2),
     enabled: (options?.enabled ?? true) && !!id,
     ...options,
   });

@@ -10,8 +10,8 @@ import OrderItems from './_components/OrderItems';
 
 const OrderStatusView = () => {
   const { id } = useParams<{ id: string }>();
-  const { data } = useOrderByIdV2(id as unknown as any);
-  const isNotFound = !!data && isApiErrorDetail(data);
+  const { data } = useOrderByIdV2(id);
+  const isNotFound = !data;
 
   const itemsFromOrder: CartItem[] = (() => {
     if (!data || isApiErrorDetail(data)) return [];
@@ -43,7 +43,7 @@ const OrderStatusView = () => {
   return (
     <div className='bg-[#F8F6F7] min-h-svh pb-40'>
       <Header />
-      <CurrentStatus />
+      <CurrentStatus serviceMode={data?.serviceMode} />
       <OrderItems
         isNotFound={isNotFound}
         orderItemsCount={orderItemsCount}
