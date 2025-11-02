@@ -135,11 +135,11 @@ const MainHeader = () => {
                 <img src={qrUrl} alt='Wi‑Fi QR' className='w-[240px] h-[240px]' />
               </div>
             ) : null}
-            <div className='text-sm'>
+            <div className='text-lg'>
               <span className='text-[#6B6B6B]'>{t('wifiName')} </span>
               <span className='font-medium break-all'>{ssid}</span>
             </div>
-            <div className='text-sm mt-2'>
+            <div className='text-lg mt-2'>
               <span className='text-[#6B6B6B]'>{t('wifiPass')} </span>
               <span className='font-medium break-all'>{pass}</span>
             </div>
