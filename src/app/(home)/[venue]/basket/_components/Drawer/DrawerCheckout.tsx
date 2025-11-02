@@ -80,7 +80,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     handleStart(y);
   };
   const onTouchEnd = (e: React.TouchEvent) => {
-    const y = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : 0;
+    const y =
+      e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : 0;
     handleEnd(y);
   };
   const onMouseDown = (e: React.MouseEvent) => handleStart(e.clientY);
@@ -178,20 +179,23 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           : null;
       const spotId = selectedSpotId ?? defaultSpotId ?? firstSpotId ?? null;
 
-  const entranceStr =
-        (deliveryEntranceVal && deliveryEntranceVal.trim())
+      const entranceStr =
+        deliveryEntranceVal && deliveryEntranceVal.trim()
           ? deliveryEntranceVal.trim()
           : t('notSpecified');
-  const floorStr =
-        (deliveryFloor && String(deliveryFloor).trim())
+      const floorStr =
+        deliveryFloor && String(deliveryFloor).trim()
           ? String(deliveryFloor).trim()
           : t('notSpecified');
-  const apartmentStr =
-        (deliveryApartment && String(deliveryApartment).trim())
+      const apartmentStr =
+        deliveryApartment && String(deliveryApartment).trim()
           ? String(deliveryApartment).trim()
           : t('notSpecified');
-  const timeStr = pickupMode === 'asap' || !pickupTime ? t('asap') : pickupTime!;
-  const addressString = `Адрес: ${(address ?? '').trim() || t('notSpecified')} | Подъезд: ${entranceStr} | Этаж: ${floorStr} | Квартира: ${apartmentStr} | Время: ${timeStr}`;
+      const timeStr =
+        pickupMode === 'asap' || !pickupTime ? t('asap') : pickupTime!;
+      const addressString = `Адрес: ${
+        (address ?? '').trim() || t('notSpecified')
+      } | Подъезд: ${entranceStr} | Этаж: ${floorStr} | Квартира: ${apartmentStr} | Время: ${timeStr}`;
 
       const venueSlug = resolveVenueSlug();
 
