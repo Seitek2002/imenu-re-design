@@ -132,7 +132,7 @@ const MainHeader = () => {
             <div className='text-base font-semibold mb-2'>{t('wifi')}</div>
             {qrUrl ? (
               <div className='flex justify-center mb-3'>
-                <img src={qrUrl} alt='Wi‑Fi QR' className='w-[240px] h-[240px]' />
+                <img src={qrUrl} alt='Wi‑Fi QR' className='w-[200px] h-[200px]' />
               </div>
             ) : null}
             <div className='text-lg'>
