@@ -14,7 +14,7 @@ const OrderItems: FC<IProps> = ({
   itemsFromOrder,
 }) => {
   return (
-    <div className=' px-4 pt-3'>
+    <div className='px-4 pt-3'>
       <div className='bg-white rounded-[30px] p-3'>
         <div className='flex justify-between items-center'>
           <span className='font-semibold text-lg'>Мои заказы</span>
