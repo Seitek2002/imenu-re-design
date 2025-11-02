@@ -93,13 +93,17 @@ export default function BasketView() {
         }`}
       >
         {/* Тип заказа */}
-        <OrderType orderType={orderType} setOrderType={setOrderType} locked={!!tableId} />
+        <OrderType
+          orderType={orderType}
+          setOrderType={setOrderType}
+          locked={!!tableId}
+        />
 
         {/* Список товаров из корзины */}
         <Items />
 
         {/* Итого с деталями (раскрытие по нажатию) */}
-        <Details orderType={orderType} />
+        {hydrated && items.length > 0 && <Details orderType={orderType} />}
 
         {/* Контакты */}
         {/* <Contacts

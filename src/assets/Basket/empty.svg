@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Empty basket illustration">
+  <rect width="160" height="160" rx="16" fill="#F8F6F7"/>
+  <g transform="translate(20 28)" stroke="#FF7A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Basket body -->
+    <path d="M12 44H108L100 100C99.4 103.8 96.2 106.5 92.36 106.5H27.64C23.8 106.5 20.6 103.8 20 100L12 44Z" fill="white"/>
+    <!-- Basket rim -->
+    <rect x="6" y="36" width="108" height="12" rx="6" fill="white"/>
+    <!-- Handles -->
+    <path d="M40 36L56 6" />
+    <path d="M80 36L64 6" />
+    <circle cx="56" cy="6" r="4" fill="#FF7A00"/>
+    <circle cx="64" cy="6" r="4" fill="#FF7A00"/>
+    <!-- Content hint lines -->
+    <path d="M36 64H84" />
+    <path d="M32 78H88" />
+    <path d="M40 92H80" />
+  </g>
+  <!-- Decorative dots -->
+  <g fill="#FFD2B0">
+    <circle cx="22" cy="22" r="3"/>
+    <circle cx="138" cy="30" r="3"/>
+    <circle cx="26" cy="138" r="3"/>
+    <circle cx="134" cy="128" r="3"/>
+  </g>
+</svg>

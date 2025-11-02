@@ -32,5 +32,7 @@
   "notSpecified": "Көрсөтүлгөн эмес",
   "enterStreet": "Көчөнү белгилеңиз",
   "orderCommentPlaceholder": "Заказга комментарий",
+  "basketEmptyTitle": "Себет бош",
+  "basketEmptySubtitle": "Менюдан тамактарды кошуңуз",
   "myOrder": "Мой заказ"
 }

@@ -32,5 +32,7 @@
   "notSpecified": "Not specified",
   "enterStreet": "Enter street",
   "orderCommentPlaceholder": "Order comment",
+  "basketEmptyTitle": "Your basket is empty",
+  "basketEmptySubtitle": "Add dishes from the menu",
   "myOrder": "Мой заказ"
 }
