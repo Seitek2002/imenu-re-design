@@ -19,7 +19,9 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
   const modeSteps = steps[serviceMode as 1 | 2 | 3] ?? steps[2];
   const total = modeSteps.length;
   const clamped = Math.max(0, Math.min(status, total - 1));
-  const progress = total <= 1 ? 0 : ((clamped + 1) / total) * 100;
+  const isCancelled = status === 7;
+  const activeIndex = isCancelled ? 0 : clamped;
+  const progress = total <= 1 ? 0 : ((activeIndex + 1) / total) * 100;
 
   return (
     <>
@@ -28,17 +30,17 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
           {/* Title + subtitle like on mock */}
           <div className='mb-4'>
             <h3 className='text-[22px] leading-7 font-semibold'>
-              {modeSteps[clamped]?.title}
+              {modeSteps[activeIndex]?.title}
             </h3>
             <p className='text-[#9CA3AF] text-[14px] leading-5 mt-1'>
-              {modeSteps[clamped]?.desc}
+              {modeSteps[activeIndex]?.desc}
             </p>
           </div>
 
           {/* Icons row (grid so dots align exactly under icons) */}
           <div className='flex justify-around items-center mb-3 gap-2'>
             {modeSteps.map((s, i) => {
-              const current = i === clamped;
+              const current = i === activeIndex;
               const bg = current ? '#FF8127' : '#ECECF1';
 
               return (
@@ -47,11 +49,22 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
                     className='flex items-center justify-center rounded-full'
                     style={{ width: 48, height: 48, backgroundColor: bg }}
                   >
-                    <Image
-                      src={s.icon}
-                      alt={s.title}
-                      className={current ? 'invert' : ''}
-                    />
+                    {isCancelled && i === 0 ? (
+                      <svg width='24' height='24' viewBox='0 0 24 24'>
+                        <path
+                          d='M6 6l12 12M18 6l-12 12'
+                          stroke={current ? '#fff' : '#111'}
+                          strokeWidth='2'
+                          strokeLinecap='round'
+                        />
+                      </svg>
+                    ) : (
+                      <Image
+                        src={s.icon}
+                        alt={s.title}
+                        className={current ? 'invert' : ''}
+                      />
+                    )}
                   </div>
                 </div>
               );
@@ -70,7 +83,7 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
             {/* dots aligned under each grid column */}
             <div className='absolute inset-0 flex justify-around'>
               {modeSteps.map((_, i) => {
-                const activeDot = i <= clamped;
+                const activeDot = i <= activeIndex;
                 return (
                   <span
                     key={`dot-${i}`}
