@@ -9,9 +9,10 @@ import trashRed from '@/assets/Basket/trash-red.svg';
 
 interface IProps {
   it: CartItem;
+  statusMode?: boolean;
 }
 
-const Item: FC<IProps> = ({ it }) => {
+const Item: FC<IProps> = ({ it, statusMode = false }) => {
   const itemRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const { increment, decrement, remove } = useBasket();
 
@@ -61,52 +62,62 @@ const Item: FC<IProps> = ({ it }) => {
               {it.modifierName}
             </div>
           )}
-          <div className='text-sm text-[#21201F] mt-1'>
-            {Math.round(it.unitPrice * it.quantity * 100) / 100} c
-          </div>
+          {!statusMode && (
+            <div className='text-sm text-[#21201F] mt-1'>
+              {Math.round(it.unitPrice * it.quantity * 100) / 100} c
+            </div>
+          )}
         </div>
       </div>
 
-      <div className='flex items-center gap-3 bg-[#EFEEEC] rounded-full'>
-        <button
-          type='button'
-          aria-label='minus'
-          className='w-8 h-8 flex items-center justify-center'
-          onClick={() => {
-            if (it.quantity <= 1) {
-              revealDelete(it.key);
-            } else {
-              decrement(it.productId, it.modifierId ?? null, 1);
-            }
-          }}
-        >
-          <Image src={minusIcon} alt='minusIcon' />
-        </button>
-        <span className='w-6 text-center font-semibold'>{it.quantity}</span>
-        <button
-          type='button'
-          aria-label='plus'
-          className='w-8 h-8 flex items-center justify-center'
-          onClick={() => increment(it.productId, it.modifierId ?? null, 1)}
-        >
-          <Image src={plusIcon} alt='plusIcon' />
-        </button>
-      </div>
+      {statusMode ? (
+        <div className='text-sm text-[#21201F] mt-1'>
+          {Math.round(it.unitPrice * it.quantity * 100) / 100} c
+        </div>
+      ) : (
+        <>
+          <div className='flex items-center gap-3 bg-[#EFEEEC] rounded-full'>
+            <button
+              type='button'
+              aria-label='minus'
+              className='w-8 h-8 flex items-center justify-center'
+              onClick={() => {
+                if (it.quantity <= 1) {
+                  revealDelete(it.key);
+                } else {
+                  decrement(it.productId, it.modifierId ?? null, 1);
+                }
+              }}
+            >
+              <Image src={minusIcon} alt='minusIcon' />
+            </button>
+            <span className='w-6 text-center font-semibold'>{it.quantity}</span>
+            <button
+              type='button'
+              aria-label='plus'
+              className='w-8 h-8 flex items-center justify-center'
+              onClick={() => increment(it.productId, it.modifierId ?? null, 1)}
+            >
+              <Image src={plusIcon} alt='plusIcon' />
+            </button>
+          </div>
 
-      <button
-        type='button'
-        aria-label='Удалить товар'
-        onClick={() => remove(it.productId, it.modifierId ?? null)}
-        className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px] flex justify-center'
-      >
-        <Image
-          width={24}
-          height={24}
-          src={trashRed}
-          alt='trash-icon'
-          className='!max-w-[24px]'
-        />
-      </button>
+          <button
+            type='button'
+            aria-label='Удалить товар'
+            onClick={() => remove(it.productId, it.modifierId ?? null)}
+            className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px] flex justify-center'
+          >
+            <Image
+              width={24}
+              height={24}
+              src={trashRed}
+              alt='trash-icon'
+              className='!max-w-[24px]'
+            />
+          </button>
+        </>
+      )}
     </li>
   );
 };
