@@ -100,7 +100,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const setDeliveryApartment = useCheckout((s) => s.setDeliveryApartment);
   const { venue, tableId, tableNum } = useVenueQuery();
   const displayTable = tableNum ?? tableId;
-  const { getItemsArray } = useBasket();
+  const { getItemsArray, clear } = useBasket();
   const itemsArr = getItemsArray();
 
   // Input validity flags for red borders and shake classes
@@ -216,7 +216,11 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
       try {
         const url = (resp as any)?.paymentUrl;
         if (typeof window !== 'undefined' && url && typeof url === 'string') {
-          window.open(url, '_blank', 'noopener');
+          try {
+            // Очистка корзины перед переходом на оплату
+            clear();
+          } catch {}
+          window.location.assign(url);
         }
       } catch {}
     } catch (e: any) {
