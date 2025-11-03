@@ -1,9 +1,10 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
+import ImenuSquareSkeleton from '@/components/ui/ImenuSquareSkeleton';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { useVenueQuery } from '@/store/venue';
 
@@ -15,6 +16,7 @@ interface IProps {
 
 const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
   const venue = useVenueQuery(state => state.venue);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <Link
@@ -26,6 +28,9 @@ const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
       className='text-center relative'
     >
       <div className='relative aspect-square rounded-2xl overflow-hidden'>
+        {!imgLoaded && (
+          <ImenuSquareSkeleton className='absolute inset-0 w-full h-full' />
+        )}
         <Image
           src={img}
           alt={String(label ?? '')}
@@ -33,6 +38,7 @@ const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
           sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 200px"
           fill
           priority
+          onLoad={() => setImgLoaded(true)}
         />
       </div>
       <div className='mt-2 font-semibold leading-4'>{label}</div>

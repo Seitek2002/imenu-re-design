@@ -1,8 +1,9 @@
 'use client';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import Image from 'next/image';
 import type { Product } from '@/lib/api/types';
 import { useBasket } from '@/store/basket';
+import ImenuSquareSkeleton from '@/components/ui/ImenuSquareSkeleton';
 
 import plus from '@/assets/Goods/plus.svg';
 import minus from '@/assets/Goods/minus.svg';
@@ -11,6 +12,7 @@ type Props = { item: Product; onOpen?: (product: Product) => void };
 
 const FoodItem: FC<Props> = ({ item, onOpen }) => {
   const { add, decrement, getQuantity } = useBasket();
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const name = item.productName;
   const price = item.productPrice ? `${item.productPrice} сом` : '';
@@ -24,12 +26,16 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
         className='relative w-full aspect-square rounded-2xl overflow-hidden'
         onClick={() => onOpen?.(item)}
       >
+        {!imgLoaded && (
+          <ImenuSquareSkeleton className='absolute inset-0 w-full h-full' />
+        )}
         <Image
           src={img}
           alt={item.productName}
           className='object-cover'
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+          onLoad={() => setImgLoaded(true)}
         />
         <div
           className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
