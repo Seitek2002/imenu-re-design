@@ -38,7 +38,13 @@ export default function ModalPortal({
       className={`fixed inset-0 z-[${zIndex}] flex items-center justify-center`}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={() => {
+          if (navigator.vibrate) navigator.vibrate(50);
+          onClose();
+        }}
+      />
 
       {/* Centered card */}
       <div className="relative w-full flex items-center justify-center">

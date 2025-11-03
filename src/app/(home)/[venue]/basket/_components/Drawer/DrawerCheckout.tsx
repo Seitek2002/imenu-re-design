@@ -1,3 +1,5 @@
+'use client';
+
 import { FC, useEffect, useState, useRef } from 'react';
 import { useBasketTotals } from '@/lib/hooks/use-basket-totals';
 import Form from './Form';
@@ -251,7 +253,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
           sheetAnim ? 'opacity-100' : 'opacity-0'
         }`}
-        onClick={closeSheet}
+        onClick={() => {
+          if (navigator.vibrate) navigator.vibrate(50);
+          closeSheet();
+        }}
       />
       {/* Sheet */}
       <div
@@ -374,7 +379,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                 <button
                   type='button'
                   className='text-[#FF8128] text-[16px] font-medium mt-2'
-                  onClick={() => setShowComment((v) => !v)}
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(50);
+                    setShowComment((v) => !v);
+                  }}
                 >
                   {showComment ? t('hideComment') : t('addComment')}
                 </button>
@@ -415,7 +423,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                 </div>
                 <button
                   className={`bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium disabled:opacity-70 disabled:cursor-not-allowed`}
-                  onClick={handlePay}
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(50);
+                    handlePay();
+                  }}
                   disabled={isSubmitting}
                   aria-busy={isSubmitting}
                 >

@@ -1,3 +1,5 @@
+'use client';
+
 import { FC, useRef } from 'react';
 
 import Image from 'next/image';
@@ -82,6 +84,7 @@ const Item: FC<IProps> = ({ it, statusMode = false }) => {
               aria-label='minus'
               className='w-8 h-8 flex items-center justify-center'
               onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(50);
                 if (it.quantity <= 1) {
                   revealDelete(it.key);
                 } else {
@@ -96,7 +99,10 @@ const Item: FC<IProps> = ({ it, statusMode = false }) => {
               type='button'
               aria-label='plus'
               className='w-8 h-8 flex items-center justify-center'
-              onClick={() => increment(it.productId, it.modifierId ?? null, 1)}
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(50);
+                increment(it.productId, it.modifierId ?? null, 1);
+              }}
             >
               <Image src={plusIcon} alt='plusIcon' />
             </button>
@@ -105,7 +111,10 @@ const Item: FC<IProps> = ({ it, statusMode = false }) => {
           <button
             type='button'
             aria-label='Удалить товар'
-            onClick={() => remove(it.productId, it.modifierId ?? null)}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(50);
+              remove(it.productId, it.modifierId ?? null);
+            }}
             className='absolute -right-20 bg-[#EA635C] py-6 px-4.5 rounded-lg w-[60px] h-[72px] flex justify-center'
           >
             <Image

@@ -20,6 +20,7 @@ const Header = () => {
   const displayTable = tableNum ?? tableId;
 
   function handleClearConfirm() {
+    if (navigator.vibrate) navigator.vibrate(50);
     clear();
     setConfirmOpen(false);
   }
@@ -33,14 +34,14 @@ const Header = () => {
           height={24}
           alt='Назад'
           className='cursor-pointer'
-          onClick={() => router.back()}
+          onClick={() => { if (navigator.vibrate) navigator.vibrate(50); router.back(); }}
         />
         <h2 className='text-2xl font-semibold'>{t('basket')}</h2>
         {/* Placeholder for "очистить корзину" (только UI) */}
         <button
           type='button'
           className='text-[#FF7A00] text-sm font-medium'
-          onClick={() => setConfirmOpen(true)}
+          onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setConfirmOpen(true); }}
           aria-label='Очистить корзину'
         >
           <Image src={trashIcon} alt='trashIcon' />
@@ -78,7 +79,7 @@ const Header = () => {
               </button>
               <button
                 type='button'
-                onClick={() => setConfirmOpen(false)}
+                onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setConfirmOpen(false); }}
                 className='py-3 px-6 rounded-[10px] text-white font-semibold'
                 style={{ backgroundColor: '#FF7A00' }}
               >

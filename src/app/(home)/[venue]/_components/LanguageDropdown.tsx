@@ -38,6 +38,7 @@ export default function LanguageDropdown() {
   }, []);
 
   const onSelect = (lang: LangUI) => {
+    if (navigator.vibrate) navigator.vibrate(50);
     setSelected(lang);
     setOpen(false);
     // Switch i18n language, persist, and reload to refetch backend data with Accept-Language
@@ -59,7 +60,10 @@ export default function LanguageDropdown() {
         className="header-icon flex items-center gap-[6px]"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (navigator.vibrate) navigator.vibrate(50);
+          setOpen((v) => !v);
+        }}
       >
         <span>{selected}</span>
         <svg
@@ -101,7 +105,10 @@ export default function LanguageDropdown() {
                 "w-full text-left px-3 py-2 rounded-[10px] hover:bg-[#FAFAFA] " +
                 (opt === selected ? "font-semibold" : "")
               }
-              onClick={() => onSelect(opt)}
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(50);
+                onSelect(opt);
+              }}
             >
               {opt}
             </button>

@@ -41,7 +41,10 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({
     <div className={`bg-[#FAFAFA] p-3 rounded-[12px] mt-3 ${className ?? ''}`}>
       <button
         type="button"
-        onClick={() => setDetailsOpen((v) => !v)}
+        onClick={() => {
+          if (navigator.vibrate) navigator.vibrate(50);
+          setDetailsOpen((v) => !v);
+        }}
         className="w-full flex items-center justify-between text-[#80868B]"
       >
         <span className="text-base font-medium">{title}</span>

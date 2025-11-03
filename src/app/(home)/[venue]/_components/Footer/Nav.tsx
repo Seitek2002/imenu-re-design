@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname, useParams, useRouter } from 'next/navigation';
 import { getNavItems } from './Nav.helpers';
 import { useBasket } from '@/store/basket';
 
@@ -11,6 +11,7 @@ import { match } from 'path-to-regexp';
 const Nav = () => {
   const pathname = usePathname();
   const params = useParams<{ venue?: string }>();
+  const router = useRouter();
 
   const [venueRoot, setVenueRoot] = useState<string>('');
 
@@ -26,6 +27,16 @@ const Nav = () => {
   }, [pathname, params?.venue]);
 
   const items = getNavItems(venueRoot || '');
+
+  // Программный префетч всех пунктов нижней навигации
+  useEffect(() => {
+    try {
+      items.forEach(({ href }) => {
+        if (href) router.prefetch(href);
+      });
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, items.map(i => i.href).join(',')]);
 
   // basket count with hydration guard
   const [hydrated, setHydrated] = useState(false);
@@ -43,6 +54,9 @@ const Nav = () => {
           href={href}
           key={label}
           prefetch
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(50);
+          }}
           className={`flex flex-col items-center px-4`}
         >
           <div className='relative'>

@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 
 import Footer from './_components/Footer/Footer';
+import Prefetcher from './Prefetcher';
 
 export async function generateMetadata({
   params,
 }: {
-  params: { venue: string };
+  params: Promise<{ venue: string }>;
 }): Promise<Metadata> {
-  const paramsRest = await params;
-  const slug = paramsRest.venue;
+  const { venue: slug } = await params;
 
   try {
     const res = await fetch(
@@ -52,12 +52,16 @@ export async function generateMetadata({
   }
 }
 
-export default function VenueLayout({
+export default async function VenueLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  params,
+}: Readonly<{ children: React.ReactNode; params: Promise<{ venue: string }> }>) {
+  const { venue } = await params;
+
   return (
     <div>
       {children}
+      <Prefetcher />
       <Footer />
     </div>
   );
