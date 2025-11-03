@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     // Fallback for platforms where Next Image optimizer endpoint isn't available
     // Serves static images directly without /_next/image proxy
     unoptimized: false,
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,7 +19,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: false,
   },
-  
 };
 
 export default nextConfig;
