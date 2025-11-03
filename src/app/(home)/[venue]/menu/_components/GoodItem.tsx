@@ -24,7 +24,13 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
         className='relative w-full aspect-square rounded-2xl overflow-hidden'
         onClick={() => onOpen?.(item)}
       >
-        <Image src={img} alt={item.productName} className='object-cover' fill />
+        <Image
+          src={img}
+          alt={item.productName}
+          className='object-cover'
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+        />
         <div
           className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
           onClick={(e) => {

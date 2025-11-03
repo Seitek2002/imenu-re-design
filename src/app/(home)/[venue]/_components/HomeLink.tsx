@@ -30,8 +30,9 @@ const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
           src={img}
           alt={String(label ?? '')}
           className='object-cover m-auto'
-          fill
           sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 200px"
+          fill
+          priority
         />
       </div>
       <div className='mt-2 font-semibold leading-4'>{label}</div>

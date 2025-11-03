@@ -112,7 +112,7 @@ export default function FoodDetail({ open, product, onClose }: Props) {
                   fill
                   className='object-cover'
                   sizes='(max-width: 768px) 100vw, 50vw'
-                  onLoadingComplete={() => setImgLoaded(true)}
+                  onLoad={() => setImgLoaded(true)}
                 />
               </div>
             </div>

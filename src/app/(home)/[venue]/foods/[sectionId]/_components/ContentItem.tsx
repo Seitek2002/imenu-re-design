@@ -28,7 +28,8 @@ const ContentItem: FC<Props> = ({ name, img, slug, venueSlug }) => {
           fill
           src={img || '/placeholder-dish.svg'}
           alt='photo category'
-          className={`!w-auto !h-auto !static object-cover aspect-square`}
+          className='object-cover'
+          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 200px"
         />
       </div>
       <span className='text-[#21201F] text-base z-10 font-semibold text-center line-clamp-2'>
