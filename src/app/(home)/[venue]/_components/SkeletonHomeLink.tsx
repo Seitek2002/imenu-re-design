@@ -1,5 +1,3 @@
-'use client';
-
 import ImenuSquareSkeleton from '@/components/ui/ImenuSquareSkeleton';
 
 export default function SkeletonHomeLink() {
