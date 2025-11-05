@@ -63,7 +63,6 @@ const Footer: FC = () => {
   // Order type and checkout sheet signal from shared store
   const orderType = useCheckout((s) => s.orderType);
   const { openSheet } = useCheckout();
-  const { phone, address, bumpShake, setAddress } = useCheckout();
 
   // Single source of truth for totals
   const { total } = useBasketTotals(orderType);
@@ -81,6 +80,24 @@ const Footer: FC = () => {
           justifyContent: collapsed ? 'space-between' : 'center',
         }}
       >
+        {isBasketPage && (
+          <div className='w-full flex items-center gap-3 p-4 bg-white rounded-t-2xl'>
+            <div className='total-price'>
+              <div className='font-semibold text-xl'>
+                {Math.round(total * 100) / 100} с
+              </div>
+              <div className='text-[#939393] text-xs'>{t('total')}</div>
+            </div>
+            {hydrated && itemCount > 0 && (
+              <button
+                className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
+                onClick={handleOpenCheckout}
+              >
+                {t('checkoutProceed')}
+              </button>
+            )}
+          </div>
+        )}
         <div
           className='p-2.5 overflow-hidden transition-all duration-500'
           style={{
@@ -119,24 +136,6 @@ const Footer: FC = () => {
               {t('callWaiter', { table: tableNum ?? tableId })}
             </span>
           </button>
-        )}
-        {isBasketPage && (
-          <div className='w-full flex items-center gap-3 p-4 bg-white rounded-t-2xl'>
-            <div className='total-price'>
-              <div className='font-semibold text-xl'>
-                {Math.round(total * 100) / 100} с
-              </div>
-              <div className='text-[#939393] text-xs'>{t('total')}</div>
-            </div>
-            {hydrated && itemCount > 0 && (
-              <button
-                className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
-                onClick={handleOpenCheckout}
-              >
-                {t('checkoutProceed')}
-              </button>
-            )}
-          </div>
         )}
       </div>
       <Nav />

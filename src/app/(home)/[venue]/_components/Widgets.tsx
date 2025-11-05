@@ -40,12 +40,12 @@ const Widgets = () => {
   return (
     <>
       <div className='home-widgets bg-white rounded-4xl p-4 mt-2 flex gap-2 overflow-x-auto overflow-y-hidden'>
-        <div className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
-          <h3 className='text-[#0404138C]'>Мои заказы</h3>
+        <button className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
+          <h3 className='text-[#0404138C] text-nowrap'>Мои заказы</h3>
           <div className='w-[95px] h-[58px]'>
             <Image src={widget1} alt='widget 1' />
           </div>
-        </div>
+        </button>
 
         {/* <div className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
           <h3 className='text-[#0404138C] text-nowrap'>Бонусные баллы</h3>
