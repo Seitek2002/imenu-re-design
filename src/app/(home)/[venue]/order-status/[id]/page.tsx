@@ -38,11 +38,12 @@ async function fetchOrderByIdV2Server(id: string): Promise<OrderV2 | undefined> 
 }
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 const OrderStatusPage = async ({ params }: PageProps) => {
-  const order = await fetchOrderByIdV2Server(params.id);
+  const { id } = await params;
+  const order = await fetchOrderByIdV2Server(id);
   return <OrderStatusView order={order} />;
 };
 
