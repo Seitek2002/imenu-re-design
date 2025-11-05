@@ -1,16 +1,15 @@
-'use client';
 
 import CurrentStatus from './_components/CurrentStatus';
 import Header from './_components/Header';
 import type { CartItem } from '@/store/basket';
-import { useParams } from 'next/navigation';
-import { useOrderByIdV2 } from '@/lib/api/queries';
+import type { OrderV2 } from '@/lib/api/types';
 import OrderItems from './_components/OrderItems';
 import OrderDetails from '@/components/OrderDetails';
 
-const OrderStatusView = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data } = useOrderByIdV2(id);
+type Props = { order?: OrderV2 };
+
+const OrderStatusView = ({ order }: Props) => {
+  const data = order;
   const isNotFound = !data;
 
   const itemsFromOrder: CartItem[] = (() => {
