@@ -8,7 +8,7 @@ interface IProps {
 
 const OrderType: FC<IProps> = ({ orderType, setOrderType, locked = false }) => {
   return (
-    <div className='bg-[#FAFAFA] rounded-full'>
+    <div className='bg-[#FAFAFA] rounded-full mb-3'>
       <div className='grid grid-cols-2 gap-2 p-1'>
         {[
           { key: 'takeout', label: 'С собой' },

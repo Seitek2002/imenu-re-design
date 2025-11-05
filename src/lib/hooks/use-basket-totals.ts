@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useBasket } from '@/store/basket';
 import { useVenueQuery } from '@/store/venue';
-import { calcDeliveryFee } from '@/lib/utils/pricing';
+import { calcDeliveryFee, calcServiceFee } from '@/lib/utils/pricing';
 import type { OrderType } from '@/lib/utils/pricing';
 import { useCheckout } from '@/store/checkout';
 
@@ -34,13 +34,23 @@ export function useBasketTotals(orderTypeOverride?: OrderType) {
     [venue, subtotal, orderType]
   );
 
-  const total = useMemo(() => subtotal + deliveryFee, [subtotal, deliveryFee]);
+  const { percent: serviceFeePercent, amount: serviceFee } = useMemo(
+    () => calcServiceFee({ venue, subtotal, orderType }),
+    [venue, subtotal, orderType]
+  );
+
+  const total = useMemo(
+    () => subtotal + deliveryFee + serviceFee,
+    [subtotal, deliveryFee, serviceFee]
+  );
 
   return {
     orderType,
     hydrated,
     itemCount,
     subtotal,
+    serviceFeePercent,
+    serviceFee,
     deliveryFee,
     total,
   };

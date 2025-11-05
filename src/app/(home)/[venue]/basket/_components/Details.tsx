@@ -13,7 +13,7 @@ const Details = ({ orderType }: DetailsProps) => {
   const detailsRef = useRef<HTMLDivElement | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsHeight, setDetailsHeight] = useState(0);
-  const { hydrated, subtotal, deliveryFee } = useBasketTotals(orderType);
+  const { hydrated, subtotal, deliveryFee, serviceFeePercent, serviceFee } = useBasketTotals(orderType);
 
   useEffect(() => {
     if (detailsOpen) {
@@ -52,7 +52,11 @@ const Details = ({ orderType }: DetailsProps) => {
         </div>
         <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>
           <span>Сервисный сбор</span>
-          <span>0%</span>
+          <span>
+            {hydrated
+              ? `${serviceFeePercent}% — ${formatCurrency(Math.max(0, serviceFee))}`
+              : `0% — ${formatCurrency(0)}`}
+          </span>
         </div>
         {orderType === 'delivery' && (
           <div className='flex items-center justify-between px-3 py-2 text-[#80868B]'>

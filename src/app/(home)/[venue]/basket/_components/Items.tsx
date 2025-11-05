@@ -17,7 +17,7 @@ const Items = () => {
   }, []);
 
   return (
-    <div className='bg-white p-3 rounded-[12px] mt-3'>
+    <div className='bg-white p-3 rounded-[12px]'>
       {/* <h4 className='text-base font-semibold mb-3'>Товары</h4> */}
 
       {!hydrated ? (

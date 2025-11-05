@@ -34,6 +34,27 @@ export function calcDeliveryFee(opts: {
   return fee;
 }
 
+export function calcServiceFee(opts: {
+  venue: Partial<Venue> | undefined | null;
+  subtotal: number;
+  orderType: OrderType;
+}): { percent: number; amount: number } {
+  const { venue, subtotal, orderType } = opts;
+
+  let percent = 0;
+  if (orderType === 'dinein') {
+    percent = parseMoney((venue as any)?.dineinServiceFeePercent, 0);
+  } else if (orderType === 'takeout') {
+    percent = parseMoney((venue as any)?.takeoutServiceFeePercent, 0);
+  } else if (orderType === 'delivery') {
+    percent = parseMoney((venue as any)?.deliveryServiceFeePercent, 0);
+  }
+
+  const raw = (subtotal * percent) / 100;
+  const amount = Math.max(0, Math.round(raw * 100) / 100);
+  return { percent, amount };
+}
+
 export function formatCurrency(n: number): string {
   // Kyrgyz som without decimals formatting spec is not strict here; stick to 2 decimals trimming.
   const val = Math.round(n * 100) / 100;
