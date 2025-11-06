@@ -103,17 +103,6 @@ const Widgets = () => {
 
   useEffect(() => {
     if (data && data.results.length > 0) {
-      console.log(data.results[0]);
-      console.log(phone);
-
-      const modeSteps =
-        steps[data.results[0].serviceMode as 1 | 2 | 3] ?? steps[2];
-      const total = modeSteps.length;
-      const clamped = Math.max(0, Math.min(data.results[0].status, total - 1));
-      const isCancelled = data.results[0].status === 7;
-      const activeIndex = isCancelled ? 0 : clamped;
-      const progress = total <= 1 ? 0 : ((activeIndex + 1) / total) * 100;
-
       setLastOrder(data.results[0]);
     }
   }, [data]);
