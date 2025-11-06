@@ -1,20 +1,21 @@
-# ========= Build image =========
-FROM oven/bun:1 AS builder
+# ========================
+# Build stage
+# ========================
+FROM node:20.11.1-alpine AS build
 
 WORKDIR /app
-
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
-
+COPY package*.json ./
+RUN npm install
 COPY . .
-RUN bun run build
+RUN npm run build
 
-# ========= Production image =========
-FROM oven/bun:1 AS production
+# ========================
+# Production stage
+# ========================
+FROM node:20.11.1-alpine AS production
 
 WORKDIR /app
-
-COPY --from=builder /app ./
+COPY --from=build /app ./
 
 EXPOSE 3000
-CMD ["bun", "run", "start"]
+CMD ["npm", "run", "start"]
