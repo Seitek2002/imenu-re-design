@@ -76,7 +76,7 @@ const Widgets = () => {
           className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'
         >
           <h3 className='text-[#0404138C] text-nowrap'>
-            {lastOrder ? 'Последний заказ' : 'Мои заказы'}
+            {lastOrder ? 'Статус заказа' : 'Мои заказы'}
           </h3>
           <div className='w-[95px] h-[58px] block'>
             <Image src={widget1} alt='widget 1' />
