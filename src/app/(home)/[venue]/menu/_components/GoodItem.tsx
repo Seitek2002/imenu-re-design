@@ -34,14 +34,17 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
           alt={item.productName}
           className='object-cover'
           fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+          sizes='(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px'
           onLoad={() => setImgLoaded(true)}
         />
         <div
           className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
           onClick={(e) => {
             e.stopPropagation();
-            if (Array.isArray(item.modificators) && item.modificators.length > 0) {
+            if (
+              Array.isArray(item.modificators) &&
+              item.modificators.length > 0
+            ) {
               onOpen?.(item);
             } else {
               add(item, { modifierId: null, quantity: 1 });
