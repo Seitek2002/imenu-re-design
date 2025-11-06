@@ -81,7 +81,10 @@ const Footer: FC = () => {
         }}
       >
         {isBasketPage && (
-          <div className='w-full flex items-center gap-3 p-4 bg-white rounded-t-2xl' style={{ marginRight: tableId ? '10px' : '0px' }}>
+          <div
+            className='w-full flex items-center gap-3 p-4 bg-white rounded-t-2xl'
+            style={{ marginRight: tableId ? '10px' : '0px' }}
+          >
             <div className='total-price'>
               <div className='font-semibold text-xl'>
                 {Math.round(total * 100) / 100} с
