@@ -28,12 +28,12 @@ function weekdayIndex1to7(d: Date) {
   return js === 0 ? 7 : js; // map Sunday 0 -> 7
 }
 
-const CircularProgress: React.FC<{ size?: number; strokeWidth?: number; value: number; className?: string }> = ({
-  size = 48,
-  strokeWidth = 6,
-  value,
-  className,
-}) => {
+const CircularProgress: React.FC<{
+  size?: number;
+  strokeWidth?: number;
+  value: number;
+  className?: string;
+}> = ({ size = 48, strokeWidth = 6, value, className }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
@@ -51,18 +51,18 @@ const CircularProgress: React.FC<{ size?: number; strokeWidth?: number; value: n
         cx={size / 2}
         cy={size / 2}
         r={radius}
-        fill="none"
-        stroke="#E5E7EB"
+        fill='none'
+        stroke='#E5E7EB'
         strokeWidth={strokeWidth}
       />
       <circle
         cx={size / 2}
         cy={size / 2}
         r={radius}
-        fill="none"
-        stroke="#0404138C"
+        fill='none'
+        stroke='#0404138C'
         strokeWidth={strokeWidth}
-        strokeLinecap="round"
+        strokeLinecap='round'
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
@@ -141,7 +141,11 @@ const Widgets = () => {
             {lastOrder && (
               <div className='absolute inset-0 flex items-center justify-center'>
                 <div className='relative'>
-                  <CircularProgress value={progress} size={48} strokeWidth={6} />
+                  <CircularProgress
+                    value={progress}
+                    size={48}
+                    strokeWidth={6}
+                  />
                   <span className='absolute inset-0 flex items-center justify-center text-[12px] font-semibold text-[#040413]'>
                     {progress}%
                   </span>
