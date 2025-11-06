@@ -3,6 +3,14 @@
 
 export type ListResponse<T> = T[];
 
+/* Paginated response shape used by many v2 endpoints */
+export type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
 /* Schemas */
 
 // Banner (unchanged)

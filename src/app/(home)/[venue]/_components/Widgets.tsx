@@ -1,14 +1,19 @@
 'use client';
 
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useVenueQuery } from '@/store/venue';
 import ModalPortal from '@/components/ui/ModalPortal';
 
 import widget1 from '@/assets/Widgets/widget-1.png';
-import widget2 from '@/assets/Widgets/widget-2.png';
+// import widget2 from '@/assets/Widgets/widget-2.png';
 import widget3 from '@/assets/Widgets/widget-3.png';
 import { useTranslation } from 'react-i18next';
+import { useCheckout } from '@/store/checkout';
+import { useOrdersV2 } from '@/lib/api/queries';
+import type { OrderList } from '@/lib/api/types';
+import Link from 'next/link';
+import { steps } from '../order-status/[id]/OrderStatus.helpers';
 
 function formatTime(t?: string) {
   if (!t) return '';
@@ -27,25 +32,56 @@ const Widgets = () => {
   const { venue } = useVenueQuery();
   const { t } = useTranslation();
   const [openSchedule, setOpenSchedule] = useState(false);
+  const { phone } = useCheckout();
+  const [lastOrder, setLastOrder] = useState<OrderList | undefined>(undefined);
+  const { data } = useOrdersV2({ phone, venueSlug: venue?.slug });
 
   const schedules = useMemo(() => {
     const arr = (venue as any)?.schedules ?? [];
     if (!Array.isArray(arr)) return [];
     // ensure Monday(1)..Sunday(7) order
-    return [...arr].sort((a: any, b: any) => (a?.dayOfWeek ?? 0) - (b?.dayOfWeek ?? 0));
+    return [...arr].sort(
+      (a: any, b: any) => (a?.dayOfWeek ?? 0) - (b?.dayOfWeek ?? 0)
+    );
   }, [venue]);
 
   const todayIdx = weekdayIndex1to7(new Date());
 
+  useEffect(() => {
+    if (data && data.results.length > 0) {
+      console.log(data.results[0]);
+      console.log(phone);
+
+      const modeSteps =
+        steps[data.results[0].serviceMode as 1 | 2 | 3] ?? steps[2];
+      const total = modeSteps.length;
+      const clamped = Math.max(0, Math.min(data.results[0].status, total - 1));
+      const isCancelled = data.results[0].status === 7;
+      const activeIndex = isCancelled ? 0 : clamped;
+      const progress = total <= 1 ? 0 : ((activeIndex + 1) / total) * 100;
+
+      setLastOrder(data.results[0]);
+    }
+  }, [data]);
+
   return (
     <>
       <div className='home-widgets bg-white rounded-4xl p-4 mt-2 flex gap-2 overflow-x-auto overflow-y-hidden'>
-        <button className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
-          <h3 className='text-[#0404138C] text-nowrap'>Мои заказы</h3>
-          <div className='w-[95px] h-[58px]'>
+        <Link
+          href={
+            lastOrder
+              ? `/${venue?.slug}/order-status/${lastOrder?.id}`
+              : `/${venue?.slug}`
+          }
+          className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'
+        >
+          <h3 className='text-[#0404138C] text-nowrap'>
+            {lastOrder ? lastOrder.statusText : 'Мой заказ'}
+          </h3>
+          <div className='w-[95px] h-[58px] block'>
             <Image src={widget1} alt='widget 1' />
           </div>
-        </button>
+        </Link>
 
         {/* <div className='home-widget bg-[#FAFAFA] rounded-3xl w-min p-4 text-xs text-center'>
           <h3 className='text-[#0404138C] text-nowrap'>Бонусные баллы</h3>
@@ -67,7 +103,11 @@ const Widgets = () => {
         </button>
       </div>
 
-      <ModalPortal open={openSchedule} onClose={() => setOpenSchedule(false)} zIndex={100}>
+      <ModalPortal
+        open={openSchedule}
+        onClose={() => setOpenSchedule(false)}
+        zIndex={100}
+      >
         <button
           type='button'
           aria-label='Закрыть'
@@ -91,7 +131,10 @@ const Widgets = () => {
               let timeText = '';
               if (isDayOff) timeText = t('dayOff');
               else if (is24h) timeText = t('roundTheClock');
-              else timeText = `${formatTime(s?.workStart)} – ${formatTime(s?.workEnd)}`;
+              else
+                timeText = `${formatTime(s?.workStart)} – ${formatTime(
+                  s?.workEnd
+                )}`;
 
               return (
                 <li
@@ -102,14 +145,20 @@ const Widgets = () => {
                 >
                   <span
                     className={`text-sm ${
-                      isToday ? 'text-[#111111] font-semibold' : 'text-[#111111]'
+                      isToday
+                        ? 'text-[#111111] font-semibold'
+                        : 'text-[#111111]'
                     }`}
                   >
                     {s?.dayName ?? 'День'}
                   </span>
                   <span
                     className={`text-sm ${
-                      isDayOff ? 'text-[#9CA3AF]' : isToday ? 'text-[#FF7A00] font-medium' : 'text-[#374151]'
+                      isDayOff
+                        ? 'text-[#9CA3AF]'
+                        : isToday
+                        ? 'text-[#FF7A00] font-medium'
+                        : 'text-[#374151]'
                     }`}
                   >
                     {timeText}

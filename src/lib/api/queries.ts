@@ -16,6 +16,7 @@ import type {
   Venue,
   OrderList,
   ListResponse,
+  PaginatedResponse,
   Client,
   OrderCreate,
   MainButtonsResponse,
@@ -327,14 +328,14 @@ export function useOrders(
     venueSlug?: string;
   },
   options?: Omit<
-    UseQueryOptions<ListResponse<OrderList>>,
+    UseQueryOptions<PaginatedResponse<OrderList>>,
     'queryKey' | 'queryFn'
   >
 ) {
-  return useQuery<ListResponse<OrderList>>({
+  return useQuery<PaginatedResponse<OrderList>>({
     queryKey: qk.orders(params),
     queryFn: () =>
-      fetchJSON<ListResponse<OrderList>>('/api/orders/', {
+      fetchJSON<PaginatedResponse<OrderList>>('/api/orders/', {
         phone: params?.phone,
         spotId: params?.spotId,
         tableId: params?.tableId,
@@ -354,14 +355,14 @@ export function useOrdersV2(
     venueSlug?: string;
   },
   options?: Omit<
-    UseQueryOptions<ListResponse<OrderList>>,
+    UseQueryOptions<PaginatedResponse<OrderList>>,
     'queryKey' | 'queryFn'
   >
 ) {
-  return useQuery<ListResponse<OrderList>>({
+  return useQuery<PaginatedResponse<OrderList>>({
     queryKey: qk.v2Orders(params),
     queryFn: () =>
-      fetchJSON<ListResponse<OrderList>>('/api/v2/orders/', {
+      fetchJSON<PaginatedResponse<OrderList>>('/api/v2/orders/', {
         phone: params?.phone,
         spotId: params?.spotId,
         tableId: params?.tableId,
