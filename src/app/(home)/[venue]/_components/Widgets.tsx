@@ -28,6 +28,49 @@ function weekdayIndex1to7(d: Date) {
   return js === 0 ? 7 : js; // map Sunday 0 -> 7
 }
 
+const CircularProgress: React.FC<{ size?: number; strokeWidth?: number; value: number; className?: string }> = ({
+  size = 48,
+  strokeWidth = 6,
+  value,
+  className,
+}) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(100, Math.round(value)));
+  const offset = circumference * (1 - clamped / 100);
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      className={className}
+      viewBox={`0 0 ${size} ${size}`}
+      aria-label={`Прогресс ${clamped}%`}
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#E5E7EB"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#0404138C"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+};
+
 const Widgets = () => {
   const { venue } = useVenueQuery();
   const { t } = useTranslation();
@@ -46,6 +89,17 @@ const Widgets = () => {
   }, [venue]);
 
   const todayIdx = weekdayIndex1to7(new Date());
+
+  // Прогресс по последнему заказу (0..100)
+  const progress = useMemo(() => {
+    if (!lastOrder) return 0;
+    const modeSteps = steps[lastOrder.serviceMode as 1 | 2 | 3] ?? steps[2];
+    const total = modeSteps.length || 1;
+    const isCancelled = lastOrder.status === 7;
+    const clamped = Math.max(0, Math.min(lastOrder.status, total - 1));
+    const activeIndex = isCancelled ? 0 : clamped;
+    return Math.round(((activeIndex + 1) / total) * 100);
+  }, [lastOrder]);
 
   useEffect(() => {
     if (data && data.results.length > 0) {
@@ -78,8 +132,22 @@ const Widgets = () => {
           <h3 className='text-[#0404138C] text-nowrap'>
             {lastOrder ? 'Статус заказа' : 'Мои заказы'}
           </h3>
-          <div className='w-[95px] h-[58px] block'>
-            <Image src={widget1} alt='widget 1' />
+          <div className='relative w-[95px] h-[58px]'>
+            <Image
+              src={widget1}
+              alt='widget 1'
+              className={lastOrder ? 'opacity-40' : ''}
+            />
+            {lastOrder && (
+              <div className='absolute inset-0 flex items-center justify-center'>
+                <div className='relative'>
+                  <CircularProgress value={progress} size={48} strokeWidth={6} />
+                  <span className='absolute inset-0 flex items-center justify-center text-[12px] font-semibold text-[#040413]'>
+                    {progress}%
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </Link>
 
