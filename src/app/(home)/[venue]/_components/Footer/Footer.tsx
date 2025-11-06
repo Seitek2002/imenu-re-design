@@ -125,7 +125,7 @@ const Footer: FC = () => {
             disabled={callWaiter.isPending}
             aria-busy={callWaiter.isPending}
             className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl overflow-hidden transition-all duration-1000 ${
-              collapsed ? 'p-4 mr-2' : 'py-4 px-11 gap-2'
+              collapsed ? 'p-4 mr-2 mb-0' : 'py-4 px-11 gap-2 mb-2.5'
             } ${callWaiter.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             <Image src={bellIcon} alt='bell icon' />

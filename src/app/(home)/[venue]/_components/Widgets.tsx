@@ -136,7 +136,7 @@ const Widgets = () => {
                     strokeWidth={6}
                   />
                   <span className='absolute inset-0 flex items-center justify-center text-[12px] font-semibold text-[#FF8127]'>
-                    {progress}%
+                    {progress >= 100 ? '✓' : `${progress}%`}
                   </span>
                 </div>
               </div>
