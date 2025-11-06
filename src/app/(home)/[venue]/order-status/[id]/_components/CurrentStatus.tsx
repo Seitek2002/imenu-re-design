@@ -62,7 +62,7 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
                       <Image
                         src={s.icon}
                         alt={s.title}
-                        className={current ? 'invert' : ''}
+                        className={current ? '' : 'invert'}
                       />
                     )}
                   </div>
