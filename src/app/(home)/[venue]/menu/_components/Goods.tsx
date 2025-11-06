@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import GoodItem from './GoodItem';
 import SkeletonGoodItem from './SkeletonGoodItem';
 
@@ -54,4 +54,4 @@ const Goods: FC<Props> = ({ category, onOpen }) => {
   );
 };
 
-export default Goods;
+export default memo(Goods);

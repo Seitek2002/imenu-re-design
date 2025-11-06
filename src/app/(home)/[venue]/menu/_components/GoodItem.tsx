@@ -1,5 +1,5 @@
 'use client';
-import { FC, useState } from 'react';
+import { FC, memo, useState } from 'react';
 import Image from 'next/image';
 import type { Product } from '@/lib/api/types';
 import { useBasket } from '@/store/basket';
@@ -85,4 +85,4 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
   );
 };
 
-export default FoodItem;
+export default memo(FoodItem);
