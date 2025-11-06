@@ -52,7 +52,7 @@ const CircularProgress: React.FC<{
         cy={size / 2}
         r={radius}
         fill='none'
-        stroke='#E5E7EB'
+        stroke='#FF812730'
         strokeWidth={strokeWidth}
       />
       <circle
@@ -60,7 +60,7 @@ const CircularProgress: React.FC<{
         cy={size / 2}
         r={radius}
         fill='none'
-        stroke='#0404138C'
+        stroke='#FF8127'
         strokeWidth={strokeWidth}
         strokeLinecap='round'
         strokeDasharray={circumference}
@@ -125,7 +125,7 @@ const Widgets = () => {
             <Image
               src={widget1}
               alt='widget 1'
-              className={lastOrder ? 'opacity-40' : ''}
+              className={lastOrder ? 'opacity-10' : ''}
             />
             {lastOrder && (
               <div className='absolute inset-0 flex items-center justify-center'>
@@ -135,7 +135,7 @@ const Widgets = () => {
                     size={48}
                     strokeWidth={6}
                   />
-                  <span className='absolute inset-0 flex items-center justify-center text-[12px] font-semibold text-[#040413]'>
+                  <span className='absolute inset-0 flex items-center justify-center text-[12px] font-semibold text-[#FF8127]'>
                     {progress}%
                   </span>
                 </div>
