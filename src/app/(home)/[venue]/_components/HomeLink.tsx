@@ -12,16 +12,18 @@ interface IProps {
   img: StaticImport | string;
   label?: string | null;
   sectionId: number;
+  venueSlug?: string;
 }
 
-const HomeLink: FC<IProps> = ({ img, label, sectionId }) => {
+const HomeLink: FC<IProps> = ({ img, label, sectionId, venueSlug }) => {
   const venue = useVenueQuery(state => state.venue);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const slug = venueSlug ?? venue?.slug ?? '';
 
   return (
     <Link
       href={{
-        pathname: `${venue?.slug ?? ''}/foods/${sectionId}`,
+        pathname: `/${slug}/foods/${sectionId}`,
         query: { title: label ?? '' },
       }}
       key={String(label ?? '')}

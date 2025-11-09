@@ -1,5 +1,6 @@
 import VenueView from './VenueView';
 
-const VenuePage = () => <VenueView />;
-
-export default VenuePage;
+export default async function VenuePage({ params }: { params: Promise<{ venue: string }> }) {
+  const { venue } = await params;
+  return <VenueView venueSlug={venue} />;
+}
