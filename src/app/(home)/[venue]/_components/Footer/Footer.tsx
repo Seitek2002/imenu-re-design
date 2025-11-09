@@ -14,6 +14,8 @@ import { useCallWaiterV2 } from '@/lib/api/queries';
 import { useCheckout } from '@/store/checkout';
 import { useBasketTotals } from '@/lib/hooks/use-basket-totals';
 import { useTranslation } from 'react-i18next';
+import ModalPortal from '@/components/ui/ModalPortal';
+import okIcon from '@/assets/OrderStatus/check.svg';
 
 const Footer: FC = () => {
   const { t } = useTranslation();
@@ -36,6 +38,7 @@ const Footer: FC = () => {
         return;
       }
       await callWaiter.mutateAsync({ tableId: id as number });
+      setShowWaiterModal(true);
     } catch (e) {
       console.error('call-waiter:v2:error', e);
     }
@@ -66,6 +69,8 @@ const Footer: FC = () => {
 
   // Single source of truth for totals
   const { total } = useBasketTotals(orderType);
+
+  const [showWaiterModal, setShowWaiterModal] = useState(false);
 
   function handleOpenCheckout() {
     // Always open the drawer; validation, shaking, and vibration happen inside DrawerCheckout on Pay
@@ -142,6 +147,34 @@ const Footer: FC = () => {
         )}
       </div>
       <Nav />
+
+      <ModalPortal
+        open={showWaiterModal}
+        onClose={() => setShowWaiterModal(false)}
+        zIndex={100}
+      >
+        <button
+          type='button'
+          aria-label='Закрыть'
+          onClick={() => setShowWaiterModal(false)}
+          className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center'
+        >
+          ✕
+        </button>
+        <div className='flex flex-col items-center gap-3 p-4'>
+          <Image src={okIcon} alt='ok' />
+          <h3 className='text-base font-semibold'>
+            {t('waiterCalled', { defaultValue: 'Официант вызван' })}
+          </h3>
+          <button
+            type='button'
+            onClick={() => setShowWaiterModal(false)}
+            className='mt-1 bg-[#FF8127] text-white rounded-2xl py-2 px-4'
+          >
+            OK
+          </button>
+        </div>
+      </ModalPortal>
     </footer>
   );
 };
