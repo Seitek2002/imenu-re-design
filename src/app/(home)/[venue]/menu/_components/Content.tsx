@@ -13,6 +13,8 @@ import 'swiper/css/pagination';
 
 import Category, { type CategoryHandle } from './Category';
 import Goods from './Goods';
+import SearchBar from './SearchBar';
+import SearchResults from './SearchResults';
 
 import { PAGES } from '@/config/pages.config';
 
@@ -23,6 +25,9 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const sp = useSearchParams();
+  const searchQuery = (sp.get('search') ?? '').trim();
+  const searchOpen = sp.get('searchOpen') === '1';
 
   const handleOpenProduct = (product: Product) => {
     setSelectedProduct(product);
@@ -48,47 +53,61 @@ const Content = ({ headerHidden }: { headerHidden?: boolean }) => {
         product={selectedProduct}
         onClose={() => setIsDetailOpen(false)}
       />
-      <Category
-        ref={categoryRef}
-        categories={categories}
-        headerHidden={headerHidden}
-        activeSlug={categories[activeIndex]?.categoryName}
-        onSelect={(slug, index) => {
-          setActiveIndex(index);
-          swiperRef.current?.slideTo(index);
-          router.replace(PAGES.MENU(slug), { scroll: false });
-        }}
-      />
-      <Swiper
-        modules={[Pagination]}
-        className='pb-10'
-        autoHeight={true}
-        spaceBetween={30}
-        onSwiper={(s) => {
-          swiperRef.current = s;
-          s.slideTo(activeIndex, 0);
-          categoryRef.current?.scrollToSlug(
-            categories[activeIndex]?.categoryName
-          );
-        }}
-        onSlideChange={(s) => {
-          setActiveIndex(s.activeIndex);
-          const slug = categories[s.activeIndex]?.categoryName;
-          if (slug) {
-            router.replace(PAGES.MENU(slug), { scroll: false });
-            categoryRef.current?.scrollToSlug(slug);
-          }
-        }}
-      >
-        {categories.map((category, i) => (
-          <SwiperSlide key={i}>
-            <Goods
-              category={category.categoryName}
-              onOpen={handleOpenProduct}
-            />
-          </SwiperSlide>
-        ))}
-      </Swiper>
+      {/* Search input: appears only when toggled from header */}
+      {searchOpen && (
+        <div className='px-3 pt-3'>
+          <SearchBar placeholder='Поиск блюд' autoFocus />
+        </div>
+      )}
+
+      {/* When search is present, render results instead of category swiper */}
+      {searchQuery ? (
+        <SearchResults onOpen={handleOpenProduct} />
+      ) : (
+        <>
+          <Category
+            ref={categoryRef}
+            categories={categories}
+            headerHidden={headerHidden}
+            activeSlug={categories[activeIndex]?.categoryName}
+            onSelect={(slug, index) => {
+              setActiveIndex(index);
+              swiperRef.current?.slideTo(index);
+              router.replace(PAGES.MENU(slug), { scroll: false });
+            }}
+          />
+          <Swiper
+            modules={[Pagination]}
+            className='pb-10'
+            autoHeight={true}
+            spaceBetween={30}
+            onSwiper={(s) => {
+              swiperRef.current = s;
+              s.slideTo(activeIndex, 0);
+              categoryRef.current?.scrollToSlug(
+                categories[activeIndex]?.categoryName
+              );
+            }}
+            onSlideChange={(s) => {
+              setActiveIndex(s.activeIndex);
+              const slug = categories[s.activeIndex]?.categoryName;
+              if (slug) {
+                router.replace(PAGES.MENU(slug), { scroll: false });
+                categoryRef.current?.scrollToSlug(slug);
+              }
+            }}
+          >
+            {categories.map((category, i) => (
+              <SwiperSlide key={i}>
+                <Goods
+                  category={category.categoryName}
+                  onOpen={handleOpenProduct}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </>
+      )}
     </div>
   );
 };
