@@ -39,6 +39,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [shaking, setShaking] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const [showClosedModal, setShowClosedModal] = useState(false);
   const [closedMessage, setClosedMessage] = useState('');
@@ -112,7 +113,8 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const itemsArr = getItemsArray();
 
   // Input validity flags for red borders and shake classes
-  const isPhoneInvalid = (phone ?? '').trim().length < 5;
+  const PHONE_LENGTH = 13;
+  const isPhoneInvalid = (phone ?? '').trim().length !== PHONE_LENGTH;
   const needAddress = orderType === 'delivery';
   const isStreetInvalid = needAddress && !(address ?? '').trim();
   const isFloorInvalid = false; // этаж необязателен
@@ -238,7 +240,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
 
   async function handlePay() {
     try {
-      const isPhoneValid = (phone ?? '').trim().length >= 5;
+      const isPhoneValid = (phone ?? '').trim().length === PHONE_LENGTH;
       const requireAddress = orderType === 'delivery';
       const isAddressValid =
         !requireAddress || (address ?? '').trim().length > 0;
@@ -250,6 +252,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           }
         } catch {}
         bumpShake();
+        if (!isPhoneValid) {
+          const msg = t('phoneExactLen', { n: PHONE_LENGTH, defaultValue: `Номер телефона состоит из ${PHONE_LENGTH} символов` });
+          setPhoneError(msg);
+        }
         return;
       }
       const orderProducts = itemsArr.map((it: any) => ({
@@ -484,10 +490,13 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <input
                     id='phoneNumber'
                     type='text'
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className='bg-transparent'
-                  />
+                        value={phone}
+                        onChange={(e) => { setPhone(e.target.value); setPhoneError(''); }}
+                        className='bg-transparent'
+                      />
+                      {phoneError && (
+                        <span className='text-red-500 text-xs mt-1'>{phoneError}</span>
+                      )}
                 </label>
                 <button
                   type='button'
