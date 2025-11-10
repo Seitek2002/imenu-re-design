@@ -12,6 +12,8 @@ import { useVenueQuery } from '@/store/venue';
 import tableIcon from '@/assets/Basket/table.svg';
 import { useTranslation } from 'react-i18next';
 import { useCreateOrderV2 } from '@/lib/api/queries';
+import ModalPortal from '@/components/ui/ModalPortal';
+import clockIcon from '@/assets/OrderStatus/clock.svg';
 
 interface IProps {
   sheetOpen: boolean;
@@ -37,6 +39,9 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
   const [shaking, setShaking] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState('');
+
+  const [showClosedModal, setShowClosedModal] = useState(false);
+  const [closedMessage, setClosedMessage] = useState('');
 
   useEffect(() => {
     // trigger per-input shake for 500ms whenever bumpShake is called
@@ -140,6 +145,97 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
     return '';
   }
 
+  function weekdayIndex1to7(d: Date) {
+    const js = d.getDay(); // 0..6
+    return js === 0 ? 7 : js; // map Sunday 0 -> 7
+  }
+
+  function parseHHMMToMinutes(t?: string): number | null {
+    if (!t) return null;
+    const [hh, mm] = t.split(':');
+    const h = Number(hh);
+    const m = Number(mm);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+    return h * 60 + m;
+  }
+
+  function isOpenNowAndNext(schedules: any[], now: Date): {
+    open: boolean;
+    next: { date: Date; isToday: boolean; dayName: string; timeHHmm: string } | null;
+  } {
+    if (!Array.isArray(schedules) || schedules.length === 0) {
+      return { open: true, next: null };
+    }
+    const nowDow = weekdayIndex1to7(now);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const getByDow = (dow: number) =>
+      schedules.find((s: any) => s?.dayOfWeek === dow);
+
+    const today = getByDow(nowDow);
+    const todayOff = !!today?.isDayOff;
+    const today24 = !!today?.is24h;
+    const startM = parseHHMMToMinutes(today?.workStart ?? undefined);
+    const endM = parseHHMMToMinutes(today?.workEnd ?? undefined);
+
+    // Is open now?
+    let open = false;
+    if (!todayOff) {
+      if (today24) open = true;
+      else if (startM != null && endM != null && nowMinutes >= startM && nowMinutes < endM) open = true;
+    }
+    if (open) return { open: true, next: null };
+
+    // Next opening today (before opening)
+    if (!todayOff && !today24 && startM != null && nowMinutes < startM) {
+      const hh = String(Math.floor(startM / 60)).padStart(2, '0');
+      const mm = String(startM % 60).padStart(2, '0');
+      return {
+        open: false,
+        next: {
+          date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), Number(hh), Number(mm), 0),
+          isToday: true,
+          dayName: today?.dayName ?? '',
+          timeHHmm: `${hh}:${mm}`,
+        },
+      };
+    }
+
+    // Otherwise look ahead up to 7 days
+    for (let add = 1; add <= 7; add++) {
+      const dow = ((nowDow - 1 + add) % 7) + 1;
+      const s = getByDow(dow);
+      if (!s || s.isDayOff) continue;
+      if (s.is24h) {
+        return {
+          open: false,
+          next: {
+            date: new Date(now.getFullYear(), now.getMonth(), now.getDate() + add, 0, 0, 0),
+            isToday: false,
+            dayName: s.dayName ?? '',
+            timeHHmm: '00:00',
+          },
+        };
+      }
+      const st = parseHHMMToMinutes(s.workStart ?? undefined);
+      if (st != null) {
+        const hh = String(Math.floor(st / 60)).padStart(2, '0');
+        const mm = String(st % 60).padStart(2, '0');
+        return {
+          open: false,
+          next: {
+            date: new Date(now.getFullYear(), now.getMonth(), now.getDate() + add, Number(hh), Number(mm), 0),
+            isToday: false,
+            dayName: s.dayName ?? '',
+            timeHHmm: `${hh}:${mm}`,
+          },
+        };
+      }
+    }
+    // Fallback: consider open if nothing found
+    return { open: true, next: null };
+  }
+
   async function handlePay() {
     try {
       const isPhoneValid = (phone ?? '').trim().length >= 5;
@@ -164,6 +260,23 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
       if (!orderProducts.length) {
         bumpShake();
         console.error('order:create:validation', 'orderProducts is empty');
+        return;
+      }
+
+      // Opening hours check
+      const schedules = Array.isArray((venue as any)?.schedules) ? ((venue as any).schedules as any[]) : [];
+      const now = new Date();
+      const openInfo = isOpenNowAndNext(schedules, now);
+      if (!openInfo.open && openInfo.next) {
+        const whenWord = openInfo.next.isToday
+          ? t('today', { defaultValue: 'сегодня' })
+          : (openInfo.next.dayName || '');
+        const timeText = openInfo.next.timeHHmm.replace(':', ' ');
+        const msg = t('closedNowMessage', {
+          defaultValue: `Сейчас не рабочее время, но вы можете сделать заказ в ${timeText} ${whenWord}`,
+        });
+        setClosedMessage(msg);
+        setShowClosedModal(true);
         return;
       }
 
@@ -444,6 +557,35 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           </div>
         </div>
       </div>
+
+      <ModalPortal
+        open={showClosedModal}
+        onClose={() => setShowClosedModal(false)}
+        zIndex={130}
+      >
+        <button
+          type='button'
+          aria-label='Закрыть'
+          onClick={() => setShowClosedModal(false)}
+          className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center'
+        >
+          ✕
+        </button>
+        <div className='flex flex-col items-center gap-3 p-4'>
+          <Image src={clockIcon} alt='clock icon' />
+          <h3 className='text-base font-semibold text-center px-2'>
+            {closedMessage}
+          </h3>
+          <button
+            type='button'
+            onClick={() => setShowClosedModal(false)}
+            className='mt-1 bg-[#FF8127] text-white rounded-2xl py-2 px-4'
+          >
+            OK
+          </button>
+        </div>
+      </ModalPortal>
+
     </div>
   );
 };
