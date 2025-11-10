@@ -31,7 +31,7 @@ export default function TimePickerContent({
           type="button"
           onClick={onChooseAsap}
           className={`w-full px-4 py-3 text-left rounded-lg border ${
-            pickupMode === 'asap' ? 'border-[#FF7A00] bg-[#FFF5EE]' : 'border-[#E5E7EB]'
+            pickupMode === 'asap' ? 'border-brand bg-brand-soft' : 'border-[#E5E7EB]'
           }`}
         >
           Быстрее всего
@@ -55,7 +55,7 @@ export default function TimePickerContent({
                   type="button"
                   onClick={() => setTimeInput(t)}
                   className={`px-2 py-1 rounded-md border text-sm ${
-                    t === timeInput ? 'border-[#FF7A00] bg-[#FFF5EE]' : 'border-[#E5E7EB]'
+                    t === timeInput ? 'border-brand bg-brand-soft' : 'border-[#E5E7EB]'
                   }`}
                 >
                   {t}
@@ -74,7 +74,7 @@ export default function TimePickerContent({
             </button>
             <button
               type="button"
-              className="px-4 py-2 rounded-md bg-[#FF7A00] text-white"
+              className="px-4 py-2 rounded-md bg-brand text-white"
               onClick={onSaveTime}
             >
               Сохранить

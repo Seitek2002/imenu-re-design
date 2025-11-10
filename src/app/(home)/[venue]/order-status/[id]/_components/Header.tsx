@@ -43,7 +43,7 @@ const Header = () => {
         <h2 className='text-2xl font-semibold'>{t('myOrder')}</h2>
         <button
           type='button'
-          className='text-[#FF7A00] text-sm font-medium'
+          className='text-brand text-sm font-medium'
           onClick={() => setOpenQR(true)}
           aria-label='Показать qr-code'
         >

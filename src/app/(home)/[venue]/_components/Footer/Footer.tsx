@@ -98,7 +98,7 @@ const Footer: FC = () => {
             </div>
             {hydrated && itemCount > 0 && (
               <button
-                className='bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium'
+                className='bg-brand py-4 text-white rounded-3xl flex-1 font-medium'
                 onClick={handleOpenCheckout}
               >
                 {t('checkoutProceed')}
@@ -117,7 +117,7 @@ const Footer: FC = () => {
         >
           <Link
             href={PAGES.BASKET(venueRoot)}
-            className='block text-center bg-[#FF7A00] text-white rounded-3xl py-3.5 font-semibold'
+            className='block text-center bg-brand text-white rounded-3xl py-3.5 font-semibold'
             style={{ opacity: showNext ? 1 : 0, transition: 'opacity 500ms' }}
           >
             {t('goToBasket')} · {Math.round(total * 100) / 100} c
@@ -129,7 +129,7 @@ const Footer: FC = () => {
             onClick={handleCallWaiter}
             disabled={callWaiter.isPending}
             aria-busy={callWaiter.isPending}
-            className={`group flex items-center min-w-10 bg-[#FF8127] text-white rounded-3xl overflow-hidden transition-all duration-1000 ${
+            className={`group flex items-center min-w-10 bg-brand text-white rounded-3xl overflow-hidden transition-all duration-1000 ${
               collapsed ? 'p-4 mr-2 mb-0' : 'py-4 px-11 gap-2 mb-2.5'
             } ${callWaiter.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
@@ -169,7 +169,7 @@ const Footer: FC = () => {
           <button
             type='button'
             onClick={() => setShowWaiterModal(false)}
-            className='mt-1 bg-[#FF8127] text-white rounded-2xl py-2 px-4'
+            className='mt-1 bg-brand text-white rounded-2xl py-2 px-4'
           >
             OK
           </button>

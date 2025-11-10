@@ -52,7 +52,8 @@ const CircularProgress: React.FC<{
         cy={size / 2}
         r={radius}
         fill='none'
-        stroke='#FF812730'
+        stroke='var(--brand)'
+        strokeOpacity={0.18}
         strokeWidth={strokeWidth}
       />
       <circle
@@ -60,7 +61,7 @@ const CircularProgress: React.FC<{
         cy={size / 2}
         r={radius}
         fill='none'
-        stroke='#FF8127'
+        stroke='var(--brand)'
         strokeWidth={strokeWidth}
         strokeLinecap='round'
         strokeDasharray={circumference}
@@ -135,7 +136,7 @@ const Widgets = () => {
                     size={48}
                     strokeWidth={6}
                   />
-                  <span className='absolute inset-0 flex items-center justify-center text-[12px] font-semibold text-[#FF8127]'>
+                  <span className='absolute inset-0 flex items-center justify-center text-[12px] font-semibold text-brand'>
                     {progress >= 100 ? '✓' : `${progress}%`}
                   </span>
                 </div>
@@ -201,7 +202,7 @@ const Widgets = () => {
                 <li
                   key={s?.dayOfWeek ?? Math.random()}
                   className={`flex items-center justify-between py-2 px-2 rounded-lg ${
-                    isToday ? 'bg-[#FFF5EE] border border-[#FF7A00]' : ''
+                    isToday ? 'bg-brand-soft border border-brand' : ''
                   }`}
                 >
                   <span
@@ -218,7 +219,7 @@ const Widgets = () => {
                       isDayOff
                         ? 'text-[#9CA3AF]'
                         : isToday
-                        ? 'text-[#FF7A00] font-medium'
+                        ? 'text-brand font-medium'
                         : 'text-[#374151]'
                     }`}
                   >

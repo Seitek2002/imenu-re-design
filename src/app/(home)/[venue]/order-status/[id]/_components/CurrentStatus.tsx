@@ -41,7 +41,7 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
           <div className='flex justify-around items-center mb-3 gap-2'>
             {modeSteps.map((s, i) => {
               const current = i === activeIndex;
-              const bg = current ? '#FF8127' : '#ECECF1';
+              const bg = current ? 'var(--brand)' : '#ECECF1';
 
               return (
                 <div key={s.key} className='flex items-center justify-center'>
@@ -78,7 +78,7 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
             {/* progress line */}
             <div
               className='absolute left-0 top-[3px] h-[2px] rounded-full'
-              style={{ width: `${progress}%`, background: '#FF8127' }}
+              style={{ width: `${progress}%`, background: 'var(--brand)' }}
             />
             {/* dots aligned under each grid column */}
             <div className='absolute inset-0 flex justify-around'>
@@ -89,7 +89,7 @@ const CurrentStatus: FC<IProps> = ({ serviceMode, status }) => {
                     key={`dot-${i}`}
                     className='h-2 w-2 rounded-full justify-self-center'
                     style={{
-                      backgroundColor: activeDot ? '#FF8127' : '#ECECF1',
+                      backgroundColor: activeDot ? 'var(--brand)' : '#ECECF1',
                     }}
                   />
                 );

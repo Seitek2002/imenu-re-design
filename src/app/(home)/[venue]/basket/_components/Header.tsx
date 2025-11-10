@@ -40,7 +40,7 @@ const Header = () => {
         {/* Placeholder for "очистить корзину" (только UI) */}
         <button
           type='button'
-          className='text-[#FF7A00] text-sm font-medium'
+          className='text-brand text-sm font-medium'
           onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setConfirmOpen(true); }}
           aria-label='Очистить корзину'
         >
@@ -52,7 +52,7 @@ const Header = () => {
         <div className='flex justify-center pb-3'>
           <div className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white shadow-md'>
             <Image src={tableIcon} alt='table icon' width={16} height={16} />
-            <span className='text-[#FF7A00] font-semibold'>
+            <span className='text-brand font-semibold'>
               {t('tableLabel', { num: displayTable })}
             </span>
           </div>
@@ -80,8 +80,7 @@ const Header = () => {
               <button
                 type='button'
                 onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setConfirmOpen(false); }}
-                className='py-3 px-6 rounded-[10px] text-white font-semibold'
-                style={{ backgroundColor: '#FF7A00' }}
+                className='py-3 px-6 rounded-[10px] text-white font-semibold bg-brand'
               >
                 {t('cancel')}
               </button>

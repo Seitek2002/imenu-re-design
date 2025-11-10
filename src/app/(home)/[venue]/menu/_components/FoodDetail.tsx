@@ -196,8 +196,7 @@ export default function FoodDetail({ open, product, onClose }: Props) {
                 <div className='rounded-[12px]'>
                   <button
                     type='button'
-                    className='w-full font-semibold py-4 rounded-[12px] text-white'
-                    style={{ backgroundColor: '#FF7A00' }}
+                    className='w-full font-semibold py-4 rounded-[12px] text-white bg-brand'
                     onClick={() => {
                       const modId = selectedId ?? null;
                       const modName =

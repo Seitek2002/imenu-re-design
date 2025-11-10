@@ -129,8 +129,7 @@ export default function BasketView() {
               <button
                 type='button'
                 onClick={() => setModal({ open: false, message: '' })}
-                className='h-10 px-4 rounded-[10px] text-white font-semibold'
-                style={{ backgroundColor: '#FF7A00' }}
+                className='h-10 px-4 rounded-[10px] text-white font-semibold bg-brand'
               >
                 Ок
               </button>

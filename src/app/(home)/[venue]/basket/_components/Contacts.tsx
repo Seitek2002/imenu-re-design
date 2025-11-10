@@ -80,7 +80,7 @@ const Contacts: FC<IProps> = ({
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder='Укажите адрес'
-            className='w-full h-11 rounded-xl p-4 outline-none focus:border-[#FF7A00] bg-[#F5F5F5]'
+            className='w-full h-11 rounded-xl p-4 outline-none focus:border-brand bg-[#F5F5F5]'
             style={{
               border:
                 orderType === 'delivery' && !isAddressValid

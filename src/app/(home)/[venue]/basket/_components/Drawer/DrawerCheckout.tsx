@@ -500,7 +500,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                 </label>
                 <button
                   type='button'
-                  className='text-[#FF8128] text-[16px] font-medium mt-2'
+                  className='text-brand text-[16px] font-medium mt-2'
                   onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(50);
                     setShowComment((v) => !v);
@@ -544,7 +544,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   <div className='text-[#939393] text-xs'>{t('total')}</div>
                 </div>
                 <button
-                  className={`bg-[#FF8127] py-4 text-white rounded-3xl flex-1 font-medium disabled:opacity-70 disabled:cursor-not-allowed`}
+                  className={`bg-brand py-4 text-white rounded-3xl flex-1 font-medium disabled:opacity-70 disabled:cursor-not-allowed`}
                   onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(50);
                     handlePay();
@@ -588,7 +588,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           <button
             type='button'
             onClick={() => setShowClosedModal(false)}
-            className='mt-1 bg-[#FF8127] text-white rounded-2xl py-2 px-4'
+            className='mt-1 bg-brand text-white rounded-2xl py-2 px-4'
           >
             OK
           </button>

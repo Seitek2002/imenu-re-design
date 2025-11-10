@@ -21,6 +21,10 @@ html {
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Dynamic brand color (fallback set here; overridden by ThemeColor) */
+  --brand: #875AFF;
+  --brand-rgb: 135,90,255;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,7 +33,25 @@ html {
     --foreground: #ededed;
   }
 }
+ 
+/* Brand utilities */
+@layer utilities {
+  .bg-brand { background-color: var(--brand) !important; }
+  .text-brand { color: var(--brand) !important; }
+  .border-brand { border-color: var(--brand) !important; }
+  .fill-brand { fill: var(--brand) !important; }
+  .stroke-brand { stroke: var(--brand) !important; }
 
+  /* Soft brand backgrounds (tint via rgba) */
+  .bg-brand-soft { background-color: rgba(var(--brand-rgb), 0.06) !important; }
+  .bg-brand-softer { background-color: rgba(var(--brand-rgb), 0.03) !important; }
+  .bg-brand-10 { background-color: rgba(var(--brand-rgb), 0.10) !important; }
+
+  /* Focus variants */
+  .focus\:border-brand:focus { border-color: var(--brand) !important; }
+  .focus-visible\:border-brand:focus-visible { border-color: var(--brand) !important; }
+}
+ 
 body {
   background: #fff;
   color: #21201F;
