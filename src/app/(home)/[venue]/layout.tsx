@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import Footer from './_components/Footer/Footer';
 import Prefetcher from './Prefetcher';
+import ThemeColor from './ThemeColor';
 
 export async function generateMetadata({
   params,
@@ -60,6 +61,7 @@ export default async function VenueLayout({
 
   return (
     <div>
+      <ThemeColor />
       {children}
       <Prefetcher />
       <Footer />
