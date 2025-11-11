@@ -245,12 +245,17 @@ export function useProductsV2(
 ) {
   return useQuery<ListResponse<Product>>({
     queryKey: qk.v2Products(params),
-    queryFn: () =>
-      fetchJSON<ListResponse<Product>>('/api/v2/products/', {
-        search: params?.search,
-        spotId: params?.spotId,
-        venueSlug: params?.venueSlug,
-      }),
+    // Use React Query's AbortSignal to cancel stale requests during fast/slow typing
+    queryFn: ({ signal }) =>
+      fetchJSON<ListResponse<Product>>(
+        '/api/v2/products/',
+        {
+          search: params?.search,
+          spotId: params?.spotId,
+          venueSlug: params?.venueSlug,
+        },
+        { signal }
+      ),
     enabled: options?.enabled ?? true,
     ...options,
   });

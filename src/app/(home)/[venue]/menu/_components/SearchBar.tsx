@@ -26,6 +26,29 @@ export default function SearchBar({ placeholder = 'Поиск', className = '', 
     }
   }, [autoFocus]);
 
+  // Debounce input value and trigger search via URL update
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value.trim()), 400);
+    return () => clearTimeout(id);
+  }, [value]);
+
+  // Sync URL when debounced changes (sends search request)
+  useEffect(() => {
+    const params = new URLSearchParams(sp.toString());
+    if (debounced) {
+      params.set('search', debounced);
+      // reset category when searching to avoid collisions with swiper/category state
+      params.delete('category');
+    } else {
+      params.delete('search');
+    }
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debounced]);
+
   // keep input in sync if user navigates back/forward
   useEffect(() => {
     const current = sp.get('search') ?? '';
@@ -76,15 +99,13 @@ export default function SearchBar({ placeholder = 'Поиск', className = '', 
           placeholder={placeholder}
           className="bg-transparent outline-none flex-1"
         />
-        <button
-          type="button"
-          aria-label="Найти"
-          onClick={submit}
-          disabled={value.trim().length === 0}
-          className="ml-1 bg-brand text-white rounded-md px-3 py-1 text-sm disabled:opacity-50"
-        >
-          Найти
-        </button>
+        {isPending && (
+          <span
+            aria-label="Загрузка"
+            className="inline-block h-4 w-4 animate-spin rounded-full border-2"
+            style={{ borderColor: 'rgba(0,0,0,0.2)', borderTopColor: 'var(--brand)' }}
+          />
+        )}
         {showClear && (
           <button
             type="button"
@@ -96,9 +117,6 @@ export default function SearchBar({ placeholder = 'Поиск', className = '', 
           </button>
         )}
       </div>
-      {isPending && (
-        <span className="absolute -bottom-5 right-1 text-xs text-gray-400">Поиск…</span>
-      )}
     </div>
   );
 }

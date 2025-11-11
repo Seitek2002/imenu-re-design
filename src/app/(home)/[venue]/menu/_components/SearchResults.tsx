@@ -21,7 +21,7 @@ export default function SearchResults({ onOpen }: Props) {
       ? (localStorage.getItem('venueRoot') || '').replace(/^\//, '')
       : undefined);
 
-  const { data, isLoading } = useProductsV2(
+  const { data, isLoading, isFetching } = useProductsV2(
     { venueSlug, search: q },
     { enabled: !!venueSlug && !!q }
   );
@@ -33,24 +33,48 @@ export default function SearchResults({ onOpen }: Props) {
   });
 
   return (
-    <div className="px-3 pb-6">
-      <div className="text-sm text-[#6B7280] mb-3">
-        Поиск: <span className="font-medium text-[#111111]">{q}</span>
+    <div className='px-3 pb-6'>
+      <div className='text-sm text-[#6B7280] mb-3'>
+        Поиск: <span className='font-medium text-[#111111]'>{q}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        {isLoading ? (
+      {/* Prominent loader near products */}
+      {(isLoading || isFetching) && (
+        <div className='flex items-center justify-center mb-3'>
+          <span
+            aria-label='Загрузка'
+            className='inline-block h-6 w-6 animate-spin rounded-full border-2'
+            style={{
+              borderColor: 'rgba(0,0,0,0.2)',
+              borderTopColor: 'var(--brand)',
+            }}
+          />
+          <span className='ml-2 text-sm text-gray-500'>Загрузка…</span>
+        </div>
+      )}
+
+      <div className='grid grid-cols-2 gap-2'>
+        {isLoading && items.length === 0 ? (
           Array.from({ length: 8 }).map((_, i) => <SkeletonGoodItem key={i} />)
         ) : items.length > 0 ? (
-          items.map((item) => <GoodItem key={item.id} item={item} onOpen={onOpen} />)
+          items.map((item) => (
+            <GoodItem key={item.id} item={item} onOpen={onOpen} />
+          ))
         ) : (
-          <div className="col-span-2">
-            <div className="flex flex-col items-center justify-center text-center py-10 rounded-2xl bg-[#F5F5F5]">
-              <div className="relative w-28 h-28 mb-3">
-                <Image src="/placeholder-dish.svg" alt="Нет результатов" fill className="object-contain opacity-80" />
+          <div className='col-span-2'>
+            <div className='flex flex-col items-center justify-center text-center py-10 rounded-2xl bg-[#F5F5F5]'>
+              <div className='relative w-28 h-28 mb-3'>
+                <Image
+                  src='/placeholder-dish.svg'
+                  alt='Нет результатов'
+                  fill
+                  className='object-contain opacity-80'
+                />
               </div>
-              <div className="text-base font-semibold">Ничего не найдено</div>
-              <div className="text-sm text-[#6B7280] mt-1">Попробуйте изменить запрос</div>
+              <div className='text-base font-semibold'>Ничего не найдено</div>
+              <div className='text-sm text-[#6B7280] mt-1'>
+                Попробуйте изменить запрос
+              </div>
             </div>
           </div>
         )}
