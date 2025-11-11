@@ -4,6 +4,7 @@ import Footer from './_components/Footer/Footer';
 import Prefetcher from './Prefetcher';
 import ThemeColor from './ThemeColor';
 import OrientationGuard from './OrientationGuard';
+import { ToastProvider } from '@/components/ui/ToastProvider';
 
 export async function generateMetadata({
   params,
@@ -61,12 +62,14 @@ export default async function VenueLayout({
   const { venue } = await params;
 
   return (
-    <div>
-      <ThemeColor />
-      <OrientationGuard />
-      {children}
-      <Prefetcher />
-      <Footer />
-    </div>
+    <ToastProvider limit={4} position="top-center">
+      <div>
+        <ThemeColor />
+        <OrientationGuard />
+        {children}
+        <Prefetcher />
+        <Footer />
+      </div>
+    </ToastProvider>
   );
 }
