@@ -173,8 +173,7 @@ export default function FoodDetail({ open, product, onClose }: Props) {
               </div>
             )}
 
-            {/* Footer: counter + add (UI only; показываем, когда есть размеры) */}
-            {hasSizes && (
+// Footer: counter + add (показываем всегда, даже без модификаторов)
               <footer className='grid grid-cols-2 items-center gap-3 pt-8 pb-10 sticky bottom-0 md:static bg-white'>
                 <div className='flex items-center justify-between gap-8 px-2 py-4 rounded-[12px] font-semibold bg-[#F1F2F3]'>
                   <button
@@ -216,7 +215,6 @@ export default function FoodDetail({ open, product, onClose }: Props) {
                   </button>
                 </div>
               </footer>
-            )}
           </div>
         </div>
       </div>
