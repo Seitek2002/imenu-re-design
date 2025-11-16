@@ -7,6 +7,7 @@ import "./shake.css";
 import QueryProvider from "./query-provider";
 import Script from "next/script";
 import FacebookPixelTracker from "../lib/analytics/FacebookPixel";
+import { Suspense } from "react";
 
 const geistInter = Inter({
   variable: "--font-geist-inter",
@@ -64,10 +65,12 @@ fbq('track', 'PageView');
 `}</Script>
         <noscript
           dangerouslySetInnerHTML={{
-            __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${FB_PIXEL_ID}&ev=PageView&noscript=1" />`,
+            __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=24957245993913886&ev=PageView&noscript=1" />`,
           }}
         />
-        <FacebookPixelTracker />
+        <Suspense fallback={null}>
+          <FacebookPixelTracker />
+        </Suspense>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
