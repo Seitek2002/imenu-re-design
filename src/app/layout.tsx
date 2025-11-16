@@ -42,7 +42,7 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID || '24957245993913886';
+// const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID || '24957245993913886';
 
 export default function RootLayout({
   children,
