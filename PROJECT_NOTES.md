@@ -181,6 +181,30 @@ Utilities:
 - Image optimization uses `sharp`.
 - Verify environment vars (if any) in platform dashboards; API base is static (`https://imenu.kg`).
 
+## Analytics (Meta/Facebook Pixel)
+- Integration location: `src/app/layout.tsx`
+  - Injected via `<Script strategy="afterInteractive">` (loads `https://connect.facebook.net/en_US/fbevents.js`).
+  - Initializes Pixel with `fbq('init', FB_PIXEL_ID)` and tracks an initial `PageView`.
+  - Adds `<noscript>` fallback `<img>` beacon for users without JS.
+- Pixel ID configuration:
+  - Public env var: `NEXT_PUBLIC_FB_PIXEL_ID` (see `.env.example`).
+  - Fallback (if env var is not set): `24957245993913886` (hardcoded in `layout.tsx`).
+- Route change tracking:
+  - Client component: `src/lib/analytics/FacebookPixel.tsx`.
+  - Uses `usePathname()` and `useSearchParams()` to call `fbq('track', 'PageView')` on route changes.
+- How to update/disable:
+  - Update ID: set `NEXT_PUBLIC_FB_PIXEL_ID` and rebuild.
+  - Temporarily disable: comment/remove the `<Script id="fb-pixel" .../>` and `<FacebookPixelTracker />` in `layout.tsx`.
+- Local testing steps:
+  1. Create `.env.local` with `NEXT_PUBLIC_FB_PIXEL_ID=YOUR_PIXEL_ID` (optional; falls back to default).
+  2. Run `npm run dev` (or `bun run dev`).
+  3. Open the app and navigate between pages; verify in DevTools Network that `connect.facebook.net` is loaded.
+  4. Install the "Meta Pixel Helper" browser extension to verify `PageView` events.
+  5. Check `window.fbq` exists in the console; manually test `fbq('track', 'PageView')`.
+  6. In production, verify events in the Meta Events Manager.
+- Privacy note:
+  - Ensure you comply with local privacy/cookie consent requirements before firing tracking events.
+
 ## Quick Start (local)
 - `npm install`
 - `npm run dev`
