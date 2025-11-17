@@ -5,6 +5,8 @@ import { useBasketTotals } from '@/lib/hooks/use-basket-totals';
 import Form from './Form';
 
 import elqr from '@/assets/Basket/Drawer/elqr.svg';
+import cashIcon from '@/assets/Basket/Drawer/cash.svg';
+import selectArrow from '@/assets/Basket/Drawer/select-arrow.svg';
 import Image from 'next/image';
 import { useCheckout } from '@/store/checkout';
 import { useBasket } from '@/store/basket';
@@ -43,6 +45,10 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
 
   const [showClosedModal, setShowClosedModal] = useState(false);
   const [closedMessage, setClosedMessage] = useState('');
+
+  // Payment method selection
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
 
   useEffect(() => {
     // trigger per-input shake for 500ms whenever bumpShake is called
@@ -320,7 +326,7 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
 
       const venueSlug = resolveVenueSlug();
 
-      const body = {
+      const baseBody = {
         phone: phone.trim(),
         serviceMode,
         address: orderType === 'delivery' ? addressString : null,
@@ -330,7 +336,13 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
         orderProducts,
         isTgBot: false,
         useBonus: false,
-      };
+      } as any;
+
+      // Include payment method only when user selected "cash"
+      const body: any = { ...baseBody };
+      if (paymentMethod === 'cash') {
+        body.paymentMethods = 'cash';
+      }
 
       // Debug: log exact payload we send (must include orderProducts array)
       console.log('order:payload', body);
@@ -527,12 +539,32 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
                   </label>
                 )}
               </div>
-              <div className='rounded-2xl bg-white p-5 flex items-center justify-between mt-1'>
+              <div
+                className='rounded-2xl bg-white p-5 flex items-center justify-between mt-1 cursor-pointer active:scale-[0.99] transition'
+                role='button'
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(30);
+                  setShowPaymentModal(true);
+                }}
+                aria-label='Выбрать способ оплаты'
+              >
                 <div className='flex items-center'>
-                  <Image src={elqr} alt='elqr' />
-                  <span className='text-[14px] font-medium ml-1'>ELQR</span>
+                  {paymentMethod === 'cash' ? (
+                    <>
+                      <Image src={cashIcon} alt='cash' />
+                      <span className='text-[14px] font-medium ml-1'>Наличными</span>
+                    </>
+                  ) : (
+                    <>
+                      <Image src={elqr} alt='elqr' />
+                      <span className='text-[14px] font-medium ml-1'>ELQR</span>
+                    </>
+                  )}
                 </div>
-                <span className='text-[14px] font-medium'>{t('elqrInfo')}</span>
+                <div className='flex items-center gap-2'>
+                  <span className='text-[14px] font-medium'>{t('elqrInfo')}</span>
+                  <Image src={selectArrow} alt='arrow right' />
+                </div>
               </div>
             </div>
             <div>
@@ -566,6 +598,59 @@ const DrawerCheckout: FC<IProps> = ({ sheetOpen, closeSheet }) => {
           </div>
         </div>
       </div>
+
+      {/* Payment method modal */}
+      <ModalPortal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        zIndex={100}
+      >
+        <button
+          type='button'
+          aria-label='Закрыть'
+          onClick={() => setShowPaymentModal(false)}
+          className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center'
+        >
+          ✕
+        </button>
+        <div className='flex flex-col items-stretch gap-4 p-4 min-w-[280px]'>
+          <h3 className='text-base font-semibold text-center'>Выберите способ оплаты</h3>
+          <div className='grid grid-cols-1 gap-2'>
+            <button
+              type='button'
+              onClick={() => {
+                setPaymentMethod('elqr');
+                setShowPaymentModal(false);
+                if (navigator.vibrate) navigator.vibrate(20);
+              }}
+              className={`rounded-xl border px-4 py-3 text-left flex items-center justify-between ${
+                paymentMethod === 'elqr' ? 'border-brand bg-brand/5' : 'border-[#E5E5E5]'
+              }`}
+            >
+              <span className='font-medium'>ELQR</span>
+              {paymentMethod === 'elqr' && (
+                <span className='text-brand text-sm'>Выбрано</span>
+              )}
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                setPaymentMethod('cash');
+                setShowPaymentModal(false);
+                if (navigator.vibrate) navigator.vibrate(20);
+              }}
+              className={`rounded-xl border px-4 py-3 text-left flex items-center justify-between ${
+                paymentMethod === 'cash' ? 'border-brand bg-brand/5' : 'border-[#E5E5E5]'
+              }`}
+            >
+              <span className='font-medium'>Наличными</span>
+              {paymentMethod === 'cash' && (
+                <span className='text-brand text-sm'>Выбрано</span>
+              )}
+            </button>
+          </div>
+        </div>
+      </ModalPortal>
 
       <ModalPortal
         open={showClosedModal}
