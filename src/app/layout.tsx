@@ -8,6 +8,7 @@ import QueryProvider from './query-provider';
 import Script from 'next/script';
 import FacebookPixelTracker from '../lib/analytics/FacebookPixel';
 import { Suspense } from 'react';
+import StatusBarConfig from '../lib/capacitor/StatusBarConfig';
 
 const geistInter = Inter({
   variable: '--font-geist-inter',
@@ -40,6 +41,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 // const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID || '24957245993913886';
@@ -79,6 +81,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <FacebookPixelTracker />
         </Suspense>
+        <StatusBarConfig />
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
