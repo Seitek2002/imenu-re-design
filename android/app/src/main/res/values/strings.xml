@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">imenu-next</string>
+    <string name="title_activity_main">imenu-next</string>
+    <string name="package_name">com.imenu.app</string>
+    <string name="custom_url_scheme">com.imenu.app</string>
+</resources>
