@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
+import { isTabletViewport } from '@/lib/utils/responsive';
 
 export type OrderType = 'takeout' | 'dinein' | 'delivery';
 
@@ -87,19 +88,39 @@ export const useCheckout = create<CheckoutState>()(
         name: 'checkout',
         storage: createJSONStorage(() => localStorage),
         version: 4,
-        // Персистим только бизнес-состояние
-        partialize: (s) => ({
-          orderType: s.orderType,
-          selectedSpotId: s.selectedSpotId,
-          pickupMode: s.pickupMode,
-          pickupTime: s.pickupTime,
-          phone: s.phone,
-          address: s.address,
-          deliveryStreet: s.deliveryStreet,
-          deliveryEntrance: s.deliveryEntrance,
-          deliveryFloor: s.deliveryFloor,
-          deliveryApartment: s.deliveryApartment,
-        }),
+        // Персистим только бизнес-состояние.
+        // В режиме планшета НЕ сохраняем телефон, адрес и слоты времени (pickupMode/pickupTime).
+        partialize: (s) => {
+          const base: any = {
+            orderType: s.orderType,
+            selectedSpotId: s.selectedSpotId,
+            deliveryStreet: s.deliveryStreet,
+            deliveryEntrance: s.deliveryEntrance,
+            deliveryFloor: s.deliveryFloor,
+            deliveryApartment: s.deliveryApartment,
+          };
+          if (!isTabletViewport()) {
+            base.pickupMode = s.pickupMode;
+            base.pickupTime = s.pickupTime;
+            base.phone = s.phone;
+            base.address = s.address;
+          }
+          return base;
+        },
+        // При гидратации в режиме планшета — сбрасываем чувствительные поля и форсим dine-in
+        onRehydrateStorage: () => (state, _error) => {
+          if (typeof window === 'undefined') return;
+          if (!state) return;
+          if (isTabletViewport()) {
+            try {
+              state.setPhone('+996');
+              state.setAddress('');
+              state.setPickupMode('asap');
+              state.setPickupTime(null);
+              state.setOrderType('dinein');
+            } catch {}
+          }
+        },
       }
     ),
     { name: 'checkout' }

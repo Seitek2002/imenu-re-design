@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { TABLET_MIN_WIDTH } from '@/lib/utils/responsive';
 
 /**
  * Blocks interaction on mobile devices when in landscape orientation
@@ -20,11 +21,11 @@ export default function OrientationGuard() {
     setMounted(true);
 
     const mqPortrait = window.matchMedia('(orientation: portrait)');
-    const mqMobile = window.matchMedia('(max-width: 1024px)');
+    const mqPhone = window.matchMedia(`(max-width: ${TABLET_MIN_WIDTH - 1}px)`);
 
     const update = () => {
       // mobile + not portrait => block
-      setLandscapeMobile(mqMobile.matches && !mqPortrait.matches);
+      setLandscapeMobile(mqPhone.matches && !mqPortrait.matches);
     };
 
     // Initial
@@ -34,7 +35,7 @@ export default function OrientationGuard() {
     const onPortraitChange = () => update();
     const onMobileChange = () => update();
     mqPortrait.addEventListener?.('change', onPortraitChange);
-    mqMobile.addEventListener?.('change', onMobileChange);
+    mqPhone.addEventListener?.('change', onMobileChange);
 
     // Fallbacks
     const onResize = () => update();
@@ -53,7 +54,7 @@ export default function OrientationGuard() {
 
     return () => {
       mqPortrait.removeEventListener?.('change', onPortraitChange);
-      mqMobile.removeEventListener?.('change', onMobileChange);
+      mqPhone.removeEventListener?.('change', onMobileChange);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', onOrientation);
     };

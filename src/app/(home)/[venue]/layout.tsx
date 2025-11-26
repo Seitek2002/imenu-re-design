@@ -4,6 +4,8 @@ import Footer from './_components/Footer/Footer';
 import Prefetcher from './Prefetcher';
 import ThemeColor from './ThemeColor';
 import OrientationGuard from './OrientationGuard';
+import TabletGate from './TabletGate';
+import TabletModeEnforcer from './TabletModeEnforcer';
 
 export async function generateMetadata({
   params,
@@ -64,6 +66,8 @@ export default async function VenueLayout({
     <div>
       <ThemeColor />
       <OrientationGuard />
+      <TabletGate />
+      <TabletModeEnforcer />
       {children}
       <Prefetcher />
       <Footer />
