@@ -7,7 +7,7 @@ import qrIcon from '@/assets/qr-scan.svg';
 
 export default function Home() {
   return (
-    <div className='bg-white min-h-screen'>
+    <div className='bg-white min-h-screen max-w-[700px] mx-auto'>
       <header className='bg-white shadow-sm border-b border-gray-100'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex justify-between items-center h-16'>
