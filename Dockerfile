@@ -1,7 +1,7 @@
 # ========================
 # Build stage
 # ========================
-FROM node:20.11.1-alpine AS build
+FROM node:20 AS build
 
 WORKDIR /app
 COPY package*.json ./
@@ -12,7 +12,7 @@ RUN npm run build
 # ========================
 # Production stage
 # ========================
-FROM node:20.11.1-alpine AS production
+FROM node:20 AS production
 
 WORKDIR /app
 COPY --from=build /app ./
