@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
-import { isTabletViewport } from '@/lib/utils/responsive';
+import { isTabletRoutePath } from '@/lib/utils/slug';
 
 export type OrderType = 'takeout' | 'dinein' | 'delivery';
 
@@ -99,7 +99,9 @@ export const useCheckout = create<CheckoutState>()(
             deliveryFloor: s.deliveryFloor,
             deliveryApartment: s.deliveryApartment,
           };
-          if (!isTabletViewport()) {
+          const isTabletRoute =
+            typeof window !== 'undefined' && isTabletRoutePath(window.location?.pathname);
+          if (!isTabletRoute) {
             base.pickupMode = s.pickupMode;
             base.pickupTime = s.pickupTime;
             base.phone = s.phone;
@@ -111,7 +113,9 @@ export const useCheckout = create<CheckoutState>()(
         onRehydrateStorage: () => (state, _error) => {
           if (typeof window === 'undefined') return;
           if (!state) return;
-          if (isTabletViewport()) {
+          const isTabletRoute =
+            typeof window !== 'undefined' && isTabletRoutePath(window.location?.pathname);
+          if (isTabletRoute) {
             try {
               state.setPhone('+996');
               state.setAddress('');

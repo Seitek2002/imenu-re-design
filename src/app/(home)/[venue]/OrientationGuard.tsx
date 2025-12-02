@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { TABLET_MIN_WIDTH } from '@/lib/utils/responsive';
 
 /**
  * Blocks interaction on mobile devices when in landscape orientation
@@ -21,7 +20,7 @@ export default function OrientationGuard() {
     setMounted(true);
 
     const mqPortrait = window.matchMedia('(orientation: portrait)');
-    const mqPhone = window.matchMedia(`(max-width: ${TABLET_MIN_WIDTH - 1}px)`);
+    const mqPhone = window.matchMedia('(max-width: 1024px)');
 
     const update = () => {
       // mobile + not portrait => block

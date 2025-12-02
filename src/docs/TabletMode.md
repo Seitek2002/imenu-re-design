@@ -1,73 +1,89 @@
-# Tablet Mode (Планшетный режим)
+# Tablet Mode (Планшетный режим) — route-based
 
-Требования:
-- Режим определяется по ширине вьюпорта: начиная с минимального размера планшета — работает только версия со столом.
-- В планшетном режиме скрыть «Доставка» и «Самовывоз» (форсировать тип заказа dine-in).
-- В планшетном режиме не сохранять данные при заполнении формы: телефон, адрес, слоты времени (pickupMode/pickupTime).
-- Если `tableId` отсутствует — заблокировать интерфейс и показать экран «Сканируйте QR на столе».
+Требования (обновлено):
+- Планшетный режим включается, если роут заведения оканчивается на букву `d`, например: `/ustukan` — обычный режим, `/ustukand` — планшетный режим.
+- В планшетном режиме:
+  - Доступна только версия «со столом» (dine-in).
+  - UI «Доставка» и «Самовывоз» скрыты; тип заказа всегда `dinein`.
+  - Не сохранять данные при заполнении формы: телефон, адрес, слоты времени (pickupMode/pickupTime).
+  - При отсутствии `tableId` блокировать интерфейс оверлеем «Сканируйте QR на столе».
+
+Важное изменение:
+- Определение по ширине экрана более не используется и удалено из логики планшетного режима.
 
 ## Детали реализации
 
-1) Детектор планшета
-- Файл: `src/lib/utils/responsive.ts`
-- Логика: планшет = `window.innerWidth >= 768`.
+1) Route-based режим
+- Файл: `src/lib/utils/slug.ts`
 - Экспорт:
-  - `isTabletViewport()` — утилита
-  - `useIsTabletMode()` — хук для клиентских компонентов
+  - `isTabletVenueSlug(slug)` — признак режима, если slug оканчивается на `d`.
+  - `canonicalizeVenueSlug(slug)` — удаляет завершающую `d` для обращения к backend.
+  - `isTabletRoutePath(pathname)` — определяет планшетный режим по первому сегменту пути.
+  - `getCanonicalVenueFromPath(pathname)` — извлекает канонический slug из пути.
 
-2) Блокировка UI без стола
+2) Канонический slug для API и метаданных
+- Файл: `src/app/(home)/[venue]/layout.tsx`
+- Для `generateMetadata` используется `canonicalizeVenueSlug(slug)` перед запросом `/api/v2/venues/{slug}/`.
+- UI продолжает работать с route-slug (включая `d`), но backend всегда получает канонический.
+
+3) Блокировка UI без стола в планшетном режиме
 - Файл: `src/app/(home)/[venue]/TabletGate.tsx`
-- Вставлен в `layout.tsx` перед контентом. Если `isTablet` и нет `tableId` — рисует полноэкранный оверлей «Сканируйте QR‑код на столе».
-- Подключение: `src/app/(home)/[venue]/layout.tsx`
+- Теперь использует `usePathname()` и `isTabletRoutePath(pathname)`, а не ширину экрана.
+- Если включён планшетный режим и нет `tableId`, показывает полноэкранный оверлей «Сканируйте QR‑код…».
 
-3) Принудительные ограничения в режиме планшета
+4) Принудительные ограничения (форс dine-in и очистка полей)
 - Файл: `src/app/(home)/[venue]/TabletModeEnforcer.tsx`
-- Подключение в `layout.tsx`. Если `isTablet`:
+- Опирается на `isTabletRoutePath(pathname)`. В планшетном режиме:
   - `orderType = 'dinein'`
-  - Сброс: `phone = '+996'`, `address = ''`, `pickupMode = 'asap'`, `pickupTime = null`
-  - Удаляет `localStorage('address')` на клиенте
+  - `phone = '+996'`, `address = ''`, `pickupMode = 'asap'`, `pickupTime = null`
+  - Удаляет `localStorage('address')` на клиенте (best-effort)
 
-4) Отключение персиста чувствительных полей
+5) Отключение персиста чувствительных полей в планшетном режиме
 - Файл: `src/store/checkout.ts`
-- В `persist.partialize` исключаем в режиме планшета: `phone`, `address`, `pickupMode`, `pickupTime`
-- В `onRehydrateStorage` при планшете — форсим `dinein`, сбрасываем чувствительные поля.
-- Остальные персисты не трогаем: корзина, venue, язык, бренд‑цвет — сохраняются как раньше.
+- В `persist.partialize` исключаются `phone`, `address`, `pickupMode`, `pickupTime`, если активен планшетный режим (проверка по `window.location.pathname` через `isTabletRoutePath`).
+- В `onRehydrateStorage` при планшете — форс `dinein`, сброс чувствительных полей.
 
-5) UI: скрыть Доставка/Самовывоз (переключатель типа заказа)
+6) UI: скрыть Доставка/Самовывоз
 - Файл: `src/app/(home)/[venue]/basket/BasketView.tsx`
-- Скрываем компонент `OrderType` когда `isTablet` (также скрыт, если есть `tableId`).
-- Дополнительно в планшете ещё раз форсим `orderType = 'dinein'`.
+- Скрывает компонент `OrderType`, если `isTabletRoutePath(pathname)`.
+- Запрет префилла `phone/address` из `localStorage` в планшетном режиме.
+- Прежняя ширинная логика удалена.
 
-6) Prefill из localStorage
-- Файл: `src/app/(home)/[venue]/basket/BasketView.tsx`
-- При гидратации не читаем `phone/address` из `localStorage`, если `isTablet`.
+7) Канонизация slug/venueRoot
+- `src/app/(home)/[venue]/_components/MainHeader.tsx` — для API-хуков (`useVenue`, `useVenueTableV2`) используется канонический slug. В `localStorage('venueRoot')` сохраняется каноническое значение (без `d`).
+- `src/app/(home)/[venue]/[tableId]/VenueGate.tsx` и `src/app/(home)/[venue]/[tableId]/[spotId]/VenueGate.tsx` — сохраняют в `venueRoot` канонический slug (без `d`) и пушат роут с исходным slug (в том числе с `d`, если пришёл).
+
+8) OrientationGuard (не про планшетный режим)
+- Файл: `src/app/(home)/[venue]/OrientationGuard.tsx`
+- Возвращён фиксированный порог «мобильный» `(max-width: 1024px)`. С планшетным режимом не связан.
 
 ## Изменённые файлы
-- `src/lib/utils/responsive.ts` — добавлены `TABLET_MIN_WIDTH`, `isTabletViewport`, `useIsTabletMode`
-- `src/store/checkout.ts` — условная персистенция и сброс в режиме планшета
-- `src/app/(home)/[venue]/TabletGate.tsx` — оверлей «Сканируйте QR»
-- `src/app/(home)/[venue]/TabletModeEnforcer.tsx` — форс состояния для планшета
-- `src/app/(home)/[venue]/layout.tsx` — подключение `TabletGate` и `TabletModeEnforcer`
-- `src/app/(home)/[venue]/basket/BasketView.tsx` — скрытие `OrderType`, запрет префиллов, форс dine‑in
+- Добавлен: `src/lib/utils/slug.ts`
+- Обновлены:
+  - `src/app/(home)/[venue]/layout.tsx` — канонизация slug для API
+  - `src/app/(home)/[venue]/TabletGate.tsx` — route-based
+  - `src/app/(home)/[venue]/TabletModeEnforcer.tsx` — route-based
+  - `src/app/(home)/[venue]/basket/BasketView.tsx` — скрытие OrderType и запрет префиллов по route-based
+  - `src/store/checkout.ts` — персист/гидратация по route-based
+  - `src/app/(home)/[venue]/_components/MainHeader.tsx` — канонизация slug+venueRoot
+  - `src/app/(home)/[venue]/[tableId]/VenueGate.tsx` — канонизация venueRoot
+  - `src/app/(home)/[venue]/[tableId]/[spotId]/VenueGate.tsx` — канонизация venueRoot
+  - `src/app/(home)/[venue]/OrientationGuard.tsx` — фиксированный порог 1024px, без responsive utils
 
-## Поведение по пунктам
-- ВКЛ/ВЫКЛ: Автоматически по ширине вьюпорта (>= 768px — планшет).
-- Без стола: в планшетном режиме интерфейс блокируется, показывается экран с инструкцией отсканировать QR.
-- Тип заказа: в планшетном режиме всегда «На месте» (dine‑in), переключатель скрыт.
-- Персист: в планшете не сохраняются телефон, адрес, слоты времени. В рамках текущей сессии они работают, но после обновления страницы не восстанавливаются.
-- Остальные данные (корзина, язык, бренд‑цвет, venue) сохраняются как раньше.
+Примечание:
+- Старый файл `src/lib/utils/responsive.ts` больше не используется в планшетной логике. Оставлен в репозитории для совместимости (если нужен — можно удалить в будущем).
+
+## Поведение
+- ВКЛ планшетного режима: по роуту `/{venue}d` (например, `/ustukand`).
+- Без `tableId` в планшете: показывается оверлей «Сканируйте QR».
+- Тип заказа: всегда `dinein`, переключатель скрыт.
+- Персист: в планшете не сохраняются телефон, адрес, слоты времени. Корзина, язык, бренд‑цвет, venue — сохраняются.
 
 ## Тест‑план (локально)
-1) `npm run dev` и открыть маршрут `/{venue}`.
-2) Узкое окно (< 768): доступен обычный режим, можно выбрать доставку/самовывоз.
-3) Широкое окно (>= 768) без tableId:
-   - Появляется полноэкранный оверлей «Сканируйте QR‑код на столе».
-   - Переключателя «Доставка/Самовывоз/На месте» нет.
-4) Широкое окно (>= 768) со столом:
-   - Переключателя нет, везде используется dine‑in.
-   - Ввод телефона/адреса/слотов не сохраняется между перезагрузками.
-5) Проверить, что корзина и язык продолжают сохраняться.
-
-## Замечания по SSR/гидратации
-- Определение режима планшета — только на клиенте, через `window.innerWidth`. До гидратации поведение стандартное, после — включается режим планшета.
-- Если потребуется SSR‑совместимый режим, можно добавить cookie/UA‑эвристику и серверный гвард.
+1) `npm run dev`, открыть `/ustukan` — обычный режим:
+   - OrderType виден, префилл телефона/адреса работает.
+2) Открыть `/ustukand` — планшетный режим:
+   - Если нет `tableId` — полноэкранный оверлей «Сканируйте QR».
+   - Если `tableId` присутствует — OrderType скрыт, заказы только dine‑in.
+   - Телефон/адрес/слоты не сохраняются между перезагрузками.
+3) Проверить, что навигация внизу работает с route-slug, а backend получает канонический slug.

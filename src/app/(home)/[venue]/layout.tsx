@@ -6,6 +6,7 @@ import ThemeColor from './ThemeColor';
 import OrientationGuard from './OrientationGuard';
 import TabletGate from './TabletGate';
 import TabletModeEnforcer from './TabletModeEnforcer';
+import { canonicalizeVenueSlug } from '@/lib/utils/slug';
 
 export async function generateMetadata({
   params,
@@ -13,10 +14,11 @@ export async function generateMetadata({
   params: Promise<{ venue: string }>;
 }): Promise<Metadata> {
   const { venue: slug } = await params;
+  const canonical = canonicalizeVenueSlug(slug);
 
   try {
     const res = await fetch(
-      `https://imenu.kg/api/v2/venues/${encodeURIComponent(slug)}/`,
+      `https://imenu.kg/api/v2/venues/${encodeURIComponent(canonical)}/`,
       {
         // ISR: обновление метаданных раз в 5 минут
         next: { revalidate: 300 },

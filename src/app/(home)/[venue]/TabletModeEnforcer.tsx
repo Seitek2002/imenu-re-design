@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useIsTabletMode } from '@/lib/utils/responsive';
+import { usePathname } from 'next/navigation';
+import { isTabletRoutePath } from '@/lib/utils/slug';
 import { useCheckout } from '@/store/checkout';
 
 export default function TabletModeEnforcer() {
-  const isTablet = useIsTabletMode();
+  const pathname = usePathname();
+  const isTabletRoute = isTabletRoutePath(pathname);
 
   const setOrderType = useCheckout((s) => s.setOrderType);
   const setPhone = useCheckout((s) => s.setPhone);
@@ -14,7 +16,7 @@ export default function TabletModeEnforcer() {
   const setPickupTime = useCheckout((s) => s.setPickupTime);
 
   useEffect(() => {
-    if (!isTablet) return;
+    if (!isTabletRoute) return;
     // В режиме планшета форсим dine-in и очищаем чувствительные поля
     try {
       setOrderType('dinein');
@@ -28,7 +30,7 @@ export default function TabletModeEnforcer() {
         } catch {}
       }
     } catch {}
-  }, [isTablet, setOrderType, setPhone, setAddress, setPickupMode, setPickupTime]);
+  }, [isTabletRoute, setOrderType, setPhone, setAddress, setPickupMode, setPickupTime]);
 
   return null;
 }

@@ -14,10 +14,12 @@ import venueName from '@/assets/Header/venue-name.png';
 import wifiIcon from '@/assets/Header/wifi-icon.svg';
 // import searchIcon from '@/assets/Header/search.svg';
 import { useTranslation } from 'react-i18next';
+import { canonicalizeVenueSlug } from '@/lib/utils/slug';
 
 const MainHeader = () => {
   const params = useParams<{ venue?: string }>();
-  const { data: venue } = useVenue(params.venue!);
+  const canonicalSlug = canonicalizeVenueSlug(params.venue!);
+  const { data: venue } = useVenue(canonicalSlug);
   const { setVenue, setTableInfo, tableNum } = useVenueQuery();
   const { t } = useTranslation();
 
@@ -36,7 +38,7 @@ const MainHeader = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const slug = params?.venue ? `/${params.venue}` : '';
+    const slug = params?.venue ? '/' + canonicalizeVenueSlug(params.venue).toLowerCase() : '';
 
     if (slug) {
       localStorage.setItem('venueRoot', slug);
@@ -46,7 +48,7 @@ const MainHeader = () => {
         try {
           const path = window.location.pathname;
           const m = path.match(/^\/([^/]+)/);
-          if (m) localStorage.setItem('venueRoot', `/${m[1]}`);
+          if (m) localStorage.setItem('venueRoot', '/' + canonicalizeVenueSlug(m[1]).toLowerCase());
         } catch {
           // no-op
         }
@@ -60,7 +62,7 @@ const MainHeader = () => {
 
   // если есть tableId, подтягиваем данные "заведение + стол" и сохраняем номер стола
   const { data: venueTable } = useVenueTableV2(
-    { slug: params.venue!, tableId: tableId || '' },
+    { slug: canonicalSlug, tableId: tableId || '' },
     { enabled: Boolean(tableId) }
   );
 

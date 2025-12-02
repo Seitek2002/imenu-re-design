@@ -1,14 +1,16 @@
 'use client';
 
-import { useIsTabletMode } from '@/lib/utils/responsive';
+import { usePathname } from 'next/navigation';
+import { isTabletRoutePath } from '@/lib/utils/slug';
 import { useVenueQuery } from '@/store/venue';
 
 export default function TabletGate() {
-  const isTablet = useIsTabletMode();
+  const pathname = usePathname();
+  const isTabletRoute = isTabletRoutePath(pathname);
   const { tableId } = useVenueQuery();
 
-  // Только для планшетного режима и когда не задан стол
-  if (!isTablet || tableId) return null;
+  // Только для планшетного режима (route ...d) и когда не задан стол
+  if (!isTabletRoute || tableId) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F8F6F7] p-6 text-center">

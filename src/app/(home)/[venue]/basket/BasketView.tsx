@@ -8,13 +8,15 @@ import { useCheckout } from '@/store/checkout';
 
 import { Details, Header, Items, OrderType } from './_components';
 import DrawerCheckout from './_components/Drawer/DrawerCheckout';
-import { useIsTabletMode } from '@/lib/utils/responsive';
+import { usePathname } from 'next/navigation';
+import { isTabletRoutePath } from '@/lib/utils/slug';
 
 export default function BasketView() {
   const { getItemsArray } = useBasket();
   const items = getItemsArray();
   const { sheetOpen, closeSheet } = useCheckout();
-  const isTablet = useIsTabletMode();
+  const pathname = usePathname();
+  const isTabletRoute = isTabletRoutePath(pathname);
 
   // Close on Escape
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function BasketView() {
 
   // Prefill from localStorage on hydrate; address only for delivery
   useEffect(() => {
-    if (typeof window === 'undefined' || isTablet) return;
+    if (typeof window === 'undefined' || isTabletRoute) return;
     try {
       const p = localStorage.getItem('phone');
       if (p && p.trim()) setPhone(p);
@@ -94,8 +96,8 @@ export default function BasketView() {
           items.length > 4 ? 'pb-28' : 'pb-5'
         }`}
       >
-        {/* Тип заказа (скрыт в режиме планшета) */}
-        {!tableId && !isTablet && (
+        {/* Тип заказа (скрыт в route-режиме планшета, т.е. когда slug оканчивается на 'd') */}
+        {!tableId && !isTabletRoute && (
           <OrderType
             orderType={orderType}
             setOrderType={setOrderType}
