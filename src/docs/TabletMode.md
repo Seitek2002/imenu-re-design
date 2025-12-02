@@ -53,9 +53,6 @@
 - `src/app/(home)/[venue]/_components/MainHeader.tsx` — для API-хуков (`useVenue`, `useVenueTableV2`) используется канонический slug. В `localStorage('venueRoot')` сохраняется каноническое значение (без `d`).
 - `src/app/(home)/[venue]/[tableId]/VenueGate.tsx` и `src/app/(home)/[venue]/[tableId]/[spotId]/VenueGate.tsx` — сохраняют в `venueRoot` канонический slug (без `d`) и пушат роут с исходным slug (в том числе с `d`, если пришёл).
 
-8) OrientationGuard (не про планшетный режим)
-- Файл: `src/app/(home)/[venue]/OrientationGuard.tsx`
-- Возвращён фиксированный порог «мобильный» `(max-width: 1024px)`. С планшетным режимом не связан.
 
 ## Изменённые файлы
 - Добавлен: `src/lib/utils/slug.ts`
@@ -68,7 +65,6 @@
   - `src/app/(home)/[venue]/_components/MainHeader.tsx` — канонизация slug+venueRoot
   - `src/app/(home)/[venue]/[tableId]/VenueGate.tsx` — канонизация venueRoot
   - `src/app/(home)/[venue]/[tableId]/[spotId]/VenueGate.tsx` — канонизация venueRoot
-  - `src/app/(home)/[venue]/OrientationGuard.tsx` — фиксированный порог 1024px, без responsive utils
 
 Примечание:
 - Старый файл `src/lib/utils/responsive.ts` больше не используется в планшетной логике. Оставлен в репозитории для совместимости (если нужен — можно удалить в будущем).

@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import Footer from './_components/Footer/Footer';
 import Prefetcher from './Prefetcher';
 import ThemeColor from './ThemeColor';
-import OrientationGuard from './OrientationGuard';
 import TabletGate from './TabletGate';
 import TabletModeEnforcer from './TabletModeEnforcer';
 import { canonicalizeVenueSlug } from '@/lib/utils/slug';
@@ -65,9 +64,8 @@ export default async function VenueLayout({
   const { venue } = await params;
 
   return (
-    <div>
+    <div className='max-w-[700px] mx-auto'>
       <ThemeColor />
-      <OrientationGuard />
       <TabletGate />
       <TabletModeEnforcer />
       {children}
