@@ -64,7 +64,7 @@ export default async function VenueLayout({
   const { venue } = await params;
 
   return (
-    <div className='max-w-[700px] mx-auto'>
+    <div className='max-w-[700px] mx-auto relative'>
       <ThemeColor />
       <TabletGate />
       <TabletModeEnforcer />

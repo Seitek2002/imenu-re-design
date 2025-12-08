@@ -78,7 +78,7 @@ const Footer: FC = () => {
   }
 
   return (
-    <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10'>
+    <footer className='fixed -bottom-6 left-0 right-0 flex flex-col items-center z-10 max-w-[700px] mx-auto'>
       <div
         className='flex w-full items-center'
         style={{

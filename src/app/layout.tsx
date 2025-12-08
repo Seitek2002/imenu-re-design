@@ -53,7 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={`${cruinn.variable} ${geistInter.variable} antialiased`}>
+      <body className={`${cruinn.variable} ${geistInter.variable} antialiased max-w-[700px] mx-auto`}>
         <Script id='fb-pixel' strategy='afterInteractive'>
           {`
             !function(f,b,e,v,n,t,s)
