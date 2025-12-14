@@ -86,7 +86,7 @@ const MainHeader = () => {
     QRCode.toDataURL(wifiString, { margin: 1, width: 240 })
       .then(setQrUrl)
       .catch(() => setQrUrl(''));
-  }, [wifiOpen, wifiString]);
+  }, [wifiString]);
 
   return (
     <header className='header-main sticky top-0 z-10 flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white'>
