@@ -3,22 +3,22 @@
 # ========================
 # Dependencies stage
 # ========================
-FROM node:20-alpine AS deps
+FROM node:20-slim AS deps
 
-# Устанавливаем зависимости для sharp и других нативных модулей
-RUN apk add --no-cache \
-    libc6-compat \
+# Устанавливаем зависимости
+RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
-    vips-dev
+    libvips-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Копируем файлы зависимостей
 COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
 
-# Устанавливаем зависимости с поддержкой sharp для Alpine
+# Устанавливаем зависимости
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci --include=optional; \
@@ -29,12 +29,12 @@ RUN \
 # ========================
 # Build stage
 # ========================
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 # Устанавливаем зависимости для сборки
-RUN apk add --no-cache \
-    libc6-compat \
-    vips-dev
+RUN apt-get update && apt-get install -y \
+    libvips-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -47,9 +47,6 @@ COPY . .
 # Отключаем телеметрию Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Переустанавливаем sharp для правильной платформы
-RUN npm rebuild sharp
-
 # Сборка приложения
 RUN \
   if [ -f yarn.lock ]; then yarn build; \
@@ -61,20 +58,20 @@ RUN \
 # ========================
 # Production stage
 # ========================
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 
-# Устанавливаем runtime зависимости для sharp
-RUN apk add --no-cache \
+# Устанавливаем runtime зависимости
+RUN apt-get update && apt-get install -y \
     dumb-init \
     curl \
     ca-certificates \
     tzdata \
-    vips && \
-    rm -rf /var/cache/apk/*
+    libvips42 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Создаем непривилегированного пользователя
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+RUN groupadd --gid 1001 nodejs && \
+    useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nextjs
 
 WORKDIR /app
 
