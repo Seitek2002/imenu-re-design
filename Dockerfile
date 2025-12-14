@@ -1,26 +1,52 @@
-# Build
-FROM node:20.11.1-alpine AS build
+# ========================
+# Build stage
+# ========================
+FROM node:20-alpine AS builder
+
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# 1. Копируем только package файлы
+COPY package.json package-lock.json* ./
 
+# 2. Проверяем package-lock на целостность
+RUN npm ci --only=production --no-audit --no-fund --ignore-scripts
+
+# 3. Копируем исходники
 COPY . .
+
+# 4. Сборка
 RUN npm run build
 
+# ========================
+# Production stage  
+# ========================
+FROM node:20-alpine AS runner
 
-# Production
-FROM node:20.11.1-alpine AS production
+# Запрещаем запуск от root
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
 WORKDIR /app
 
-ENV NODE_ENV=production
+# Устанавливаем только необходимые системные пакеты
+RUN apk add --no-cache curl dumb-init && \
+    chown -R nextjs:nodejs /app
 
-COPY package*.json ./
-RUN npm ci --omit=dev
+# Копируем из builder только необходимое
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
-COPY --from=build /app/next.config.* ./
+USER nextjs
 
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=production
+
+# Запускаем через dumb-init
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# Запускаем сервер
+CMD ["node", "server.js"]
