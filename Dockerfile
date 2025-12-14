@@ -1,28 +1,76 @@
+# syntax=docker/dockerfile:1.4
+
+# ========================
+# Dependencies stage
+# ========================
+FROM node:20-alpine AS deps
+
+# Устанавливаем зависимости для sharp и других нативных модулей
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    vips-dev
+
+WORKDIR /app
+
+# Копируем файлы зависимостей
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+
+# Устанавливаем зависимости с поддержкой sharp для Alpine
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci --include=optional; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
 # ========================
 # Build stage
 # ========================
 FROM node:20-alpine AS builder
 
-# Устанавливаем рабочую директорию
+# Устанавливаем зависимости для сборки
+RUN apk add --no-cache \
+    libc6-compat \
+    vips-dev
+
 WORKDIR /app
 
-# Копируем package файлы для установки зависимостей
-COPY package.json package-lock.json* ./
-
-# Устанавливаем ВСЕ зависимости (включая devDependencies для сборки)
-RUN npm ci --no-audit --no-fund
+# Копируем node_modules из deps
+COPY --from=deps /app/node_modules ./node_modules
 
 # Копируем исходный код
 COPY . .
 
-# Сборка Next.js приложения
-# ВАЖНО: убедитесь что в next.config.js включен output: 'standalone'
-RUN npm run build
+# Отключаем телеметрию Next.js
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Переустанавливаем sharp для правильной платформы
+RUN npm rebuild sharp
+
+# Сборка приложения
+RUN \
+  if [ -f yarn.lock ]; then yarn build; \
+  elif [ -f package-lock.json ]; then npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm build; \
+  else npm run build; \
+  fi
 
 # ========================
-# Production stage  
+# Production stage
 # ========================
 FROM node:20-alpine AS runner
+
+# Устанавливаем runtime зависимости для sharp
+RUN apk add --no-cache \
+    dumb-init \
+    curl \
+    ca-certificates \
+    tzdata \
+    vips && \
+    rm -rf /var/cache/apk/*
 
 # Создаем непривилегированного пользователя
 RUN addgroup --system --gid 1001 nodejs && \
@@ -30,13 +78,11 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 WORKDIR /app
 
-# Устанавливаем только необходимые системные пакеты
-RUN apk add --no-cache \
-    dumb-init \
-    curl && \
-    rm -rf /var/cache/apk/*
+# Устанавливаем правильные разрешения
+RUN mkdir -p /app/.next && \
+    chown -R nextjs:nodejs /app
 
-# Копируем необходимые файлы из builder
+# Копируем public директорию
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Копируем standalone сборку
@@ -51,14 +97,19 @@ USER nextjs
 # Открываем порт
 EXPOSE 3000
 
-# Переменные окружения
+# Переменные окружения для production
 ENV PORT=3000 \
     HOSTNAME="0.0.0.0" \
     NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1
 
-# Используем dumb-init для корректной обработки сигналов
+# Метаданные
+LABEL maintainer="your-email@example.com" \
+      description="Next.js Production Application" \
+      version="1.0"
+
+# Используем dumb-init для правильной обработки сигналов
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-# Запускаем Next.js сервер
+# Запускаем сервер
 CMD ["node", "server.js"]
