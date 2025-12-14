@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Produce a self-contained build for Docker/Node runtime
+  output: 'standalone',
   // Hard-disable Lightning CSS optimizations to prevent native binary issues on CI
   experimental: {
     optimizeCss: false,
