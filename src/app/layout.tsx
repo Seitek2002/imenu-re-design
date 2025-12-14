@@ -5,9 +5,9 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import './shake.css';
 import QueryProvider from './query-provider';
-// import Script from 'next/script';
-// import FacebookPixelTracker from '../lib/analytics/FacebookPixel';
-// import { Suspense } from 'react';
+import Script from 'next/script';
+import FacebookPixelTracker from '../lib/analytics/FacebookPixel';
+import { Suspense } from 'react';
 import StatusBarConfig from '../lib/capacitor/StatusBarConfig';
 
 const geistInter = Inter({
@@ -54,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body className={`${cruinn.variable} ${geistInter.variable} antialiased max-w-[700px] mx-auto`}>
-        {/* <Script id='fb-pixel' strategy='lazyOnload'>
+        <Script id='fb-pixel' strategy='lazyOnload'>
           {`
             !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
             n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -75,11 +75,11 @@ export default function RootLayout({
       src="https://www.facebook.com/tr?id=24957245993913886&ev=PageView&noscript=1"/>
     `,
           }}
-        /> */}
+        />
 
-        {/* <Suspense fallback={null}>
+        <Suspense fallback={null}>
           <FacebookPixelTracker />
-        </Suspense> */}
+        </Suspense>
         <StatusBarConfig />
         <QueryProvider>{children}</QueryProvider>
       </body>
