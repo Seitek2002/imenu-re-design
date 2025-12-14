@@ -1,33 +1,26 @@
-# ========================
-# Build stage
-# ========================
-FROM node:24.11.1-bullseye AS build
-
-# Рабочая директория
+# Build
+FROM node:20.11.1-alpine AS build
 WORKDIR /app
 
-# Копируем package.json и package-lock.json и ставим зависимости
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Копируем весь проект
 COPY . .
-
-# Собираем Next.js
 RUN npm run build
 
-# ========================
-# Production stage
-# ========================
-FROM node:24.11.1-bullseye AS production
 
+# Production
+FROM node:20.11.1-alpine AS production
 WORKDIR /app
 
-# Копируем из build stage
-COPY --from=build /app ./
+ENV NODE_ENV=production
 
-# Открываем порт
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/next.config.* ./
+
 EXPOSE 3000
-
-# Старт приложения
 CMD ["npm", "run", "start"]
