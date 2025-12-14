@@ -3,18 +3,20 @@
 # ========================
 FROM node:20-alpine AS builder
 
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# 1. Копируем только package файлы
+# Копируем package файлы для установки зависимостей
 COPY package.json package-lock.json* ./
 
-# 2. Проверяем package-lock на целостность
-RUN npm ci --only=production --no-audit --no-fund --ignore-scripts
+# Устанавливаем ВСЕ зависимости (включая devDependencies для сборки)
+RUN npm ci --no-audit --no-fund
 
-# 3. Копируем исходники
+# Копируем исходный код
 COPY . .
 
-# 4. Сборка
+# Сборка Next.js приложения
+# ВАЖНО: убедитесь что в next.config.js включен output: 'standalone'
 RUN npm run build
 
 # ========================
@@ -22,31 +24,41 @@ RUN npm run build
 # ========================
 FROM node:20-alpine AS runner
 
-# Запрещаем запуск от root
+# Создаем непривилегированного пользователя
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 WORKDIR /app
 
 # Устанавливаем только необходимые системные пакеты
-RUN apk add --no-cache curl dumb-init && \
-    chown -R nextjs:nodejs /app
+RUN apk add --no-cache \
+    dumb-init \
+    curl && \
+    rm -rf /var/cache/apk/*
 
-# Копируем из builder только необходимое
+# Копируем необходимые файлы из builder
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Копируем standalone сборку
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+
+# Копируем статические файлы
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Переключаемся на непривилегированного пользователя
 USER nextjs
 
+# Открываем порт
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-ENV NODE_ENV=production
+# Переменные окружения
+ENV PORT=3000 \
+    HOSTNAME="0.0.0.0" \
+    NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
 
-# Запускаем через dumb-init
+# Используем dumb-init для корректной обработки сигналов
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-# Запускаем сервер
+# Запускаем Next.js сервер
 CMD ["node", "server.js"]
