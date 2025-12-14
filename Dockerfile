@@ -18,12 +18,18 @@ WORKDIR /app
 # Копируем файлы зависимостей
 COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
 
-# Устанавливаем зависимости
+# Устанавливаем зависимости с правильной переустановкой sharp
 RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci --include=optional; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
+  if [ -f yarn.lock ]; then \
+    yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then \
+    npm ci --include=optional && \
+    npm uninstall sharp && \
+    npm install --os=linux --cpu=x64 sharp; \
+  elif [ -f pnpm-lock.yaml ]; then \
+    corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else \
+    echo "Lockfile not found." && exit 1; \
   fi
 
 # ========================
@@ -99,6 +105,10 @@ ENV PORT=3000 \
     HOSTNAME="0.0.0.0" \
     NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
 
 # Метаданные
 LABEL maintainer="your-email@example.com" \
