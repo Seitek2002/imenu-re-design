@@ -5,9 +5,9 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import './shake.css';
 import QueryProvider from './query-provider';
-import Script from 'next/script';
-import FacebookPixelTracker from '../lib/analytics/FacebookPixel';
-import { Suspense } from 'react';
+// import Script from 'next/script';
+// import FacebookPixelTracker from '../lib/analytics/FacebookPixel';
+// import { Suspense } from 'react';
 import StatusBarConfig from '../lib/capacitor/StatusBarConfig';
 
 const geistInter = Inter({
@@ -77,9 +77,9 @@ export default function RootLayout({
           }}
         /> */}
 
-        <Suspense fallback={null}>
+        {/* <Suspense fallback={null}>
           <FacebookPixelTracker />
-        </Suspense>
+        </Suspense> */}
         <StatusBarConfig />
         <QueryProvider>{children}</QueryProvider>
       </body>
