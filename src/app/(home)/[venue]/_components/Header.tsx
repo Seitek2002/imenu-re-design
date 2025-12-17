@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 import searchIcon from '@/assets/Header/search.svg';
 import arrowIcon from '@/assets/Header/arrow.svg';
-import closeIcon from '@/assets/Basket/trash.svg';
+// import closeIcon from '@/assets/Basket/trash.svg';
 
 interface IProps {
   title: string;
