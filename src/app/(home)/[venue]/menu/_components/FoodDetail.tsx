@@ -6,6 +6,9 @@ import plusIcon from '@/assets/Goods/plus.svg';
 import minusIcon from '@/assets/Goods/minus.svg';
 import type { Product } from '@/lib/api/types';
 import { useBasket } from '@/store/basket';
+import { useParams, useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import { PAGES } from '@/config/pages.config';
 
 type Props = {
   open: boolean;
@@ -51,7 +54,16 @@ export default function FoodDetail({ open, product, onClose }: Props) {
     startY.current = null;
   };
 
-  const { add } = useBasket();
+  const add = useBasket((s) => s.add);
+  const subtotal = useBasket((s) =>
+    Object.values(s.items).reduce(
+      (acc, it) => acc + it.unitPrice * it.quantity,
+      0
+    )
+  );
+  const params = useParams<{ venue: string }>();
+  const router = useRouter();
+  const { t } = useTranslation();
 
   const sizes = product?.modificators ?? [];
   const hasSizes = sizes.length > 0;
@@ -70,7 +82,7 @@ export default function FoodDetail({ open, product, onClose }: Props) {
   return (
     <>
       <div
-        className={`fixed inset-0 w-full z-10 transition-all duration-500 ${
+        className={`fixed inset-0 w-full z-40 transition-all duration-500 ${
           open
             ? 'h-full bg-[rgba(0,0,0,0.5)]'
             : 'h-0 bg-transparent pointer-events-none'
@@ -81,7 +93,7 @@ export default function FoodDetail({ open, product, onClose }: Props) {
       <div
         className={`fixed left-0 z-[100] overflow-y-auto bg-white rounded-t-[24px] md:rounded-[10px] w-full h-[calc(100%-14px)] transition-all duration-500
           ${open ? 'top-[14px]' : 'top-[100%]'}
-          md:w-[75%] md:h-[75%] md:left-1/2 md:top-1/2 md:-translate-x-1/2 ${
+          md:w-[75%] md:max-w-[600px] md:h-[75%] md:left-1/2 md:top-1/2 md:-translate-x-1/2 ${
             open ? 'md:-translate-y-1/2' : 'md:translate-y-[100%]'
           }`}
         role='dialog'
@@ -173,51 +185,70 @@ export default function FoodDetail({ open, product, onClose }: Props) {
               </div>
             )}
 
-// Footer: counter + add (показываем всегда, даже без модификаторов)
-              <footer className='grid grid-cols-2 items-center gap-3 pt-8 pb-10 sticky bottom-0 md:static bg-white'>
-                <div className='flex items-center justify-between gap-8 px-2 py-4 rounded-[12px] font-semibold bg-[#F1F2F3]'>
-                  <button
-                    type='button'
-                    aria-label='minus'
-                    onClick={() => setQnty((v) => Math.max(1, v - 1))}
-                  >
-                    <Image src={minusIcon} alt='minus' width={24} height={24} />
-                  </button>
-                  <span className='text-[16px]'>{qnty}</span>
-                  <button
-                    type='button'
-                    aria-label='plus'
-                    onClick={() => setQnty((v) => v + 1)}
-                  >
-                    <Image src={plusIcon} alt='plus' width={24} height={24} />
-                  </button>
-                </div>
-                <div className='rounded-[12px]'>
-                  <button
-                    type='button'
-                    className='w-full font-semibold py-4 rounded-[12px] text-white bg-brand'
-                    onClick={() => {
-                      const modId = selectedId ?? null;
-                      const modName =
-                        sizes.find((m) => m.id === selectedId)?.name ??
-                        undefined;
-                      if (product) {
-                        add(product, {
-                          modifierId: modId,
-                          modifierName: modName,
-                          quantity: qnty,
-                        });
-                      }
-                      onClose();
-                    }}
-                  >
-                    Добавить
-                  </button>
-                </div>
-              </footer>
+            <footer className='grid grid-cols-2 items-center gap-3 pt-8 pb-10 sticky bottom-0 md:static bg-white'>
+              <div className='flex items-center justify-between gap-8 px-2 py-4 rounded-[12px] font-semibold bg-[#F1F2F3]'>
+                <button
+                  type='button'
+                  aria-label='minus'
+                  onClick={() => setQnty((v) => Math.max(1, v - 1))}
+                >
+                  <Image src={minusIcon} alt='minus' width={24} height={24} />
+                </button>
+                <span className='text-[16px]'>{qnty}</span>
+                <button
+                  type='button'
+                  aria-label='plus'
+                  onClick={() => setQnty((v) => v + 1)}
+                >
+                  <Image src={plusIcon} alt='plus' width={24} height={24} />
+                </button>
+              </div>
+              <div className='rounded-[12px]'>
+                <button
+                  type='button'
+                  className='w-full font-semibold py-4 rounded-[12px] text-white bg-brand'
+                  onClick={() => {
+                    const modId = selectedId ?? null;
+                    const modName =
+                      sizes.find((m) => m.id === selectedId)?.name ?? undefined;
+                    if (product) {
+                      add(product, {
+                        modifierId: modId,
+                        modifierName: modName,
+                        quantity: qnty,
+                      });
+                    }
+                    onClose();
+                  }}
+                >
+                  Добавить
+                </button>
+              </div>
+            </footer>
           </div>
         </div>
       </div>
+      {/* Fixed "Go to basket" button */}
+      {subtotal > 0 && (
+        <div
+          className={`fixed left-0 bottom-0 w-full z-[110] px-4 pb-4 pointer-events-none ${
+            open ? '' : 'hidden'
+          }`}
+        >
+          <button
+            type='button'
+            className='pointer-events-auto w-full py-4 rounded-[12px] font-semibold text-white bg-brand shadow-lg'
+            onClick={() => {
+              const venue = String(params?.venue ?? '').replace(/^\//, '');
+              if (venue) router.push(`/${PAGES.BASKET(venue)}`);
+              else router.push('/');
+              onClose();
+            }}
+          >
+            {t('goToBasket')}
+          </button>
+        </div>
+      )}
     </>
   );
 }
