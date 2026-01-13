@@ -63,7 +63,7 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
           </div>
           <div
             className={`absolute transform-gpu bottom-1.5 w-[93%] right-1.5 pr-10 h-10 overflow-hidden cursor-pointer bg-white rounded-full flex items-center justify-between transition-all duration-500 ${
-              qnty ? '' : 'translate-x-[89%]'
+              qnty ? '' : 'translate-x-[85%]'
             }`}
             onClick={(e) => e.stopPropagation()}
           >
