@@ -5,6 +5,7 @@ import Prefetcher from './Prefetcher';
 import ThemeColor from './ThemeColor';
 import TabletGate from './TabletGate';
 import TabletModeEnforcer from './TabletModeEnforcer';
+import KioskModeEnforcer from './KioskModeEnforcer';
 import { canonicalizeVenueSlug } from '@/lib/utils/slug';
 
 export async function generateMetadata({
@@ -60,7 +61,10 @@ export async function generateMetadata({
 export default async function VenueLayout({
   children,
   params,
-}: Readonly<{ children: React.ReactNode; params: Promise<{ venue: string }> }>) {
+}: Readonly<{
+  children: React.ReactNode;
+  params: Promise<{ venue: string }>;
+}>) {
   const { venue } = await params;
 
   return (
@@ -68,6 +72,7 @@ export default async function VenueLayout({
       <ThemeColor />
       <TabletGate />
       <TabletModeEnforcer />
+      <KioskModeEnforcer />
       {children}
       <Prefetcher />
       <Footer />

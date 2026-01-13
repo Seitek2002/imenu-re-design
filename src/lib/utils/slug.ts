@@ -27,8 +27,19 @@ export function isTabletRoutePath(pathname: string | undefined): boolean {
 }
 
 /** Get canonical (no 'd' suffix) venue from full pathname */
-export function getCanonicalVenueFromPath(pathname: string | undefined): string | null {
+export function getCanonicalVenueFromPath(
+  pathname: string | undefined
+): string | null {
   if (!pathname) return null;
   const venue = getVenueFromPath(pathname);
   return venue ? canonicalizeVenueSlug(venue) : null;
+}
+
+/** Kiosk mode: path pattern "/[venue]/d" (second segment is exactly 'd') */
+export function isKioskRoutePath(pathname: string | undefined): boolean {
+  if (!pathname) return false;
+  // Kiosk mode if path contains "/d" as a distinct segment anywhere
+  // Examples: "/venue/d", "/venue/123/d", "/d" -> true
+  // Avoid matching words like "/orders" (ensure segment boundaries)
+  return /(^|\/)d(\/?|$)/i.test(pathname);
 }

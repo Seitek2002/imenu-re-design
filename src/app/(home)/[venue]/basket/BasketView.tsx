@@ -9,6 +9,7 @@ import { useCheckout } from '@/store/checkout';
 import { Details, Header, Items, OrderType } from './_components';
 import DrawerCheckout from './_components/Drawer/DrawerCheckout';
 import { usePathname } from 'next/navigation';
+import { isKioskRoutePath } from '@/lib/utils/slug';
 import { isTabletRoutePath } from '@/lib/utils/slug';
 
 export default function BasketView() {
@@ -17,6 +18,7 @@ export default function BasketView() {
   const { sheetOpen, closeSheet } = useCheckout();
   const pathname = usePathname();
   const isTabletRoute = isTabletRoutePath(pathname);
+  const isKioskRoute = isKioskRoutePath(pathname);
 
   // Close on Escape
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function BasketView() {
 
   // Prefill from localStorage on hydrate; address only for delivery
   useEffect(() => {
-    if (typeof window === 'undefined' || isTabletRoute) return;
+    if (typeof window === 'undefined' || isTabletRoute || isKioskRoute) return;
     try {
       const p = localStorage.getItem('phone');
       if (p && p.trim()) setPhone(p);
@@ -96,13 +98,23 @@ export default function BasketView() {
           items.length > 4 ? 'pb-28' : 'pb-5'
         }`}
       >
-        {/* Тип заказа (скрыт в route-режиме планшета, т.е. когда slug оканчивается на 'd') */}
-        {!tableId && !isTabletRoute && (
+        {/* Тип заказа: при киоске показываем бейдж вместо переключателя */}
+        {!tableId && !isTabletRoute && !isKioskRoute && (
           <OrderType
             orderType={orderType}
             setOrderType={setOrderType}
             locked={!!tableId}
           />
+        )}
+        {isKioskRoute && (
+          <div className='mb-4'>
+            <span className='inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#FFF2CC] text-[#7A5C00] text-sm font-semibold'>
+              Режим киоска
+              <span className='text-xs font-normal opacity-70'>
+                (заказ: С собой)
+              </span>
+            </span>
+          </div>
         )}
 
         {/* Список товаров из корзины */}

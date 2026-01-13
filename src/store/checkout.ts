@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
-import { isTabletRoutePath } from '@/lib/utils/slug';
+import { isKioskRoutePath, isTabletRoutePath } from '@/lib/utils/slug';
 
 export type OrderType = 'takeout' | 'dinein' | 'delivery';
 
@@ -82,7 +82,9 @@ export const useCheckout = create<CheckoutState>()(
 
         shakeKey: 0,
         bumpShake: () =>
-          set((s) => ({ shakeKey: (s.shakeKey + 1) % Number.MAX_SAFE_INTEGER })),
+          set((s) => ({
+            shakeKey: (s.shakeKey + 1) % Number.MAX_SAFE_INTEGER,
+          })),
       }),
       {
         name: 'checkout',
@@ -99,9 +101,15 @@ export const useCheckout = create<CheckoutState>()(
             deliveryFloor: s.deliveryFloor,
             deliveryApartment: s.deliveryApartment,
           };
+          const pathname =
+            typeof window !== 'undefined'
+              ? window.location?.pathname
+              : undefined;
           const isTabletRoute =
-            typeof window !== 'undefined' && isTabletRoutePath(window.location?.pathname);
-          if (!isTabletRoute) {
+            typeof window !== 'undefined' && isTabletRoutePath(pathname);
+          const isKioskRoute =
+            typeof window !== 'undefined' && isKioskRoutePath(pathname);
+          if (!isTabletRoute && !isKioskRoute) {
             base.pickupMode = s.pickupMode;
             base.pickupTime = s.pickupTime;
             base.phone = s.phone;
@@ -113,15 +121,21 @@ export const useCheckout = create<CheckoutState>()(
         onRehydrateStorage: () => (state, _error) => {
           if (typeof window === 'undefined') return;
           if (!state) return;
+          const pathname =
+            typeof window !== 'undefined'
+              ? window.location?.pathname
+              : undefined;
           const isTabletRoute =
-            typeof window !== 'undefined' && isTabletRoutePath(window.location?.pathname);
-          if (isTabletRoute) {
+            typeof window !== 'undefined' && isTabletRoutePath(pathname);
+          const isKioskRoute =
+            typeof window !== 'undefined' && isKioskRoutePath(pathname);
+          if (isTabletRoute || isKioskRoute) {
             try {
               state.setPhone('+996');
               state.setAddress('');
               state.setPickupMode('asap');
               state.setPickupTime(null);
-              state.setOrderType('dinein');
+              state.setOrderType(isKioskRoute ? 'takeout' : 'dinein');
             } catch {}
           }
         },

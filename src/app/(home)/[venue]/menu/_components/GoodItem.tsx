@@ -37,48 +37,50 @@ const FoodItem: FC<Props> = ({ item, onOpen }) => {
           sizes='(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px'
           onLoad={() => setImgLoaded(true)}
         />
-        <div
-          className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
-          onClick={(e) => {
-            e.stopPropagation();
-            if (
-              Array.isArray(item.modificators) &&
-              item.modificators.length > 0
-            ) {
-              onOpen?.(item);
-            } else {
-              add(item, { modifierId: null, quantity: 1 });
-            }
-            if (navigator.vibrate) navigator.vibrate(50);
-          }}
-        >
-          <Image
-            src={plus}
-            alt='plus icon'
-            className={`transition-all duration-500 ${
-              qnty ? 'rotate-180' : 'rotate-0'
-            }`}
-          />
-        </div>
-        <div
-          className={`absolute bottom-1.5 right-1.5 pr-10 h-10 overflow-hidden cursor-pointer bg-white rounded-full flex items-center justify-between transition-all duration-500 ${
-            qnty ? ' w-[93%]' : ' w-[3%]'
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className='h-full p-3.5'>
+        <div className='overflow-hidden relative h-full'>
+          <div
+            className='absolute z-[1] bottom-1.5 right-1.5 cursor-pointer bg-white p-3.5 rounded-full'
+            onClick={(e) => {
+              e.stopPropagation();
+              if (
+                Array.isArray(item.modificators) &&
+                item.modificators.length > 0
+              ) {
+                onOpen?.(item);
+              } else {
+                add(item, { modifierId: null, quantity: 1 });
+              }
+              if (navigator.vibrate) navigator.vibrate(50);
+            }}
+          >
             <Image
-              src={minus}
-              alt='minus icon'
-              onClick={(e) => {
-                e.stopPropagation();
-                decrement(item.id, null, 1);
-                if (navigator.vibrate) navigator.vibrate(50);
-              }}
+              src={plus}
+              alt='plus icon'
+              className={`transition-all transform-gpu duration-500 ${
+                qnty ? 'rotate-180' : 'rotate-0'
+              }`}
             />
           </div>
-          <span className='text-[#21201F] text-lg font-semibold'>{qnty}</span>
-          <div></div>
+          <div
+            className={`absolute transform-gpu bottom-1.5 w-[93%] right-1.5 pr-10 h-10 overflow-hidden cursor-pointer bg-white rounded-full flex items-center justify-between transition-all duration-500 ${
+              qnty ? '' : 'translate-x-[89%]'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className='h-full p-3.5'>
+              <Image
+                src={minus}
+                alt='minus icon'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  decrement(item.id, null, 1);
+                  if (navigator.vibrate) navigator.vibrate(50);
+                }}
+              />
+            </div>
+            <span className='text-[#21201F] text-lg font-semibold'>{qnty}</span>
+            <div></div>
+          </div>
         </div>
       </div>
       <h2 className='text-[#21201F] text-lg font-semibold'>{price}</h2>
