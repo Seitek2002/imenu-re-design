@@ -12,7 +12,7 @@ export default function Home() {
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex justify-between items-center h-16'>
             <div className='flex items-center'>
-              <div className='flex-shrink-0 flex gap-[10px]'>
+              <div className='shrink-0 flex gap-2.5'>
                 <Image src={logoIcon} alt='iMenu Logo' />
                 <h1 className='text-2xl font-bold text-red-600'>iMenu.kg</h1>
               </div>
@@ -53,7 +53,7 @@ export default function Home() {
         QR код
       </Link>
 
-      <section className='bg-gradient-to-br from-red-50 to-orange-50 py-16'>
+      <section className='bg-linear-to-br from-red-50 to-orange-50 py-16'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center'>
             <h1 className='text-4xl md:text-6xl font-bold text-gray-900 mb-6'>
@@ -108,7 +108,7 @@ export default function Home() {
 
       <section id='add-business-section' className='py-16 bg-white'>
         <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl'>
+          <div className='bg-linear-to-r from-red-50 to-orange-50 rounded-2xl'>
             <div
               className='w-full px-8 py-6 flex items-center hover:bg-red-50 transition-colors'
               style={{ justifyContent: 'flex-start' }}
@@ -356,7 +356,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className='flex flex-col items-center justify-center pb-[20px]'>
+              <div className='flex flex-col items-center justify-center pb-5'>
                 <a
                   href='https://wa.me/996706204501'
                   target='_blank'
@@ -371,7 +371,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className='py-16 bg-gradient-to-br from-orange-50 to-red-50'>
+      <section className='py-16 bg-linear-to-br from-orange-50 to-red-50'>
         <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
           <h2 className='text-3xl font-bold text-center text-gray-900 mb-10'>
             Преимущества iMenu

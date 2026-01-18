@@ -1,44 +1,77 @@
-import { Venue } from '@/lib/api/types';
 import { create } from 'zustand';
-import { devtools, persist, createJSONStorage } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
 
-type VenueState = {
-  venue: Venue | { slug: string };
-  tableId: string | number | null;
-  tableNum: string | null;
+// 🔥 1. Тип для графика работы (добавил)
+export interface VenueSchedule {
+  dayOfWeek: number;
+  dayName: string;
+  workStart: string;
+  workEnd: string;
+  isDayOff: boolean;
+  is24h: boolean;
+}
+
+export interface VenueSpot {
+  id: number;
+  name: string;
+  address: string;
+  wifiText?: string;
+  wifiUrl?: string | null;
+}
+
+export interface Venue {
+  id?: number;
+  slug: string;
+  companyName: string;
+  logo?: string;
+
+  deliveryFixedFee: string;
+  deliveryFreeFrom: string | null;
+  isDeliveryAvailable: boolean;
+
+  spots: VenueSpot[];
+
+  // 🔥 2. Массив графиков (добавил)
+  schedules: VenueSchedule[];
+
+  colorTheme?: string;
+
+  table?: {
+    id: number;
+    tableNum: string;
+  };
+}
+
+interface VenueState {
+  data: Venue | null;
+
+  tableId: number | null;
+  spotId: number | null;
+  isKioskMode: boolean;
+  tableNumber: string | null;
+
   setVenue: (venue: Venue) => void;
-  setTableInfo: (info: {
-    tableId?: string | number | null;
-    tableNum?: string | null;
+  setContext: (ctx: {
+    tableId?: number;
+    spotId?: number;
+    isKioskMode?: boolean;
+    tableNumber?: string;
   }) => void;
-};
+}
 
-export const useVenueQuery = create<VenueState>()(
-  devtools(
-    persist(
-      immer((set) => ({
-        venue: { slug: '' },
-        tableId: null,
-        tableNum: null,
-        setVenue: (venue: Venue) => set({ venue }),
-        setTableInfo: (info) =>
-          set((state) => {
-            if ('tableId' in info) state.tableId = info.tableId ?? null;
-            if ('tableNum' in info) state.tableNum = info.tableNum ?? null;
-          }),
-      })),
-      {
-        name: 'venue',
-        storage: createJSONStorage(() => localStorage),
-        partialize: (state) => ({
-          venue: state.venue,
-          tableId: state.tableId,
-          tableNum: state.tableNum,
-        }),
-        version: 2,
-      }
-    ),
-    { name: 'venue' }
-  )
-);
+export const useVenueStore = create<VenueState>((set) => ({
+  data: null,
+  tableId: null,
+  spotId: null,
+  isKioskMode: false,
+  tableNumber: null,
+
+  setVenue: (venue) => set({ data: venue }),
+
+  setContext: ({ tableId, spotId, isKioskMode, tableNumber }) =>
+    set((state) => ({
+      tableId: tableId ?? state.tableId,
+      spotId: spotId ?? state.spotId,
+      isKioskMode: isKioskMode ?? state.isKioskMode,
+      tableNumber: tableNumber ?? state.tableNumber,
+    })),
+}));

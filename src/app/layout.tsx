@@ -1,50 +1,59 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Inter } from 'next/font/google';
+import QueryProvider from '@/components/providers/QueryProvider';
 
 import './globals.css';
-import './shake.css';
-import QueryProvider from './query-provider';
-import Script from 'next/script';
-import FacebookPixelTracker from '../lib/analytics/FacebookPixel';
-import { Suspense } from 'react';
-import StatusBarConfig from '../lib/capacitor/StatusBarConfig';
 
 const geistInter = Inter({
   variable: '--font-geist-inter',
+  display: 'swap',
   subsets: ['latin'],
 });
 
 const cruinn = localFont({
   src: [
-    { path: '../fonts/Cruinn Thin.ttf', weight: '100', style: 'normal' },
-    { path: '../fonts/Cruinn Light.ttf', weight: '300', style: 'normal' },
-    { path: '../fonts/Cruinn Regular.ttf', weight: '400', style: 'normal' },
-    { path: '../fonts/Cruinn Medium.ttf', weight: '500', style: 'normal' },
-    { path: '../fonts/Cruinn Bold.ttf', weight: '700', style: 'normal' },
-    { path: '../fonts/Cruinn Black.ttf', weight: '900', style: 'normal' },
+    // Убрали 100 и 300. Оставили самые ходовые.
+    // Если 900 не используешь в заголовках — тоже убирай.
+    { path: '../fonts/Cruinn Regular.woff2', weight: '400', style: 'normal' },
+    { path: '../fonts/Cruinn Medium.woff2', weight: '500', style: 'normal' },
+    { path: '../fonts/Cruinn Bold.woff2', weight: '700', style: 'normal' },
+    { path: '../fonts/Cruinn Black.woff2', weight: '900', style: 'normal' },
   ],
   variable: '--font-cruinn',
   display: 'swap',
+  // 🔥 ВАЖНО: Убери preload: false, или поставь true.
+  // Next.js должен предзагружать шрифт, чтобы текст появлялся мгновенно.
+  // preload: true, (это дефолт, можно просто удалить строчку preload: false)
 });
 
 export const metadata: Metadata = {
-  title: 'iMenu.kg - ваше электронное меню!',
-  description: 'iMenu.kg — ваше электронное меню!',
+  title: {
+    template: '%s | iMenu',
+    default: 'iMenu — Ваше электронное меню',
+  },
+  description:
+    'Удобное электронное меню для ресторанов и кафе. Заказ еды, бронирование и оплата по QR-коду.',
+  metadataBase: new URL('https://imenu.kg'),
   icons: {
     icon: '/favicon.svg',
   },
+  openGraph: {
+    title: 'iMenu — Ваше электронное меню',
+    description: 'Современный сервис для заказа еды в заведениях.',
+    url: 'https://imenu.kg',
+    siteName: 'iMenu.kg',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'ru_RU',
+    type: 'website',
+  },
 };
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-};
-
-// const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID || '24957245993913886';
 
 export default function RootLayout({
   children,
@@ -52,35 +61,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
-      <body className={`${cruinn.variable} ${geistInter.variable} antialiased max-w-[700px] mx-auto`}>
-        <Script id='fb-pixel' strategy='lazyOnload'>
-          {`
-            !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-            n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq.disablePushState = true; // disable SPA auto-pushState tracking to avoid timers/polling
-            fbq('set','autoConfig', false, '24957245993913886'); // prevent auto config/polling
-            fbq('init','24957245993913886');
-            fbq('track','PageView');
-          `}
-        </Script>
-
-        <noscript
-          dangerouslySetInnerHTML={{
-            __html: `
-      <img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=24957245993913886&ev=PageView&noscript=1"/>
-    `,
-          }}
-        />
-
-        <Suspense fallback={null}>
-          <FacebookPixelTracker />
-        </Suspense>
-        <StatusBarConfig />
+    <html lang='ru'>
+      <body
+        className={`${cruinn.variable} ${geistInter.variable} max-w-175 mx-auto antialiased`}
+      >
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

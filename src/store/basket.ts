@@ -1,152 +1,142 @@
 import { create } from 'zustand';
-import { devtools, persist, createJSONStorage } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
-import type { Product } from '@/lib/api/types';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { Product } from '@/types/api';
 
-export type CartItem = {
-  key: string; // productId,modifierId
-  productId: number;
-  modifierId?: number | null;
-  name: string;
-  modifierName?: string;
-  unitPrice: number;
+// 🔥 ОПТИМИЗАЦИЯ 1:
+// Исключаем тяжелые массивы 'modificators' и 'categories' из типа элемента корзины.
+// Они там не нужны, нам нужны только метаданные (название, цена, картинка).
+export interface BasketItem
+  extends Omit<Product, 'modificators' | 'categories'> {
+  key: string;
   quantity: number;
-  image?: string;
-};
+  modifierId?: number;
+  modifierName?: string;
+}
 
-type BasketState = {
-  items: Record<string, CartItem>;
-  // derived
-  getItemsArray: () => CartItem[];
-  getQuantity: (productId: number, modifierId?: number | null) => number;
-  getSubtotal: () => number;
+interface BasketState {
+  items: BasketItem[];
 
-  // actions
-  add: (product: Product, options?: { modifierId?: number | null; modifierName?: string; priceOverride?: number; quantity?: number; image?: string }) => void;
-  increment: (productId: number, modifierId?: number | null, qty?: number) => void;
-  decrement: (productId: number, modifierId?: number | null, qty?: number) => void;
-  remove: (productId: number, modifierId?: number | null) => void;
-  clear: () => void;
-};
+  addToBasket: (
+    product: Product,
+    quantity?: number,
+    modifierId?: number
+  ) => void;
+  decrementItem: (key: string) => void;
+  removeFromBasket: (key: string) => void;
+  clearBasket: () => void;
 
-export const buildKey = (productId: number, modifierId?: number | null) =>
-  `${productId},${modifierId ?? 0}`;
+  getProductQuantity: (id: number) => number;
 
-const parseNumber = (v: unknown, fallback = 0): number => {
-  if (typeof v === 'number') return v;
-  if (typeof v === 'string') {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : fallback;
-  }
-  return fallback;
-};
+  // Геттеры для UI
+  getTotalPrice: () => number;
+  getItemCount: () => number;
 
-export const useBasket = create<BasketState>()(
-  devtools(
-    persist(
-      immer((set, get) => ({
-        items: {},
+  incrementItem: (key: string) => void;
+}
 
-        getItemsArray: () => Object.values(get().items),
+export const useBasketStore = create<BasketState>()(
+  persist(
+    (set, get) => ({
+      items: [],
 
-        getQuantity: (productId, modifierId) => {
-          const key = buildKey(productId, modifierId);
-          return get().items[key]?.quantity ?? 0;
-        },
+      addToBasket: (product, quantity = 1, modifierId) => {
+        const items = get().items;
 
-        getSubtotal: () => {
-          return Object.values(get().items).reduce((acc, it) => acc + it.unitPrice * it.quantity, 0);
-        },
+        let finalPrice = product.productPrice;
+        let modifierName = undefined;
 
-        add: (product, options) => {
-          const modifierId = options?.modifierId ?? null;
-          const key = buildKey(product.id, modifierId);
-          const modifierName = options?.modifierName;
+        if (modifierId && product.modificators) {
+          const mod = product.modificators.find((m) => m.id === modifierId);
+          if (mod) {
+            finalPrice = mod.price;
+            modifierName = mod.name;
+          }
+        }
 
-          // try to resolve price
-          let unitPrice =
-            options?.priceOverride ??
-            (() => {
-              const mods = product?.modificators as
-                | Array<{ id: number; name?: string; price?: number | string }>
-                | undefined;
-              if (modifierId && Array.isArray(mods)) {
-                const m = mods.find((x) => x.id === modifierId);
-                if (m && m.price != null) return parseNumber(m.price, 0);
-              }
-              return parseNumber(product.productPrice, 0);
-            })();
+        const uniqueKey = modifierId
+          ? `${product.id}_${modifierId}`
+          : `${product.id}`;
 
-          const image =
-            options?.image ??
-            product.productPhotoSmall ??
-            product.productPhoto ??
-            product.productPhotoLarge ??
-            undefined;
+        const existingItemIndex = items.findIndex(
+          (item) => item.key === uniqueKey
+        );
 
-          const name = product.productName ?? 'Товар';
-          const qty = Math.max(1, options?.quantity ?? 1);
+        if (existingItemIndex !== -1) {
+          const updatedItems = [...items];
+          updatedItems[existingItemIndex].quantity += quantity;
+          set({ items: updatedItems });
+        } else {
+          // 🔥 ОПТИМИЗАЦИЯ 2:
+          // Деструктуризация. Мы вытаскиваем modificators и categories в отдельные переменные (unused),
+          // а всё остальное (id, name, photo, price) собираем в restProduct.
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { modificators, categories, ...restProduct } = product;
 
-          set((state) => {
-            const prev = state.items[key];
-            if (prev) {
-              prev.quantity += qty;
-            } else {
-              state.items[key] = {
-                key,
-                productId: product.id,
-                modifierId,
-                name,
-                modifierName,
-                unitPrice,
-                quantity: qty,
-                image,
-              };
-            }
-          });
-        },
+          const newItem: BasketItem = {
+            ...restProduct, // Тут теперь только легкие данные
+            key: uniqueKey,
+            quantity,
+            modifierId,
+            modifierName,
+            productPrice: finalPrice,
+          };
+          set({ items: [...items, newItem] });
+        }
+      },
 
-        increment: (productId, modifierId, qty = 1) => {
-          const key = buildKey(productId, modifierId);
-          set((state) => {
-            const item = state.items[key];
-            if (!item) return;
-            item.quantity += Math.max(1, qty);
-          });
-        },
+      decrementItem: (key) => {
+        const items = get().items;
+        const itemIndex = items.findIndex((i) => i.key === key);
 
-        decrement: (productId, modifierId, qty = 1) => {
-          const key = buildKey(productId, modifierId);
-          set((state) => {
-            const item = state.items[key];
-            if (!item) return;
-            item.quantity -= Math.max(1, qty);
-            if (item.quantity <= 0) {
-              delete state.items[key];
-            }
-          });
-        },
+        if (itemIndex !== -1) {
+          const item = items[itemIndex];
+          if (item.quantity > 1) {
+            const updated = [...items];
+            updated[itemIndex].quantity -= 1;
+            set({ items: updated });
+          } else {
+            set({ items: items.filter((i) => i.key !== key) });
+          }
+        }
+      },
 
-        remove: (productId, modifierId) => {
-          const key = buildKey(productId, modifierId);
-          set((state) => {
-            delete state.items[key];
-          });
-        },
+      removeFromBasket: (key) => {
+        set({ items: get().items.filter((item) => item.key !== key) });
+      },
 
-        clear: () => {
-          set((state) => {
-            state.items = {};
-          });
-        },
-      })),
-      {
-        name: 'imenu-basket',
-        storage: createJSONStorage(() => localStorage),
-        version: 1,
-        partialize: (s) => ({ items: s.items }),
-      }
-    ),
-    { name: 'imenu-basket' }
+      clearBasket: () => set({ items: [] }),
+
+      getProductQuantity: (id) => {
+        return get()
+          .items.filter((item) => item.id === id)
+          .reduce((acc, item) => acc + item.quantity, 0);
+      },
+
+      getTotalPrice: () => {
+        return get().items.reduce(
+          (total, item) => total + item.productPrice * item.quantity,
+          0
+        );
+      },
+
+      getItemCount: () => {
+        return get().items.reduce((count, item) => count + item.quantity, 0);
+      },
+
+      incrementItem: (key) => {
+        const items = get().items;
+        const itemIndex = items.findIndex((i) => i.key === key);
+
+        if (itemIndex !== -1) {
+          const updatedItems = [...items];
+          updatedItems[itemIndex].quantity += 1;
+          set({ items: updatedItems });
+        }
+      },
+    }),
+    {
+      name: 'basket-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
   )
 );

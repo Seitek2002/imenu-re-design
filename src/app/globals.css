@@ -1,85 +1,41 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-html {
-  font-size: 16px;
+@theme {
+  /* В v4 мы объявляем кастомные цвета через --color-*.
+    Это автоматически создаст классы bg-brand, text-brand, border-brand.
+  */
+  --color-brand: var(--brand-color);
+
+  /* Шрифты */
+  --font-cruinn: var(--font-cruinn);
+  --font-inter: var(--font-geist-inter);
 }
 
+:root {
+  /* Значения по умолчанию */
+  --brand-color: #b45309; /* Твой янтарный цвет */
 
+  --background: #f8f6f7;
+  --foreground: #111111;
+}
+
+/* Базовые стили */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), sans-serif;
+  /* antialiased в v4 включен по умолчанию, но можно оставить */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Утилиты (в v4 работают так же через @layer) */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-
   .no-scrollbar {
-    -ms-overflow-style: none;  /* для IE и Edge */
-    scrollbar-width: none;     /* для Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-}
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-
-  /* Dynamic brand color (fallback set here; overridden by ThemeColor) */
-  --brand: #875AFF;
-  --brand-rgb: 135,90,255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
- 
-/* Brand utilities */
-@layer utilities {
-  .bg-brand { background-color: var(--brand) !important; }
-  .text-brand { color: var(--brand) !important; }
-  .border-brand { border-color: var(--brand) !important; }
-  .fill-brand { fill: var(--brand) !important; }
-  .stroke-brand { stroke: var(--brand) !important; }
-
-  /* Soft brand backgrounds (tint via rgba) */
-  .bg-brand-soft { background-color: rgba(var(--brand-rgb), 0.06) !important; }
-  .bg-brand-softer { background-color: rgba(var(--brand-rgb), 0.03) !important; }
-  .bg-brand-10 { background-color: rgba(var(--brand-rgb), 0.10) !important; }
-
-  /* Focus variants */
-  .focus\:border-brand:focus { border-color: var(--brand) !important; }
-  .focus-visible\:border-brand:focus-visible { border-color: var(--brand) !important; }
-}
- 
-body {
-  background: #fff;
-  color: #21201F;
-  font-family: var(--font-geist-inter), var(--font-cruinn);
-}
-
-/* Active feedback for all links */
-@layer base {
-  a {
-    position: relative; /* чтобы псевдо-оверлей позиционировался в рамках самого тега */
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
-  }
-  /* Оверлей строго по размеру ссылки */
-  a:active::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.08);
-    border-radius: inherit;
-    pointer-events: none;
-  }
-}
-
-/* Safe area utilities for notches/status bar */
-@layer utilities {
-  .pt-safe { padding-top: max(env(safe-area-inset-top), 0px); }
-  .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
-  .pl-safe { padding-left: max(env(safe-area-inset-left), 0px); }
-  .pr-safe { padding-right: max(env(safe-area-inset-right), 0px); }
-  .mt-safe { margin-top: max(env(safe-area-inset-top), 0px); }
 }

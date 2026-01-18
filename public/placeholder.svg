@@ -1,0 +1,21 @@
+<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="500" height="500" fill="#F3F4F6" />
+
+    <g opacity="0.4">
+        <circle cx="250" cy="250" r="120" stroke="#9CA3AF" stroke-width="20" />
+        <circle cx="250" cy="250" r="70" stroke="#9CA3AF" stroke-width="10" />
+
+        <path d="M100 200V300" stroke="#9CA3AF" stroke-width="20" stroke-linecap="round" />
+        <path d="M80 180V220" stroke="#9CA3AF" stroke-width="12" stroke-linecap="round" />
+        <path d="M100 180V220" stroke="#9CA3AF" stroke-width="12" stroke-linecap="round" />
+        <path d="M120 180V220" stroke="#9CA3AF" stroke-width="12" stroke-linecap="round" />
+
+        <path d="M400 180V300" stroke="#9CA3AF" stroke-width="20" stroke-linecap="round" />
+        <path d="M400 180L380 250H400" fill="#9CA3AF" />
+    </g>
+
+    <text x="250" y="420" font-family="Arial, sans-serif" font-size="24" fill="#9CA3AF"
+        text-anchor="middle" opacity="0.6">
+        Фото скоро будет
+    </text>
+</svg>
