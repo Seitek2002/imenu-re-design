@@ -6,16 +6,14 @@ import MainHeader from '../components/MainHeader';
 import HomeLinksSkeleton from '../components/HomeLinksSkeleton';
 import HomeLinksSection from '../components/HomeLinksSection';
 import Widgets from '../components/Widgets';
+import { VenueService } from '@/services/venue.service';
 
-// 🔥 ОБНОВЛЕННАЯ ФУНКЦИЯ: Теперь она умная
 async function getVenueData(slug: string, tableId?: number) {
   // По дефолту обычный URL
   let url = `https://imenu.kg/api/v2/venues/${slug}/`;
 
   // Если есть ID стола — меняем URL на специальный (получаем и меню, и номер стола)
   if (tableId) {
-    // Внимание: проверь точно, v2 там или нет. В твоем примере API было без v2.
-    // Я ставлю как в твоем примере:
     url = `https://imenu.kg/api/venues/${slug}/table/${tableId}/`;
   }
 
@@ -41,11 +39,9 @@ interface Props {
 
 export default async function VenuePage({ params }: Props) {
   const { venue: venueSlug, slug } = await params;
-
-  // 1. СНАЧАЛА парсим URL (чтобы узнать, есть ли tableId)
   const { tableId, spotId, isKioskMode } = parseUrlContext(slug);
+  const buttonsPromise = VenueService.getMainButtons(venueSlug);
 
-  // 2. И только ПОТОМ делаем запрос, передавая tableId
   const venueData = await getVenueData(venueSlug, tableId);
 
   if (!venueData) {
@@ -64,7 +60,10 @@ export default async function VenuePage({ params }: Props) {
       <MainHeader />
 
       <Suspense fallback={<HomeLinksSkeleton />}>
-        <HomeLinksSection venueSlug={venueSlug} />
+        <HomeLinksSection
+          venueSlug={venueSlug}
+          buttonsPromise={buttonsPromise}
+        />
       </Suspense>
 
       <Widgets venueSlug={venueSlug} />

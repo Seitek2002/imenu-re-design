@@ -19,7 +19,6 @@ export default function ModalPortal({
 }: ModalPortalProps) {
   const mounted = useMounted();
 
-  // Блокировка скролла
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';

@@ -1,6 +1,4 @@
-'use client';
-
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ImageSkeleton from '@/components/ui/ImageSkeleton';
@@ -10,7 +8,7 @@ interface IProps {
   label: string;
   sectionId: number;
   venueSlug: string;
-  isPriority?: boolean; // Мы уже передаем это пропсом!
+  isPriority?: boolean;
 }
 
 const HomeLink: FC<IProps> = ({
@@ -20,41 +18,30 @@ const HomeLink: FC<IProps> = ({
   venueSlug,
   isPriority,
 }) => {
-  const [isLoaded, setIsLoaded] = useState(!!isPriority);
-
   return (
     <Link
       href={`/${venueSlug}/categories/${sectionId}?title=${encodeURIComponent(
-        label
+        label,
       )}`}
       className='text-center block active:scale-95 transition-transform group'
     >
       <div className='relative aspect-square rounded-2xl overflow-hidden bg-gray-50'>
-        {/* Скелетон показываем ТОЛЬКО если это НЕ приоритетная картинка и она еще не загрузилась */}
-        {!isPriority && !isLoaded && (
-          <div className='absolute inset-0 z-0'>
-            <ImageSkeleton />
-          </div>
-        )}
+        <div className='absolute inset-0 z-0'>
+          <ImageSkeleton />
+        </div>
 
         <Image
           src={img}
           alt={label}
           fill
-          className={`object-cover ${
-            isPriority
-              ? ''
-              : `transition-opacity duration-500 ${
-                  isLoaded ? 'opacity-100' : 'opacity-0'
-                }`
-          }`}
+          className='object-cover z-10 relative'
           sizes={
             isPriority
               ? '(max-width: 640px) 40vw, 200px'
               : '(max-width: 640px) 25vw, 200px'
           }
           priority={isPriority}
-          onLoad={() => setIsLoaded(true)}
+          loading={isPriority ? 'eager' : 'lazy'}
         />
       </div>
 

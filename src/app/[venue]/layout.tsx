@@ -21,7 +21,6 @@ async function getVenueData(slug: string) {
   }
 }
 
-// 2. 🔥 ГЕНЕРАЦИЯ МЕТАДАННЫХ (SEO)
 export async function generateMetadata({
   params,
 }: {
