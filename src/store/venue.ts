@@ -1,6 +1,6 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-// 🔥 1. Тип для графика работы (добавил)
 export interface VenueSchedule {
   dayOfWeek: number;
   dayName: string;
@@ -23,55 +23,68 @@ export interface Venue {
   slug: string;
   companyName: string;
   logo?: string;
-
   deliveryFixedFee: string;
   deliveryFreeFrom: string | null;
   isDeliveryAvailable: boolean;
-
   spots: VenueSpot[];
-
-  // 🔥 2. Массив графиков (добавил)
   schedules: VenueSchedule[];
-
   colorTheme?: string;
-
   table?: {
     id: number;
     tableNum: string;
   };
 }
 
+// --- Стейт ---
 interface VenueState {
   data: Venue | null;
 
+  // Поля контекста (их мы будем сохранять)
   tableId: number | null;
   spotId: number | null;
   isKioskMode: boolean;
   tableNumber: string | null;
+  venueSlug: string | null; // 🔥 Добавил, чтобы сверять заведение
 
+  // Actions
   setVenue: (venue: Venue) => void;
   setContext: (ctx: {
-    tableId?: number;
-    spotId?: number;
+    tableId?: number | null;
+    spotId?: number | null;
     isKioskMode?: boolean;
-    tableNumber?: string;
+    tableNumber?: string | null;
+    venueSlug?: string | null;
   }) => void;
 }
 
-export const useVenueStore = create<VenueState>((set) => ({
-  data: null,
-  tableId: null,
-  spotId: null,
-  isKioskMode: false,
-  tableNumber: null,
+export const useVenueStore = create<VenueState>()(
+  persist(
+    (set) => ({
+      data: null,
+      tableId: null,
+      spotId: null,
+      isKioskMode: false,
+      tableNumber: null,
+      venueSlug: null,
 
-  setVenue: (venue) => set({ data: venue }),
+      setVenue: (venue) => set({ data: venue }),
 
-  setContext: ({ tableId, spotId, isKioskMode, tableNumber }) =>
-    set((state) => ({
-      tableId: tableId ?? state.tableId,
-      spotId: spotId ?? state.spotId,
-      isKioskMode: isKioskMode ?? state.isKioskMode,
-      tableNumber: tableNumber ?? state.tableNumber,
-    })),
-}));
+      setContext: (ctx) =>
+        set((state) => ({
+          ...state,
+          ...ctx,
+        })),
+    }),
+    {
+      name: 'imenu-session-storage',
+
+      partialize: (state) => ({
+        tableId: state.tableId,
+        spotId: state.spotId,
+        isKioskMode: state.isKioskMode,
+        tableNumber: state.tableNumber,
+        venueSlug: state.venueSlug,
+      }),
+    },
+  ),
+);

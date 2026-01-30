@@ -18,28 +18,42 @@ export default function VenueInitializer({
 }: Props) {
   const initialized = useRef(false);
 
+  const setContext = useVenueStore((state) => state.setContext);
+  const currentSlug = useVenueStore((state) => state.venueSlug);
+
   useEffect(() => {
-    // 1. Сохраняем данные заведения
     useVenueStore.setState({ data: venue });
 
-    // 🔥 2. Вытаскиваем номер стола из ответа API
-    // АПИ возвращает: "table": { "id": 84, "tableNum": "19" }
     const tableNumFromApi = venue.table?.tableNum;
 
-    // 3. Сохраняем всё в контекст
-    useVenueStore.getState().setContext({
-      tableId,
-      spotId,
-      isKioskMode,
-      tableNumber: tableNumFromApi, // <-- Вот мы его передаем!
-    });
+    const hasNewContext =
+      (tableId !== undefined && tableId !== null) ||
+      (spotId !== undefined && spotId !== null);
 
-    // 4. Цвет темы
+    if (hasNewContext) {
+      setContext({
+        tableId,
+        spotId,
+        isKioskMode,
+        tableNumber: tableNumFromApi,
+        venueSlug: venue.slug,
+      });
+    } else {
+      if (currentSlug && currentSlug !== venue.slug) {
+        setContext({
+          tableId: null,
+          spotId: null,
+          tableNumber: null,
+          venueSlug: venue.slug,
+        });
+      }
+    }
+
     const color = venue?.colorTheme || '#b45309';
     document.documentElement.style.setProperty('--brand-color', color);
 
     initialized.current = true;
-  }, [venue, tableId, spotId, isKioskMode]);
+  }, [venue, tableId, spotId, isKioskMode, setContext, currentSlug]);
 
   return null;
 }
