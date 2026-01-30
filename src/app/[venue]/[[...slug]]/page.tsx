@@ -7,6 +7,8 @@ import HomeLinksSkeleton from '../components/HomeLinksSkeleton';
 import HomeLinksSection from '../components/HomeLinksSection';
 import Widgets from '../components/Widgets';
 import { VenueService } from '@/services/venue.service';
+import StoreClosedCard from '@/app/components/StoreClosedCard';
+import { getVenueStatus } from '@/lib/venue-status';
 
 async function getVenueData(slug: string, tableId?: number) {
   // По дефолту обычный URL
@@ -44,6 +46,8 @@ export default async function VenuePage({ params }: Props) {
 
   const venueData = await getVenueData(venueSlug, tableId);
 
+  const { isOpen, message } = getVenueStatus(venueData.schedule || []);
+
   if (!venueData) {
     notFound();
   }
@@ -59,12 +63,19 @@ export default async function VenuePage({ params }: Props) {
 
       <MainHeader />
 
-      <Suspense fallback={<HomeLinksSkeleton />}>
-        <HomeLinksSection
-          venueSlug={venueSlug}
-          buttonsPromise={buttonsPromise}
+      {isOpen ? (
+        <Suspense fallback={<HomeLinksSkeleton />}>
+          <HomeLinksSection
+            venueSlug={venueSlug}
+            buttonsPromise={buttonsPromise}
+          />
+        </Suspense>
+      ) : (
+        <StoreClosedCard
+          scheduleMessage={message}
+          brandColor={venueData.colorTheme}
         />
-      </Suspense>
+      )}
 
       <Widgets venueSlug={venueSlug} />
     </main>
