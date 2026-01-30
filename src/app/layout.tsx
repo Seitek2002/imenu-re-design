@@ -14,7 +14,6 @@ const geistInter = Inter({
 const cruinn = localFont({
   src: [
     // Убрали 100 и 300. Оставили самые ходовые.
-    // Если 900 не используешь в заголовках — тоже убирай.
     { path: '../fonts/Cruinn Regular.woff2', weight: '400', style: 'normal' },
     { path: '../fonts/Cruinn Medium.woff2', weight: '500', style: 'normal' },
     { path: '../fonts/Cruinn Bold.woff2', weight: '700', style: 'normal' },
@@ -22,9 +21,6 @@ const cruinn = localFont({
   ],
   variable: '--font-cruinn',
   display: 'swap',
-  // 🔥 ВАЖНО: Убери preload: false, или поставь true.
-  // Next.js должен предзагружать шрифт, чтобы текст появлялся мгновенно.
-  // preload: true, (это дефолт, можно просто удалить строчку preload: false)
 });
 
 export const metadata: Metadata = {
