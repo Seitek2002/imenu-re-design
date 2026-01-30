@@ -11,11 +11,12 @@ import { useBonusStore } from '@/store/bonus';
 import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
 import { useClientBonus } from '@/lib/api/queries';
+import TableBadge from './components/TableBadge';
 
 // Ленивая загрузка
 const DrawerCheckout = dynamic(
   () => import('./components/Drawer/DrawerCheckout'),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function BasketPage() {
@@ -50,6 +51,7 @@ export default function BasketPage() {
   // Итоговая цена для Футера и Дровера
   const finalDisplayTotal = Math.max(0, cartTotal - discount);
   // ------------------------------------------------------------------
+  const tableNumber = useVenueStore((state) => state.tableNumber);
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
@@ -57,28 +59,32 @@ export default function BasketPage() {
 
       <section className='bg-white pt-4 mt-1.5 px-2 rounded-4xl pb-5 lg:max-w-md lg:mx-auto shadow-sm min-h-[60vh]'>
         {/* Toggle */}
-        <div className='bg-[#FAFAFA] rounded-full mb-3 p-1 grid grid-cols-2 gap-2'>
-          <button
-            onClick={() => setOrderType('takeout')}
-            className={`py-2 rounded-full text-sm transition-all ${
-              orderType === 'takeout'
-                ? 'bg-white text-[#111111] font-bold shadow-sm'
-                : 'text-[#6B6B6B]'
-            }`}
-          >
-            С собой
-          </button>
-          <button
-            onClick={() => setOrderType('delivery')}
-            className={`py-2 rounded-full text-sm transition-all ${
-              orderType === 'delivery'
-                ? 'bg-white text-[#111111] font-bold shadow-sm'
-                : 'text-[#6B6B6B]'
-            }`}
-          >
-            Доставка
-          </button>
-        </div>
+        {tableNumber ? (
+          <TableBadge tableNumber={tableNumber} />
+        ) : (
+          <div className='bg-[#FAFAFA] rounded-full mb-3 p-1 grid grid-cols-2 gap-2'>
+            <button
+              onClick={() => setOrderType('takeout')}
+              className={`py-2 rounded-full text-sm transition-all ${
+                orderType === 'takeout'
+                  ? 'bg-white text-[#111111] font-bold shadow-sm'
+                  : 'text-[#6B6B6B]'
+              }`}
+            >
+              С собой
+            </button>
+            <button
+              onClick={() => setOrderType('delivery')}
+              className={`py-2 rounded-full text-sm transition-all ${
+                orderType === 'delivery'
+                  ? 'bg-white text-[#111111] font-bold shadow-sm'
+                  : 'text-[#6B6B6B]'
+              }`}
+            >
+              Доставка
+            </button>
+          </div>
+        )}
 
         {/* List */}
         {items.length === 0 ? (
