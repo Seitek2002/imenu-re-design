@@ -46,7 +46,7 @@ export default async function VenuePage({ params }: Props) {
 
   const venueData = await getVenueData(venueSlug, tableId);
 
-  const { isOpen, message } = getVenueStatus(venueData.schedule || []);
+  const { isOpen, message } = getVenueStatus(venueData.schedules || []);
 
   if (!venueData) {
     notFound();
