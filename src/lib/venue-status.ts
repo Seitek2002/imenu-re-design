@@ -1,4 +1,4 @@
-type Schedule = {
+export type Schedule = {
   dayOfWeek: number; // 1 - Понедельник, 7 - Воскресенье
   workStart: string; // "10:00"
   workEnd: string; // "05:00" или "22:00"
@@ -6,14 +6,27 @@ type Schedule = {
   is24h: boolean;
 };
 
-interface VenueStatus {
+export interface VenueStatus {
   isOpen: boolean;
   message: string;
 }
 
 export function getVenueStatus(schedules: Schedule[]): VenueStatus {
-  const now = new Date();
+  // --- 🌍 FIX TIMEZONE START ---
+  // 1. Берем текущее время сервера (Франция/Германия)
+  const serverDate = new Date();
+
+  // 2. Конвертируем его в строку времени Бишкека
+  const bishkekTimeStr = serverDate.toLocaleString('en-US', {
+    timeZone: 'Asia/Bishkek',
+  });
+
+  // 3. Создаем объект даты, который "думает", что он в Бишкеке
+  const now = new Date(bishkekTimeStr);
+  // --- 🌍 FIX TIMEZONE END ---
+
   // ВАЖНО: Получаем текущее время в минутах от начала дня (0..1439)
+  // Теперь getHours() вернет время Бишкека, а не сервера
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   // JS возвращает 0 (Вс) - 6 (Сб). Нам нужно 1 (Пн) - 7 (Вс)
