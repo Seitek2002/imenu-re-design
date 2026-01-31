@@ -80,7 +80,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
 
   return (
     <div className='bg-white rounded-t-4xl mt-1.5 min-h-screen pb-40 border-t border-gray-100 flex flex-col'>
-      <div className='pt-2 sticky top-18 z-30 bg-white rounded-t-4xl shadow-sm'>
+      <div className='pt-2 sticky top-18 z-30 bg-white shadow-sm'>
         <Category
           categories={activeCategories}
           activeSlug={activeSlug}
