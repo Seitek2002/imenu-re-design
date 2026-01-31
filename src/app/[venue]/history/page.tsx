@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 const HistoryPage = () => {
   return (
     <div className='relative min-h-screen bg-[#F8F6F7] overflow-hidden flex flex-col items-center justify-center'>

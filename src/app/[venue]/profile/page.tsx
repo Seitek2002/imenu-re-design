@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 const ProfilePage = () => {
   return (
     <div className='relative min-h-screen bg-[#F8F6F7] overflow-hidden'>
