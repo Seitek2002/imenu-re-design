@@ -13,7 +13,7 @@ export default function TimePickerContent({
   const [customTime, setCustomTime] = useState('');
 
   return (
-    <div>
+    <div className='p-4'>
       <h2 className='text-lg font-bold mb-4'>Время готовности</h2>
 
       <div className='flex flex-col gap-2'>
