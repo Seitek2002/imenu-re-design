@@ -34,6 +34,7 @@ export default function BasketPage() {
 
   // Локальный UI стейт шторки
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
+  console.log(orderType);
 
   // --- 🔥 ЛОГИКА БОНУСОВ (Копия из OrderSummary для синхронизации) ---
   const { isBonusUsed } = useBonusStore();

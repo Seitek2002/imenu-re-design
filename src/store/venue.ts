@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface VenueSchedule {
   dayOfWeek: number;
@@ -77,6 +77,7 @@ export const useVenueStore = create<VenueState>()(
     }),
     {
       name: 'imenu-session-storage',
+      storage: createJSONStorage(() => sessionStorage),
 
       partialize: (state) => ({
         tableId: state.tableId,

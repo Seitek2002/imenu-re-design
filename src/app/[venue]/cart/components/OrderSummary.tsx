@@ -15,7 +15,7 @@ import { useVenueStore } from '@/store/venue';
 
 interface Props {
   subtotal: number;
-  deliveryType: 'takeout' | 'delivery';
+  deliveryType: 'takeout' | 'delivery' | 'dinein';
   deliveryCost: number; // Добавил пропсом, чтобы было явно
 }
 

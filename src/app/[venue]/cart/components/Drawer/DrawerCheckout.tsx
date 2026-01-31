@@ -18,6 +18,7 @@ import PaymentModal from './PaymentModal';
 import CheckoutFooter from './CheckoutFooter';
 
 import tableIcon from '@/assets/Cart/table.svg';
+import { useVenueStore } from '@/store/venue';
 
 interface IProps {
   sheetOpen: boolean;
@@ -54,6 +55,7 @@ const DrawerCheckout: FC<IProps> = ({
   // --- FORM STATE ---
   const [phone, setPhone] = useState(storedPhone || '+996');
   const [address, setAddress] = useState(storedAddress || '');
+  const tableNumber = useVenueStore((state) => state.tableNumber);
 
   const [comment, setComment] = useState('');
   const [showComment, setShowComment] = useState(false);
@@ -185,7 +187,7 @@ const DrawerCheckout: FC<IProps> = ({
                   <div className='bg-[#F5F5F5] flex items-center gap-2 rounded-xl py-3 px-4 mb-4'>
                     <Image src={tableIcon} alt='table' width={16} height={16} />
                     <span className='text-[#111111] font-semibold'>
-                      Столик №5
+                      Столик №{tableNumber}
                     </span>
                   </div>
                 ) : (
