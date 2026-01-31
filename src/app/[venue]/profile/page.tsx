@@ -66,12 +66,12 @@ const ProfilePage = () => {
 
         {/* Кнопки */}
         <div className='flex flex-col gap-3 w-full max-w-xs'>
-          <Link
+          {/* <Link
             href='/'
             className='w-full py-3.5 bg-[#21201F] text-white rounded-2xl font-bold text-center shadow-lg active:scale-95 transition-transform'
           >
             Перейти к меню
-          </Link>
+          </Link> */}
 
           <button
             disabled

@@ -14,13 +14,6 @@ const HistoryPage = () => {
         <p className='text-[#9E9E9E] mb-8 max-w-xs mx-auto'>
           Мы прямо сейчас пишем историю... Загляните сюда чуть позже!
         </p>
-
-        <Link
-          href='/ustukan' // Или history.back()
-          className='px-6 py-3 bg-[#21201F] text-white rounded-full font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform z-50 relative'
-        >
-          Вернуться на главную
-        </Link>
       </div>
 
       {/* --- ЛЕНТА 1 (Наклон влево, едет вправо) --- */}

@@ -10,7 +10,7 @@ export default function TimePickerContent({
   onSave: (val: string) => void;
 }) {
   const [mode, setMode] = useState<'asap' | 'time'>('asap');
-  const [customTime, setCustomTime] = useState('');
+  // const [customTime, setCustomTime] = useState('');
 
   return (
     <div className='p-4'>
