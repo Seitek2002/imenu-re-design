@@ -17,7 +17,7 @@ export default function PaymentModal({
 }: Props) {
   return (
     <ModalPortal open={open} onClose={onClose} zIndex={100}>
-      <div className='relative'>
+      <div className='relative p-4'>
         <button
           onClick={onClose}
           className='absolute top-2 right-2 h-8 w-8 rounded-full bg-[#F5F5F5] text-[#111111] flex items-center justify-center font-bold'

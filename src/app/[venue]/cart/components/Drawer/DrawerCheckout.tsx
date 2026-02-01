@@ -53,7 +53,7 @@ const DrawerCheckout: FC<IProps> = ({
   } = useCheckout();
 
   // --- FORM STATE ---
-  const [phone, setPhone] = useState(storedPhone || '+996');
+  const [phone, setPhone] = useState(storedPhone || '');
   const [address, setAddress] = useState(storedAddress || '');
   const tableNumber = useVenueStore((state) => state.tableNumber);
 
@@ -76,14 +76,22 @@ const DrawerCheckout: FC<IProps> = ({
     }
   }, [sheetOpen]);
 
-  // 🔥 2. ИСПРАВЛЕНИЕ: Оборачиваем в useCallback
-  // Это предотвращает пересоздание функции при каждом рендере
   const handlePhoneChange = useCallback(
     (val: string) => {
-      setPhone(val);
-      setStoredPhone(val);
+      let cleanVal = val.replace(/\D/g, '');
+
+      if (cleanVal.startsWith('0')) {
+        cleanVal = cleanVal.substring(1);
+      }
+
+      if (cleanVal.length > 9) {
+        cleanVal = cleanVal.slice(0, 9);
+      }
+
+      setPhone(cleanVal);
+      setStoredPhone(cleanVal);
     },
-    [setStoredPhone]
+    [setStoredPhone],
   );
 
   // 🔥 3. ИСПРАВЛЕНИЕ: Самое важное для DeliveryInputs (разрываем цикл)
@@ -92,13 +100,24 @@ const DrawerCheckout: FC<IProps> = ({
       setAddress(val);
       setStoredAddress(val);
     },
-    [setStoredAddress]
+    [setStoredAddress],
   );
 
   const handlePay = async () => {
     if (!phone && orderType !== 'dinein') {
       alert('Пожалуйста, укажите номер телефона');
       return;
+    }
+    if (orderType !== 'dinein') {
+      if (!phone) {
+        alert('Пожалуйста, укажите номер телефона');
+        return;
+      }
+      // Проверка на длину
+      if (phone.length !== 9) {
+        alert('Номер телефона должен состоять из 9 цифр');
+        return;
+      }
     }
     if (orderType === 'delivery' && !address) {
       alert('Введите адрес доставки');
@@ -118,8 +137,8 @@ const DrawerCheckout: FC<IProps> = ({
         serviceMode: (orderType === 'dinein'
           ? 1
           : orderType === 'delivery'
-          ? 3
-          : 2) as 1 | 2 | 3,
+            ? 3
+            : 2) as 1 | 2 | 3,
         address: orderType === 'delivery' ? address : null,
         comment,
         spot: 19,
@@ -205,14 +224,21 @@ const DrawerCheckout: FC<IProps> = ({
                   <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
                     Номер телефона
                   </span>
-                  <input
-                    type='tel'
-                    value={phone}
-                    // 🔥 Передаем стабилизированную функцию
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base'
-                    placeholder='+996'
-                  />
+                  <div className='flex items-center'>
+                    <div className='font-semibold text-[#111111] placeholder-gray-400 text-base'>
+                      +996
+                    </div>
+                    <input
+                      type='tel'
+                      inputMode='numeric'
+                      placeholder='700123456'
+                      maxLength={9}
+                      minLength={9}
+                      value={phone}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base'
+                    />
+                  </div>
                 </label>
 
                 <button
