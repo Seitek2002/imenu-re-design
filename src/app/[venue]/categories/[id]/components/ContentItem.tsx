@@ -31,13 +31,13 @@ const ContentItem: FC<Props> = ({
       className={`
         relative rounded-3xl bg-[#F6F6F6] overflow-hidden p-3 flex flex-col justify-between
         active:scale-95 transition-transform isolate
-        ${isLarge ? 'col-span-3 aspect-[1.4/1]' : 'col-span-2 aspect-[0.8/1]'}
+        ${isLarge ? 'col-span-3' : 'col-span-2'}
       `}
     >
       <span
         className={`
         text-[#21201F] font-bold leading-tight z-10 font-cruinn
-        ${isLarge ? 'text-sm w-2/3' : 'text-[11px]'}
+        ${isLarge ? 'text-[120%] w-2/3' : 'text-[120%]'}
       `}
       >
         {name}
