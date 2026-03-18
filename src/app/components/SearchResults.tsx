@@ -5,207 +5,7 @@ import { useUIStore } from '@/store/ui';
 import { useVenueStore } from '@/store/venue';
 import { Product } from '@/types/api';
 import FoodItem from '../[venue]/products/[slug]/components/FoodItem';
-
-const SWEAR_WORDS = [
-  'бля',
-  'блять',
-  'блядь',
-  'хуй',
-  'хуесос',
-  'пизда',
-  'пиздец',
-  'ебать',
-  'сука',
-  'хер',
-  'педик',
-  'пидор',
-  'пидараз',
-  'далбаеб',
-  'далбаёб',
-  'еблан',
-  'ебальник',
-  'ебланка',
-  'коток',
-  'сгейн',
-  'сгэйн',
-  'ам',
-  'чочок',
-  'жалап',
-  'шлюха',
-];
-const PORN_CATEGORIES = [
-  // Базовые русские запросы
-  'порно',
-  'секс',
-  'порнуха',
-  'порнушка',
-  'эротика',
-  'порнография',
-
-  // Популярные английские жанры и термины
-  'porn',
-  'sex',
-  'milf',
-  'stepmom',
-  'stepsister',
-  'stepfantasy',
-  'bdsm',
-  'hentai',
-  'amateur',
-  'mature',
-  'lesbian',
-  'threesome',
-  'orgy',
-  'anal',
-  'oral',
-  'blowjob',
-  'handjob',
-  'creampie',
-  'squirt',
-  'cumshot',
-  'deepthroat',
-  'cuckold',
-  'interracial',
-  'pov',
-  'fetish',
-  'footjob',
-  'masturbation',
-  'solo',
-  'casting',
-  'massage',
-  'voyeur',
-  'public',
-  'cam',
-  'onlyfans',
-  'ebony',
-  'latina',
-  'asian',
-  'bbw',
-
-  // Специфичные русские термины
-  'анал',
-  'минет',
-  'куни',
-  'отсос',
-  'дрочка',
-  'мастурбация',
-  'групповуха',
-  'оргия',
-  'лесбиянки',
-  'извращения',
-  'шлюхи',
-  'проститутки',
-  'эскорт',
-
-  // Популярные сайты и студии (чтобы отлавливать прямые поиски сайтов)
-  'pornhub',
-  'brazzers',
-  'xvideos',
-  'xnxx',
-  'xhamster',
-  'spankbang',
-  'eporner',
-  'chaturbate',
-  'bongacams',
-  'realitykings',
-  'bangbros',
-  'naughtyamerica',
-  'blacked',
-  'tushy',
-  'vixen',
-  'bellesa',
-];
-const GACHI_WORDS = [
-  // Базовые слова
-  'gay',
-  'gays',
-  'gachimuchi',
-  'гей',
-  'голубой',
-  'геи',
-  'гачи',
-  'гачимучи',
-  'jabroni',
-
-  // Культовые фразы
-  'gachi muchi',
-  'boss of this gym',
-  'boy next door',
-  'dungeon master',
-  'fucking slave',
-  'fucking slaves',
-  'deep dark fantasies',
-  '300 bucks',
-  'three hundred bucks',
-  'ass we can',
-  'take it boy',
-  'do you like what you see',
-  'stick your finger',
-  'lube it up',
-];
-
-const checkEasterEggs = (query: string): string | null => {
-  const q = query.toLowerCase().trim();
-
-  if (q.includes('1=1') || q.includes('drop table') || q.includes('select *')) {
-    return 'Nice try, хакер. Иди лучше поешь 👨‍💻';
-  }
-
-  // 2. Разбиваем запрос на массив отдельных слов (убирая знаки препинания)
-  // Это позволит искать точные совпадения даже в фразах из нескольких слов
-  const words = q.replace(/[^\w\sа-яё]/gi, '').split(/\s+/);
-
-  // Проверка на Gachi
-  if (
-    GACHI_WORDS.some((phrase) =>
-      phrase.includes(' ') ? q.includes(phrase) : words.includes(phrase),
-    )
-  ) {
-    return `Welcome to the club buddy ♂️
-.
-  ⣿⣿⣿⣿⡟⠛⠁⠄⠄⠄⠄⢀⣀⣀⠄⠄⠄⠄⣤⣽⣿⣿⣿⣿⣿⣿⣿⣿ 
-  ⣿⣿⣿⡋⠁⠄⠄⠄⣠⣶⣾⣿⣿⣿⣿⠄⢦⡄⠐⠬⠛⢿⣿⣿⣿⣿⣿⣿ 
-  ⣿⡿⠇⠁⠄⠄⣠⣾⣿⣿⡿⠟⠋⠁⠄⠄⠈⠁⠄⠄⠄⠄⠙⢿⣿⣿⣿⣿ 
-  ⣿⠃⠄⠄⠄⠘⣿⣿⣿⣿⢀⣠⠄⠄⠄⠄⣰⣶⣀⠄⠄⠄⠄⠸⣿⣿⣿⣿ 
-  ⣏⠄⠄⠄⠄⠄⣿⣿⣿⡿⢟⣁⠄⣀⣠⣴⣿⣿⠿⠷⠶⠒⠄⠄⢹⣿⣿⣿ 
-  ⡏⠄⠄⠄⠄⢰⣿⣿⣿⣿⣿⣿⣿⣿⡟⠄⠛⠁⠄⠄⠄⠄⠄⠄⢠⣿⣿⣿ 
-  ⡇⠄⠄⠄⠄⠈⢿⣿⣿⣿⣿⣿⣿⣿⡇⠄⣼⣿⠇⠘⠄⠁⠄⠄⠄⢻⣿⣿ 
-  ⣇⠄⠄⠄⠄⠄⠸⢿⣿⣿⣿⣿⣿⣿⠁⠸⠟⠁⣠⣤⣤⣶⣤⠄⠄⠄⢻⣿ 
-  ⣿⡄⠄⡤⢤⣤⡀⠈⣿⣿⣿⣿⣿⣿⡆⠄⠄⠘⠋⠁⠄⠄⠈⠄⠄⠄⢸⣿ 
-  ⣿⣿⡜⢰⡾⢻⣧⣰⣿⣿⣿⣿⣿⣿⣷⠄⣼⣷⣶⣶⡆⠄⠄⠄⠄⠄⠄⣿ 
-  ⣿⣿⣧⢸⠄⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠄⣿ 
-  ⣿⣿⣿⣿⡿⢿⡟⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠄⠄⢀⡀⠄⠘⣿ 
-  ⣿⣿⣿⣿⣿⣆⢻⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠋⠄⠄⠈⠁⠄⠄⣿ 
-  ⣿⣿⣿⣿⣿⣿⡆⢻⣿⣿⣿⣿⣿⣿⡿⠛⠛⠛⠃⠄⠄⠄⠄⠄⠄⠄⢀⣿ 
-  ⣿⣿⣿⣿⣿⣿⣿⣆⣻⣿⣿⣿⣿⣿⣷⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿
-
-    `;
-  }
-
-  // Проверка на порно
-  if (PORN_CATEGORIES.some((word) => words.includes(word))) {
-    return 'Вы ищете не на том сайте 👀, но мы вас не осуждаем 😇';
-  }
-
-  // Проверка на мат
-  if (SWEAR_WORDS.some((word) => words.includes(word))) {
-    return 'И этими губами ты свою маму целуешь? 🫣';
-  }
-
-  // Дополнительные локальные пасхалки
-  if (words.includes('диета')) return 'Какая диета? Один раз живем! 🍔';
-  if (q === 'бесплатно' || q === 'халява')
-    return 'Бесплатный сыр только в мышеловке 🧀';
-  if (q === 'рекурсия') return 'Возможно, вы искали: рекурсия 🔄';
-  if (q === 'наркотики') return 'Чем это мы балуемся?)';
-  if (q === 'девушка') return 'Удачи с этим 🫂';
-  if (q === 'привет') return 'Пока, пока!';
-  if (q === 'салам') return 'Уалейкум родной 🤝';
-  if (q === 'поиск') return 'Вам заняться нечем? 👀 Нам-то за такие приколы платят. А вы-то что?...';
-  if (q === 'дети') return '...';
-
-  return null;
-};
+import { useEasterEggs } from './useEasterEggs';
 
 export default function SearchResults() {
   const { searchQuery } = useUIStore();
@@ -214,12 +14,13 @@ export default function SearchResults() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const easterEggMessage = checkEasterEggs(searchQuery);
+  // Получаем данные квеста из хука
+  const { easterEggMessage, questState, setQuestState } =
+    useEasterEggs(searchQuery);
 
-  // 🔥 DEBOUNCE: Ждем 500мс после ввода, прежде чем слать запрос
   useEffect(() => {
-    // Убрал дублирование проверки
-    if (!searchQuery.trim() || easterEggMessage) {
+    // ВАЖНО: Добавили questState, чтобы не слать запрос к API, пока идет квест
+    if (!searchQuery.trim() || easterEggMessage || questState) {
       setProducts([]);
       return;
     }
@@ -244,7 +45,7 @@ export default function SearchResults() {
     }, 500);
 
     return () => clearTimeout(timerId);
-  }, [searchQuery, venue?.slug, easterEggMessage]);
+  }, [searchQuery, venue?.slug, easterEggMessage, questState]);
 
   if (!searchQuery) {
     return (
@@ -255,14 +56,68 @@ export default function SearchResults() {
     );
   }
 
-  if (easterEggMessage) {
+  // --- 🎭 РЕНДЕР КВЕСТА ---
+  if (questState?.type === 'camera') {
     return (
-      <div className='flex flex-col items-center justify-center pt-20 animate-fadeIn px-4 text-center'>
-        <p className='text-xl font-medium text-gray-700'>{easterEggMessage}</p>
+      <div className='flex flex-col items-center justify-center pt-20 animate-fadeIn px-4 text-center space-y-6'>
+        {/* Шаг 1: Пользователь ввел слово */}
+        {questState.step === 1 && (
+          <p className='text-xl font-medium text-gray-700 whitespace-pre-wrap animate-pulse'>
+            А теперь зайди в камеру и сделай селфи! 📸
+          </p>
+        )}
+
+        {/* Шаг 2: Пользователь вернулся из камеры */}
+        {questState.step === 2 && (
+          <div className='flex flex-col items-center space-y-5 animate-fadeIn'>
+            <p className='text-xl font-medium text-gray-700'>
+              Положи сюда свое селфи, ща будет прикол 👇
+            </p>
+            {/* Прячем стандартный инпут и стилизуем label под кнопку */}
+            <label className='cursor-pointer bg-brand text-white px-8 py-3 rounded-2xl font-bold hover:opacity-90 transition-opacity shadow-md'>
+              Загрузить фото
+              <input
+                type='file'
+                accept='image/*'
+                className='hidden'
+                onChange={(e) => {
+                  // Если файл выбран - переходим к финалу
+                  if (e.target.files && e.target.files.length > 0) {
+                    setQuestState({ type: 'camera', step: 3 });
+                  }
+                }}
+              />
+            </label>
+          </div>
+        )}
+
+        {/* Шаг 3: Финал после загрузки фото */}
+        {questState.step === 3 && (
+          <div className='animate-fadeIn flex flex-col items-center space-y-2'>
+            <p className='text-2xl font-bold text-red-600'>
+              Теперь мы знаем как ты выглядишь))) 👀
+            </p>
+            <p className='text-sm text-gray-500'>
+              (Расслабься, мы никуда это не сохраняем)
+            </p>
+          </div>
+        )}
       </div>
     );
   }
 
+  // --- 📝 РЕНДЕР ОБЫЧНЫХ ПАСХАЛОК ---
+  if (easterEggMessage) {
+    return (
+      <div className='flex flex-col items-center justify-center pt-20 animate-fadeIn px-4 text-center'>
+        <pre className='text-sm md:text-base font-medium text-gray-700 whitespace-pre-wrap text-left inline-block'>
+          {easterEggMessage}
+        </pre>
+      </div>
+    );
+  }
+
+  // --- 🍔 РЕНДЕР РЕЗУЛЬТАТОВ ПОИСКА ---
   return (
     <div className='px-2 py-4 min-h-[60vh] animate-fadeIn'>
       <h3 className='text-lg font-bold mb-4 px-2'>Результаты поиска</h3>
