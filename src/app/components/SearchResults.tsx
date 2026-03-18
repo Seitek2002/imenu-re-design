@@ -51,7 +51,7 @@ export default function SearchResults() {
     return (
       <div className='flex flex-col items-center justify-center pt-20 text-gray-400 animate-fadeIn'>
         <div className='text-4xl mb-2'>🔍</div>
-        <p>Введите название блюда</p>
+        <p>Введите &apos;название блюда&apos;</p>
       </div>
     );
   }
