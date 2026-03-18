@@ -202,7 +202,7 @@ const checkEasterEggs = (query: string): string | null => {
   if (q === 'привет') return 'Пока, пока!';
   if (q === 'салам') return 'Уалейкум родной 🤝';
   if (q === 'поиск') return 'Вам заняться нечем? 👀 Нам-то за такие приколы платят. А вы-то что?...';
-  if (q === 'дети') return 'Эпштейн?...';
+  if (q === 'дети') return '...';
 
   return null;
 };
