@@ -1,9 +1,9 @@
-import { notFound } from 'next/navigation';
-
 import StatusProgressBar from './components/StatusProgressBar';
 import OrderItemsList from './components/OrderItemsList';
 import { OrderV2 } from '@/lib/order';
 import StatusHeader from './components/StatusHeader';
+import OrderNotFound from './components/OrderNotFound';
+import OrderSaver from './components/OrderSaver';
 
 // Функция получения заказа (Серверная)
 async function fetchOrder(id: string): Promise<OrderV2 | null> {
@@ -30,13 +30,14 @@ export default async function OrderStatusPage({ params }: Props) {
   const order = await fetchOrder(orderId);
 
   if (!order) {
-    return notFound(); // Покажет стандартную страницу 404 Next.js
+    return <OrderNotFound venueSlug={venue} />;
   }
 
   return (
     <main className='min-h-svh bg-[#F8F6F7] pb-10'>
       {/* Хедер страницы */}
       <StatusHeader venueSlug={venue} orderId={order.id} />
+      <OrderSaver orderId={order.id} />
 
       <div className='px-4 pt-2'>
         {/* 1. Статус бар */}

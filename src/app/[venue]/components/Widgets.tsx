@@ -66,9 +66,19 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
               sizes='120px'
             />
 
+            {/* Блок с прогресс-баром и процентами по центру */}
             {hasActiveOrder && (
-              <div className='absolute z-20 animate-in zoom-in duration-500'>
-                <CircularProgress value={progress} size={50} strokeWidth={5} />
+              <div className='absolute inset-0 z-20 flex items-center justify-center animate-in zoom-in duration-500'>
+                <div className='relative flex items-center justify-center'>
+                  <CircularProgress
+                    value={progress}
+                    size={50}
+                    strokeWidth={4}
+                  />
+                  <span className='absolute text-[12px] font-bold text-brand font-cruinn'>
+                    {progress}%
+                  </span>
+                </div>
               </div>
             )}
           </div>
