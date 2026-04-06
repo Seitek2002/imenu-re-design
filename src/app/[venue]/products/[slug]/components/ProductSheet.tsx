@@ -9,10 +9,10 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import { Product } from '@/types/api';
 import { useProductStore } from '@/store/product';
-import { useBasketStore } from '@/store/basket'; // <--- 1. Импортируем стор корзины
+import { useBasketStore } from '@/store/basket';
 import { useMounted } from '@/hooks/useMounted';
 
 import plusIcon from '@/assets/Goods/plus.svg';
@@ -39,7 +39,6 @@ const fetchProductById = async (id: string): Promise<Product> => {
 };
 
 // --- ВНУТРЕННИЙ КОМПОНЕНТ ---
-// Добавили проп onClose
 const ProductContent = ({
   product,
   onClose,
@@ -51,16 +50,18 @@ const ProductContent = ({
   const [selectedModId, setSelectedModId] = useState<number | null>(
     product.modificators && product.modificators.length > 0
       ? product.modificators[0].id
-      : null
+      : null,
   );
   const [imgLoaded, setImgLoaded] = useState(false);
 
-  // Подключаем действие добавления
   const addToBasket = useBasketStore((state) => state.addToBasket);
 
-  // Пересчет цены
   const currentPrice = useMemo(() => {
-    if (selectedModId && product.modificators.length > 0) {
+    if (
+      selectedModId &&
+      product.modificators &&
+      product.modificators.length > 0
+    ) {
       const mod = product.modificators.find((m) => m.id === selectedModId);
       return mod ? mod.price : product.productPrice;
     }
@@ -69,14 +70,9 @@ const ProductContent = ({
 
   const totalPrice = currentPrice * qnty;
 
-  // Обработчик добавления
   const handleAdd = () => {
     if (navigator.vibrate) navigator.vibrate(50);
-
-    // 1. Добавляем в корзину (Zustand сам сохранит в localStorage)
     addToBasket(product, qnty, selectedModId ?? undefined);
-
-    // 2. Закрываем шторку
     onClose();
   };
 
@@ -84,7 +80,6 @@ const ProductContent = ({
     <>
       <div className='flex-1 overflow-y-auto overscroll-contain pb-20 md:pb-0'>
         <div className='md:flex items-start md:p-6'>
-          {/* Картинка */}
           <div className='relative w-full aspect-4/3 md:w-1/2 md:rounded-2xl overflow-hidden shrink-0'>
             <Image
               src={product.productPhoto || '/placeholder-dish.svg'}
@@ -98,7 +93,6 @@ const ProductContent = ({
             />
           </div>
 
-          {/* Инфо */}
           <div className='p-5 md:py-0 md:px-6 flex flex-col gap-5 w-full'>
             <div>
               <h2 className='text-2xl font-bold font-cruinn leading-tight mb-2'>
@@ -114,7 +108,6 @@ const ProductContent = ({
               )}
             </div>
 
-            {/* Модификаторы */}
             {product.modificators && product.modificators.length > 0 && (
               <div>
                 <div className='flex justify-between items-center mb-2'>
@@ -129,13 +122,13 @@ const ProductContent = ({
                       key={mod.id}
                       onClick={() => setSelectedModId(mod.id)}
                       className={`
-                            p-2.5 rounded-xl border text-sm transition-all
-                            ${
-                              selectedModId === mod.id
-                                ? 'border-[#21201F] bg-[#21201F] text-white shadow-md'
-                                : 'border-gray-100 bg-gray-50 text-gray-700'
-                            }
-                          `}
+                        p-2.5 rounded-xl border text-sm transition-all
+                        ${
+                          selectedModId === mod.id
+                            ? 'border-[#21201F] bg-[#21201F] text-white shadow-md'
+                            : 'border-gray-100 bg-gray-50 text-gray-700'
+                        }
+                      `}
                     >
                       <div className='font-medium'>{mod.name}</div>
                       <div
@@ -156,7 +149,6 @@ const ProductContent = ({
         </div>
       </div>
 
-      {/* Футер */}
       <div className='p-4 border-t border-gray-100 bg-white md:bg-transparent md:border-none'>
         <div className='flex gap-3'>
           <div className='flex items-center gap-4 bg-[#F5F5F5] rounded-2xl px-4 py-3 h-14'>
@@ -177,7 +169,7 @@ const ProductContent = ({
 
           <button
             className='flex-1 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2'
-            onClick={handleAdd} // <--- Вешаем обработчик
+            onClick={handleAdd}
           >
             <span>Добавить</span>
             <span className='bg-white/20 px-2 py-0.5 rounded text-sm'>
@@ -194,26 +186,48 @@ const ProductContent = ({
 export default function ProductSheet() {
   const mounted = useMounted();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
+  // 🔥 ССЫЛКА-БЛОКИРАТОР. Поможет избежать гонки состояний при закрытии
+  const closingRef = useRef(false);
+
   const productId = searchParams.get('product');
-  const isOpen = !!productId;
 
   const productFromStore = useProductStore((state) => state.selectedProduct);
   const setProductInStore = useProductStore((state) => state.setProduct);
 
   const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);
 
+  const isOpen = !!productFromStore || !!productId;
+
   const activeProduct =
-    productFromStore && productFromStore.id.toString() === productId
-      ? productFromStore
-      : fetchedProduct && fetchedProduct.id.toString() === productId
+    productFromStore ||
+    (fetchedProduct && fetchedProduct.id.toString() === productId
       ? fetchedProduct
-      : null;
+      : null);
+
+  const handleClose = useCallback(() => {
+    // 1. Говорим useEffect'у: "Мы закрываемся, ничего не скачивай!"
+    closingRef.current = true;
+
+    // 2. Очищаем стор и локальный стейт скачанного товара
+    setProductInStore(null);
+    setFetchedProduct(null);
+
+    // 3. Тихо убираем ID из URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('product');
+    window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
+
+    // 4. Снимаем блокировку через 100мс (этого достаточно, чтобы Next.js обновил URL)
+    setTimeout(() => {
+      closingRef.current = false;
+    }, 100);
+  }, [searchParams, pathname, setProductInStore]);
 
   useEffect(() => {
     if (!productId) return;
+    if (closingRef.current) return; // 🔥 БЛОКИРУЕМ ЛИШНИЙ ЗАПРОС ПРИ ЗАКРЫТИИ
     if (activeProduct) return;
 
     fetchProductById(productId)
@@ -223,12 +237,6 @@ export default function ProductSheet() {
       })
       .catch((err) => console.error(err));
   }, [productId, activeProduct, setProductInStore]);
-
-  const handleClose = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('product');
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [searchParams, router, pathname]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -265,7 +273,9 @@ export default function ProductSheet() {
   if (!mounted) return null;
 
   return createPortal(
-    <div className='fixed inset-0 z-100 flex justify-center items-end md:items-center pointer-events-none'>
+    <div
+      className={`fixed inset-0 z-100 flex justify-center items-end md:items-center pointer-events-none ${isOpen ? 'active-modal' : ''}`}
+    >
       <div
         className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ease-out ${
           isOpen
@@ -314,11 +324,11 @@ export default function ProductSheet() {
           <ProductContent
             key={activeProduct.id}
             product={activeProduct}
-            onClose={handleClose} // <--- Передаем функцию закрытия
+            onClose={handleClose}
           />
         )}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

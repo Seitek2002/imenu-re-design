@@ -17,7 +17,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
   const [isLoading, setIsLoading] = useState(false); // Спиннер загрузки
 
   const isMainPage = new RegExp(`^/${venueSlug}(?:/d)?(?:/\\d+)*$`).test(
-    pathname
+    pathname,
   );
 
   // Если стола нет — скрываем кнопку полностью (как и договаривались)
@@ -43,7 +43,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
           headers: {
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       if (res.ok) {
@@ -66,7 +66,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
 
   return (
     <>
-      <div className='fixed bottom-20 right-4 z-40 pointer-events-none'>
+      <div className='fixed bottom-20 z-40 pointer-events-none'>
         <button
           onClick={handleInitialClick}
           className={`
@@ -74,9 +74,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
             active:scale-95 transition-all duration-500 ease-in-out 
             flex items-center justify-center overflow-hidden will-change-transform
             h-14 rounded-full
-            ${
-              isMainPage ? 'w-[calc(100vw-32px)] px-6 gap-3' : 'w-14 px-0 gap-0'
-            }
+            ${isMainPage ? 'w-175 px-6 gap-3' : 'w-14 ml-auto px-0 gap-0 mb-16'}
           `}
         >
           <BellRing size={20} className='shrink-0' />
