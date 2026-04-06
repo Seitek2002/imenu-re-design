@@ -116,7 +116,7 @@ export default function BasketPage() {
       {/* Sticky Footer & Drawer */}
       {items.length > 0 && (
         <>
-          <div className='fixed bottom-16 left-0 right-0 p-4 bg-white border-t border-gray-100 z-40 rounded-t-xl'>
+          <div className='fixed max-w-175 mx-auto bottom-16 left-0 right-0 p-4 bg-white border-t border-gray-100 z-40 rounded-t-xl'>
             <div className='max-w-md mx-auto flex items-center gap-4'>
               <div className='flex flex-col'>
                 <span className='text-xs text-brand'>Итого к оплате</span>

@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'joinposter.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'joinposter.comnone',
+      }
     ],
 
     // 2. Добавляем промежуточные размеры (640 и 1080)

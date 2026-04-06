@@ -18,7 +18,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
   const totalCount = useBasketStore((state) => state.getItemCount());
 
   const isMainPage = new RegExp(`^/${venueSlug}(?:/d)?(?:/\\d+)*$`).test(
-    pathname
+    pathname,
   );
   const isCartPage = pathname === `/${venueSlug}/cart`;
 
@@ -29,14 +29,14 @@ export default function FloatingCartButton({ venueSlug }: Props) {
   return (
     <div
       className={`
-        fixed bottom-20 left-4 z-30 
+        fixed max-w-175 mx-auto bottom-20 left-0 z-30 
         transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)
         ${
           isVisible
             ? 'translate-y-0 opacity-100 pointer-events-auto'
             : 'translate-y-20 opacity-0 pointer-events-none'
         }
-        right-21
+        right-0
       `}
     >
       <Link

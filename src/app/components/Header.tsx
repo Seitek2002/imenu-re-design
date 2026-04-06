@@ -60,7 +60,7 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
         </button>
 
         {/* ЦЕНТРАЛЬНАЯ ЧАСТЬ: ИЛИ ЗАГОЛОВОК, ИЛИ ПОИСК */}
-        <div className='flex-1 flex justify-center mx-2'>
+        <div className='flex-1 flex justify-center mx-2 overflow-hidden'>
           {isSearchOpen ? (
             /* РЕЖИМ ПОИСКА */
             <div className='w-full flex items-center bg-[#F5F5F5] rounded-xl px-3 h-10 animate-fadeIn'>
