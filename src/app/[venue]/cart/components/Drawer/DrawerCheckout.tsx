@@ -55,11 +55,19 @@ const DrawerCheckout: FC<IProps> = ({
   // --- FORM STATE ---
   const [phone, setPhone] = useState(storedPhone || '');
   const [address, setAddress] = useState(storedAddress || '');
+
+  // Достаем нужные ID для бекенда из стора
   const tableNumber = useVenueStore((state) => state.tableNumber);
+  const tableId = useVenueStore((state) => state.tableId);
+  const spotId = useVenueStore((state) => state.spotId);
+  const venueData = useVenueStore((state) => state.data);
 
   const [comment, setComment] = useState('');
   const [showComment, setShowComment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
+
+  // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
+  const [pickupTime, setPickupTime] = useState('Быстрее всего');
 
   // --- UI STATE ---
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -94,7 +102,6 @@ const DrawerCheckout: FC<IProps> = ({
     [setStoredPhone],
   );
 
-  // 🔥 3. ИСПРАВЛЕНИЕ: Самое важное для DeliveryInputs (разрываем цикл)
   const handleAddressChange = useCallback(
     (val: string) => {
       setAddress(val);
@@ -132,6 +139,13 @@ const DrawerCheckout: FC<IProps> = ({
     setApiError(null);
 
     try {
+      // 🔥 Формируем итоговый комментарий (склеиваем время и сам комментарий)
+      let finalComment = comment;
+      if (orderType !== 'dinein') {
+        const timeText = `[Время выдачи: ${pickupTime}]`;
+        finalComment = comment ? `${timeText}\n${comment}` : timeText;
+      }
+
       const orderData = {
         phone,
         serviceMode: (orderType === 'dinein'
@@ -140,9 +154,10 @@ const DrawerCheckout: FC<IProps> = ({
             ? 3
             : 2) as 1 | 2 | 3,
         address: orderType === 'delivery' ? address : null,
-        comment,
-        spot: 19,
-        table: undefined,
+        comment: finalComment,
+        // 🔥 Берем реальные spotId и tableId из стора
+        spot: spotId || venueData?.spots?.[0]?.id,
+        table: tableId || undefined,
         orderProducts: items.map((i) => ({
           product: i.id,
           count: i.quantity,
@@ -210,12 +225,16 @@ const DrawerCheckout: FC<IProps> = ({
                     </span>
                   </div>
                 ) : (
-                  <CheckoutForm orderType={orderType} />
+                  // 🔥 Передаем стейт времени в CheckoutForm
+                  <CheckoutForm
+                    orderType={orderType}
+                    pickupTime={pickupTime}
+                    setPickupTime={setPickupTime}
+                  />
                 )}
 
                 {orderType === 'delivery' && (
                   <div className='mt-4 border-t border-gray-100 pt-4'>
-                    {/* 🔥 Передаем стабилизированную функцию */}
                     <DeliveryInputs onAddressChange={handleAddressChange} />
                   </div>
                 )}

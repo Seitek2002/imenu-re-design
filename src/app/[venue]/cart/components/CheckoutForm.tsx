@@ -14,48 +14,47 @@ import clockIcon from '@/assets/Cart/Drawer/clock.svg';
 import geoIcon from '@/assets/Cart/Drawer/geo.svg';
 import selectArrow from '@/assets/Cart/Drawer/select-arrow.svg';
 
-// 🔥 Подключаем стор заведения
 import { useVenueStore } from '@/store/venue';
 
 interface Props {
   orderType: 'takeout' | 'delivery' | 'dinein';
+  // 🔥 Добавляем пропсы для связи с родительским DrawerCheckout
+  pickupTime: string;
+  setPickupTime: (time: string) => void;
 }
 
-export default function CheckoutForm({ orderType }: Props) {
+export default function CheckoutForm({
+  orderType,
+  pickupTime,
+  setPickupTime,
+}: Props) {
   const [openTime, setOpenTime] = useState(false);
   const [openSpots, setOpenSpots] = useState(false);
 
-  // --- ДАННЫЕ ИЗ СТОРА ---
   const venueData = useVenueStore((state) => state.data);
   const globalSpotId = useVenueStore((state) => state.spotId);
   const setContext = useVenueStore((state) => state.setContext);
 
-  // Преобразуем реальные данные заведения в формат, который ждет SpotList
   const realSpots = (venueData?.spots || []).map((spot) => ({
     id: spot.id,
-    title: spot.name, // В API это name, а в UI ты использовал title
+    title: spot.name,
     address: spot.address || '',
   }));
 
-  // Local state для времени
-  const [pickupTime, setPickupTime] = useState<string>('Быстрее всего');
+  // 🔥 Удалили локальный useState для pickupTime, он теперь приходит сверху
 
-  // Определяем выбранный филиал: либо тот, что в сторе, либо первый из списка по умолчанию
   const currentSpotId =
     globalSpotId || (realSpots.length > 0 ? realSpots[0].id : undefined);
   const selectedSpot = realSpots.find((s) => s.id === currentSpotId);
+  const canPickSpot = orderType !== 'delivery';
 
-  const canPickSpot = orderType !== 'delivery'; // Для доставки филиал выбирается автоматически
-
-  // Обработчик выбора филиала
   const handleSpotSelect = (id: number) => {
-    setContext({ spotId: id }); // Сохраняем глобально для DrawerCheckout
+    setContext({ spotId: id });
     setOpenSpots(false);
   };
 
   return (
     <div className='flex flex-col gap-2'>
-      {/* 1. Время выдачи */}
       <SelectField
         leftIcon={<Image src={clockIcon} alt='clock' />}
         rightIcon={<Image src={selectArrow} alt='arrow' />}
@@ -65,7 +64,6 @@ export default function CheckoutForm({ orderType }: Props) {
         onClick={() => setOpenTime(true)}
       />
 
-      {/* 2. Филиал (Скрываем для доставки) */}
       {canPickSpot && (
         <SelectField
           leftIcon={<Image src={geoIcon} alt='geo' />}
@@ -79,8 +77,6 @@ export default function CheckoutForm({ orderType }: Props) {
       )}
 
       {/* --- МОДАЛКИ --- */}
-
-      {/* Выбор времени */}
       <ModalPortal
         open={openTime}
         onClose={() => setOpenTime(false)}
@@ -95,14 +91,13 @@ export default function CheckoutForm({ orderType }: Props) {
           </button>
           <TimePickerContent
             onSave={(val) => {
-              setPickupTime(val);
+              setPickupTime(val); // Обновляем состояние в DrawerCheckout
               setOpenTime(false);
             }}
           />
         </div>
       </ModalPortal>
 
-      {/* Выбор филиала */}
       <ModalPortal
         open={openSpots}
         onClose={() => setOpenSpots(false)}
@@ -117,7 +112,6 @@ export default function CheckoutForm({ orderType }: Props) {
           </button>
           <h3 className='text-lg font-bold mb-4'>Выберите филиал</h3>
 
-          {/* Передаем реальные данные */}
           {realSpots.length > 0 ? (
             <SpotList
               spots={realSpots}
