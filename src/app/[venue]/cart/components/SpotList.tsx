@@ -21,6 +21,8 @@ export default function SpotList({
   selectedId,
   onSelect,
 }: SpotListProps) {
+  console.log(spots);
+
   return (
     <div className='flex flex-col gap-2'>
       {spots.map((s) => {
