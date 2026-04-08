@@ -66,7 +66,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
 
   return (
     <>
-      <div className='fixed left-0 right-0 bottom-20 z-40 pointer-events-none max-w-175 mx-auto w-full'>
+      <div className='fixed px-4 left-0 right-0 bottom-20 z-40 pointer-events-none max-w-175 mx-auto w-full'>
         <button
           onClick={handleInitialClick}
           className={`

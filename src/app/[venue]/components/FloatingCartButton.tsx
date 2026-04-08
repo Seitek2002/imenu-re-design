@@ -29,7 +29,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
   return (
     <div
       className={`
-        fixed max-w-175 mx-auto bottom-20 left-0 z-30 
+        fixed max-w-175 mx-auto bottom-20 left-0 z-30 px-4
         transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)
         ${
           isVisible
