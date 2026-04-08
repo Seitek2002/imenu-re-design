@@ -121,7 +121,7 @@ export default function BasketPage() {
               <div className='flex flex-col'>
                 <span className='text-xs text-brand'>Итого к оплате</span>
                 {/* 🔥 Показываем цену с учетом бонусов */}
-                <span className='text-xl font-bold font-cruinn'>
+                <span className='text-xl font-bold'>
                   {Math.round(finalDisplayTotal)} c.
                 </span>
                 {/* Если есть скидка, можно показать старую цену зачеркнутой */}

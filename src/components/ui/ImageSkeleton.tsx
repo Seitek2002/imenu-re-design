@@ -39,9 +39,7 @@ const ImageSkeleton: FC<Props> = ({ className }) => {
             fill='#9CA3AF'
           />
         </svg>
-        <span className='text-[10px] font-medium text-gray-400 font-cruinn'>
-          iMenu.kg
-        </span>
+        <span className='text-[10px] font-medium text-gray-400'>iMenu.kg</span>
       </div>
     </div>
   );

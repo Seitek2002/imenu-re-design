@@ -80,7 +80,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
           <BellRing size={20} className='shrink-0' />
           <span
             className={`
-              font-black font-cruinn text-[13px] uppercase tracking-wide whitespace-nowrap 
+              font-black text-[13px] uppercase tracking-wide whitespace-nowrap 
               transition-all duration-500 ease-in-out
               ${
                 isMainPage

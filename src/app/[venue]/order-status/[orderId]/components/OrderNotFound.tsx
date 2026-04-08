@@ -15,7 +15,7 @@ export default function OrderNotFound({ venueSlug }: Props) {
           <SearchX className='w-10 h-10 text-gray-400' />
         </div>
 
-        <h1 className='text-2xl font-cruinn font-bold text-[#111111] mb-2'>
+        <h1 className='text-2xl font-bold text-[#111111] mb-2'>
           Заказ не найден
         </h1>
 

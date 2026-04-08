@@ -95,7 +95,7 @@ const ProductContent = ({
 
           <div className='p-5 md:py-0 md:px-6 flex flex-col gap-5 w-full'>
             <div>
-              <h2 className='text-2xl font-bold font-cruinn leading-tight mb-2'>
+              <h2 className='text-2xl font-bold leading-tight mb-2'>
                 {product.productName}
               </h2>
               <p className='text-gray-500 text-sm leading-relaxed'>

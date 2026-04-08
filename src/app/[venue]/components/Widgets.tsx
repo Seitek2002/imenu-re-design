@@ -75,7 +75,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
                     size={50}
                     strokeWidth={4}
                   />
-                  <span className='absolute text-[12px] font-bold text-brand font-cruinn'>
+                  <span className='absolute text-[12px] font-bold text-brand'>
                     {progress}%
                   </span>
                 </div>
@@ -90,7 +90,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
           </div>
           <div className='flex items-center justify-center gap-2 mt-3'>
             <Image src={widget2} alt='Points' width={24} height={24} />
-            <span className='text-xl font-black font-cruinn leading-none text-[#111111]'>
+            <span className='text-xl font-black leading-none text-[#111111]'>
               {(bonusData?.bonus ?? 0).toLocaleString('ru-RU')}
             </span>
           </div>

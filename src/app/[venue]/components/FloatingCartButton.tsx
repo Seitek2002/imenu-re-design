@@ -56,7 +56,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
           <span className='font-medium text-sm'>Корзина</span>
         </div>
 
-        <span className='font-bold text-sm font-cruinn'>{totalPrice} c.</span>
+        <span className='font-bold text-sm'>{totalPrice} c.</span>
       </Link>
     </div>
   );

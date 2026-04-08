@@ -53,7 +53,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <h1 className='text-2xl font-cruinn font-bold text-[#21201F] text-center mb-3'>
+        <h1 className='text-2xl font-bold text-[#21201F] text-center mb-3'>
           Личный кабинет
         </h1>
 

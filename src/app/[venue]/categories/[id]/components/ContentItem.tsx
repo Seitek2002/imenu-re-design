@@ -36,7 +36,7 @@ const ContentItem: FC<Props> = ({
     >
       <span
         className={`
-        text-[#21201F] font-bold leading-tight z-10 font-cruinn
+        text-[#21201F] font-bold leading-tight z-10
         ${isLarge ? 'text-[120%] w-2/3' : 'text-[120%]'}
       `}
       >

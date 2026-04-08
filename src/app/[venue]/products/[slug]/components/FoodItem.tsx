@@ -40,7 +40,7 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
       </div>
 
       <div className='mt-2 flex flex-col flex-1 justify-between pointer-events-none'>
-        <h2 className='text-[#21201F] text-lg font-semibold font-cruinn'>
+        <h2 className='text-[#21201F] text-lg font-semibold'>
           {isFrom && (
             <span className='text-sm font-normal text-gray-500 mr-1'>от</span>
           )}
