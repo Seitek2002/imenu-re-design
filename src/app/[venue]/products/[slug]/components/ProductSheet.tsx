@@ -310,15 +310,27 @@ export default function ProductSheet() {
 
         <button
           type='button'
-          className='hidden md:flex absolute top-4 right-4 z-10 h-8 w-8 rounded-full items-center justify-center text-xl bg-white shadow-sm border border-gray-200 hover:bg-gray-50'
+          className='flex absolute leading-0 top-4 right-4 z-10 h-8 w-8 rounded-full items-center justify-center text-xl bg-white shadow-sm border border-gray-200 hover:bg-gray-50'
           onClick={handleClose}
         >
-          ×
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            className='h-4 w-4 text-gray-600'
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M6 18L18 6M6 6l12 12'
+            />
+          </svg>
         </button>
 
         {!activeProduct ? (
-          <div className=''>
-          </div>
+          <div className=''></div>
         ) : (
           <ProductContent
             key={activeProduct.id}

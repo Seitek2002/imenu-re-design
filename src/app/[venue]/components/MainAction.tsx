@@ -66,7 +66,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
 
   return (
     <>
-      <div className='fixed bottom-20 z-40 pointer-events-none'>
+      <div className='fixed left-0 right-0 bottom-20 z-40 pointer-events-none max-w-175 mx-auto w-full'>
         <button
           onClick={handleInitialClick}
           className={`
@@ -74,7 +74,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
             active:scale-95 transition-all duration-500 ease-in-out 
             flex items-center justify-center overflow-hidden will-change-transform
             h-14 rounded-full
-            ${isMainPage ? 'w-175 px-6 gap-3' : 'w-14 ml-auto px-0 gap-0 mb-16'}
+            ${isMainPage ? 'md:max-w-[90%] mx-auto w-full px-6 gap-3' : 'w-14 ml-auto px-0 gap-0 mb-16'}
           `}
         >
           <BellRing size={20} className='shrink-0' />
