@@ -25,15 +25,8 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
 
   return (
     <div className='w-full flex flex-col h-full group relative'>
-      {/* 🔥 ГЛАВНЫЙ ТРЮК: 
-         Вместо onClick на div мы оборачиваем всё в Link.
-         Но кнопки счетчика должны быть ПОВЕРХ ссылки и не должны её нажимать.
-      */}
-
-      {/* 3. Обертка-ссылка для открытия товара */}
       <ProductLink product={product} className='absolute inset-0 z-0' />
 
-      {/* 4. Верхняя часть (Картинка + Счетчик) */}
       <div className='relative w-full aspect-square pointer-events-none'>
         <FoodItemImage
           src={imageUrl}
@@ -41,13 +34,11 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
           isPriority={isPriority}
         />
 
-        {/* Кнопки счетчика (Клиентский остров) */}
         <div className='absolute bottom-1.5 right-1.5 left-1.5 z-10 pointer-events-auto'>
           <FoodItemCounter product={product} />
         </div>
       </div>
 
-      {/* 5. Текстовая часть */}
       <div className='mt-2 flex flex-col flex-1 justify-between pointer-events-none'>
         <h2 className='text-[#21201F] text-lg font-semibold font-cruinn'>
           {isFrom && (
