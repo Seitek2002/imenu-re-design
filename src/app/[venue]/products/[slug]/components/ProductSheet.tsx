@@ -289,7 +289,7 @@ export default function ProductSheet() {
         className={`
           relative w-full md:w-[75%] md:max-w-2xl bg-white 
           rounded-t-4xl md:rounded-4xl 
-          h-[90vh] md:h-auto md:max-h-[85vh]
+          h-[70vh] md:h-auto md:max-h-[85vh]
           shadow-2xl overflow-hidden flex flex-col
           transition-transform duration-300 cubic-bezier(0.32, 0.72, 0, 1) pointer-events-auto
           ${
