@@ -29,6 +29,8 @@ export async function generateMetadata({
   const { venue: venueSlug } = await params;
   const data = await getVenueData(venueSlug);
 
+  console.log(data.logo);
+
   if (!data) {
     return {
       title: 'Заведение не найдено',
@@ -38,6 +40,14 @@ export async function generateMetadata({
   return {
     title: data.companyName,
     description: data.description || `Меню ресторана ${data.companyName}`,
+    icons: data.logo
+      ? {
+          icon: [{ url: data.logo, type: 'image/png' }],
+          apple: [
+            { url: data.logo, type: 'image/png' }, // Добавит красивую иконку при сохранении на экран iPhone
+          ],
+        }
+      : undefined,
     openGraph: {
       title: data.companyName,
       description: data.description || `Вкусные блюда в ${data.companyName}`,
