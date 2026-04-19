@@ -1,20 +1,33 @@
 import { Suspense } from 'react';
-import Header from '@/app/components/Header'; // Или MainHeader
+import Header from '@/app/components/Header';
 import CategoriesSkeleton from './components/CategoriesSkeleton';
 import CategoryFetcher from './components/CategoryFetcher';
+import { VenueService } from '@/services/venue.service';
 
 type PageProps = {
   params: Promise<{ venue: string; id: string }>;
-  searchParams: Promise<{ title?: string }>;
 };
 
-export default async function CategoriesPage({
-  params,
-  searchParams,
-}: PageProps) {
+async function resolveSectionName(
+  venue: string,
+  sectionId: number,
+): Promise<string | null> {
+  try {
+    const buttons = await VenueService.getMainButtons(venue);
+    for (const row of buttons) {
+      for (const b of row) {
+        if (b.section?.id === sectionId) return b.name;
+      }
+    }
+  } catch {
+    /* fallback на дефолт */
+  }
+  return null;
+}
+
+export default async function CategoriesPage({ params }: PageProps) {
   const { venue, id } = await params;
-  const sp = (await searchParams) ?? {};
-  const title = (sp.title ?? 'Меню') as string;
+  const title = (await resolveSectionName(venue, Number(id))) ?? 'Меню';
 
   return (
     <main className='px-2.5 min-h-svh pb-40 bg-[#F8F6F7]'>

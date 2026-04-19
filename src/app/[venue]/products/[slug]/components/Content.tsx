@@ -9,226 +9,201 @@ import 'swiper/css';
 import Goods from './Goods';
 import Category from './Category';
 import { Product, Category as CategoryType } from '@/types/api';
+import { useUIStore } from '@/store/ui';
 
 interface Props {
   products: Product[];
-  categories: CategoryType[];
+  categories: CategoryType[]; // top-level категории (родители)
   venueSlug: string;
   initialSlug: string;
 }
 
+type ParentSlide = {
+  parent: CategoryType;
+  sections: { category: CategoryType; products: Product[] }[];
+};
+
 const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const swiperRef = useRef<SwiperType | null>(null);
-  const [activeSlug, setActiveSlug] = useState(initialSlug);
-  // Активный индекс нужен для ручной виртуализации слайдов
-  const [activeIndex, setActiveIndex] = useState(0);
 
-  const { slidesData, slideCategories, parentCategories, subCategoriesMap, initialIndex } =
-    useMemo(() => {
-      // Строим плоский categoryMap: id → Category (включая подкатегории из children[])
-      const categoryMap = new Map<number, CategoryType>();
-      const allCats: CategoryType[] = [];
-      categories.forEach((cat) => {
-        categoryMap.set(cat.id, cat);
-        allCats.push(cat);
-        cat.children?.forEach((child) => {
-          categoryMap.set(child.id, child);
-          allCats.push(child);
-        });
+  const { parentSlides, initialParentIdx, initialChildSlug } = useMemo(() => {
+    const slides: ParentSlide[] = [];
+
+    for (const parent of categories) {
+      const children = parent.children ?? [];
+      const childIdSet = new Set(children.map((c) => c.id));
+
+      const sections: ParentSlide['sections'] = [];
+
+      // Продукты, привязанные к родителю напрямую (минуя детей)
+      const parentOnlyProducts = products.filter((p) => {
+        const inParent = p.categories?.some((c) => c.id === parent.id);
+        if (!inParent) return false;
+        // если продукт принадлежит какому-то ребёнку этого родителя, не дублируем
+        return !p.categories?.some((c) => childIdSet.has(c.id));
       });
 
-      // Группируем товары по категории, а также по родительской категории
-      const grouped: Record<string, Product[]> = {};
-      allCats.forEach((c) => { grouped[c.slug] = []; });
-
-      products.forEach((p) => {
-        if (!p.categories) return;
-        // Set нужен чтобы не дублировать товар в одной категории
-        const addedTo = new Set<string>();
-        p.categories.forEach((c) => {
-          const fullCat = categoryMap.get(c.id);
-          if (!fullCat) return;
-          if (!addedTo.has(fullCat.slug)) {
-            grouped[fullCat.slug].push(p);
-            addedTo.add(fullCat.slug);
-          }
-          // Добавляем товар и в родительскую категорию
-          if (fullCat.parentCategory) {
-            const parentCat = categoryMap.get(fullCat.parentCategory);
-            if (parentCat && !addedTo.has(parentCat.slug)) {
-              grouped[parentCat.slug].push(p);
-              addedTo.add(parentCat.slug);
-            }
-          }
-        });
-      });
-
-      // Слайды = родитель (для "Все") + подкатегории, или топ-категории без детей
-      const slideList: CategoryType[] = [];
-      categories.forEach((cat) => {
-        const childrenWithProducts = (cat.children || []).filter(
-          (c) => grouped[c.slug]?.length > 0,
+      if (children.length === 0) {
+        // Родитель без детей — одна плоская лента под именем родителя
+        const all = products.filter((p) =>
+          p.categories?.some((c) => c.id === parent.id),
         );
-        if (childrenWithProducts.length > 0) {
-          // Родитель первым (таб "Все"), затем подкатегории
-          slideList.push(cat);
-          slideList.push(...childrenWithProducts);
-        } else if (grouped[cat.slug]?.length > 0) {
-          // Нет подкатегорий — добавляем саму категорию
-          slideList.push(cat);
+        if (all.length > 0) {
+          sections.push({ category: parent, products: all });
         }
-      });
-
-      // Верхний таб-бар: только топ-уровень с хотя бы одним слайдом
-      const parentCats = categories.filter((cat) => {
-        const hasChildSlides = (cat.children || []).some(
-          (c) => grouped[c.slug]?.length > 0,
-        );
-        return hasChildSlides || grouped[cat.slug]?.length > 0;
-      });
-
-      // Map parentId → [Все, ...подкатегории] для нижнего таб-бара
-      const subMap = new Map<number, CategoryType[]>();
-      categories.forEach((cat) => {
-        const childrenWithProducts = (cat.children || []).filter(
-          (c) => grouped[c.slug]?.length > 0,
-        );
-        if (childrenWithProducts.length > 0) {
-          // Первым идёт виртуальный таб "Все" — это сам родитель с переименованием
-          const allTab: CategoryType = { ...cat, categoryName: 'Все' };
-          subMap.set(cat.id, [allTab, ...childrenWithProducts]);
+      } else {
+        // Родитель + дети — секции по каждой подкатегории
+        if (parentOnlyProducts.length > 0) {
+          sections.push({ category: parent, products: parentOnlyProducts });
         }
-      });
+        for (const child of children) {
+          const childProducts = products.filter((p) =>
+            p.categories?.some((c) => c.id === child.id),
+          );
+          if (childProducts.length > 0) {
+            sections.push({ category: child, products: childProducts });
+          }
+        }
+      }
 
-      const idx = Math.max(0, slideList.findIndex((c) => c.slug === initialSlug));
-
-      return {
-        slidesData: grouped,
-        slideCategories: slideList,
-        parentCategories: parentCats,
-        subCategoriesMap: subMap,
-        initialIndex: idx,
-      };
-    }, [products, categories, initialSlug]);
-
-  // Устанавливаем начальный индекс при загрузке
-  useEffect(() => {
-    setActiveIndex(initialIndex);
-  }, [initialIndex]);
-
-  // Определяем активного родителя по текущему slug слайда
-  const activeParent = useMemo(() => {
-    const activeCat = slideCategories.find((c) => c.slug === activeSlug);
-    if (!activeCat) return parentCategories[0];
-    if (activeCat.parentCategory) {
-      return (
-        parentCategories.find((p) => p.id === activeCat.parentCategory) ??
-        parentCategories[0]
-      );
+      if (sections.length > 0) {
+        slides.push({ parent, sections });
+      }
     }
-    return parentCategories.find((p) => p.id === activeCat.id) ?? parentCategories[0];
-  }, [activeSlug, slideCategories, parentCategories]);
 
-  // Подкатегории активного родителя (для нижнего ряда)
-  const subCategories = activeParent ? (subCategoriesMap.get(activeParent.id) ?? []) : [];
+    // Ищем, к какому родителю относится initialSlug
+    let parentIdx = 0;
+    let childSlug: string | null = null;
+
+    for (let i = 0; i < slides.length; i++) {
+      const slide = slides[i];
+      if (slide.parent.slug === initialSlug) {
+        parentIdx = i;
+        break;
+      }
+      const hit = slide.sections.find(
+        (s) => s.category.slug === initialSlug && s.category.id !== slide.parent.id,
+      );
+      if (hit) {
+        parentIdx = i;
+        childSlug = initialSlug;
+        break;
+      }
+    }
+
+    return {
+      parentSlides: slides,
+      initialParentIdx: parentIdx,
+      initialChildSlug: childSlug,
+    };
+  }, [products, categories, initialSlug]);
+
+  const [activeIndex, setActiveIndex] = useState(initialParentIdx);
+  const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
+
+  useEffect(() => {
+    setActiveIndex(initialParentIdx);
+  }, [initialParentIdx]);
+
+  // Синхронизируем заголовок Header с активным родителем
+  useEffect(() => {
+    const parent = parentSlides[activeIndex]?.parent;
+    if (parent) setHeaderTitleOverride(parent.categoryName);
+    return () => setHeaderTitleOverride(null);
+  }, [activeIndex, parentSlides, setHeaderTitleOverride]);
+
+  // При открытии с child-слагом скроллим к нужной подкатегории
+  useEffect(() => {
+    if (!initialChildSlug) return;
+    const el = document.getElementById(`subcat-${initialChildSlug}`);
+    if (el) {
+      // requestAnimationFrame — чтобы Swiper успел отрендерить текущий слайд
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+      });
+    }
+  }, [initialChildSlug]);
 
   const handleSlideChange = (swiper: SwiperType) => {
     const newIndex = swiper.activeIndex;
     setActiveIndex(newIndex);
-
-    const category = slideCategories[newIndex];
-    if (category) {
-      setActiveSlug(category.slug);
-      window.history.replaceState(null, '', `/${venueSlug}/products/${category.slug}`);
+    const parent = parentSlides[newIndex]?.parent;
+    if (parent) {
+      window.history.replaceState(
+        null,
+        '',
+        `/${venueSlug}/products/${parent.slug}`,
+      );
     }
   };
 
-  // Клик по верхнему табу — прыгаем на первую подкатегорию этого родителя
-  const handleParentClick = (parentIndex: number) => {
-    const parent = parentCategories[parentIndex];
-    if (!parent) return;
-    const subs = subCategoriesMap.get(parent.id);
-    const targetSlug = subs?.[0]?.slug ?? parent.slug;
-    const slideIdx = slideCategories.findIndex((c) => c.slug === targetSlug);
-    if (slideIdx >= 0) {
-      // Сразу обновляем индекс, чтобы контент начал рендериться ДО прыжка
-      setActiveIndex(slideIdx);
-      swiperRef.current?.slideTo(slideIdx);
-    }
+  const handleParentClick = (idx: number) => {
+    setActiveIndex(idx);
+    swiperRef.current?.slideTo(idx);
   };
 
-  // Клик по нижнему табу — прыгаем на конкретную подкатегорию
-  const handleSubClick = (subSlug: string) => {
-    const slideIdx = slideCategories.findIndex((c) => c.slug === subSlug);
-    if (slideIdx >= 0) {
-      setActiveIndex(slideIdx);
-      swiperRef.current?.slideTo(slideIdx);
-    }
-  };
+  const parentList = parentSlides.map((s) => s.parent);
+  const activeParentSlug = parentSlides[activeIndex]?.parent.slug ?? '';
 
   return (
     <div className='bg-white rounded-t-4xl mt-1.5 min-h-screen pb-40 border-t border-gray-100 flex flex-col'>
       <div className='sticky top-18 z-30 bg-white shadow-sm'>
-        {/* Верхний ряд: родительские категории */}
         <div className='pt-2'>
           <Category
-            categories={parentCategories}
-            activeSlug={activeParent?.slug ?? ''}
+            categories={parentList}
+            activeSlug={activeParentSlug}
             onSelect={handleParentClick}
           />
         </div>
-
-        {/* Нижний ряд: подкатегории — показываем только если они есть */}
-        {subCategories.length > 0 && (
-          <div className='flex gap-4 px-5 pt-1 pb-2 overflow-x-auto no-scrollbar border-t border-gray-100'>
-            {subCategories.map((sub) => {
-              const isActive = sub.slug === activeSlug;
-              return (
-                <button
-                  key={sub.id}
-                  onClick={() => handleSubClick(sub.slug)}
-                  className={`whitespace-nowrap text-sm pb-1 transition-all duration-200 border-b-2 ${
-                    isActive
-                      ? 'text-brand font-bold border-brand'
-                      : 'text-[#A4A4A4] font-medium border-transparent'
-                  }`}
-                >
-                  {sub.categoryName}
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       <div className='flex-1'>
         <Swiper
-          // Виртуальный модуль не используем — ручная виртуализация ниже
           modules={[]}
           className='w-full h-full'
           spaceBetween={16}
           slidesPerView={1}
-          initialSlide={initialIndex}
-          // CSS mode даёт максимальную скорость свайпа
+          initialSlide={initialParentIdx}
           cssMode={true}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
-            if (initialIndex > 0) swiper.slideTo(initialIndex, 0);
+            if (initialParentIdx > 0) swiper.slideTo(initialParentIdx, 0);
           }}
           onSlideChange={handleSlideChange}
         >
-          {slideCategories.map((category, index) => {
-            // Ручная виртуализация: рендерим только текущий слайд и соседей (+/- 1)
-            // Это держит в DOM только ~3 тяжёлых списка товаров
+          {parentSlides.map((slide, index) => {
             const shouldRender = Math.abs(index - activeIndex) <= 1;
 
             return (
-              <SwiperSlide key={category.id}>
+              <SwiperSlide key={slide.parent.id}>
                 <div className='pb-10 min-h-[80vh]'>
                   {shouldRender ? (
-                    <Goods products={slidesData[category.slug]} />
+                    <div className='flex flex-col gap-8 pt-4'>
+                      {slide.sections.map((section) => {
+                        // Заголовок не нужен, если секция одна и она же — сам родитель
+                        // (родитель без подкатегорий). Имя уже в топ-табе.
+                        const showHeader =
+                          slide.sections.length > 1 ||
+                          section.category.id !== slide.parent.id;
+
+                        return (
+                          <section
+                            key={section.category.id}
+                            id={`subcat-${section.category.slug}`}
+                            // scroll-mt компенсирует высоту липких родит. табов
+                            className='scroll-mt-28'
+                          >
+                            {showHeader && (
+                              <h2 className='text-xl font-bold text-[#21201F] mb-3 px-2.5'>
+                                {section.category.categoryName}
+                              </h2>
+                            )}
+                            <Goods products={section.products} />
+                          </section>
+                        );
+                      })}
+                    </div>
                   ) : (
-                    // Лёгкая заглушка сохраняет высоту слайда для корректного скролла
                     <div className='h-full w-full flex items-center justify-center'>
                       <div className='loading-spinner text-gray-300'>...</div>
                     </div>
