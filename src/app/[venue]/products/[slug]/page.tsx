@@ -1,14 +1,10 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
 
 import Header from '@/app/components/Header'; // Твой обновленный Header с лупой
 import ContentSkeleton from './components/ContentSkeleton';
 import ProductContentFetcher from './components/ProductContentFetcher';
 import ProductsContentWrapper from './ProductsContentWrapper';
-
-const ProductSheet = dynamic(() => import('./components/ProductSheet'));
-const SheetFallback = () => <div />;
 
 interface Props {
   params: Promise<{ venue: string; slug: string }>;
@@ -46,10 +42,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       */}
       <Header title={displayTitle} showSearch={true} />
 
-      {/* 2. Модалка товара тоже живет своей жизнью */}
-      <Suspense fallback={<SheetFallback />}>
-        <ProductSheet />
-      </Suspense>
+      {/* Модалка товара теперь живет в [venue]/layout.tsx */}
 
       {/* 3. А вот контент теперь "умный".
          Обертка решит: показать Skeleton/Fetcher или Поиск.
