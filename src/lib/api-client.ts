@@ -1,4 +1,6 @@
-const BASE_URL = 'https://imenu.kg/api/'; // Твой базовый URL
+import { API_URL } from './config';
+
+const BASE_URL = `${API_URL}/`;
 
 type FetchOptions = RequestInit & {
   params?: Record<string, string | number | boolean | undefined>;

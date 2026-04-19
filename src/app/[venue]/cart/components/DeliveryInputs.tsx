@@ -12,21 +12,13 @@ export default function DeliveryInputs({ onAddressChange }: Props) {
   const [floor, setFloor] = useState('');
   const [apt, setApt] = useState('');
 
-  // 🔥 Эффект: при изменении любого поля собираем полную строку
   useEffect(() => {
-    // Собираем массив заполненных частей
     const parts = [];
-
     if (street) parts.push(street);
     if (entrance) parts.push(`подъезд ${entrance}`);
     if (floor) parts.push(`этаж ${floor}`);
     if (apt) parts.push(`кв/офис ${apt}`);
-
-    // Склеиваем через запятую
-    const fullString = parts.join(', ');
-
-    // Отправляем родителю
-    onAddressChange(fullString);
+    onAddressChange(parts.join(', '));
   }, [street, entrance, floor, apt, onAddressChange]);
 
   return (
@@ -45,7 +37,7 @@ export default function DeliveryInputs({ onAddressChange }: Props) {
         />
       </label>
 
-      {/* Доп поля в одну строку */}
+      {/* Доп поля */}
       <div className='grid grid-cols-3 gap-2'>
         <label className='bg-[#F5F5F5] flex flex-col rounded-xl py-2 px-3 focus-within:ring-1 focus-within:ring-brand/20'>
           <span className='text-[#A4A4A4] text-[10px] mb-0.5'>Подъезд</span>

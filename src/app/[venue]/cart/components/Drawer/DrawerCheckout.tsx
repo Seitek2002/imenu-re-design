@@ -50,6 +50,8 @@ const DrawerCheckout: FC<IProps> = ({
     setPhone: setStoredPhone,
     address: storedAddress,
     setAddress: setStoredAddress,
+    needUtensils,
+    resetOrderOptions,
   } = useCheckout();
 
   // --- FORM STATE ---
@@ -155,6 +157,7 @@ const DrawerCheckout: FC<IProps> = ({
             : 2) as 1 | 2 | 3,
         address: orderType === 'delivery' ? address : null,
         comment: finalComment,
+        needsCutlery: needUtensils,
         // 🔥 Берем реальные spotId и tableId из стора
         spot: spotId || venueData?.spots?.[0]?.id,
         table: tableId || undefined,
@@ -171,6 +174,8 @@ const DrawerCheckout: FC<IProps> = ({
         body: orderData,
         venueSlug,
       });
+
+      resetOrderOptions();
 
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;

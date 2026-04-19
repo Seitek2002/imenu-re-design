@@ -12,6 +12,7 @@ import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
 import { useClientBonus } from '@/lib/api/queries';
 import TableBadge from './components/TableBadge';
+import UtensilsSelector from './components/UtensilsSelector';
 
 // Ленивая загрузка
 const DrawerCheckout = dynamic(
@@ -103,6 +104,10 @@ export default function BasketPage() {
                 />
               ))}
             </ul>
+
+            {orderType === 'delivery' && (
+              <UtensilsSelector className='mt-3' />
+            )}
 
             <OrderSummary
               deliveryCost={deliveryPrice}

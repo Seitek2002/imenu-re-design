@@ -5,8 +5,9 @@ import {
   OrderCreateResponse,
   OrdersResponse,
 } from '../order';
+import { API_V2_URL } from '../config';
 
-const API_BASE = 'https://imenu.kg/api/v2';
+const API_BASE = API_V2_URL;
 
 interface OrdersParams {
   phone: string;
@@ -14,9 +15,8 @@ interface OrdersParams {
 }
 
 async function fetchOrders({ phone }: OrdersParams): Promise<OrdersResponse> {
-  // Уточни у бека, как передавать телефон: ?client_phone=... или ?phone=...
   const params = new URLSearchParams();
-  if (phone) params.append('client_phone', phone);
+  if (phone) params.append('phone', phone);
 
   const res = await fetch(`${API_BASE}/orders/?${params.toString()}`, {
     method: 'GET',

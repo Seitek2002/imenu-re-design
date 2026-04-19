@@ -6,6 +6,7 @@ import { useVenueStore } from '@/store/venue';
 import { Product } from '@/types/api';
 import FoodItem from '../[venue]/products/[slug]/components/FoodItem';
 import { useEasterEggs } from './useEasterEggs';
+import { API_V2_URL } from '@/lib/config';
 
 export default function SearchResults() {
   const { searchQuery } = useUIStore();
@@ -29,7 +30,7 @@ export default function SearchResults() {
       setLoading(true);
       try {
         const res = await fetch(
-          `https://imenu.kg/api/v2/products/?venueSlug=${
+          `${API_V2_URL}/products/?venueSlug=${
             venue?.slug
           }&search=${encodeURIComponent(searchQuery)}`,
         );

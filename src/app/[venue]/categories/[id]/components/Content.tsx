@@ -18,10 +18,13 @@ const Content = ({ venueSlug, categories }: Props) => {
     );
   }
 
+  // Показываем только топ-уровень: подкатегории отображаются на странице товаров
+  const topLevel = categories.filter((c) => !c.parentCategory);
+
   return (
     <div className='bg-white rounded-4xl p-4 pb-36 min-h-screen shadow-sm mt-4'>
       <div className='grid grid-cols-6 gap-3'>
-        {categories.map((item, index) => {
+        {topLevel.map((item, index) => {
           // Логика сетки 3-2-3-2
           const positionInCycle = index % 5;
           const isLarge = positionInCycle >= 3;
