@@ -12,6 +12,7 @@ import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
 import { useClientBonus } from '@/lib/api/queries';
 import TableBadge from './components/TableBadge';
+import UtensilsSelector from './components/UtensilsSelector';
 
 // Ленивая загрузка
 const DrawerCheckout = dynamic(
@@ -104,7 +105,9 @@ export default function BasketPage() {
               ))}
             </ul>
 
-            {orderType === 'delivery' && <UtensilsSelector />}
+            {orderType === 'delivery' && (
+              <UtensilsSelector className='mt-3' />
+            )}
 
             <OrderSummary
               deliveryCost={deliveryPrice}
@@ -152,36 +155,6 @@ export default function BasketPage() {
         </>
       )}
     </main>
-  );
-}
-
-function UtensilsSelector() {
-  const { needUtensils, setNeedUtensils } = useCheckout();
-
-  return (
-    <div className='mt-3 bg-[#FAFAFA] rounded-xl py-3 px-4 flex items-center justify-between'>
-      <div className='flex flex-col'>
-        <span className='text-sm font-semibold text-[#111111]'>
-          Нужны приборы?
-        </span>
-        <span className='text-[#A4A4A4] text-xs mt-0.5'>
-          По умолчанию — без приборов 🌿
-        </span>
-      </div>
-      <button
-        type='button'
-        onClick={() => setNeedUtensils(!needUtensils)}
-        className={`relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
-          needUtensils ? 'bg-brand' : 'bg-gray-300'
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-            needUtensils ? 'translate-x-6' : 'translate-x-0'
-          }`}
-        />
-      </button>
-    </div>
   );
 }
 

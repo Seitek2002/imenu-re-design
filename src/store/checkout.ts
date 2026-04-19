@@ -9,6 +9,7 @@ interface CheckoutState {
   setPhone: (phone: string) => void;
   setNeedUtensils: (val: boolean) => void;
   reset: () => void;
+  resetOrderOptions: () => void;
 }
 
 export const useCheckout = create<CheckoutState>()(
@@ -16,11 +17,17 @@ export const useCheckout = create<CheckoutState>()(
     (set) => ({
       phone: '',
       setPhone: (phone) => set({ phone }),
-      reset: () => set({ phone: '' }),
       address: '',
       setAddress: (address) => set({ address }),
       needUtensils: false,
       setNeedUtensils: (needUtensils) => set({ needUtensils }),
+      reset: () =>
+        set({
+          phone: '',
+          address: '',
+          needUtensils: false,
+        }),
+      resetOrderOptions: () => set({ needUtensils: false }),
     }),
     {
       name: 'imenu-checkout-storage', // Ключ в localStorage

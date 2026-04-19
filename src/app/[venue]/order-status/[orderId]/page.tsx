@@ -4,11 +4,12 @@ import { OrderV2 } from '@/lib/order';
 import StatusHeader from './components/StatusHeader';
 import OrderNotFound from './components/OrderNotFound';
 import OrderSaver from './components/OrderSaver';
+import { API_V2_URL } from '@/lib/config';
 
 // Функция получения заказа (Серверная)
 async function fetchOrder(id: string): Promise<OrderV2 | null> {
   try {
-    const res = await fetch(`https://imenu.kg/api/v2/orders/${id}/`, {
+    const res = await fetch(`${API_V2_URL}/orders/${id}/`, {
       cache: 'no-store', // Всегда свежие данные, чтобы статус обновлялся
       headers: { 'Accept-Language': 'ru' },
     });

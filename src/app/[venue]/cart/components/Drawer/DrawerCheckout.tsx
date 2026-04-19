@@ -51,6 +51,7 @@ const DrawerCheckout: FC<IProps> = ({
     address: storedAddress,
     setAddress: setStoredAddress,
     needUtensils,
+    resetOrderOptions,
   } = useCheckout();
 
   // --- FORM STATE ---
@@ -65,7 +66,6 @@ const DrawerCheckout: FC<IProps> = ({
 
   const [comment, setComment] = useState('');
   const [showComment, setShowComment] = useState(false);
-  const [drawerUtensils, setDrawerUtensils] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
@@ -157,7 +157,7 @@ const DrawerCheckout: FC<IProps> = ({
             : 2) as 1 | 2 | 3,
         address: orderType === 'delivery' ? address : null,
         comment: finalComment,
-        needsCutlery: needUtensils || drawerUtensils,
+        needsCutlery: needUtensils,
         // 🔥 Берем реальные spotId и tableId из стора
         spot: spotId || venueData?.spots?.[0]?.id,
         table: tableId || undefined,
@@ -174,6 +174,8 @@ const DrawerCheckout: FC<IProps> = ({
         body: orderData,
         venueSlug,
       });
+
+      resetOrderOptions();
 
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;
@@ -262,32 +264,6 @@ const DrawerCheckout: FC<IProps> = ({
                     />
                   </div>
                 </label>
-
-                {!needUtensils && (
-                  <div className='bg-[#F5F5F5] flex items-center justify-between rounded-xl mt-4 py-3 px-4'>
-                    <div className='flex flex-col'>
-                      <span className='text-[#111111] font-semibold text-sm'>
-                        Нужны приборы?
-                      </span>
-                      <span className='text-[#A4A4A4] text-xs mt-0.5'>
-                        По умолчанию — без приборов 🌿
-                      </span>
-                    </div>
-                    <button
-                      type='button'
-                      onClick={() => setDrawerUtensils((v) => !v)}
-                      className={`relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
-                        drawerUtensils ? 'bg-brand' : 'bg-gray-300'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                          drawerUtensils ? 'translate-x-6' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                )}
 
                 <button
                   type='button'

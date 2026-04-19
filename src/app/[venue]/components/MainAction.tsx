@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { BellRing, Loader2, CheckCircle } from 'lucide-react';
 import { useVenueStore } from '@/store/venue';
+import { API_V2_URL } from '@/lib/config';
 
 export default function MainAction({ venueSlug }: { venueSlug: string }) {
   const pathname = usePathname();
@@ -37,7 +38,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
     try {
       // API вызов согласно твоему скриншоту (GET запрос)
       const res = await fetch(
-        `https://imenu.kg/api/v2/call-waiter/?tableId=${tableId}`,
+        `${API_V2_URL}/call-waiter/?tableId=${tableId}`,
         {
           method: 'GET',
           headers: {

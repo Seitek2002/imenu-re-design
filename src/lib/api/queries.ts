@@ -5,8 +5,9 @@ import {
   OrderCreateResponse,
   OrdersResponse,
 } from '../order';
+import { API_V2_URL } from '../config';
 
-const API_BASE = 'https://imenu.kg/api/v2';
+const API_BASE = API_V2_URL;
 
 interface OrdersParams {
   phone: string;

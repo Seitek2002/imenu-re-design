@@ -9,14 +9,15 @@ import Widgets from '../components/Widgets';
 import { VenueService } from '@/services/venue.service';
 import StoreClosedCard from '@/app/components/StoreClosedCard';
 import { getVenueStatus } from '@/lib/venue-status';
+import { API_URL, API_V2_URL } from '@/lib/config';
 
 async function getVenueData(slug: string, tableId?: number) {
   // По дефолту обычный URL
-  let url = `https://imenu.kg/api/v2/venues/${slug}/`;
+  let url = `${API_V2_URL}/venues/${slug}/`;
 
   // Если есть ID стола — меняем URL на специальный (получаем и меню, и номер стола)
   if (tableId) {
-    url = `https://imenu.kg/api/venues/${slug}/table/${tableId}/`;
+    url = `${API_URL}/venues/${slug}/table/${tableId}/`;
   }
 
   const res = await fetch(url, {

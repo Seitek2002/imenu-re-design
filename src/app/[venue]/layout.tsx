@@ -4,10 +4,11 @@ import Footer from '../components/Footer';
 import MainAction from './components/MainAction';
 import FloatingCartButton from './components/FloatingCartButton';
 import VenueInitializer from '@/components/providers/VenueInitializer';
+import { API_V2_URL } from '@/lib/config';
 
 async function getVenueData(slug: string) {
   try {
-    const res = await fetch(`https://imenu.kg/api/v2/venues/${slug}/`, {
+    const res = await fetch(`${API_V2_URL}/venues/${slug}/`, {
       next: { revalidate: 60 },
     });
 
