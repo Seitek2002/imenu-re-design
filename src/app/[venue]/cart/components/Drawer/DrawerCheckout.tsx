@@ -157,6 +157,7 @@ const DrawerCheckout: FC<IProps> = ({
             : 2) as 1 | 2 | 3,
         address: orderType === 'delivery' ? address : null,
         comment: finalComment,
+        needsCutlery: needUtensils || drawerUtensils,
         // 🔥 Берем реальные spotId и tableId из стора
         spot: spotId || venueData?.spots?.[0]?.id,
         table: tableId || undefined,

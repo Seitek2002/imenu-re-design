@@ -55,6 +55,8 @@ export interface Category {
   id: number;
   slug: string;
   categoryName: string;
+  parentCategory?: number | null;
+  children?: Category[];
   categoryPhoto: string;
   categoryPhotoSmall: string;
 }
