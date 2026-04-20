@@ -13,6 +13,7 @@ import { useVenueStore } from '@/store/venue';
 import { useClientBonus } from '@/lib/api/queries';
 import TableBadge from './components/TableBadge';
 import UtensilsSelector from './components/UtensilsSelector';
+import EmptyBasket from './components/EmptyBasket';
 
 // Ленивая загрузка
 const DrawerCheckout = dynamic(
@@ -155,17 +156,5 @@ export default function BasketPage() {
         </>
       )}
     </main>
-  );
-}
-
-function EmptyBasket() {
-  return (
-    <div className='flex flex-col items-center justify-center py-20 text-center'>
-      <div className='text-6xl mb-4'>🛒</div>
-      <h3 className='text-lg font-bold text-[#21201F]'>Корзина пуста</h3>
-      <p className='text-gray-400 text-sm mt-1'>
-        Добавьте что-нибудь вкусное из меню
-      </p>
-    </div>
   );
 }

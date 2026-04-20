@@ -228,8 +228,9 @@ export interface MainButton {
   section?: SectionShort | null;
   slug: string;
 
-  // Вложенные категории (если нужно будет делать выпадающее меню, но пока нам нужна только ссылка)
-  categories?: CategoryShort[];
+  // Вложенные категории секции — приходят с бэка с полной схемой Category
+  // (parentCategory, children, sections и т.д.), потому используем Category
+  categories?: Category[];
 }
 
 export interface Modificator {

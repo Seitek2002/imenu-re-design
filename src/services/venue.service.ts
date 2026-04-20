@@ -40,9 +40,9 @@ export const VenueService = {
     });
   },
 
-  getAllProducts: async (venueSlug: string) => {
+  getAllProducts: async (venueSlug: string, spotId?: number | null) => {
     return apiClient<Product[]>('v2/products/', {
-      params: { venueSlug },
+      params: { venueSlug, spotId: spotId ?? undefined },
       next: { revalidate: 300 }, // Кэш на 5 минут
     });
   },

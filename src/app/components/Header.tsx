@@ -19,8 +19,15 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 2. Подключаем состояние
-  const { isSearchOpen, setSearchOpen, searchQuery, setSearchQuery } =
-    useUIStore();
+  const {
+    isSearchOpen,
+    setSearchOpen,
+    searchQuery,
+    setSearchQuery,
+    headerTitleOverride,
+  } = useUIStore();
+
+  const displayTitle = headerTitleOverride ?? title;
 
   // Фокус на инпут при открытии
   useEffect(() => {
@@ -81,7 +88,7 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
           ) : (
             /* ОБЫЧНЫЙ ЗАГОЛОВОК */
             <h2 className='text-2xl font-bold text-center leading-none mt-1 truncate'>
-              {title}
+              {displayTitle}
             </h2>
           )}
         </div>

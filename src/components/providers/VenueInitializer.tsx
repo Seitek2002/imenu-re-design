@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useVenueStore, Venue } from '@/store/venue';
+import { writeSpotCookie, clearSpotCookie } from '@/lib/spot-cookie.client';
 
 interface Props {
   venue: Venue;
@@ -38,6 +39,9 @@ export default function VenueInitializer({
         tableNumber: tableNumFromApi,
         venueSlug: venue.slug,
       });
+      // QR-контекст имеет приоритет — синхронизируем куку, чтобы SSR отдавал
+      // цены этой точки при последующих переходах.
+      if (spotId != null) writeSpotCookie(venue.slug, spotId);
     } else {
       if (currentSlug && currentSlug !== venue.slug) {
         setContext({
@@ -46,6 +50,8 @@ export default function VenueInitializer({
           tableNumber: null,
           venueSlug: venue.slug,
         });
+        // При смене заведения — сбрасываем чужую точку из куки.
+        clearSpotCookie();
       }
     }
 

@@ -20,9 +20,7 @@ const HomeLink: FC<IProps> = ({
 }) => {
   return (
     <Link
-      href={`/${venueSlug}/categories/${sectionId}?title=${encodeURIComponent(
-        label,
-      )}`}
+      href={`/${venueSlug}/categories/${sectionId}`}
       className='text-center block active:scale-95 transition-transform group'
     >
       <div className='relative aspect-square rounded-2xl overflow-hidden bg-gray-50'>

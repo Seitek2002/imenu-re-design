@@ -1,10 +1,16 @@
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import type { Metadata } from 'next'; // 1. Импортируем тип
 import Footer from '../components/Footer';
 import MainAction from './components/MainAction';
 import FloatingCartButton from './components/FloatingCartButton';
 import VenueInitializer from '@/components/providers/VenueInitializer';
 import { API_V2_URL } from '@/lib/config';
+
+const ProductSheet = dynamic(
+  () => import('./products/[slug]/components/ProductSheet'),
+);
 
 async function getVenueData(slug: string) {
   try {
@@ -74,6 +80,10 @@ export default async function VenueLayout({
   return (
     <div className='relative min-h-svh bg-[#F8F6F7]'>
       <div>{children}</div>
+
+      <Suspense fallback={null}>
+        <ProductSheet />
+      </Suspense>
 
       <VenueInitializer venue={venueData} />
       <FloatingCartButton venueSlug={venueSlug} />

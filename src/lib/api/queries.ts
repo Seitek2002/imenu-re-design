@@ -5,7 +5,8 @@ import {
   OrderCreateResponse,
   OrdersResponse,
 } from '../order';
-import { API_V2_URL } from '../config';
+import { API_URL, API_V2_URL } from '../config';
+import { Product } from '@/types/api';
 
 const API_BASE = API_V2_URL;
 
@@ -114,5 +115,23 @@ async function createOrderApi({
 export const useCreateOrderV2 = () => {
   return useMutation({
     mutationFn: createOrderApi,
+  });
+};
+
+async function fetchVenueProducts(venueSlug: string): Promise<Product[]> {
+  const params = new URLSearchParams({ venueSlug });
+  const res = await fetch(`${API_URL}/v2/products/?${params.toString()}`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error('Failed to fetch products');
+  return res.json();
+}
+
+export const useVenueProducts = (venueSlug: string | null | undefined) => {
+  return useQuery({
+    queryKey: ['venue-products', venueSlug],
+    queryFn: () => fetchVenueProducts(venueSlug as string),
+    enabled: !!venueSlug,
+    staleTime: 1000 * 60 * 5,
   });
 };
