@@ -244,6 +244,36 @@ export interface ProductCategory {
   categoryName: string;
 }
 
+export interface GroupItem {
+  id: number;
+  name: string;
+  price: string; // decimal — доплата к цене позиции
+  brutto: string; // вес/объём для подписи
+  photo?: string | null;
+  thumbnail?: string | null;
+}
+
+export interface GroupSelection {
+  type: 'single' | 'multiple';
+  title: string;
+  description: string;
+  min: number;
+  max: number;
+}
+
+export interface GroupModification {
+  id: number;
+  name: string;
+  selection: GroupSelection;
+  items: GroupItem[];
+}
+
+export interface ProductType {
+  code: string;
+  label: string;
+  isBatchticket: boolean;
+}
+
 export interface Product {
   id: number;
   productName: string;
@@ -252,6 +282,8 @@ export interface Product {
   weight: number;
 
   measureUnit?: string;
+  unit?: string;
+  unitDisplay?: string;
 
   // Фото
   productPhoto?: string;
@@ -260,6 +292,8 @@ export interface Product {
 
   categories: ProductCategory[];
   modificators: Modificator[];
+  groupModifications?: GroupModification[];
+  productType?: ProductType;
 
   isRecommended?: boolean;
 }

@@ -9,36 +9,233 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { useSearchParams, usePathname } from 'next/navigation';
-import { Product } from '@/types/api';
+import { useSearchParams, usePathname, useParams } from 'next/navigation';
+
+import {
+  GroupModification,
+  Modificator,
+  Product,
+} from '@/types/api';
 import { useProductStore } from '@/store/product';
-import { useBasketStore } from '@/store/basket';
+import {
+  useBasketStore,
+  BasketGroupSelection,
+} from '@/store/basket';
+import { useVenueStore } from '@/store/venue';
 import { useMounted } from '@/hooks/useMounted';
+import { useVenueProducts } from '@/lib/api/queries';
 
 import plusIcon from '@/assets/Goods/plus.svg';
 import minusIcon from '@/assets/Goods/minus.svg';
 
-// --- MOCK API ---
-const fetchProductById = async (id: string): Promise<Product> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return {
-    id: Number(id),
-    productName: `Загружено с сервера #${id}`,
-    productDescription:
-      'Данные загрузились автоматически, без лишних ре-рендеров.',
-    productPrice: 450,
-    productPhoto: '/placeholder-dish.svg',
-    weight: 400,
-    measureUnit: 'г',
-    modificators: [
-      { id: 1, name: 'Маленький', price: 450 },
-      { id: 2, name: 'Большой', price: 650 },
-    ],
-    categories: [],
+type CountsState = Record<number, number>;
+
+function sumGroupCount(group: GroupModification, counts: CountsState): number {
+  return group.items.reduce((s, i) => s + (counts[i.id] ?? 0), 0);
+}
+
+function buildGroupSelections(
+  product: Product,
+  counts: CountsState,
+): BasketGroupSelection[] {
+  const groups = product.groupModifications ?? [];
+  return groups
+    .map((g) => ({
+      groupId: g.id,
+      groupName: g.name,
+      items: g.items
+        .filter((i) => (counts[i.id] ?? 0) > 0)
+        .map((i) => ({
+          id: i.id,
+          name: i.name,
+          count: counts[i.id],
+          price: i.price,
+        })),
+    }))
+    .filter((g) => g.items.length > 0);
+}
+
+const GroupSection = ({
+  group,
+  counts,
+  onChange,
+  error,
+}: {
+  group: GroupModification;
+  counts: CountsState;
+  onChange: (next: CountsState) => void;
+  error: string | null;
+}) => {
+  const { type, min, max } = group.selection;
+  const sum = sumGroupCount(group, counts);
+
+  const badge =
+    min === max
+      ? `Ровно ${min}`
+      : min > 0
+        ? `Обязательно • до ${max}`
+        : `До ${max}`;
+
+  const handleSingle = (itemId: number) => {
+    const current = counts[itemId] ?? 0;
+    const next: CountsState = { ...counts };
+    for (const it of group.items) next[it.id] = 0;
+    // При min=0 повторный тап снимает выбор
+    if (current > 0 && min === 0) {
+      next[itemId] = 0;
+    } else {
+      next[itemId] = 1;
+    }
+    onChange(next);
   };
+
+  const handleStep = (itemId: number, delta: number) => {
+    const current = counts[itemId] ?? 0;
+    const nextVal = Math.max(0, current + delta);
+    if (delta > 0 && sum >= max) return; // достигнут max по группе
+    onChange({ ...counts, [itemId]: nextVal });
+  };
+
+  return (
+    <div>
+      <div className='flex justify-between items-center mb-2'>
+        <div className='flex flex-col'>
+          <span className='font-semibold'>{group.name}</span>
+          <span className='text-xs text-gray-400'>
+            Выбрано {sum}
+            {max > 0 ? ` из ${max}` : ''}
+          </span>
+        </div>
+        <span
+          className={`text-xs px-2 py-0.5 rounded-full ${
+            min > 0
+              ? 'text-red-500 bg-red-50'
+              : 'text-blue-500 bg-blue-50'
+          }`}
+        >
+          {badge}
+        </span>
+      </div>
+
+      <div className='flex flex-col gap-2'>
+        {group.items.map((item) => {
+          const count = counts[item.id] ?? 0;
+          const selected = count > 0;
+          const priceNum = Number(item.price);
+
+          if (type === 'single') {
+            return (
+              <button
+                key={item.id}
+                type='button'
+                onClick={() => handleSingle(item.id)}
+                className={`w-full flex items-center justify-between gap-3 p-3 rounded-xl border text-left transition-colors ${
+                  selected
+                    ? 'border-[#21201F] bg-[#21201F] text-white'
+                    : 'border-gray-100 bg-gray-50 text-gray-800'
+                }`}
+              >
+                <div className='flex items-center gap-3 min-w-0'>
+                  {item.thumbnail && (
+                    <div className='relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10'>
+                      <Image
+                        src={item.thumbnail}
+                        alt={item.name}
+                        fill
+                        className='object-cover'
+                        sizes='40px'
+                      />
+                    </div>
+                  )}
+                  <div className='flex flex-col min-w-0'>
+                    <span className='font-medium truncate'>{item.name}</span>
+                    {Number(item.brutto) > 0 && (
+                      <span
+                        className={`text-xs ${selected ? 'text-gray-300' : 'text-gray-400'}`}
+                      >
+                        {Math.round(Number(item.brutto))} г
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className='text-sm font-semibold shrink-0'>
+                  {priceNum > 0 ? `+${priceNum} с.` : 'включено'}
+                </span>
+              </button>
+            );
+          }
+
+          // multiple
+          const canInc = sum < max;
+          return (
+            <div
+              key={item.id}
+              className={`w-full flex items-center justify-between gap-3 p-3 rounded-xl border ${
+                selected
+                  ? 'border-[#21201F] bg-gray-50'
+                  : 'border-gray-100 bg-gray-50'
+              }`}
+            >
+              <div className='flex items-center gap-3 min-w-0'>
+                {item.thumbnail && (
+                  <div className='relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white'>
+                    <Image
+                      src={item.thumbnail}
+                      alt={item.name}
+                      fill
+                      className='object-cover'
+                      sizes='40px'
+                    />
+                  </div>
+                )}
+                <div className='flex flex-col min-w-0'>
+                  <span className='font-medium truncate text-gray-800'>
+                    {item.name}
+                  </span>
+                  <span className='text-xs text-gray-400'>
+                    {Number(item.brutto) > 0
+                      ? `${Math.round(Number(item.brutto))} г · `
+                      : ''}
+                    {priceNum > 0 ? `+${priceNum} с.` : 'бесплатно'}
+                  </span>
+                </div>
+              </div>
+
+              <div className='flex items-center gap-2 shrink-0'>
+                <button
+                  type='button'
+                  onClick={() => handleStep(item.id, -1)}
+                  disabled={count === 0}
+                  className='w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center active:scale-90 transition-transform disabled:opacity-30'
+                  aria-label='minus'
+                >
+                  <Image src={minusIcon} alt='' width={14} height={14} />
+                </button>
+                <span className='w-5 text-center font-semibold text-sm'>
+                  {count}
+                </span>
+                <button
+                  type='button'
+                  onClick={() => handleStep(item.id, +1)}
+                  disabled={!canInc}
+                  className='w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center active:scale-90 transition-transform disabled:opacity-30'
+                  aria-label='plus'
+                >
+                  <Image src={plusIcon} alt='' width={14} height={14} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {error && (
+        <p className='text-xs text-red-500 mt-2'>{error}</p>
+      )}
+    </div>
+  );
 };
 
-// --- ВНУТРЕННИЙ КОМПОНЕНТ ---
 const ProductContent = ({
   product,
   onClose,
@@ -46,35 +243,75 @@ const ProductContent = ({
   product: Product;
   onClose: () => void;
 }) => {
+  const addToBasket = useBasketStore((s) => s.addToBasket);
+
+  const groups = useMemo(
+    () => product.groupModifications ?? [],
+    [product.groupModifications],
+  );
+  const hasGroups = groups.length > 0;
+  // Правило: если есть groupModifications, плоские modificators игнорируем.
+  const flatMods: Modificator[] = hasGroups ? [] : product.modificators ?? [];
+
   const [qnty, setQnty] = useState(1);
-  const [selectedModId, setSelectedModId] = useState<number | null>(
-    product.modificators && product.modificators.length > 0
-      ? product.modificators[0].id
-      : null,
+  const [counts, setCounts] = useState<CountsState>({});
+  const [selectedFlatId, setSelectedFlatId] = useState<number | null>(
+    flatMods.length > 0 ? flatMods[0].id : null,
   );
   const [imgLoaded, setImgLoaded] = useState(false);
 
-  const addToBasket = useBasketStore((state) => state.addToBasket);
+  const selectedFlat = flatMods.find((m) => m.id === selectedFlatId) ?? null;
 
-  const currentPrice = useMemo(() => {
-    if (
-      selectedModId &&
-      product.modificators &&
-      product.modificators.length > 0
-    ) {
-      const mod = product.modificators.find((m) => m.id === selectedModId);
-      return mod ? mod.price : product.productPrice;
+  const errors = useMemo(() => {
+    const out: Record<number, string> = {};
+    for (const g of groups) {
+      const sum = sumGroupCount(g, counts);
+      if (sum < g.selection.min) {
+        out[g.id] =
+          g.selection.min === g.selection.max
+            ? `Нужно выбрать ${g.selection.min}`
+            : `Нужно минимум ${g.selection.min}`;
+      } else if (sum > g.selection.max) {
+        out[g.id] = `Не более ${g.selection.max}`;
+      }
     }
-    return product.productPrice;
-  }, [product, selectedModId]);
+    return out;
+  }, [groups, counts]);
 
-  const totalPrice = currentPrice * qnty;
+  const isValid = Object.keys(errors).length === 0;
+
+  const unitPrice = useMemo(() => {
+    const base = selectedFlat?.price ?? product.productPrice;
+    const add = groups.reduce(
+      (acc, g) =>
+        acc +
+        g.items.reduce(
+          (s, i) => s + Number(i.price) * (counts[i.id] ?? 0),
+          0,
+        ),
+      0,
+    );
+    return base + add;
+  }, [product, selectedFlat, groups, counts]);
+
+  const totalPrice = unitPrice * qnty;
 
   const handleAdd = () => {
+    if (!isValid) return;
     if (navigator.vibrate) navigator.vibrate(50);
-    addToBasket(product, qnty, selectedModId ?? undefined);
+    addToBasket(product, qnty, {
+      flatModId: selectedFlat?.id,
+      flatModName: selectedFlat?.name,
+      flatModPrice: selectedFlat?.price,
+      groupSelections: buildGroupSelections(product, counts),
+    });
     onClose();
   };
+
+  const weightLabel =
+    product.weight > 0
+      ? `${product.weight} ${product.unitDisplay || product.measureUnit || ''}`.trim()
+      : null;
 
   return (
     <>
@@ -98,42 +335,39 @@ const ProductContent = ({
               <h2 className='text-2xl font-bold leading-tight mb-2'>
                 {product.productName}
               </h2>
-              <p className='text-gray-500 text-sm leading-relaxed'>
-                {product.productDescription}
-              </p>
-              {product.measureUnit && (
-                <p className='text-xs text-gray-400 mt-1'>
-                  Вес: {product.weight} {product.measureUnit}
+              {product.productDescription && (
+                <p className='text-gray-500 text-sm leading-relaxed'>
+                  {product.productDescription}
                 </p>
+              )}
+              {weightLabel && (
+                <p className='text-xs text-gray-400 mt-1'>Вес: {weightLabel}</p>
               )}
             </div>
 
-            {product.modificators && product.modificators.length > 0 && (
+            {flatMods.length > 0 && (
               <div>
                 <div className='flex justify-between items-center mb-2'>
                   <span className='font-semibold'>Размер</span>
-                  <span className='text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full'>
+                  <span className='text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded-full'>
                     Обязательно
                   </span>
                 </div>
                 <div className='grid grid-cols-3 gap-2'>
-                  {product.modificators.map((mod) => (
+                  {flatMods.map((mod) => (
                     <button
                       key={mod.id}
-                      onClick={() => setSelectedModId(mod.id)}
-                      className={`
-                        p-2.5 rounded-xl border text-sm transition-all
-                        ${
-                          selectedModId === mod.id
-                            ? 'border-[#21201F] bg-[#21201F] text-white shadow-md'
-                            : 'border-gray-100 bg-gray-50 text-gray-700'
-                        }
-                      `}
+                      onClick={() => setSelectedFlatId(mod.id)}
+                      className={`p-2.5 rounded-xl border text-sm transition-all ${
+                        selectedFlatId === mod.id
+                          ? 'border-[#21201F] bg-[#21201F] text-white shadow-md'
+                          : 'border-gray-100 bg-gray-50 text-gray-700'
+                      }`}
                     >
                       <div className='font-medium'>{mod.name}</div>
                       <div
                         className={`text-xs ${
-                          selectedModId === mod.id
+                          selectedFlatId === mod.id
                             ? 'text-gray-300'
                             : 'text-gray-400'
                         }`}
@@ -145,6 +379,16 @@ const ProductContent = ({
                 </div>
               </div>
             )}
+
+            {groups.map((g) => (
+              <GroupSection
+                key={g.id}
+                group={g}
+                counts={counts}
+                onChange={setCounts}
+                error={errors[g.id] ?? null}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -168,7 +412,8 @@ const ProductContent = ({
           </div>
 
           <button
-            className='flex-1 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2'
+            disabled={!isValid}
+            className='flex-1 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:active:scale-100'
             onClick={handleAdd}
           >
             <span>Добавить</span>
@@ -182,66 +427,61 @@ const ProductContent = ({
   );
 };
 
-// --- ОСНОВНОЙ КОМПОНЕНТ ---
 export default function ProductSheet() {
   const mounted = useMounted();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const params = useParams();
+  const venueSlug = (params?.venue as string) || null;
+  const spotId = useVenueStore((s) => s.spotId);
 
-  // 🔥 ССЫЛКА-БЛОКИРАТОР. Поможет избежать гонки состояний при закрытии
   const closingRef = useRef(false);
-
   const productId = searchParams.get('product');
 
-  const productFromStore = useProductStore((state) => state.selectedProduct);
-  const setProductInStore = useProductStore((state) => state.setProduct);
+  const productFromStore = useProductStore((s) => s.selectedProduct);
+  const setProductInStore = useProductStore((s) => s.setProduct);
 
-  const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);
+  // Fallback-фетч на случай прямого открытия по ?product=X (reload, шаринг).
+  // Грузим только если в сторе ничего нет и ID в URL существует.
+  const shouldFallback = !!productId && !productFromStore;
+  const { data: allProducts } = useVenueProducts(
+    shouldFallback ? venueSlug : null,
+    spotId,
+  );
 
-  const isOpen = !!productFromStore || !!productId;
+  const fallbackProduct = useMemo(() => {
+    if (!shouldFallback || !allProducts || !productId) return null;
+    return allProducts.find((p) => String(p.id) === productId) ?? null;
+  }, [allProducts, productId, shouldFallback]);
 
-  const activeProduct =
-    productFromStore ||
-    (fetchedProduct && fetchedProduct.id.toString() === productId
-      ? fetchedProduct
-      : null);
+  const activeProduct = productFromStore ?? fallbackProduct;
+
+  // Один раз синкаем fallback в стор, чтобы не пересчитывать при ре-рендерах.
+  useEffect(() => {
+    if (fallbackProduct && !productFromStore && !closingRef.current) {
+      setProductInStore(fallbackProduct);
+    }
+  }, [fallbackProduct, productFromStore, setProductInStore]);
+
+  const isOpen = !!productFromStore || (!!productId && !!fallbackProduct);
 
   const handleClose = useCallback(() => {
-    // 1. Говорим useEffect'у: "Мы закрываемся, ничего не скачивай!"
     closingRef.current = true;
-
-    // 2. Очищаем стор и локальный стейт скачанного товара
     setProductInStore(null);
-    setFetchedProduct(null);
 
-    // 3. Тихо убираем ID из URL
     const params = new URLSearchParams(searchParams.toString());
     params.delete('product');
-    window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
+    const qs = params.toString();
+    window.history.replaceState(null, '', qs ? `${pathname}?${qs}` : pathname);
 
-    // 4. Снимаем блокировку через 100мс (этого достаточно, чтобы Next.js обновил URL)
     setTimeout(() => {
       closingRef.current = false;
     }, 100);
   }, [searchParams, pathname, setProductInStore]);
 
   useEffect(() => {
-    if (!productId) return;
-    if (closingRef.current) return; // 🔥 БЛОКИРУЕМ ЛИШНИЙ ЗАПРОС ПРИ ЗАКРЫТИИ
-    if (activeProduct) return;
-
-    fetchProductById(productId)
-      .then((data) => {
-        setFetchedProduct(data);
-        setProductInStore(data);
-      })
-      .catch((err) => console.error(err));
-  }, [productId, activeProduct, setProductInStore]);
-
-  useEffect(() => {
     if (!mounted) return;
     const bodyStyle = document.body.style;
-
     if (isOpen) {
       bodyStyle.overflow = 'hidden';
       bodyStyle.touchAction = 'none';
@@ -249,7 +489,6 @@ export default function ProductSheet() {
       bodyStyle.overflow = '';
       bodyStyle.touchAction = '';
     }
-
     return () => {
       bodyStyle.overflow = '';
       bodyStyle.touchAction = '';
@@ -287,9 +526,9 @@ export default function ProductSheet() {
 
       <div
         className={`
-          relative w-full md:w-[75%] md:max-w-2xl bg-white 
-          rounded-t-4xl md:rounded-4xl 
-          h-[70vh] md:h-auto md:max-h-[85vh]
+          relative w-full md:w-[75%] md:max-w-2xl bg-white
+          rounded-t-4xl md:rounded-4xl
+          h-[85vh] md:h-auto md:max-h-[85vh]
           shadow-2xl overflow-hidden flex flex-col
           transition-transform duration-300 cubic-bezier(0.32, 0.72, 0, 1) pointer-events-auto
           ${
