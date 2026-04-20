@@ -5,6 +5,7 @@ import VenueInitializer from '@/components/providers/VenueInitializer';
 import MainHeader from '../components/MainHeader';
 import HomeLinksSkeleton from '../components/HomeLinksSkeleton';
 import HomeLinksSection from '../components/HomeLinksSection';
+import SpotPicker from '../components/SpotPicker';
 import Widgets from '../components/Widgets';
 import { VenueService } from '@/services/venue.service';
 import StoreClosedCard from '@/app/components/StoreClosedCard';
@@ -63,6 +64,8 @@ export default async function VenuePage({ params }: Props) {
       />
 
       <MainHeader />
+
+      <SpotPicker />
 
       {isOpen ? (
         <Suspense fallback={<HomeLinksSkeleton />}>

@@ -1,6 +1,7 @@
 import Content from './Content';
 import { VenueService } from '@/services/venue.service';
 import { Category } from '@/types/api';
+import { readSpotCookie } from '@/lib/spot-cookie.server';
 
 interface Props {
   venue: string;
@@ -8,8 +9,9 @@ interface Props {
 }
 
 export default async function ProductContentFetcher({ venue, slug }: Props) {
+  const spotId = await readSpotCookie(venue);
   const [allProducts, buttons] = await Promise.all([
-    VenueService.getAllProducts(venue),
+    VenueService.getAllProducts(venue, spotId),
     VenueService.getMainButtons(venue),
   ]);
 
