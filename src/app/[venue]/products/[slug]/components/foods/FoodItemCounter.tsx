@@ -34,7 +34,10 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
   const hasFlatMods = !!product.modificators && product.modificators.length > 0;
   const hasGroupMods =
     !!product.groupModifications && product.groupModifications.length > 0;
-  const hasModifiers = hasFlatMods || hasGroupMods;
+  // Техкарта (batchticket) — продукт-конструктор, даже если бэк не прислал
+  // модификаций, его нужно открывать в шите, а не добавлять с сетки.
+  const isBatchticket = product.productType?.isBatchticket === true;
+  const requiresConfig = hasFlatMods || hasGroupMods || isBatchticket;
   const simpleKey = `${product.id}|f`;
 
   const openSheet = () => {
@@ -50,7 +53,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
 
     if (navigator.vibrate) navigator.vibrate(20);
 
-    if (hasModifiers) {
+    if (requiresConfig) {
       openSheet();
     } else {
       addToBasket(product, 1);
@@ -62,7 +65,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
     e.stopPropagation();
     if (navigator.vibrate) navigator.vibrate(20);
 
-    if (hasModifiers) {
+    if (requiresConfig) {
       openSheet();
     } else {
       decrementItem(simpleKey);
