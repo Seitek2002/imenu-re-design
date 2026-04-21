@@ -222,15 +222,17 @@ export interface MainButton {
   name: string;
   photo: string; // URL картинки
   order: number;
-  buttonType: 'section' | 'category' | 'link'; // Вижу по JSON, что там section
+  buttonType: 'section' | 'category' | 'link';
 
   // Если buttonType === 'section'
   section?: SectionShort | null;
-  slug: string;
+  // Если buttonType === 'category' — категория приходит отдельным полем
+  category?: Category | null;
+  slug?: string;
 
   // Вложенные категории секции — приходят с бэка с полной схемой Category
   // (parentCategory, children, sections и т.д.), потому используем Category
-  categories?: Category[];
+  categories?: Category[] | null;
 }
 
 export interface Modificator {

@@ -6,21 +6,19 @@ import ImageSkeleton from '@/components/ui/ImageSkeleton';
 interface IProps {
   img: string;
   label: string;
-  sectionId: number;
-  venueSlug: string;
+  href: string;
   isPriority?: boolean;
 }
 
 const HomeLink: FC<IProps> = ({
   img,
   label,
-  sectionId,
-  venueSlug,
+  href,
   isPriority,
 }) => {
   return (
     <Link
-      href={`/${venueSlug}/categories/${sectionId}`}
+      href={href}
       className='text-center block active:scale-95 transition-transform group'
     >
       <div className='relative aspect-square rounded-2xl overflow-hidden bg-gray-50'>
