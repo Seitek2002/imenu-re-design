@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useVenueStore, Venue } from '@/store/venue';
+import { useBasketStore } from '@/store/basket';
 import { writeSpotCookie, clearSpotCookie } from '@/lib/spot-cookie.client';
 
 interface Props {
@@ -31,6 +32,25 @@ export default function VenueInitializer({
       (tableId !== undefined && tableId !== null) ||
       (spotId !== undefined && spotId !== null);
 
+    const venueChanged = !!currentSlug && currentSlug !== venue.slug;
+
+    const basket = useBasketStore.getState();
+    // Корзина живёт в localStorage и переживает сессию, а venueSlug в
+    // useVenueStore — в sessionStorage. Сверяем по slug’у, записанному
+    // внутри самой корзины, чтобы ловить смену заведения и между сессиями.
+    const basketFromOtherVenue =
+      basket.venueSlug != null && basket.venueSlug !== venue.slug;
+    // Корзина, сохранённая до внедрения scope’а (или «осиротевшая» после
+    // clearBasket), не имеет slug’а. Если там лежат позиции — мы не можем
+    // подтвердить их происхождение, безопаснее сбросить.
+    const basketOrphanedWithItems =
+      basket.venueSlug == null && basket.items.length > 0;
+
+    if (venueChanged || basketFromOtherVenue || basketOrphanedWithItems) {
+      basket.clearBasket();
+    }
+    basket.setVenueSlug(venue.slug);
+
     if (hasNewContext) {
       setContext({
         tableId,
@@ -42,17 +62,15 @@ export default function VenueInitializer({
       // QR-контекст имеет приоритет — синхронизируем куку, чтобы SSR отдавал
       // цены этой точки при последующих переходах.
       if (spotId != null) writeSpotCookie(venue.slug, spotId);
-    } else {
-      if (currentSlug && currentSlug !== venue.slug) {
-        setContext({
-          tableId: null,
-          spotId: null,
-          tableNumber: null,
-          venueSlug: venue.slug,
-        });
-        // При смене заведения — сбрасываем чужую точку из куки.
-        clearSpotCookie();
-      }
+    } else if (venueChanged) {
+      setContext({
+        tableId: null,
+        spotId: null,
+        tableNumber: null,
+        venueSlug: venue.slug,
+      });
+      // При смене заведения — сбрасываем чужую точку из куки.
+      clearSpotCookie();
     }
 
     const color = venue?.colorTheme || '#b45309';

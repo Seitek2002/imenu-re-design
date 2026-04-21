@@ -44,6 +44,10 @@ export interface AddToBasketSelection {
 
 interface BasketState {
   items: BasketItem[];
+  // Slug заведения, к которому относятся текущие позиции. Храним, чтобы
+  // обнаруживать смену заведения между сессиями (sessionStorage у venue
+  // сбрасывается, localStorage корзины — нет).
+  venueSlug: string | null;
 
   addToBasket: (
     product: Product,
@@ -53,6 +57,7 @@ interface BasketState {
   decrementItem: (key: string) => void;
   removeFromBasket: (key: string) => void;
   clearBasket: () => void;
+  setVenueSlug: (slug: string | null) => void;
 
   getProductQuantity: (id: number) => number;
 
@@ -104,6 +109,9 @@ export const useBasketStore = create<BasketState>()(
   persist(
     (set, get) => ({
       items: [],
+      venueSlug: null,
+
+      setVenueSlug: (slug) => set({ venueSlug: slug }),
 
       addToBasket: (product, quantity = 1, selection) => {
         const items = get().items;
@@ -154,7 +162,7 @@ export const useBasketStore = create<BasketState>()(
         set({ items: get().items.filter((i) => i.key !== key) });
       },
 
-      clearBasket: () => set({ items: [] }),
+      clearBasket: () => set({ items: [], venueSlug: null }),
 
       getProductQuantity: (id) => {
         return get()
