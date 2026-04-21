@@ -222,15 +222,17 @@ export interface MainButton {
   name: string;
   photo: string; // URL картинки
   order: number;
-  buttonType: 'section' | 'category' | 'link'; // Вижу по JSON, что там section
+  buttonType: 'section' | 'category' | 'link';
 
   // Если buttonType === 'section'
   section?: SectionShort | null;
-  slug: string;
+  // Если buttonType === 'category' — категория приходит отдельным полем
+  category?: Category | null;
+  slug?: string;
 
   // Вложенные категории секции — приходят с бэка с полной схемой Category
   // (parentCategory, children, sections и т.д.), потому используем Category
-  categories?: Category[];
+  categories?: Category[] | null;
 }
 
 export interface Modificator {
@@ -244,6 +246,36 @@ export interface ProductCategory {
   categoryName: string;
 }
 
+export interface GroupItem {
+  id: number;
+  name: string;
+  price: string; // decimal — доплата к цене позиции
+  brutto: string; // вес/объём для подписи
+  photo?: string | null;
+  thumbnail?: string | null;
+}
+
+export interface GroupSelection {
+  type: 'single' | 'multiple';
+  title: string;
+  description: string;
+  min: number;
+  max: number;
+}
+
+export interface GroupModification {
+  id: number;
+  name: string;
+  selection: GroupSelection;
+  items: GroupItem[];
+}
+
+export interface ProductType {
+  code: string;
+  label: string;
+  isBatchticket: boolean;
+}
+
 export interface Product {
   id: number;
   productName: string;
@@ -252,6 +284,8 @@ export interface Product {
   weight: number;
 
   measureUnit?: string;
+  unit?: string;
+  unitDisplay?: string;
 
   // Фото
   productPhoto?: string;
@@ -260,6 +294,8 @@ export interface Product {
 
   categories: ProductCategory[];
   modificators: Modificator[];
+  groupModifications?: GroupModification[];
+  productType?: ProductType;
 
   isRecommended?: boolean;
 }

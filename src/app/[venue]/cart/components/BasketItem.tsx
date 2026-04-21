@@ -54,13 +54,24 @@ function BasketItem({ item, onIncrement, onDecrement, onRemove }: Props) {
               <span className='text-sm font-semibold text-[#21201F] truncate'>
                 {item.productName}
               </span>
-              {item.modifierName && (
+              {item.flatModName && (
                 <span className='text-xs text-[#80868B] truncate'>
-                  {item.modifierName}
+                  {item.flatModName}
+                </span>
+              )}
+              {item.groupSelections && item.groupSelections.length > 0 && (
+                <span className='text-xs text-[#80868B] truncate'>
+                  {item.groupSelections
+                    .flatMap((g) =>
+                      g.items.map((i) =>
+                        i.count > 1 ? `${i.name} ×${i.count}` : i.name,
+                      ),
+                    )
+                    .join(', ')}
                 </span>
               )}
               <span className='text-sm font-medium text-[#21201F] mt-1'>
-                {item.productPrice * item.quantity} c.
+                {item.lineUnitPrice * item.quantity} c.
               </span>
             </div>
           </div>

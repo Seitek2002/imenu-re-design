@@ -118,8 +118,12 @@ export const useCreateOrderV2 = () => {
   });
 };
 
-async function fetchVenueProducts(venueSlug: string): Promise<Product[]> {
+async function fetchVenueProducts(
+  venueSlug: string,
+  spotId?: number | null,
+): Promise<Product[]> {
   const params = new URLSearchParams({ venueSlug });
+  if (spotId != null) params.set('spotId', String(spotId));
   const res = await fetch(`${API_URL}/v2/products/?${params.toString()}`, {
     headers: { 'Content-Type': 'application/json' },
   });
@@ -127,10 +131,13 @@ async function fetchVenueProducts(venueSlug: string): Promise<Product[]> {
   return res.json();
 }
 
-export const useVenueProducts = (venueSlug: string | null | undefined) => {
+export const useVenueProducts = (
+  venueSlug: string | null | undefined,
+  spotId?: number | null,
+) => {
   return useQuery({
-    queryKey: ['venue-products', venueSlug],
-    queryFn: () => fetchVenueProducts(venueSlug as string),
+    queryKey: ['venue-products', venueSlug, spotId ?? null],
+    queryFn: () => fetchVenueProducts(venueSlug as string, spotId),
     enabled: !!venueSlug,
     staleTime: 1000 * 60 * 5,
   });

@@ -36,10 +36,16 @@ export interface BonusResponse {
   bonus: number;
 }
 
+export interface OrderProductGroupModInput {
+  id: number; // GroupItem.id (не GroupModification.id)
+  count: number;
+}
+
 export interface OrderProductInput {
   product: number; // ID продукта
   count: number;
   modificator?: number | null;
+  groupModifications?: OrderProductGroupModInput[];
 }
 
 export interface OrderCreateBody {
@@ -49,6 +55,9 @@ export interface OrderCreateBody {
   comment?: string | null;
   spot?: number | null;
   table?: number | null;
+  needsCutlery?: boolean;
+  deliveryLatitude?: string | null;
+  deliveryLongitude?: string | null;
   orderProducts: OrderProductInput[];
   paymentMethods?: 'cash' | 'card' | 'elqr'; // Если нужно
   isTgBot?: boolean;

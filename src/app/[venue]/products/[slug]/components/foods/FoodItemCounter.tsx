@@ -31,7 +31,11 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
 
   const mounted = useMounted();
   const displayCount = mounted ? count : 0;
-  const hasModifiers = product.modificators && product.modificators.length > 0;
+  const hasFlatMods = !!product.modificators && product.modificators.length > 0;
+  const hasGroupMods =
+    !!product.groupModifications && product.groupModifications.length > 0;
+  const hasModifiers = hasFlatMods || hasGroupMods;
+  const simpleKey = `${product.id}|f`;
 
   const openSheet = () => {
     setProduct(product); // Сохраняем в стор
@@ -49,7 +53,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
     if (hasModifiers) {
       openSheet();
     } else {
-      addToBasket(product);
+      addToBasket(product, 1);
     }
   };
 
@@ -61,7 +65,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
     if (hasModifiers) {
       openSheet();
     } else {
-      decrementItem(product.id.toString());
+      decrementItem(simpleKey);
     }
   };
 

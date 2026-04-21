@@ -161,11 +161,21 @@ const DrawerCheckout: FC<IProps> = ({
         // 🔥 Берем реальные spotId и tableId из стора
         spot: spotId || venueData?.spots?.[0]?.id,
         table: tableId || undefined,
-        orderProducts: items.map((i) => ({
-          product: i.id,
-          count: i.quantity,
-          modificator: i.modifierId,
-        })),
+        orderProducts: items.map((i) => {
+          const flatGroupMods = i.groupSelections
+            ?.flatMap((g) =>
+              g.items.map((it) => ({ id: it.id, count: it.count })),
+            )
+            ?.filter((x) => x.count > 0);
+          return {
+            product: i.id,
+            count: i.quantity,
+            modificator: i.flatModId ?? null,
+            ...(flatGroupMods && flatGroupMods.length > 0
+              ? { groupModifications: flatGroupMods }
+              : {}),
+          };
+        }),
         paymentMethods: paymentMethod,
         useBonus: isBonusUsed,
       };
