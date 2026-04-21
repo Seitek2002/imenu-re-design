@@ -51,7 +51,7 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
         </h3>
         {product.weight > 0 && (
           <span className='text-[#757575] text-xs mt-1'>
-            {product.weight} г
+            {product.weight} {product.unitDisplay || product.measureUnit || 'г'}
           </span>
         )}
       </div>
