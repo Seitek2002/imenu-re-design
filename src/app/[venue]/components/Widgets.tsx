@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useCheckout } from '@/store/checkout';
 import { useOrdersV2, useClientBonus } from '@/lib/api/queries';
@@ -21,6 +22,8 @@ interface IWidgetsProps {
 
 const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const [isScheduleOpen, setScheduleOpen] = useState(false);
+  const t = useTranslations('Widgets');
+  const locale = useLocale();
 
   const { phone } = useCheckout();
 
@@ -47,7 +50,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
           className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden group'
         >
           <div className='text-[#0404138C] font-bold text-xs whitespace-nowrap mb-2 relative z-10'>
-            {hasActiveOrder ? 'Статус заказа' : 'Мои заказы'}
+            {hasActiveOrder ? t('orderStatus') : t('myOrders')}
           </div>
 
           <div className='relative w-full h-14 flex items-center justify-center'>
@@ -86,12 +89,12 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
 
         <div className='home-widget bg-[#FAFAFA] rounded-3xl min-w-35 p-4 text-xs text-center snap-start'>
           <div className='text-[#0404138C] font-bold text-xs whitespace-nowrap mb-2'>
-            Бонусные баллы
+            {t('bonus')}
           </div>
           <div className='flex items-center justify-center gap-2 mt-3'>
             <Image src={widget2} alt='Points' width={24} height={24} />
             <span className='text-xl font-black leading-none text-[#111111]'>
-              {(bonusData?.bonus ?? 0).toLocaleString('ru-RU')}
+              {(bonusData?.bonus ?? 0).toLocaleString(locale)}
             </span>
           </div>
         </div>
@@ -102,7 +105,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
           className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform cursor-pointer'
         >
           <div className='text-[#0404138C] font-bold text-xs whitespace-nowrap mb-2'>
-            График
+            {t('schedule')}
           </div>
           <div className='relative w-full h-12'>
             <Image

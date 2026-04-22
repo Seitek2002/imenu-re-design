@@ -2,6 +2,7 @@
 
 import { FC, ReactNode } from 'react';
 import { useSearchParams, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useProductStore } from '@/store/product';
 import { Product } from '@/types/api';
 
@@ -15,6 +16,7 @@ const ProductLink: FC<Props> = ({ product, className }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const setProduct = useProductStore((state) => state.setProduct);
+  const t = useTranslations('Product');
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -33,7 +35,7 @@ const ProductLink: FC<Props> = ({ product, className }) => {
       href={`?product=${product.id}`}
       onClick={handleClick}
       className={className}
-      aria-label={`Открыть ${product.productName}`}
+      aria-label={t('ariaOpen', { name: product.productName })}
     />
   );
 };

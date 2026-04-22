@@ -1,6 +1,7 @@
 'use client';
 
 import { X, Clock, Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useVenueStore } from '@/store/venue';
 
 interface Props {
@@ -15,6 +16,8 @@ const formatTime = (time?: string) => {
 };
 
 export default function ScheduleModal({ isOpen, onClose }: Props) {
+  const t = useTranslations('Schedule');
+  const tc = useTranslations('Common');
   const venue = useVenueStore((state) => state.data);
 
   const jsDay = new Date().getDay();
@@ -41,9 +44,9 @@ export default function ScheduleModal({ isOpen, onClose }: Props) {
             </div>
             <div>
               <h3 className='font-bold text-lg leading-tight text-gray-900'>
-                График работы
+                {t('title')}
               </h3>
-              <p className='text-xs text-gray-400'>Время местное</p>
+              <p className='text-xs text-gray-400'>{t('localTime')}</p>
             </div>
           </div>
 
@@ -58,7 +61,7 @@ export default function ScheduleModal({ isOpen, onClose }: Props) {
         {schedules.length === 0 ? (
           <div className='text-center py-8 text-gray-400'>
             <Calendar size={48} className='mx-auto mb-2 opacity-20' />
-            <p>Информация о графике отсутствует</p>
+            <p>{t('empty')}</p>
           </div>
         ) : (
           <ul className='space-y-2'>
@@ -93,9 +96,9 @@ export default function ScheduleModal({ isOpen, onClose }: Props) {
                     }`}
                   >
                     {isDayOff ? (
-                      <span className='text-red-400 font-normal'>Выходной</span>
+                      <span className='text-red-400 font-normal'>{t('dayOff')}</span>
                     ) : is24h ? (
-                      <span className='text-green-600'>Круглосуточно</span>
+                      <span className='text-green-600'>{t('around')}</span>
                     ) : (
                       `${formatTime(day.workStart)} - ${formatTime(
                         day.workEnd
@@ -112,7 +115,7 @@ export default function ScheduleModal({ isOpen, onClose }: Props) {
           onClick={onClose}
           className='w-full mt-6 bg-gray-100 text-gray-900 font-bold py-3.5 rounded-xl active:scale-95 transition-transform'
         >
-          Понятно
+          {tc('gotIt')}
         </button>
       </div>
     </div>

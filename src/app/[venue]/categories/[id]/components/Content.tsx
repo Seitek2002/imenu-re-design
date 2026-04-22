@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import ContentItem from './ContentItem';
 import { Category } from '@/types/api';
 
@@ -49,6 +50,7 @@ function renderGrid(items: Category[], venueSlug: string, offset = 0) {
 }
 
 const Content = ({ venueSlug, layout }: Props) => {
+  const t = useTranslations('Categories');
   const isEmpty =
     (layout.mode === 'flat' && layout.items.length === 0) ||
     (layout.mode === 'grouped' && layout.groups.length === 0);
@@ -56,7 +58,7 @@ const Content = ({ venueSlug, layout }: Props) => {
   if (isEmpty) {
     return (
       <div className='flex flex-col items-center justify-center min-h-[50vh] text-gray-400'>
-        <p>В этом разделе пока нет категорий</p>
+        <p>{t('empty')}</p>
       </div>
     );
   }
@@ -72,7 +74,7 @@ const Content = ({ venueSlug, layout }: Props) => {
               .slice(0, groupIdx)
               .reduce((acc, g) => acc + g.items.length, 0);
 
-            const headerText = group.parent?.categoryName ?? 'Остальное';
+            const headerText = group.parent?.categoryName ?? t('other');
             const headerLink = group.parent
               ? `/${venueSlug}/products/${group.parent.slug}`
               : null;
@@ -88,7 +90,7 @@ const Content = ({ venueSlug, layout }: Props) => {
                       {headerText}
                     </h2>
                     <span className='text-sm text-brand font-medium group-active:translate-x-0.5 transition-transform'>
-                      Все →
+                      {t('viewAll')}
                     </span>
                   </Link>
                 ) : (

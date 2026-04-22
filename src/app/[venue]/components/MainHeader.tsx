@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useVenueStore } from '@/store/venue'; // 1. Подключаем стор
 import WifiModal from '@/components/modals/WifiModal'; // 2. Подключаем модалку
 import LanguageDropdown from '@/app/[venue]/components/LanguageDropdown';
@@ -9,6 +10,7 @@ import wifiIcon from '@/assets/Header/wifi-icon.svg';
 
 const MainHeader = () => {
   const [isWifiOpen, setWifiOpen] = useState(false);
+  const t = useTranslations('Wifi');
 
   // 3. Получаем данные заведения
   const venue = useVenueStore((state) => state.data);
@@ -57,7 +59,7 @@ const MainHeader = () => {
             <button
               onClick={() => setWifiOpen(true)}
               className='p-2.5 rounded-[14px] bg-[#FAFAFA] cursor-pointer active:scale-95 transition-transform'
-              aria-label='Wi-Fi Info'
+              aria-label={t('aria')}
             >
               <Image src={wifiIcon} alt='wifi' width={20} height={20} />
             </button>

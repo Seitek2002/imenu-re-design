@@ -5,13 +5,15 @@ import StatusHeader from './components/StatusHeader';
 import OrderNotFound from './components/OrderNotFound';
 import OrderSaver from './components/OrderSaver';
 import { API_V2_URL } from '@/lib/config';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { Locale } from '@/lib/locale';
 
 // Функция получения заказа (Серверная)
-async function fetchOrder(id: string): Promise<OrderV2 | null> {
+async function fetchOrder(id: string, locale: Locale): Promise<OrderV2 | null> {
   try {
     const res = await fetch(`${API_V2_URL}/orders/${id}/`, {
       cache: 'no-store', // Всегда свежие данные, чтобы статус обновлялся
-      headers: { 'Accept-Language': 'ru' },
+      headers: { 'Accept-Language': locale },
     });
 
     if (!res.ok) return null;
@@ -28,7 +30,11 @@ interface Props {
 
 export default async function OrderStatusPage({ params }: Props) {
   const { venue, orderId } = await params;
-  const order = await fetchOrder(orderId);
+  const locale = (await getLocale()) as Locale;
+  const [order, t] = await Promise.all([
+    fetchOrder(orderId, locale),
+    getTranslations('OrderStatus'),
+  ]);
 
   if (!order) {
     return <OrderNotFound venueSlug={venue} />;
@@ -52,7 +58,7 @@ export default async function OrderStatusPage({ params }: Props) {
 
         {/* 3. Итого (простая карточка) */}
         <div className='bg-white rounded-[20px] p-5 mt-4 shadow-sm flex justify-between items-center'>
-          <span className='text-gray-500 font-medium'>Итого к оплате:</span>
+          <span className='text-gray-500 font-medium'>{t('totalDue')}</span>
           <span className='text-2xl font-bold text-brand'>
             {order.totalPrice} с.
           </span>

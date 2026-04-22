@@ -1,16 +1,18 @@
 import { API_URL } from './config';
+import type { Locale } from './locale';
 
 const BASE_URL = `${API_URL}/`;
 
 type FetchOptions = RequestInit & {
   params?: Record<string, string | number | boolean | undefined>;
+  locale?: Locale;
 };
 
 export async function apiClient<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const { params, ...init } = options;
+  const { params, locale, ...init } = options;
 
   // Формируем Query String (?venueSlug=...&tableId=...)
   let url = `${BASE_URL}${endpoint}`;
@@ -24,10 +26,11 @@ export async function apiClient<T>(
     url += `?${searchParams.toString()}`;
   }
 
-  const headers = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    ...init.headers,
+    ...(locale ? { 'Accept-Language': locale } : {}),
+    ...(init.headers as Record<string, string> | undefined),
   };
 
   const response = await fetch(url, {

@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useVenueStore } from '@/store/venue';
 import { useBasketStore } from '@/store/basket';
 import { writeSpotCookie } from '@/lib/spot-cookie.client';
 
 export default function SpotPicker() {
   const router = useRouter();
+  const t = useTranslations('Spot');
   const venue = useVenueStore((s) => s.data);
   const activeSpotId = useVenueStore((s) => s.spotId);
   const isKioskMode = useVenueStore((s) => s.isKioskMode);
@@ -34,9 +36,7 @@ export default function SpotPicker() {
     }
     // Цены/наличие зависят от точки — старая корзина становится невалидной.
     if (basketCount > 0) {
-      const ok = window.confirm(
-        'При смене точки корзина будет очищена, так как цены и наличие могут отличаться. Продолжить?',
-      );
+      const ok = window.confirm(t('switchConfirm'));
       if (!ok) {
         setOpen(false);
         return;
@@ -57,7 +57,7 @@ export default function SpotPicker() {
         className='w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3 shadow-sm active:scale-[0.99] transition-transform'
       >
         <div className='flex flex-col items-start text-left'>
-          <span className='text-[#A4A4A4] text-xs'>Забираю из</span>
+          <span className='text-[#A4A4A4] text-xs'>{t('pickupFrom')}</span>
           <span className='text-[#111111] font-semibold text-sm truncate'>
             {activeSpot.name}
           </span>

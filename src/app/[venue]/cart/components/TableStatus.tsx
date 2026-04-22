@@ -1,9 +1,11 @@
 'use client';
 
 import { UtensilsCrossed } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useVenueStore } from '@/store/venue';
 
 export default function TableStatus() {
+  const t = useTranslations('Cart.table');
   // 1. Просто достаем готовый номер из памяти. Мгновенно.
   const tableNumber = useVenueStore((state) => state.tableNumber);
 
@@ -16,7 +18,7 @@ export default function TableStatus() {
         <UtensilsCrossed size={16} className='text-brand' />
 
         <span className='text-brand font-bold text-sm'>
-          {tableNumber ? `Стол №${tableNumber}` : 'Заказ в зале'}
+          {tableNumber ? t('statusTable', { num: tableNumber }) : t('statusInRoom')}
         </span>
       </div>
     </div>

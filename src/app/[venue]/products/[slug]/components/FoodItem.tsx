@@ -1,4 +1,7 @@
+'use client';
+
 import { FC } from 'react';
+import { useTranslations } from 'next-intl';
 import { Product } from '@/types/api';
 import placeholder from '@/assets/Foods/placeholder.webp';
 import FoodItemImage from './foods/FoodItemImage';
@@ -11,12 +14,25 @@ interface Props {
 }
 
 const FoodItem: FC<Props> = ({ product, index = 0 }) => {
+  const tc = useTranslations('Common');
   let price = product.productPrice;
   let isFrom = false;
 
-  if (price === 0 && product.modificators && product.modificators.length > 0) {
-    price = Math.min(...product.modificators.map((m) => m.price));
-    isFrom = true;
+  if (price === 0) {
+    const requiredGroups = (product.groupModifications ?? []).filter(
+      (g) => g.selection.min > 0 && g.items.length > 0,
+    );
+
+    if (requiredGroups.length > 0) {
+      price = requiredGroups.reduce((sum, g) => {
+        const cheapest = Math.min(...g.items.map((i) => Number(i.price)));
+        return sum + cheapest * g.selection.min;
+      }, 0);
+      isFrom = true;
+    } else if (product.modificators && product.modificators.length > 0) {
+      price = Math.min(...product.modificators.map((m) => m.price));
+      isFrom = true;
+    }
   }
 
   const imageUrl =
@@ -42,16 +58,16 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
       <div className='mt-2 flex flex-col flex-1 justify-between pointer-events-none'>
         <h2 className='text-[#21201F] text-lg font-semibold'>
           {isFrom && (
-            <span className='text-sm font-normal text-gray-500 mr-1'>от</span>
+            <span className='text-sm font-normal text-gray-500 mr-1'>{tc('from')}</span>
           )}
-          {price} с.
+          {price} {tc('currency')}
         </h2>
         <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-active:text-brand transition-colors'>
           {product.productName}
         </h3>
         {product.weight > 0 && (
           <span className='text-[#757575] text-xs mt-1'>
-            {product.weight} {product.unitDisplay || product.measureUnit || 'г'}
+            {product.weight} {product.unitDisplay || product.measureUnit || tc('weightUnit')}
           </span>
         )}
       </div>

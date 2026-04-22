@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { useMounted } from '@/hooks/useMounted';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 
 export default function WifiModal({ isOpen, onClose, text, url }: Props) {
   const mounted = useMounted();
+  const t = useTranslations('Wifi');
 
   // Блокируем скролл фона
   useEffect(() => {
@@ -54,11 +56,11 @@ export default function WifiModal({ isOpen, onClose, text, url }: Props) {
         </div>
 
         <h3 className='text-xl font-bold text-center text-gray-900 mb-2'>
-          Подключение к Wi-Fi
+          {t('title')}
         </h3>
 
         <div className='text-center text-gray-600 mb-6 whitespace-pre-line bg-gray-50 p-4 rounded-2xl border border-gray-100'>
-          {text || 'Данные не указаны'}
+          {text || t('noData')}
         </div>
 
         <div className='flex flex-col gap-3'>
@@ -70,7 +72,7 @@ export default function WifiModal({ isOpen, onClose, text, url }: Props) {
               rel='noreferrer'
               className='w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform'
             >
-              Подключиться
+              {t('connect')}
             </a>
           )}
 
@@ -78,7 +80,7 @@ export default function WifiModal({ isOpen, onClose, text, url }: Props) {
             onClick={onClose}
             className='w-full py-3.5 bg-gray-100 text-gray-900 font-bold rounded-xl active:scale-95 transition-transform'
           >
-            Закрыть
+            {t('close')}
           </button>
         </div>
       </div>

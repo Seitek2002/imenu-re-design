@@ -1,6 +1,8 @@
 import Content, { CategoryGroup, CategoryLayout } from './Content';
 import { VenueService } from '@/services/venue.service';
 import { Category } from '@/types/api';
+import { getLocale } from 'next-intl/server';
+import type { Locale } from '@/lib/locale';
 
 interface Props {
   venue: string;
@@ -62,7 +64,8 @@ function buildLayout(sectionCats: Category[]): CategoryLayout {
 }
 
 export default async function CategoryFetcher({ venue, id }: Props) {
-  const buttons = await VenueService.getMainButtons(venue);
+  const locale = (await getLocale()) as Locale;
+  const buttons = await VenueService.getMainButtons(venue, locale);
   const sectionId = Number(id);
 
   const button = buttons.flat().find((b) => b.section?.id === sectionId);

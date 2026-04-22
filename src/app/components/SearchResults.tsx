@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useUIStore } from '@/store/ui';
 import { useVenueStore } from '@/store/venue';
 import { Product } from '@/types/api';
@@ -9,6 +10,7 @@ import { useEasterEggs } from './useEasterEggs';
 import { API_V2_URL } from '@/lib/config';
 
 export default function SearchResults() {
+  const t = useTranslations('Search');
   const { searchQuery } = useUIStore();
   const venue = useVenueStore((state) => state.data);
 
@@ -52,7 +54,7 @@ export default function SearchResults() {
     return (
       <div className='flex flex-col items-center justify-center pt-20 text-gray-400 animate-fadeIn'>
         <div className='text-4xl mb-2'>🔍</div>
-        <p>Введите &apos;название блюда&apos;</p>
+        <p>{t('intro')}</p>
       </div>
     );
   }
@@ -121,7 +123,7 @@ export default function SearchResults() {
   // --- 🍔 РЕНДЕР РЕЗУЛЬТАТОВ ПОИСКА ---
   return (
     <div className='px-2 py-4 min-h-[60vh] animate-fadeIn'>
-      <h3 className='text-lg font-bold mb-4 px-2'>Результаты поиска</h3>
+      <h3 className='text-lg font-bold mb-4 px-2'>{t('results')}</h3>
 
       {loading ? (
         <div className='flex justify-center py-10'>
@@ -137,7 +139,7 @@ export default function SearchResults() {
         </div>
       ) : (
         <div className='text-center py-10 text-gray-500'>
-          Ничего не найдено по запросу &quot;{searchQuery}&quot;
+          {t('noResults', { query: searchQuery })}
         </div>
       )}
     </div>

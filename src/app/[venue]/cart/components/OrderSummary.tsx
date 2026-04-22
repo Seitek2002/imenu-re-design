@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 // Сторы и API
 import { useCheckout } from '@/store/checkout';
@@ -25,6 +26,7 @@ export default function OrderSummary({
   deliveryCost,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations('Cart.summary');
 
   // 1. Данные для бонусов
   const venue = useVenueStore((state) => state.data);
@@ -55,7 +57,7 @@ export default function OrderSummary({
         onClick={() => setIsOpen(!isOpen)}
         className='w-full flex items-center justify-between text-[#80868B]'
       >
-        <span className='text-base font-medium'>Детали заказа</span>
+        <span className='text-base font-medium'>{t('details')}</span>
         <span
           className={`transition-transform duration-300 ${
             isOpen ? 'rotate-180' : ''
@@ -75,14 +77,14 @@ export default function OrderSummary({
           <div className='flex flex-col gap-2 pb-1'>
             {/* Товары */}
             <div className='flex justify-between text-[#80868B]'>
-              <span>Сумма товаров</span>
+              <span>{t('subtotal')}</span>
               <span>{subtotal} c.</span>
             </div>
 
             {/* Доставка */}
             {deliveryType === 'delivery' && (
               <div className='flex justify-between text-[#80868B]'>
-                <span>Доставка</span>
+                <span>{t('delivery')}</span>
                 <span>{deliveryCost} c.</span>
               </div>
             )}
@@ -102,10 +104,10 @@ export default function OrderSummary({
                     />
                     <div className='flex flex-col'>
                       <span className='text-sm font-bold text-[#111] leading-tight'>
-                        Списать баллы
+                        {t('spendBonus')}
                       </span>
                       <span className='text-[10px] text-gray-500'>
-                        Доступно: {availableBonuses}
+                        {t('available', { amount: availableBonuses })}
                       </span>
                     </div>
                   </div>
@@ -131,7 +133,7 @@ export default function OrderSummary({
                 {/* Если включено — показываем сколько спишется */}
                 {isBonusUsed && (
                   <div className='mt-2 text-xs text-brand font-medium border-t border-dashed border-gray-200 pt-2 flex justify-between'>
-                    <span>Скидка:</span>
+                    <span>{t('discount')}</span>
                     <span>- {Math.round(discount)} c.</span>
                   </div>
                 )}
@@ -141,7 +143,7 @@ export default function OrderSummary({
 
           {/* ИТОГО */}
           <div className='border-t border-[#E7E7E7] mt-3 pt-2 flex justify-between font-bold text-[#21201F] text-lg'>
-            <span>Итого</span>
+            <span>{t('total')}</span>
             <span>{Math.max(0, finalTotal)} c.</span>
           </div>
         </div>

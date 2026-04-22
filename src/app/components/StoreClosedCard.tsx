@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { getTranslations } from 'next-intl/server';
 import ClosedStoreIllustration from './illustrations/ClosedStoreIllustration';
 
 interface Props {
@@ -6,30 +6,23 @@ interface Props {
   brandColor?: string;
 }
 
-const StoreClosedCard: FC<Props> = ({
-  scheduleMessage = 'Ждем вас завтра с 10:00',
+const StoreClosedCard = async ({
+  scheduleMessage,
   brandColor = '#FF9900'
-}) => {
+}: Props) => {
+  const t = await getTranslations('StoreClosed');
+  const message = scheduleMessage ?? t('defaultMessage');
   return (
     <div className='bg-white rounded-3xl p-6 text-center shadow-sm mt-2 mb-3'>
-      {/* Иллюстрация */}
       <div className='relative w-50 h-50 mx-auto mb-4'>
         <ClosedStoreIllustration color={brandColor} className="w-full h-full" />
       </div>
 
-      {/* Заголовок */}
       <h2 className='text-xl font-bold text-[#21201f] mb-2'>
-        Сейчас нерабочее время бла-бла-бла
+        {t('title')}
       </h2>
 
-      {/* Подзаголовок (динамический) */}
-      <p className='text-gray-500 text-sm mb-6'>{scheduleMessage}</p>
-
-      {/* Кнопка "Посмотреть меню" (если нужно просто показать меню,
-          можно сделать Link на страницу с параметром ?view=menu 
-          или просто ScrollLink, если меню скрыто ниже) 
-      */}
-      {/* <button className='...'>Посмотреть меню</button> */}
+      <p className='text-gray-500 text-sm mb-6'>{message}</p>
     </div>
   );
 };

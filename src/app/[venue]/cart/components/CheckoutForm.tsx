@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import SelectField from './SelectField';
 import ModalPortal from './ModalPortal';
 
@@ -28,6 +29,7 @@ export default function CheckoutForm({
   pickupTime,
   setPickupTime,
 }: Props) {
+  const t = useTranslations('Cart.checkoutForm');
   const [openTime, setOpenTime] = useState(false);
   const [openSpots, setOpenSpots] = useState(false);
 
@@ -59,8 +61,8 @@ export default function CheckoutForm({
         leftIcon={<Image src={clockIcon} alt='clock' />}
         rightIcon={<Image src={selectArrow} alt='arrow' />}
         value={pickupTime}
-        placeholder='Время выдачи'
-        label='Когда приготовить?'
+        placeholder={t('pickupTime')}
+        label={t('whenLabel')}
         onClick={() => setOpenTime(true)}
       />
 
@@ -70,8 +72,8 @@ export default function CheckoutForm({
           rightIcon={<Image src={selectArrow} alt='arrow' />}
           value={selectedSpot?.title}
           subLabel={selectedSpot?.address}
-          placeholder='Выбрать филиал'
-          label='Где заберете?'
+          placeholder={t('branchPlaceholder')}
+          label={t('branchLabel')}
           onClick={() => setOpenSpots(true)}
         />
       )}
@@ -110,7 +112,7 @@ export default function CheckoutForm({
           >
             ✕
           </button>
-          <h3 className='text-lg font-bold mb-4'>Выберите филиал</h3>
+          <h3 className='text-lg font-bold mb-4'>{t('branchTitle')}</h3>
 
           {realSpots.length > 0 ? (
             <SpotList
@@ -119,7 +121,7 @@ export default function CheckoutForm({
               onSelect={handleSpotSelect}
             />
           ) : (
-            <p className='text-gray-500 text-sm'>Нет доступных филиалов</p>
+            <p className='text-gray-500 text-sm'>{t('branchEmpty')}</p>
           )}
         </div>
       </ModalPortal>

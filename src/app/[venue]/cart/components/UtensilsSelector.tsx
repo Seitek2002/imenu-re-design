@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useCheckout } from '@/store/checkout';
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function UtensilsSelector({ className = '' }: Props) {
+  const t = useTranslations('Cart.utensils');
   const { needUtensils, setNeedUtensils } = useCheckout();
 
   return (
@@ -15,10 +17,10 @@ export default function UtensilsSelector({ className = '' }: Props) {
     >
       <div className='flex flex-col'>
         <span className='text-sm font-semibold text-[#111111]'>
-          Нужны приборы?
+          {t('title')}
         </span>
         <span className='text-[#A4A4A4] text-xs mt-0.5'>
-          По умолчанию — без приборов 🌿
+          {t('subtitle')}
         </span>
       </div>
       <button

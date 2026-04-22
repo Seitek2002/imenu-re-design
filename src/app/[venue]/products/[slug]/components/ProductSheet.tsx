@@ -10,6 +10,7 @@ import React, {
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useSearchParams, usePathname, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import {
   GroupModification,
@@ -66,15 +67,17 @@ const GroupSection = ({
   onChange: (next: CountsState) => void;
   error: string | null;
 }) => {
+  const t = useTranslations('Product');
+  const tc = useTranslations('Common');
   const { type, min, max } = group.selection;
   const sum = sumGroupCount(group, counts);
 
   const badge =
     min === max
-      ? `Ровно ${min}`
+      ? t('exactly', { n: min })
       : min > 0
-        ? `Обязательно • до ${max}`
-        : `До ${max}`;
+        ? t('requiredUpTo', { n: max })
+        : t('upTo', { n: max });
 
   const handleSingle = (itemId: number) => {
     const current = counts[itemId] ?? 0;
@@ -102,8 +105,7 @@ const GroupSection = ({
         <div className='flex flex-col'>
           <span className='font-semibold'>{group.name}</span>
           <span className='text-xs text-gray-400'>
-            Выбрано {sum}
-            {max > 0 ? ` из ${max}` : ''}
+            {max > 0 ? t('chosenOf', { current: sum, max }) : t('chosen', { current: sum })}
           </span>
         </div>
         <span
@@ -136,30 +138,19 @@ const GroupSection = ({
                 }`}
               >
                 <div className='flex items-center gap-3 min-w-0'>
-                  {item.thumbnail && (
-                    <div className='relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10'>
-                      <Image
-                        src={item.thumbnail}
-                        alt={item.name}
-                        fill
-                        className='object-cover'
-                        sizes='40px'
-                      />
-                    </div>
-                  )}
                   <div className='flex flex-col min-w-0'>
                     <span className='font-medium truncate'>{item.name}</span>
                     {Number(item.brutto) > 0 && (
                       <span
                         className={`text-xs ${selected ? 'text-gray-300' : 'text-gray-400'}`}
                       >
-                        {Math.round(Number(item.brutto))} г
+                        {Math.round(Number(item.brutto))} {tc('weightUnit')}
                       </span>
                     )}
                   </div>
                 </div>
                 <span className='text-sm font-semibold shrink-0'>
-                  {priceNum > 0 ? `+${priceNum} с.` : 'включено'}
+                  {priceNum > 0 ? t('pricePlus', { price: priceNum }) : t('included')}
                 </span>
               </button>
             );
@@ -177,26 +168,15 @@ const GroupSection = ({
               }`}
             >
               <div className='flex items-center gap-3 min-w-0'>
-                {item.thumbnail && (
-                  <div className='relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white'>
-                    <Image
-                      src={item.thumbnail}
-                      alt={item.name}
-                      fill
-                      className='object-cover'
-                      sizes='40px'
-                    />
-                  </div>
-                )}
                 <div className='flex flex-col min-w-0'>
                   <span className='font-medium truncate text-gray-800'>
                     {item.name}
                   </span>
                   <span className='text-xs text-gray-400'>
                     {Number(item.brutto) > 0
-                      ? `${Math.round(Number(item.brutto))} г · `
+                      ? `${Math.round(Number(item.brutto))} ${tc('weightUnit')} · `
                       : ''}
-                    {priceNum > 0 ? `+${priceNum} с.` : 'бесплатно'}
+                    {priceNum > 0 ? t('pricePlus', { price: priceNum }) : t('free')}
                   </span>
                 </div>
               </div>
@@ -244,6 +224,7 @@ const ProductContent = ({
   onClose: () => void;
 }) => {
   const addToBasket = useBasketStore((s) => s.addToBasket);
+  const t = useTranslations('Product');
 
   const groups = useMemo(
     () => product.groupModifications ?? [],
@@ -269,14 +250,14 @@ const ProductContent = ({
       if (sum < g.selection.min) {
         out[g.id] =
           g.selection.min === g.selection.max
-            ? `Нужно выбрать ${g.selection.min}`
-            : `Нужно минимум ${g.selection.min}`;
+            ? t('errorChoose', { n: g.selection.min })
+            : t('errorMin', { n: g.selection.min });
       } else if (sum > g.selection.max) {
-        out[g.id] = `Не более ${g.selection.max}`;
+        out[g.id] = t('errorMax', { n: g.selection.max });
       }
     }
     return out;
-  }, [groups, counts]);
+  }, [groups, counts, t]);
 
   const isValid = Object.keys(errors).length === 0;
 
@@ -341,16 +322,16 @@ const ProductContent = ({
                 </p>
               )}
               {weightLabel && (
-                <p className='text-xs text-gray-400 mt-1'>Вес: {weightLabel}</p>
+                <p className='text-xs text-gray-400 mt-1'>{t('weight', { value: weightLabel })}</p>
               )}
             </div>
 
             {flatMods.length > 0 && (
               <div>
                 <div className='flex justify-between items-center mb-2'>
-                  <span className='font-semibold'>Размер</span>
+                  <span className='font-semibold'>{t('size')}</span>
                   <span className='text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded-full'>
-                    Обязательно
+                    {t('required')}
                   </span>
                 </div>
                 <div className='grid grid-cols-3 gap-2'>
@@ -416,7 +397,7 @@ const ProductContent = ({
             className='flex-1 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:active:scale-100'
             onClick={handleAdd}
           >
-            <span>Добавить</span>
+            <span>{t('add')}</span>
             <span className='bg-white/20 px-2 py-0.5 rounded text-sm'>
               {totalPrice} с.
             </span>

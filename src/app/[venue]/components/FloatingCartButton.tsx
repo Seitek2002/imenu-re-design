@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useBasketStore } from '@/store/basket';
 import { useMounted } from '@/hooks/useMounted';
 
@@ -13,6 +14,7 @@ interface Props {
 export default function FloatingCartButton({ venueSlug }: Props) {
   const mounted = useMounted();
   const pathname = usePathname();
+  const t = useTranslations('Cart');
 
   const totalPrice = useBasketStore((state) => state.getTotalPrice());
   const totalCount = useBasketStore((state) => state.getItemCount());
@@ -53,7 +55,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
           <div className='flex items-center justify-center w-6 h-6 bg-white/20 rounded-full text-xs font-bold'>
             {totalCount}
           </div>
-          <span className='font-medium text-sm'>Корзина</span>
+          <span className='font-medium text-sm'>{t('title')}</span>
         </div>
 
         <span className='font-bold text-sm'>{totalPrice} c.</span>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import searchIcon from '@/assets/Header/search.svg';
 
 type Props = {
@@ -11,7 +12,9 @@ type Props = {
   autoFocus?: boolean;
 };
 
-export default function SearchBar({ placeholder = 'Поиск', className = '', autoFocus = false }: Props) {
+export default function SearchBar({ placeholder, className = '', autoFocus = false }: Props) {
+  const tc = useTranslations('Common');
+  const phText = placeholder ?? tc('search');
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -96,12 +99,12 @@ export default function SearchBar({ placeholder = 'Поиск', className = '', 
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-          placeholder={placeholder}
+          placeholder={phText}
           className="bg-transparent outline-none flex-1"
         />
         {isPending && (
           <span
-            aria-label="Загрузка"
+            aria-label={tc('ariaLoading')}
             className="inline-block h-4 w-4 animate-spin rounded-full border-2"
             style={{ borderColor: 'rgba(0,0,0,0.2)', borderTopColor: 'var(--brand)' }}
           />
@@ -109,7 +112,7 @@ export default function SearchBar({ placeholder = 'Поиск', className = '', 
         {showClear && (
           <button
             type="button"
-            aria-label="Очистить"
+            aria-label={tc('ariaSearchClear')}
             onClick={clear}
             className="text-[#6B6B6B] hover:text-[#111111] transition"
           >

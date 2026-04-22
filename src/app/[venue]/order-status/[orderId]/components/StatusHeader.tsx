@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useVenueStore } from '@/store/venue';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function StatusHeader({ venueSlug, orderId }: Props) {
+  const t = useTranslations('OrderStatus');
   // 1. Достаем контекст из стора
   const tableId = useVenueStore((state) => state.tableId);
   const spotId = useVenueStore((state) => state.spotId);
@@ -38,7 +40,7 @@ export default function StatusHeader({ venueSlug, orderId }: Props) {
       >
         <ChevronLeft size={24} />
       </Link>
-      <span className='ml-4 font-bold text-lg'>Заказ #{orderId}</span>
+      <span className='ml-4 font-bold text-lg'>{t('header', { id: orderId })}</span>
     </header>
   );
 }
