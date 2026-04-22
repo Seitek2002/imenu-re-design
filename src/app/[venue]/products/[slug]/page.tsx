@@ -6,6 +6,8 @@ import ContentSkeleton from './components/ContentSkeleton';
 import ProductContentFetcher from './components/ProductContentFetcher';
 import ProductsContentWrapper from './ProductsContentWrapper';
 import { VenueService } from '@/services/venue.service';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { Locale } from '@/lib/locale';
 
 interface Props {
   params: Promise<{ venue: string; slug: string }>;
@@ -17,9 +19,10 @@ interface Props {
 async function resolveCategoryName(
   venue: string,
   slug: string,
+  locale: Locale,
 ): Promise<string | null> {
   try {
-    const buttons = await VenueService.getMainButtons(venue);
+    const buttons = await VenueService.getMainButtons(venue, locale);
     for (const row of buttons) {
       for (const b of row) {
         for (const c of b.categories ?? []) {
@@ -38,20 +41,28 @@ async function resolveCategoryName(
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { venue, slug } = await params;
-  const name = await resolveCategoryName(venue, slug);
+  const locale = (await getLocale()) as Locale;
+  const [name, t] = await Promise.all([
+    resolveCategoryName(venue, slug, locale),
+    getTranslations('Meta'),
+  ]);
 
-  const pageTitle = name ? `${name} - Меню ${venue}` : `Меню ${venue}`;
+  const pageTitle = name
+    ? t('categoryPageTitle', { name, venue })
+    : t('menuPageTitle', { venue });
 
   return {
     title: pageTitle,
-    description: `Заказывайте вкусную еду в ${venue}.`,
+    description: t('categoryDesc', { venue }),
   };
 }
 
 export default async function ProductsPage({ params }: Props) {
   const { venue, slug } = await params;
+  const locale = (await getLocale()) as Locale;
+  const tc = await getTranslations('Categories');
 
-  const displayTitle = (await resolveCategoryName(venue, slug)) ?? 'Меню';
+  const displayTitle = (await resolveCategoryName(venue, slug, locale)) ?? tc('defaultTitle');
 
   return (
     <main className='px-2.5 min-h-svh pb-32 bg-[#F8F6F7]'>

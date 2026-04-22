@@ -1,0 +1,246 @@
+{
+  "Common": {
+    "language": "Тил",
+    "languageNames": {
+      "ru": "Орусча",
+      "ky": "Кыргызча",
+      "en": "Англисче"
+    },
+    "back": "Артка",
+    "search": "Издөө",
+    "searchPlaceholder": "Издөө...",
+    "currency": "с.",
+    "from": "баштап",
+    "menu": "Меню",
+    "viewAll": "Баары →",
+    "weightUnit": "г",
+    "close": "Жабуу",
+    "gotIt": "Түшүнүктүү",
+    "ok": "Сонун",
+    "cancel": "Жокко чыгаруу",
+    "ariaBack": "Артка кайтуу",
+    "ariaBackIcon": "Артка",
+    "ariaSearchIcon": "Издөө",
+    "ariaSearchOpen": "Меню боюнча издөө",
+    "ariaSearchClear": "Тазалоо",
+    "ariaLoading": "Жүктөлүүдө",
+    "ariaImageLoading": "Жүктөлүүдө..."
+  },
+  "Cart": {
+    "title": "Себет",
+    "takeout": "Ала кетүү",
+    "delivery": "Жеткирүү",
+    "totalDue": "Төлөө үчүн жалпы",
+    "placeOrder": "Буйрутма берүү",
+    "empty": {
+      "title": "Себет бош",
+      "hint": "Сунуштарыбыздан тандаңыз же менюга кайтыңыз",
+      "popular": "Популярдуу",
+      "goToMenu": "Менюга өтүү"
+    },
+    "table": {
+      "orderFor": "Сиздин буйрутмаңыз",
+      "tableNumber": "Стол № {num}",
+      "inVenue": "Залда",
+      "statusTable": "Стол №{num}",
+      "statusInRoom": "Залдагы буйрутма",
+      "drawerTable": "Стол №{num}"
+    },
+    "summary": {
+      "details": "Буйрутманын чоо-жайы",
+      "subtotal": "Товарлардын суммасы",
+      "delivery": "Жеткирүү",
+      "spendBonus": "Балл пайдалануу",
+      "available": "Жеткиликтүү: {amount}",
+      "discount": "Жеңилдик:",
+      "total": "Жалпы"
+    },
+    "utensils": {
+      "title": "Аспаптар керекпи?",
+      "subtitle": "Демейки боюнча — аспапсыз 🌿"
+    },
+    "drawer": {
+      "phoneLabel": "Телефон номери",
+      "addComment": "+ Комментарий кошуу",
+      "removeComment": "− Комментарийди алып салуу",
+      "commentLabel": "Буйрутмага комментарий",
+      "commentPlaceholder": "Мисалы: пиязсыз, ачуу...",
+      "phoneAlertEmpty": "Сураныч, телефон номерин көрсөтүңүз",
+      "phoneAlertLength": "Телефон номери 9 цифрадан турушу керек",
+      "addressAlert": "Жеткирүү дарегин жазыңыз",
+      "orderCreated": "Буйрутма #{id} ийгиликтүү түзүлдү!",
+      "preparePrefix": "[Алып кетүү убактысы: {time}]"
+    },
+    "checkoutForm": {
+      "pickupTime": "Алып кетүү убактысы",
+      "whenLabel": "Качан даярдайбыз?",
+      "branchPlaceholder": "Филиалды тандоо",
+      "branchLabel": "Кайдан аласыз?",
+      "branchTitle": "Филиалды тандаңыз",
+      "branchEmpty": "Жеткиликтүү филиалдар жок"
+    },
+    "timePicker": {
+      "title": "Даярдоо убактысы",
+      "asap": "Тезирээк",
+      "asapWithEmoji": "🚀 Тезирээк",
+      "asapDesc": "Мүмкүн болушунча тезирээк даярдайбыз",
+      "exact": "Так убакытты тандоо"
+    },
+    "payment": {
+      "title": "Төлөм ыкмасы",
+      "rowLabel": "Төлөм ыкмасы",
+      "cash": "Накталай",
+      "elqr": "ELQR"
+    },
+    "delivery": {
+      "streetLabel": "Көчө жана үй номери",
+      "streetPlaceholder": "Мисалы: Токтогул 125",
+      "entranceLabel": "Подъезд",
+      "floorLabel": "Кабат",
+      "aptLabel": "Кв./Офис",
+      "entrancePart": "подъезд {value}",
+      "floorPart": "кабат {value}",
+      "aptPart": "кв/офис {value}"
+    },
+    "footer": {
+      "totalDue": "Төлөнөт",
+      "processing": "Иштелүүдө...",
+      "pay": "Буйрутманы төлөө"
+    }
+  },
+  "Product": {
+    "size": "Өлчөмү",
+    "required": "Милдеттүү",
+    "exactly": "Так {n}",
+    "upTo": "{n} чейин",
+    "requiredUpTo": "Милдеттүү • {n} чейин",
+    "chosenOf": "Тандалды {current} / {max}",
+    "chosen": "Тандалды {current}",
+    "included": "камтылган",
+    "free": "акысыз",
+    "weight": "Салмагы: {value}",
+    "add": "Кошуу",
+    "pricePlus": "+{price} с.",
+    "errorChoose": "{n} тандоо керек",
+    "errorMin": "Кеминде {n}",
+    "errorMax": "{n} көп эмес",
+    "ariaAdd": "{name} кошуу",
+    "ariaOpen": "{name} ачуу",
+    "ariaDecrement": "Азайтуу"
+  },
+  "Categories": {
+    "other": "Башкалар",
+    "viewAll": "Баары →",
+    "empty": "Бул бөлүмдө азырынча категориялар жок",
+    "defaultTitle": "Меню"
+  },
+  "OrderStatus": {
+    "header": "Буйрутма #{id}",
+    "yourOrder": "Сиздин буйрутма",
+    "itemsCount": "{count} жайгашкан",
+    "totalDue": "Төлөнөт:",
+    "cancelled": "Буйрутма жокко чыгарылды",
+    "cancelledDesc": "Администратор менен байланышыңыз",
+    "notFound": "Буйрутма табылган жок",
+    "notFoundDesc": "Балким, шилтеме туура эмес же буйрутма архивге жылдырылган.",
+    "backToMenu": "Менюга кайтуу",
+    "steps": {
+      "takeout": {
+        "0_title": "Буйрутма кабыл алынды!",
+        "0_desc": "Жакында даярдай баштайбыз.",
+        "1_title": "Даярдалууда",
+        "1_desc": "Ашпозчулар иштеп жатат.",
+        "2_title": "Даяр!",
+        "2_desc": "Берүү жеринен алыңыз.",
+        "3_title": "Аткарылды",
+        "3_desc": "Аш болсун!"
+      },
+      "delivery": {
+        "0_title": "Буйрутма кабыл алынды",
+        "0_desc": "Жөнөтүүгө даярдалууда.",
+        "1_title": "Ашканада",
+        "1_desc": "Бышырылып жатат.",
+        "2_title": "Курьерде",
+        "2_desc": "Сизге келе жатат.",
+        "3_title": "Жеткирилди",
+        "3_desc": "Аш болсун!"
+      },
+      "dinein": {
+        "0_title": "Буйрутма кабыл алынды",
+        "0_desc": "Ашканага өткөрүлүүдө.",
+        "1_title": "Даярдалууда",
+        "1_desc": "Берилишин күтүңүз.",
+        "2_title": "Берилди",
+        "2_desc": "Аш болсун!"
+      }
+    }
+  },
+  "Schedule": {
+    "title": "Иш күнү",
+    "localTime": "Жергиликтүү убакыт",
+    "empty": "График боюнча маалымат жок",
+    "dayOff": "Эс алуу",
+    "around": "Тоосуз"
+  },
+  "Wifi": {
+    "title": "Wi-Fi туташуу",
+    "noData": "Маалымат көрсөтүлгөн эмес",
+    "connect": "Туташуу",
+    "close": "Жабуу",
+    "aria": "Wi-Fi Info"
+  },
+  "MainAction": {
+    "callBtn": "Официантты чакыруу",
+    "confirmTitle": "Официантты чакырасызбы?",
+    "confirmDescPrefix": "Чындап эле кызматкерди столго чакыргыңыз келеби",
+    "yesCall": "Ооба, чакыр",
+    "successTitle": "Кабарлоо жөнөтүлдү!",
+    "successDesc": "Официант чакырыкты алып, көп узабай келет."
+  },
+  "Widgets": {
+    "orderStatus": "Буйрутманын статусу",
+    "myOrders": "Менин буйрутмаларым",
+    "bonus": "Бонус баллдар",
+    "schedule": "График"
+  },
+  "Spot": {
+    "pickupFrom": "Алып кетем",
+    "switchConfirm": "Чекитти өзгөрткөндө себет тазаланат, анткени баалар жана жеткиликтүүлүк ар башка болушу мүмкүн. Улантасызбы?"
+  },
+  "Search": {
+    "results": "Издөө натыйжалары",
+    "noResults": "\"{query}\" суроосу боюнча эч нерсе табылган жок",
+    "intro": "'Тамактын аталышын' жазыңыз"
+  },
+  "StoreClosed": {
+    "title": "Азыр иш убактысы эмес",
+    "defaultMessage": "Эртең 10:00дө күтөбүз"
+  },
+  "Profile": {
+    "title": "Жеке кабинет",
+    "description": "Бул жерде сиздин буйрутмаларыңыз, бонустар жана сүйүктүү тамактар болот. Биз акыркы бурамаларды бурап жатабыз! ⚙️",
+    "loginSoon": "Кирүү (Жакында)"
+  },
+  "History": {
+    "title": "Бөлүм иштелип жатат",
+    "description": "Биз азыр тарыхты жазып жатабыз... Бир аздан кийин кайра кайрылыңыз!"
+  },
+  "Nav": {
+    "home": "Башкы",
+    "cart": "Себет",
+    "history": "Тарых",
+    "profile": "Профиль"
+  },
+  "Meta": {
+    "appTitle": "iMenu — Сиздин электрондук меню",
+    "appDescription": "Ресторандар жана кафелер үчүн ыңгайлуу электрондук меню. QR код менен буйрутма, брондоо жана төлөм.",
+    "ogTitle": "iMenu — Сиздин электрондук меню",
+    "ogDescription": "Заведениеде тамак буйрутма берүү үчүн заманбап тейлөө.",
+    "venueNotFound": "Заведение табылган жок",
+    "venueMenuFallback": "{name} ресторанынын менюсу",
+    "venueOgFallback": "{name} ресторанындагы даамдуу тамактар",
+    "categoryPageTitle": "{name} - {venue} менюсу",
+    "menuPageTitle": "{venue} менюсу",
+    "categoryDesc": "{venue} жеринен даамдуу тамак буйрутма бериңиз."
+  }
+}

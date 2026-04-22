@@ -3,6 +3,7 @@
 import { FC, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useUIStore } from '@/store/ui'; // 1. Импорт стора
 import { X } from 'lucide-react'; // Возьмем иконку крестика из библиотеки, которая у тебя есть
 
@@ -16,6 +17,7 @@ interface IProps {
 
 const Header: FC<IProps> = ({ title, showSearch }) => {
   const router = useRouter();
+  const t = useTranslations('Common');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 2. Подключаем состояние
@@ -55,13 +57,13 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
         <button
           onClick={handleBack}
           className='w-10 h-10 flex items-center justify-start active:opacity-60 shrink-0'
-          aria-label='Вернуться назад'
+          aria-label={t('ariaBack')}
         >
           <Image
             src={arrowIcon}
             width={24}
             height={24}
-            alt='Назад'
+            alt={t('ariaBackIcon')}
             className='cursor-pointer'
           />
         </button>
@@ -76,7 +78,7 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
                 type='text'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Поиск...'
+                placeholder={t('searchPlaceholder')}
                 className='w-full bg-transparent outline-none text-[#111111] text-sm placeholder-gray-400'
               />
               {searchQuery && (
@@ -106,8 +108,8 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
                 src={searchIcon}
                 width={24}
                 height={24}
-                alt='Поиск'
-                aria-label='Поиск по меню'
+                alt={t('ariaSearchIcon')}
+                aria-label={t('ariaSearchOpen')}
               />
             </button>
           ) : !isSearchOpen ? (

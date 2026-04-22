@@ -3,6 +3,7 @@
 import { FC } from 'react';
 import Image from 'next/image';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useBasketStore } from '@/store/basket';
 import { useMounted } from '@/hooks/useMounted';
 import { Product } from '@/types/api';
@@ -17,6 +18,7 @@ interface Props {
 
 const FoodItemCounter: FC<Props> = ({ product }) => {
   const router = useRouter();
+  const t = useTranslations('Product');
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const addToBasket = useBasketStore((state) => state.addToBasket);
@@ -82,7 +84,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
     >
       {/* ПЛЮС */}
       <button
-        aria-label={`Добавить ${product.productName}`}
+        aria-label={t('ariaAdd', { name: product.productName })}
         className='absolute z-10 bottom-0 right-0 cursor-pointer bg-white p-3.5 rounded-full shadow-sm active:scale-90 transition-transform'
         onClick={handlePlus}
       >
@@ -102,7 +104,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
         }`}
       >
         <button
-          aria-label='Уменьшить'
+          aria-label={t('ariaDecrement')}
           className='h-full p-3.5 flex items-center justify-center cursor-pointer active:scale-90 transition-transform'
           onClick={handleMinus}
         >

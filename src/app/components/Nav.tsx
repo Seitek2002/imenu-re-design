@@ -1,11 +1,13 @@
 'use client'; // 1. Делаем клиентским
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { getNavItems } from './Nav.helpers';
 import ActiveLink from './ActiveLink';
 import { useVenueStore } from '@/store/venue';
 
 export default function Nav({ venueSlug }: { venueSlug: string }) {
+  const t = useTranslations('Nav');
   // 3. Достаем контекст из стора
   const tableId = useVenueStore((state) => state.tableId);
   const spotId = useVenueStore((state) => state.spotId);
@@ -29,21 +31,24 @@ export default function Nav({ venueSlug }: { venueSlug: string }) {
 
   return (
     <nav className='flex justify-around items-center w-full py-3 h-16'>
-      {items.map((item) => (
-        <ActiveLink
-          key={item.label}
-          href={item.href}
-          className='flex flex-col items-center flex-1'
-        >
-          <Image
-            src={item.icon}
-            alt={item.label}
-            width={24}
-            style={{ height: 'auto' }}
-          />
-          <span className='text-[10px] mt-1'>{item.label}</span>
-        </ActiveLink>
-      ))}
+      {items.map((item) => {
+        const label = t(item.key);
+        return (
+          <ActiveLink
+            key={item.key}
+            href={item.href}
+            className='flex flex-col items-center flex-1'
+          >
+            <Image
+              src={item.icon}
+              alt={label}
+              width={24}
+              style={{ height: 'auto' }}
+            />
+            <span className='text-[10px] mt-1'>{label}</span>
+          </ActiveLink>
+        );
+      })}
     </nav>
   );
 }

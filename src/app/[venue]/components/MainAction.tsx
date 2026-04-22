@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { BellRing, Loader2, CheckCircle } from 'lucide-react';
 import { useVenueStore } from '@/store/venue';
 import { API_V2_URL } from '@/lib/config';
 
 export default function MainAction({ venueSlug }: { venueSlug: string }) {
   const pathname = usePathname();
+  const t = useTranslations('MainAction');
+  const tc = useTranslations('Common');
 
   const tableId = useVenueStore((state) => state.tableId);
   const tableNumber = useVenueStore((state) => state.tableNumber);
@@ -90,7 +93,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
               }
             `}
           >
-            Позвать официанта
+            {t('callBtn')}
           </span>
         </button>
       </div>
@@ -108,9 +111,9 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
               <BellRing size={32} />
             </div>
 
-            <h3 className='text-xl font-bold mb-2'>Вызвать официанта?</h3>
+            <h3 className='text-xl font-bold mb-2'>{t('confirmTitle')}</h3>
             <p className='text-gray-500 text-sm mb-6 leading-relaxed'>
-              Вы действительно хотите позвать сотрудника к столу
+              {t('confirmDescPrefix')}
               <span className='font-bold text-gray-900'>
                 {' '}
                 №{tableNumber || '...'}
@@ -124,7 +127,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
                 onClick={() => setShowConfirm(false)}
                 className='flex-1 h-12 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm active:scale-95 transition-transform'
               >
-                Отмена
+                {tc('cancel')}
               </button>
               <button
                 disabled={isLoading}
@@ -134,7 +137,7 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
                 {isLoading ? (
                   <Loader2 size={18} className='animate-spin' />
                 ) : (
-                  'Да, позвать'
+                  t('yesCall')
                 )}
               </button>
             </div>
@@ -154,16 +157,16 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
               <CheckCircle size={32} />
             </div>
 
-            <h3 className='text-xl font-bold mb-2'>Уведомление отправлено!</h3>
+            <h3 className='text-xl font-bold mb-2'>{t('successTitle')}</h3>
             <p className='text-gray-500 text-sm mb-6 leading-relaxed'>
-              Официант получил ваш вызов и скоро подойдет к вам.
+              {t('successDesc')}
             </p>
 
             <button
               onClick={() => setShowSuccess(false)}
               className='w-full h-12 rounded-xl bg-brand text-white font-bold text-sm active:scale-95 transition-transform'
             >
-              Отлично
+              {tc('ok')}
             </button>
           </div>
         </div>

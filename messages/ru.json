@@ -1,0 +1,246 @@
+{
+  "Common": {
+    "language": "Язык",
+    "languageNames": {
+      "ru": "Русский",
+      "ky": "Кыргызча",
+      "en": "English"
+    },
+    "back": "Назад",
+    "search": "Поиск",
+    "searchPlaceholder": "Поиск...",
+    "currency": "c.",
+    "from": "от",
+    "menu": "Меню",
+    "viewAll": "Все →",
+    "weightUnit": "г",
+    "close": "Закрыть",
+    "gotIt": "Понятно",
+    "ok": "Отлично",
+    "cancel": "Отмена",
+    "ariaBack": "Вернуться назад",
+    "ariaBackIcon": "Назад",
+    "ariaSearchIcon": "Поиск",
+    "ariaSearchOpen": "Поиск по меню",
+    "ariaSearchClear": "Очистить",
+    "ariaLoading": "Загрузка",
+    "ariaImageLoading": "Загрузка..."
+  },
+  "Cart": {
+    "title": "Корзина",
+    "takeout": "С собой",
+    "delivery": "Доставка",
+    "totalDue": "Итого к оплате",
+    "placeOrder": "Оформить заказ",
+    "empty": {
+      "title": "Корзина пуста",
+      "hint": "Присмотрите что-нибудь из наших рекомендаций или зайдите в меню",
+      "popular": "Популярное",
+      "goToMenu": "Перейти в меню"
+    },
+    "table": {
+      "orderFor": "Ваш заказ для",
+      "tableNumber": "Стола № {num}",
+      "inVenue": "В зале",
+      "statusTable": "Стол №{num}",
+      "statusInRoom": "Заказ в зале",
+      "drawerTable": "Столик №{num}"
+    },
+    "summary": {
+      "details": "Детали заказа",
+      "subtotal": "Сумма товаров",
+      "delivery": "Доставка",
+      "spendBonus": "Списать баллы",
+      "available": "Доступно: {amount}",
+      "discount": "Скидка:",
+      "total": "Итого"
+    },
+    "utensils": {
+      "title": "Нужны приборы?",
+      "subtitle": "По умолчанию — без приборов 🌿"
+    },
+    "drawer": {
+      "phoneLabel": "Номер телефона",
+      "addComment": "+ Добавить комментарий",
+      "removeComment": "− Убрать комментарий",
+      "commentLabel": "Комментарий к заказу",
+      "commentPlaceholder": "Например: без лука, острая...",
+      "phoneAlertEmpty": "Пожалуйста, укажите номер телефона",
+      "phoneAlertLength": "Номер телефона должен состоять из 9 цифр",
+      "addressAlert": "Введите адрес доставки",
+      "orderCreated": "Заказ #{id} успешно создан!",
+      "preparePrefix": "[Время выдачи: {time}]"
+    },
+    "checkoutForm": {
+      "pickupTime": "Время выдачи",
+      "whenLabel": "Когда приготовить?",
+      "branchPlaceholder": "Выбрать филиал",
+      "branchLabel": "Где заберете?",
+      "branchTitle": "Выберите филиал",
+      "branchEmpty": "Нет доступных филиалов"
+    },
+    "timePicker": {
+      "title": "Время готовности",
+      "asap": "Быстрее всего",
+      "asapWithEmoji": "🚀 Быстрее всего",
+      "asapDesc": "Приготовим как можно скорее",
+      "exact": "Выбрать точное время"
+    },
+    "payment": {
+      "title": "Способ оплаты",
+      "rowLabel": "Способ оплаты",
+      "cash": "Наличными",
+      "elqr": "ELQR"
+    },
+    "delivery": {
+      "streetLabel": "Улица и номер дома",
+      "streetPlaceholder": "Например: Токтогула 125",
+      "entranceLabel": "Подъезд",
+      "floorLabel": "Этаж",
+      "aptLabel": "Кв./Офис",
+      "entrancePart": "подъезд {value}",
+      "floorPart": "этаж {value}",
+      "aptPart": "кв/офис {value}"
+    },
+    "footer": {
+      "totalDue": "К оплате",
+      "processing": "Обработка...",
+      "pay": "Оплатить заказ"
+    }
+  },
+  "Product": {
+    "size": "Размер",
+    "required": "Обязательно",
+    "exactly": "Ровно {n}",
+    "upTo": "До {n}",
+    "requiredUpTo": "Обязательно • до {n}",
+    "chosenOf": "Выбрано {current} из {max}",
+    "chosen": "Выбрано {current}",
+    "included": "включено",
+    "free": "бесплатно",
+    "weight": "Вес: {value}",
+    "add": "Добавить",
+    "pricePlus": "+{price} с.",
+    "errorChoose": "Нужно выбрать {n}",
+    "errorMin": "Нужно минимум {n}",
+    "errorMax": "Не более {n}",
+    "ariaAdd": "Добавить {name}",
+    "ariaOpen": "Открыть {name}",
+    "ariaDecrement": "Уменьшить"
+  },
+  "Categories": {
+    "other": "Остальное",
+    "viewAll": "Все →",
+    "empty": "В этом разделе пока нет категорий",
+    "defaultTitle": "Меню"
+  },
+  "OrderStatus": {
+    "header": "Заказ #{id}",
+    "yourOrder": "Ваш заказ",
+    "itemsCount": "{count} поз.",
+    "totalDue": "Итого к оплате:",
+    "cancelled": "Заказ отменен",
+    "cancelledDesc": "Свяжитесь с администратором",
+    "notFound": "Заказ не найден",
+    "notFoundDesc": "Возможно, вы перешли по неверной ссылке или этот заказ уже перемещен в архив.",
+    "backToMenu": "Вернуться к меню",
+    "steps": {
+      "takeout": {
+        "0_title": "Заказ принят!",
+        "0_desc": "Скоро начнем готовить.",
+        "1_title": "Готовим",
+        "1_desc": "Повара уже работают.",
+        "2_title": "Готов!",
+        "2_desc": "Заберите на выдаче.",
+        "3_title": "Выполнен",
+        "3_desc": "Приятного аппетита!"
+      },
+      "delivery": {
+        "0_title": "Заказ принят",
+        "0_desc": "Готовим к отправке.",
+        "1_title": "На кухне",
+        "1_desc": "Жарим и парим.",
+        "2_title": "У курьера",
+        "2_desc": "Едет к вам.",
+        "3_title": "Доставлен",
+        "3_desc": "Приятного аппетита!"
+      },
+      "dinein": {
+        "0_title": "Заказ принят",
+        "0_desc": "Передаем на кухню.",
+        "1_title": "Готовится",
+        "1_desc": "Ожидайте подачи.",
+        "2_title": "Подан",
+        "2_desc": "Приятного аппетита!"
+      }
+    }
+  },
+  "Schedule": {
+    "title": "График работы",
+    "localTime": "Время местное",
+    "empty": "Информация о графике отсутствует",
+    "dayOff": "Выходной",
+    "around": "Круглосуточно"
+  },
+  "Wifi": {
+    "title": "Подключение к Wi-Fi",
+    "noData": "Данные не указаны",
+    "connect": "Подключиться",
+    "close": "Закрыть",
+    "aria": "Wi-Fi Info"
+  },
+  "MainAction": {
+    "callBtn": "Позвать официанта",
+    "confirmTitle": "Вызвать официанта?",
+    "confirmDescPrefix": "Вы действительно хотите позвать сотрудника к столу",
+    "yesCall": "Да, позвать",
+    "successTitle": "Уведомление отправлено!",
+    "successDesc": "Официант получил ваш вызов и скоро подойдет к вам."
+  },
+  "Widgets": {
+    "orderStatus": "Статус заказа",
+    "myOrders": "Мои заказы",
+    "bonus": "Бонусные баллы",
+    "schedule": "График"
+  },
+  "Spot": {
+    "pickupFrom": "Забираю из",
+    "switchConfirm": "При смене точки корзина будет очищена, так как цены и наличие могут отличаться. Продолжить?"
+  },
+  "Search": {
+    "results": "Результаты поиска",
+    "noResults": "Ничего не найдено по запросу \"{query}\"",
+    "intro": "Введите 'название блюда'"
+  },
+  "StoreClosed": {
+    "title": "Сейчас нерабочее время бла-бла-бла",
+    "defaultMessage": "Ждем вас завтра с 10:00"
+  },
+  "Profile": {
+    "title": "Личный кабинет",
+    "description": "Здесь будет ваша история заказов, бонусы и любимые блюда. Мы уже докручиваем последние винтики! ⚙️",
+    "loginSoon": "Войти (Скоро)"
+  },
+  "History": {
+    "title": "Раздел в разработке",
+    "description": "Мы прямо сейчас пишем историю... Загляните сюда чуть позже!"
+  },
+  "Nav": {
+    "home": "Главная",
+    "cart": "Корзина",
+    "history": "История",
+    "profile": "Профиль"
+  },
+  "Meta": {
+    "appTitle": "iMenu — Ваше электронное меню",
+    "appDescription": "Удобное электронное меню для ресторанов и кафе. Заказ еды, бронирование и оплата по QR-коду.",
+    "ogTitle": "iMenu — Ваше электронное меню",
+    "ogDescription": "Современный сервис для заказа еды в заведениях.",
+    "venueNotFound": "Заведение не найдено",
+    "venueMenuFallback": "Меню ресторана {name}",
+    "venueOgFallback": "Вкусные блюда в {name}",
+    "categoryPageTitle": "{name} - Меню {venue}",
+    "menuPageTitle": "Меню {venue}",
+    "categoryDesc": "Заказывайте вкусную еду в {venue}."
+  }
+}

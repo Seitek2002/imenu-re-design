@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ModalPortal from '@/app/[venue]/cart/components/ModalPortal';
 
 interface Props {
@@ -15,6 +16,7 @@ export default function PaymentModal({
   method,
   onSelect,
 }: Props) {
+  const t = useTranslations('Cart.payment');
   return (
     <ModalPortal open={open} onClose={onClose} zIndex={100}>
       <div className='relative p-4'>
@@ -24,10 +26,10 @@ export default function PaymentModal({
         >
           ✕
         </button>
-        <h3 className='text-lg font-bold text-center mb-6'>Способ оплаты</h3>
+        <h3 className='text-lg font-bold text-center mb-6'>{t('title')}</h3>
         <div className='flex flex-col gap-3'>
           <PaymentOption
-            label='ELQR'
+            label={t('elqr')}
             isActive={method === 'elqr'}
             onClick={() => {
               onSelect('elqr');
@@ -35,7 +37,7 @@ export default function PaymentModal({
             }}
           />
           <PaymentOption
-            label='Наличными'
+            label={t('cash')}
             isActive={method === 'cash'}
             onClick={() => {
               onSelect('cash');

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import Header from '@/app/components/Header';
 import OrderSummary from './components/OrderSummary';
 import { useCartLogic } from '@/hooks/useCartLogic';
@@ -22,6 +23,7 @@ const DrawerCheckout = dynamic(
 );
 
 export default function BasketPage() {
+  const t = useTranslations('Cart');
   const {
     items,
     orderType,
@@ -58,7 +60,7 @@ export default function BasketPage() {
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
-      <Header title='Корзина' />
+      <Header title={t('title')} />
 
       <section className='bg-white pt-4 mt-1.5 px-2 rounded-4xl pb-5 lg:max-w-md lg:mx-auto shadow-sm min-h-[60vh]'>
         {/* Toggle */}
@@ -74,7 +76,7 @@ export default function BasketPage() {
                   : 'text-[#6B6B6B]'
               }`}
             >
-              С собой
+              {t('takeout')}
             </button>
             <button
               onClick={() => setOrderType('delivery')}
@@ -84,7 +86,7 @@ export default function BasketPage() {
                   : 'text-[#6B6B6B]'
               }`}
             >
-              Доставка
+              {t('delivery')}
             </button>
           </div>
         )}
@@ -125,7 +127,7 @@ export default function BasketPage() {
           <div className='fixed max-w-175 mx-auto bottom-16 left-0 right-0 p-4 bg-white border-t border-gray-100 z-40 rounded-t-xl'>
             <div className='max-w-md mx-auto flex items-center gap-4'>
               <div className='flex flex-col'>
-                <span className='text-xs text-brand'>Итого к оплате</span>
+                <span className='text-xs text-brand'>{t('totalDue')}</span>
                 {/* 🔥 Показываем цену с учетом бонусов */}
                 <span className='text-xl font-bold'>
                   {Math.round(finalDisplayTotal)} c.
@@ -141,7 +143,7 @@ export default function BasketPage() {
                 onClick={() => setCheckoutOpen(true)}
                 className='flex-1 bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-lg'
               >
-                Оформить заказ
+                {t('placeOrder')}
               </button>
             </div>
           </div>

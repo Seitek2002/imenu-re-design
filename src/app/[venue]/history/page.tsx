@@ -1,16 +1,19 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 const HistoryPage = () => {
+  const t = useTranslations('History');
   return (
     <div className='relative min-h-screen bg-[#F8F6F7] overflow-hidden flex flex-col items-center justify-center'>
       {/* --- Текст по центру (под лентами) --- */}
       <div className='z-10 text-center px-4 flex flex-col items-center animate-pulse'>
         <div className='text-6xl mb-4'>🚧</div>
         <h1 className='text-3xl font-bold text-[#21201F] mb-2'>
-          Раздел в разработке
+          {t('title')}
         </h1>
         <p className='text-[#9E9E9E] mb-8 max-w-xs mx-auto'>
-          Мы прямо сейчас пишем историю... Загляните сюда чуть позже!
+          {t('description')}
         </p>
       </div>
 

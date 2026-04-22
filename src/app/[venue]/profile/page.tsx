@@ -1,6 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 const ProfilePage = () => {
+  const t = useTranslations('Profile');
   return (
     <div className='relative min-h-screen bg-[#F8F6F7] overflow-hidden'>
       {/* --- ЗАДНИЙ ПЛАН (Фейковый интерфейс) --- */}
@@ -54,12 +57,11 @@ const ProfilePage = () => {
         </div>
 
         <h1 className='text-2xl font-bold text-[#21201F] text-center mb-3'>
-          Личный кабинет
+          {t('title')}
         </h1>
 
         <p className='text-[#9E9E9E] text-center mb-8 max-w-70 leading-relaxed'>
-          Здесь будет ваша история заказов, бонусы и любимые блюда. Мы уже
-          докручиваем последние винтики! ⚙️
+          {t('description')}
         </p>
 
         {/* Кнопки */}
@@ -75,7 +77,7 @@ const ProfilePage = () => {
             disabled
             className='w-full py-3.5 bg-white text-[#9E9E9E] rounded-2xl font-medium text-center border border-gray-100 cursor-not-allowed'
           >
-            Войти (Скоро)
+            {t('loginSoon')}
           </button>
         </div>
       </div>

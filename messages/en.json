@@ -1,0 +1,246 @@
+{
+  "Common": {
+    "language": "Language",
+    "languageNames": {
+      "ru": "Russian",
+      "ky": "Kyrgyz",
+      "en": "English"
+    },
+    "back": "Back",
+    "search": "Search",
+    "searchPlaceholder": "Search...",
+    "currency": "c.",
+    "from": "from",
+    "menu": "Menu",
+    "viewAll": "All →",
+    "weightUnit": "g",
+    "close": "Close",
+    "gotIt": "Got it",
+    "ok": "Great",
+    "cancel": "Cancel",
+    "ariaBack": "Go back",
+    "ariaBackIcon": "Back",
+    "ariaSearchIcon": "Search",
+    "ariaSearchOpen": "Search the menu",
+    "ariaSearchClear": "Clear",
+    "ariaLoading": "Loading",
+    "ariaImageLoading": "Loading..."
+  },
+  "Cart": {
+    "title": "Cart",
+    "takeout": "Pickup",
+    "delivery": "Delivery",
+    "totalDue": "Total to pay",
+    "placeOrder": "Place order",
+    "empty": {
+      "title": "Your cart is empty",
+      "hint": "Pick something from our recommendations or browse the menu",
+      "popular": "Popular",
+      "goToMenu": "Go to menu"
+    },
+    "table": {
+      "orderFor": "Your order for",
+      "tableNumber": "Table # {num}",
+      "inVenue": "Dine-in",
+      "statusTable": "Table #{num}",
+      "statusInRoom": "Dine-in order",
+      "drawerTable": "Table #{num}"
+    },
+    "summary": {
+      "details": "Order details",
+      "subtotal": "Subtotal",
+      "delivery": "Delivery",
+      "spendBonus": "Use bonus points",
+      "available": "Available: {amount}",
+      "discount": "Discount:",
+      "total": "Total"
+    },
+    "utensils": {
+      "title": "Need utensils?",
+      "subtitle": "By default — no utensils 🌿"
+    },
+    "drawer": {
+      "phoneLabel": "Phone number",
+      "addComment": "+ Add a comment",
+      "removeComment": "− Remove comment",
+      "commentLabel": "Comment for the order",
+      "commentPlaceholder": "E.g. no onions, spicy...",
+      "phoneAlertEmpty": "Please enter your phone number",
+      "phoneAlertLength": "Phone number must be 9 digits",
+      "addressAlert": "Please enter your delivery address",
+      "orderCreated": "Order #{id} created successfully!",
+      "preparePrefix": "[Pickup time: {time}]"
+    },
+    "checkoutForm": {
+      "pickupTime": "Pickup time",
+      "whenLabel": "When to prepare?",
+      "branchPlaceholder": "Choose a branch",
+      "branchLabel": "Where will you pick up?",
+      "branchTitle": "Choose a branch",
+      "branchEmpty": "No branches available"
+    },
+    "timePicker": {
+      "title": "Preparation time",
+      "asap": "ASAP",
+      "asapWithEmoji": "🚀 ASAP",
+      "asapDesc": "We'll prepare it as soon as possible",
+      "exact": "Pick exact time"
+    },
+    "payment": {
+      "title": "Payment method",
+      "rowLabel": "Payment method",
+      "cash": "Cash",
+      "elqr": "ELQR"
+    },
+    "delivery": {
+      "streetLabel": "Street and house number",
+      "streetPlaceholder": "E.g. Toktogul 125",
+      "entranceLabel": "Entrance",
+      "floorLabel": "Floor",
+      "aptLabel": "Apt./Office",
+      "entrancePart": "entrance {value}",
+      "floorPart": "floor {value}",
+      "aptPart": "apt/office {value}"
+    },
+    "footer": {
+      "totalDue": "To pay",
+      "processing": "Processing...",
+      "pay": "Pay for order"
+    }
+  },
+  "Product": {
+    "size": "Size",
+    "required": "Required",
+    "exactly": "Exactly {n}",
+    "upTo": "Up to {n}",
+    "requiredUpTo": "Required • up to {n}",
+    "chosenOf": "Chosen {current} of {max}",
+    "chosen": "Chosen {current}",
+    "included": "included",
+    "free": "free",
+    "weight": "Weight: {value}",
+    "add": "Add",
+    "pricePlus": "+{price} c.",
+    "errorChoose": "Choose {n}",
+    "errorMin": "At least {n} required",
+    "errorMax": "No more than {n}",
+    "ariaAdd": "Add {name}",
+    "ariaOpen": "Open {name}",
+    "ariaDecrement": "Decrease"
+  },
+  "Categories": {
+    "other": "Other",
+    "viewAll": "All →",
+    "empty": "No categories in this section yet",
+    "defaultTitle": "Menu"
+  },
+  "OrderStatus": {
+    "header": "Order #{id}",
+    "yourOrder": "Your order",
+    "itemsCount": "{count} items",
+    "totalDue": "Total to pay:",
+    "cancelled": "Order cancelled",
+    "cancelledDesc": "Please contact the administrator",
+    "notFound": "Order not found",
+    "notFoundDesc": "You may have followed a wrong link, or the order has been moved to the archive.",
+    "backToMenu": "Back to menu",
+    "steps": {
+      "takeout": {
+        "0_title": "Order received!",
+        "0_desc": "We'll start cooking soon.",
+        "1_title": "Cooking",
+        "1_desc": "Chefs are working on it.",
+        "2_title": "Ready!",
+        "2_desc": "Pick it up at the counter.",
+        "3_title": "Completed",
+        "3_desc": "Enjoy your meal!"
+      },
+      "delivery": {
+        "0_title": "Order received",
+        "0_desc": "Preparing for shipping.",
+        "1_title": "In the kitchen",
+        "1_desc": "Cooking it up.",
+        "2_title": "With courier",
+        "2_desc": "On the way to you.",
+        "3_title": "Delivered",
+        "3_desc": "Enjoy your meal!"
+      },
+      "dinein": {
+        "0_title": "Order received",
+        "0_desc": "Sending to the kitchen.",
+        "1_title": "Being prepared",
+        "1_desc": "Wait for serving.",
+        "2_title": "Served",
+        "2_desc": "Enjoy your meal!"
+      }
+    }
+  },
+  "Schedule": {
+    "title": "Working hours",
+    "localTime": "Local time",
+    "empty": "Schedule information is not available",
+    "dayOff": "Day off",
+    "around": "24 hours"
+  },
+  "Wifi": {
+    "title": "Wi-Fi connection",
+    "noData": "No data provided",
+    "connect": "Connect",
+    "close": "Close",
+    "aria": "Wi-Fi Info"
+  },
+  "MainAction": {
+    "callBtn": "Call waiter",
+    "confirmTitle": "Call waiter?",
+    "confirmDescPrefix": "Do you really want to call staff to table",
+    "yesCall": "Yes, call",
+    "successTitle": "Notification sent!",
+    "successDesc": "The waiter received your call and will come over shortly."
+  },
+  "Widgets": {
+    "orderStatus": "Order status",
+    "myOrders": "My orders",
+    "bonus": "Bonus points",
+    "schedule": "Schedule"
+  },
+  "Spot": {
+    "pickupFrom": "Pickup from",
+    "switchConfirm": "Switching the location will clear your cart since prices and availability may differ. Continue?"
+  },
+  "Search": {
+    "results": "Search results",
+    "noResults": "Nothing found for \"{query}\"",
+    "intro": "Enter 'dish name'"
+  },
+  "StoreClosed": {
+    "title": "We're closed right now",
+    "defaultMessage": "See you tomorrow at 10:00"
+  },
+  "Profile": {
+    "title": "Personal account",
+    "description": "Your order history, bonuses and favorites will live here. We're tightening the last screws! ⚙️",
+    "loginSoon": "Sign in (Soon)"
+  },
+  "History": {
+    "title": "Section under construction",
+    "description": "We're writing the history right now... Check back a bit later!"
+  },
+  "Nav": {
+    "home": "Home",
+    "cart": "Cart",
+    "history": "History",
+    "profile": "Profile"
+  },
+  "Meta": {
+    "appTitle": "iMenu — Your electronic menu",
+    "appDescription": "Convenient electronic menu for restaurants and cafes. Order food, book and pay by QR code.",
+    "ogTitle": "iMenu — Your electronic menu",
+    "ogDescription": "Modern service for ordering food in venues.",
+    "venueNotFound": "Venue not found",
+    "venueMenuFallback": "Menu of {name}",
+    "venueOgFallback": "Tasty dishes at {name}",
+    "categoryPageTitle": "{name} - Menu of {venue}",
+    "menuPageTitle": "Menu of {venue}",
+    "categoryDesc": "Order delicious food at {venue}."
+  }
+}

@@ -3,6 +3,7 @@
 // 🔥 1. Импортируем useCallback
 import { FC, useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
 import { useCheckout } from '@/store/checkout';
@@ -36,6 +37,9 @@ const DrawerCheckout: FC<IProps> = ({
 }) => {
   const params = useParams();
   const venueSlug = params.venue as string;
+  const t = useTranslations('Cart.drawer');
+  const tt = useTranslations('Cart.timePicker');
+  const tTable = useTranslations('Cart.table');
   const [sheetAnim, setSheetAnim] = useState(false);
 
   // --- STORE DATA ---
@@ -69,7 +73,7 @@ const DrawerCheckout: FC<IProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
-  const [pickupTime, setPickupTime] = useState('Быстрее всего');
+  const [pickupTime, setPickupTime] = useState(tt('asap'));
 
   // --- UI STATE ---
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -114,22 +118,22 @@ const DrawerCheckout: FC<IProps> = ({
 
   const handlePay = async () => {
     if (!phone && orderType !== 'dinein') {
-      alert('Пожалуйста, укажите номер телефона');
+      alert(t('phoneAlertEmpty'));
       return;
     }
     if (orderType !== 'dinein') {
       if (!phone) {
-        alert('Пожалуйста, укажите номер телефона');
+        alert(t('phoneAlertEmpty'));
         return;
       }
       // Проверка на длину
       if (phone.length !== 9) {
-        alert('Номер телефона должен состоять из 9 цифр');
+        alert(t('phoneAlertLength'));
         return;
       }
     }
     if (orderType === 'delivery' && !address) {
-      alert('Введите адрес доставки');
+      alert(t('addressAlert'));
       return;
     }
 
@@ -144,7 +148,7 @@ const DrawerCheckout: FC<IProps> = ({
       // 🔥 Формируем итоговый комментарий (склеиваем время и сам комментарий)
       let finalComment = comment;
       if (orderType !== 'dinein') {
-        const timeText = `[Время выдачи: ${pickupTime}]`;
+        const timeText = t('preparePrefix', { time: pickupTime });
         finalComment = comment ? `${timeText}\n${comment}` : timeText;
       }
 
@@ -191,7 +195,7 @@ const DrawerCheckout: FC<IProps> = ({
         window.location.href = response.paymentUrl;
       } else {
         closeSheet();
-        alert(`Заказ #${response.id} успешно создан!`);
+        alert(t('orderCreated', { id: response.id }));
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -236,7 +240,7 @@ const DrawerCheckout: FC<IProps> = ({
                   <div className='bg-[#F5F5F5] flex items-center gap-2 rounded-xl py-3 px-4 mb-4'>
                     <Image src={tableIcon} alt='table' width={16} height={16} />
                     <span className='text-[#111111] font-semibold'>
-                      Столик №{tableNumber}
+                      {tTable('drawerTable', { num: tableNumber ?? '' })}
                     </span>
                   </div>
                 ) : (
@@ -256,7 +260,7 @@ const DrawerCheckout: FC<IProps> = ({
 
                 <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>
                   <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
-                    Номер телефона
+                    {t('phoneLabel')}
                   </span>
                   <div className='flex items-center'>
                     <div className='font-semibold text-[#111111] placeholder-gray-400 text-base'>
@@ -281,21 +285,21 @@ const DrawerCheckout: FC<IProps> = ({
                   onClick={() => setShowComment(!showComment)}
                 >
                   {showComment
-                    ? '− Убрать комментарий'
-                    : '+ Добавить комментарий'}
+                    ? t('removeComment')
+                    : t('addComment')}
                 </button>
 
                 {showComment && (
                   <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4 animate-fadeIn'>
                     <span className='text-[#A4A4A4] text-xs mb-1'>
-                      Комментарий к заказу
+                      {t('commentLabel')}
                     </span>
                     <input
                       type='text'
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                      placeholder='Например: без лука, острая...'
+                      placeholder={t('commentPlaceholder')}
                     />
                   </label>
                 )}

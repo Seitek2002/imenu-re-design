@@ -3,6 +3,8 @@ import SingleCategoryContent from './SingleCategoryContent';
 import { VenueService } from '@/services/venue.service';
 import { Category } from '@/types/api';
 import { readSpotCookie } from '@/lib/spot-cookie.server';
+import { getLocale } from 'next-intl/server';
+import type { Locale } from '@/lib/locale';
 
 interface Props {
   venue: string;
@@ -27,9 +29,10 @@ function findCategory(
 
 export default async function ProductContentFetcher({ venue, slug }: Props) {
   const spotId = await readSpotCookie(venue);
+  const locale = (await getLocale()) as Locale;
   const [allProducts, buttons] = await Promise.all([
-    VenueService.getAllProducts(venue, spotId),
-    VenueService.getMainButtons(venue),
+    VenueService.getAllProducts(venue, spotId, locale),
+    VenueService.getMainButtons(venue, locale),
   ]);
 
   const flatButtons = buttons.flat();

@@ -2,14 +2,16 @@
 
 import { OrderProduct } from '@/lib/order';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 export default function OrderItemsList({ items }: { items: OrderProduct[] }) {
+  const t = useTranslations('OrderStatus');
   return (
     <div className='bg-white rounded-[30px] p-5 shadow-sm'>
       <h3 className='font-bold text-lg mb-4 flex justify-between items-center'>
-        Ваш заказ
+        {t('yourOrder')}
         <span className='text-xs font-normal text-gray-400 bg-gray-100 px-2 py-1 rounded-lg'>
-          {items.length} поз.
+          {t('itemsCount', { count: items.length })}
         </span>
       </h3>
 

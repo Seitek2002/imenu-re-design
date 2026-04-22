@@ -1,5 +1,7 @@
-// components/Drawer/CheckoutFooter.tsx
+'use client';
+
 import { FC } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   total: number;
@@ -8,10 +10,11 @@ interface Props {
 }
 
 const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
+  const t = useTranslations('Cart.footer');
   return (
     <div className='flex items-center gap-4'>
       <div className='flex flex-col'>
-        <span className='text-xs text-gray-500 font-medium'>К оплате</span>
+        <span className='text-xs text-gray-500 font-medium'>{t('totalDue')}</span>
         <span className='text-2xl font-bold text-[#111111]'>{total} c.</span>
       </div>
 
@@ -27,10 +30,10 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
         {isSubmitting ? (
           <>
             <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin' />
-            <span>Обработка...</span>
+            <span>{t('processing')}</span>
           </>
         ) : (
-          'Оплатить заказ'
+          t('pay')
         )}
       </button>
     </div>

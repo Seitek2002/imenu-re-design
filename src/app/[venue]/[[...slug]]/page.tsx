@@ -11,8 +11,10 @@ import { VenueService } from '@/services/venue.service';
 import StoreClosedCard from '@/app/components/StoreClosedCard';
 import { getVenueStatus } from '@/lib/venue-status';
 import { API_URL, API_V2_URL } from '@/lib/config';
+import { getLocale } from 'next-intl/server';
+import type { Locale } from '@/lib/locale';
 
-async function getVenueData(slug: string, tableId?: number) {
+async function getVenueData(slug: string, locale: Locale, tableId?: number) {
   // По дефолту обычный URL
   let url = `${API_V2_URL}/venues/${slug}/`;
 
@@ -23,6 +25,7 @@ async function getVenueData(slug: string, tableId?: number) {
 
   const res = await fetch(url, {
     next: { revalidate: 60 },
+    headers: { 'Accept-Language': locale },
   });
 
   if (res.status === 404) return null;
@@ -44,9 +47,10 @@ interface Props {
 export default async function VenuePage({ params }: Props) {
   const { venue: venueSlug, slug } = await params;
   const { tableId, spotId, isKioskMode } = parseUrlContext(slug);
-  const buttonsPromise = VenueService.getMainButtons(venueSlug);
+  const locale = (await getLocale()) as Locale;
+  const buttonsPromise = VenueService.getMainButtons(venueSlug, locale);
 
-  const venueData = await getVenueData(venueSlug, tableId);
+  const venueData = await getVenueData(venueSlug, locale, tableId);
 
   const { isOpen, message } = getVenueStatus(venueData?.schedules || []);
 

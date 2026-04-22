@@ -1,14 +1,21 @@
 'use client';
 
 import { X } from 'lucide-react'; // 1. Импортируем иконку крестика
-import { STEPS_CONFIG } from '../steps';
+import { useTranslations } from 'next-intl';
+import { STEPS_CONFIG, StepKey } from '../steps';
 
 interface Props {
   serviceMode: number;
   status: number;
 }
 
+function stepText(t: ReturnType<typeof useTranslations>, key: StepKey, suffix: 'title' | 'desc'): string {
+  const [mode, idx] = key.split('.');
+  return t(`steps.${mode}.${idx}_${suffix}`);
+}
+
 export default function StatusProgressBar({ serviceMode, status }: Props) {
+  const t = useTranslations('OrderStatus');
   const steps = STEPS_CONFIG[serviceMode] || STEPS_CONFIG[2];
   const total = steps.length;
   const isCancelled = status === 7;
@@ -31,10 +38,10 @@ export default function StatusProgressBar({ serviceMode, status }: Props) {
       {/* Заголовок */}
       <div className='mb-6 text-center'>
         <h2 className='text-2xl font-bold mb-1'>
-          {isCancelled ? 'Заказ отменен' : CurrentStepInfo?.title}
+          {isCancelled ? t('cancelled') : CurrentStepInfo && stepText(t, CurrentStepInfo.key, 'title')}
         </h2>
         <p className='text-gray-400 text-sm'>
-          {isCancelled ? 'Свяжитесь с администратором' : CurrentStepInfo?.desc}
+          {isCancelled ? t('cancelledDesc') : CurrentStepInfo && stepText(t, CurrentStepInfo.key, 'desc')}
         </p>
       </div>
 
