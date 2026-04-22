@@ -14,9 +14,21 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
   let price = product.productPrice;
   let isFrom = false;
 
-  if (price === 0 && product.modificators && product.modificators.length > 0) {
-    price = Math.min(...product.modificators.map((m) => m.price));
-    isFrom = true;
+  if (price === 0) {
+    const requiredGroups = (product.groupModifications ?? []).filter(
+      (g) => g.selection.min > 0 && g.items.length > 0,
+    );
+
+    if (requiredGroups.length > 0) {
+      price = requiredGroups.reduce((sum, g) => {
+        const cheapest = Math.min(...g.items.map((i) => Number(i.price)));
+        return sum + cheapest * g.selection.min;
+      }, 0);
+      isFrom = true;
+    } else if (product.modificators && product.modificators.length > 0) {
+      price = Math.min(...product.modificators.map((m) => m.price));
+      isFrom = true;
+    }
   }
 
   const imageUrl =

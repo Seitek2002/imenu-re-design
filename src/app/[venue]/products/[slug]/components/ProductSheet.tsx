@@ -136,17 +136,6 @@ const GroupSection = ({
                 }`}
               >
                 <div className='flex items-center gap-3 min-w-0'>
-                  {item.thumbnail && (
-                    <div className='relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10'>
-                      <Image
-                        src={item.thumbnail}
-                        alt={item.name}
-                        fill
-                        className='object-cover'
-                        sizes='40px'
-                      />
-                    </div>
-                  )}
                   <div className='flex flex-col min-w-0'>
                     <span className='font-medium truncate'>{item.name}</span>
                     {Number(item.brutto) > 0 && (
@@ -177,17 +166,6 @@ const GroupSection = ({
               }`}
             >
               <div className='flex items-center gap-3 min-w-0'>
-                {item.thumbnail && (
-                  <div className='relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white'>
-                    <Image
-                      src={item.thumbnail}
-                      alt={item.name}
-                      fill
-                      className='object-cover'
-                      sizes='40px'
-                    />
-                  </div>
-                )}
                 <div className='flex flex-col min-w-0'>
                   <span className='font-medium truncate text-gray-800'>
                     {item.name}
