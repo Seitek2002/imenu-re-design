@@ -100,7 +100,21 @@
       "aptLabel": "Apt./Office",
       "entrancePart": "entrance {value}",
       "floorPart": "floor {value}",
-      "aptPart": "apt/office {value}"
+      "aptPart": "apt/office {value}",
+      "mapPickTitle": "Point on the map",
+      "mapPickHintEmpty": "Mark where to deliver",
+      "mapPickHintSelected": "Point selected"
+    },
+    "deliveryMap": {
+      "title": "Pin the delivery address",
+      "searchPlaceholder": "Search street or place",
+      "myLocation": "My location",
+      "confirm": "Confirm",
+      "close": "Close",
+      "hint": "Drag the map to move the pin",
+      "keyMissing": "Map is temporarily unavailable",
+      "geoError": "Couldn't determine your location",
+      "searchEmpty": "Nothing found"
     },
     "footer": {
       "totalDue": "To pay",
