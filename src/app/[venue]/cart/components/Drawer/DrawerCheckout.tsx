@@ -20,6 +20,7 @@ import CheckoutFooter from './CheckoutFooter';
 
 import tableIcon from '@/assets/Cart/table.svg';
 import { useVenueStore } from '@/store/venue';
+import type { Coords } from '@/lib/yandex-maps';
 
 interface IProps {
   sheetOpen: boolean;
@@ -54,6 +55,9 @@ const DrawerCheckout: FC<IProps> = ({
     setPhone: setStoredPhone,
     address: storedAddress,
     setAddress: setStoredAddress,
+    deliveryLat: storedLat,
+    deliveryLng: storedLng,
+    setDeliveryCoords,
     needUtensils,
     resetOrderOptions,
   } = useCheckout();
@@ -61,6 +65,11 @@ const DrawerCheckout: FC<IProps> = ({
   // --- FORM STATE ---
   const [phone, setPhone] = useState(storedPhone || '');
   const [address, setAddress] = useState(storedAddress || '');
+  const [coords, setCoords] = useState<Coords | null>(
+    storedLat != null && storedLng != null
+      ? { lat: storedLat, lng: storedLng }
+      : null,
+  );
 
   // Достаем нужные ID для бекенда из стора
   const tableNumber = useVenueStore((state) => state.tableNumber);
@@ -116,6 +125,14 @@ const DrawerCheckout: FC<IProps> = ({
     [setStoredAddress],
   );
 
+  const handleCoordsChange = useCallback(
+    (c: Coords | null) => {
+      setCoords(c);
+      setDeliveryCoords(c?.lat ?? null, c?.lng ?? null);
+    },
+    [setDeliveryCoords],
+  );
+
   const handlePay = async () => {
     if (!phone && orderType !== 'dinein') {
       alert(t('phoneAlertEmpty'));
@@ -160,6 +177,12 @@ const DrawerCheckout: FC<IProps> = ({
             ? 3
             : 2) as 1 | 2 | 3,
         address: orderType === 'delivery' ? address : null,
+        ...(orderType === 'delivery' && coords
+          ? {
+              deliveryLatitude: coords.lat.toFixed(6),
+              deliveryLongitude: coords.lng.toFixed(6),
+            }
+          : {}),
         comment: finalComment,
         needsCutlery: needUtensils,
         // 🔥 Берем реальные spotId и tableId из стора
@@ -254,7 +277,11 @@ const DrawerCheckout: FC<IProps> = ({
 
                 {orderType === 'delivery' && (
                   <div className='mt-4 border-t border-gray-100 pt-4'>
-                    <DeliveryInputs onAddressChange={handleAddressChange} />
+                    <DeliveryInputs
+                      onAddressChange={handleAddressChange}
+                      onCoordsChange={handleCoordsChange}
+                      initialCoords={coords}
+                    />
                   </div>
                 )}
 

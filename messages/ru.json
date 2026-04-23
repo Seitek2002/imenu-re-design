@@ -92,7 +92,7 @@
       "cash": "Наличными",
       "elqr": "ELQR"
     },
-    "delivery": {
+    "address": {
       "streetLabel": "Улица и номер дома",
       "streetPlaceholder": "Например: Токтогула 125",
       "entranceLabel": "Подъезд",
@@ -100,7 +100,21 @@
       "aptLabel": "Кв./Офис",
       "entrancePart": "подъезд {value}",
       "floorPart": "этаж {value}",
-      "aptPart": "кв/офис {value}"
+      "aptPart": "кв/офис {value}",
+      "mapPickTitle": "Точка на карте",
+      "mapPickHintEmpty": "Укажите, куда доставить",
+      "mapPickHintSelected": "Точка выбрана"
+    },
+    "deliveryMap": {
+      "title": "Укажите адрес доставки",
+      "searchPlaceholder": "Поиск улицы или места",
+      "myLocation": "Моё местоположение",
+      "confirm": "Подтвердить",
+      "close": "Закрыть",
+      "hint": "Перетащите карту, чтобы переместить точку",
+      "keyMissing": "Карта временно недоступна",
+      "geoError": "Не удалось определить местоположение",
+      "searchEmpty": "Ничего не найдено"
     },
     "footer": {
       "totalDue": "К оплате",
@@ -111,7 +125,7 @@
   "Product": {
     "size": "Размер",
     "required": "Обязательно",
-    "exactly": "Ровно {n}",
+    "exactly": "Выберите {n}",
     "upTo": "До {n}",
     "requiredUpTo": "Обязательно • до {n}",
     "chosenOf": "Выбрано {current} из {max}",

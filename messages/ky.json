@@ -92,7 +92,7 @@
       "cash": "Накталай",
       "elqr": "ELQR"
     },
-    "delivery": {
+    "address": {
       "streetLabel": "Көчө жана үй номери",
       "streetPlaceholder": "Мисалы: Токтогул 125",
       "entranceLabel": "Подъезд",
@@ -100,7 +100,21 @@
       "aptLabel": "Кв./Офис",
       "entrancePart": "подъезд {value}",
       "floorPart": "кабат {value}",
-      "aptPart": "кв/офис {value}"
+      "aptPart": "кв/офис {value}",
+      "mapPickTitle": "Картадагы чекит",
+      "mapPickHintEmpty": "Кайда жеткирерди белгилеңиз",
+      "mapPickHintSelected": "Чекит тандалды"
+    },
+    "deliveryMap": {
+      "title": "Жеткирүү дарегин көрсөтүңүз",
+      "searchPlaceholder": "Көчө же жерди издөө",
+      "myLocation": "Менин жайгашкан жерим",
+      "confirm": "Ырастоо",
+      "close": "Жабуу",
+      "hint": "Чекитти жылдыруу үчүн картаны сүйрөңүз",
+      "keyMissing": "Карта убактылуу жеткиликсиз",
+      "geoError": "Жайгашкан жерди аныктоо мүмкүн болбоду",
+      "searchEmpty": "Эч нерсе табылган жок"
     },
     "footer": {
       "totalDue": "Төлөнөт",
@@ -111,7 +125,7 @@
   "Product": {
     "size": "Өлчөмү",
     "required": "Милдеттүү",
-    "exactly": "Так {n}",
+    "exactly": "{n} даана тандаңыз",
     "upTo": "{n} чейин",
     "requiredUpTo": "Милдеттүү • {n} чейин",
     "chosenOf": "Тандалды {current} / {max}",
