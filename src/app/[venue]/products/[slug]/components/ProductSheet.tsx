@@ -111,7 +111,7 @@ const GroupSection = ({
         <span
           className={`text-xs px-2 py-0.5 rounded-full ${
             min > 0
-              ? 'text-red-500 bg-red-50'
+              ? 'text-green-500 bg-green-50'
               : 'text-blue-500 bg-blue-50'
           }`}
         >

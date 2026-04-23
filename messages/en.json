@@ -92,7 +92,7 @@
       "cash": "Cash",
       "elqr": "ELQR"
     },
-    "delivery": {
+    "address": {
       "streetLabel": "Street and house number",
       "streetPlaceholder": "E.g. Toktogul 125",
       "entranceLabel": "Entrance",
@@ -111,7 +111,7 @@
   "Product": {
     "size": "Size",
     "required": "Required",
-    "exactly": "Exactly {n}",
+    "exactly": "Choose {n}",
     "upTo": "Up to {n}",
     "requiredUpTo": "Required • up to {n}",
     "chosenOf": "Chosen {current} of {max}",

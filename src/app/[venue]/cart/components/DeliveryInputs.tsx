@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function DeliveryInputs({ onAddressChange }: Props) {
-  const t = useTranslations('Cart.delivery');
+  const t = useTranslations('Cart.address');
   const [street, setStreet] = useState('');
   const [entrance, setEntrance] = useState('');
   const [floor, setFloor] = useState('');

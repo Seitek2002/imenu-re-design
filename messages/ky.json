@@ -92,7 +92,7 @@
       "cash": "Накталай",
       "elqr": "ELQR"
     },
-    "delivery": {
+    "address": {
       "streetLabel": "Көчө жана үй номери",
       "streetPlaceholder": "Мисалы: Токтогул 125",
       "entranceLabel": "Подъезд",
@@ -111,7 +111,7 @@
   "Product": {
     "size": "Өлчөмү",
     "required": "Милдеттүү",
-    "exactly": "Так {n}",
+    "exactly": "{n} даана тандаңыз",
     "upTo": "{n} чейин",
     "requiredUpTo": "Милдеттүү • {n} чейин",
     "chosenOf": "Тандалды {current} / {max}",

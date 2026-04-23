@@ -92,7 +92,7 @@
       "cash": "Наличными",
       "elqr": "ELQR"
     },
-    "delivery": {
+    "address": {
       "streetLabel": "Улица и номер дома",
       "streetPlaceholder": "Например: Токтогула 125",
       "entranceLabel": "Подъезд",
@@ -111,7 +111,7 @@
   "Product": {
     "size": "Размер",
     "required": "Обязательно",
-    "exactly": "Ровно {n}",
+    "exactly": "Выберите {n}",
     "upTo": "До {n}",
     "requiredUpTo": "Обязательно • до {n}",
     "chosenOf": "Выбрано {current} из {max}",
