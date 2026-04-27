@@ -266,7 +266,7 @@ const DeliveryMapModal: FC<Props> = ({
           <div className='pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full'>
             <MapPin
               size={42}
-              className='text-brand drop-shadow-lg'
+              className='text-red-500 drop-shadow-lg'
               fill='currentColor'
               strokeWidth={1.5}
             />

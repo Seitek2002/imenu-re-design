@@ -78,6 +78,7 @@ const DrawerCheckout: FC<IProps> = ({
   const venueData = useVenueStore((state) => state.data);
 
   const [comment, setComment] = useState('');
+  const [deliveryComment, setDeliveryComment] = useState('');
   const [showComment, setShowComment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
 
@@ -162,11 +163,19 @@ const DrawerCheckout: FC<IProps> = ({
     setApiError(null);
 
     try {
-      // 🔥 Формируем итоговый комментарий (склеиваем время и сам комментарий)
+      // 🔥 Формируем итоговый комментарий (склеиваем время, комментарий к еде и к доставке)
       let finalComment = comment;
       if (orderType !== 'dinein') {
         const timeText = t('preparePrefix', { time: pickupTime });
         finalComment = comment ? `${timeText}\n${comment}` : timeText;
+      }
+      if (orderType === 'delivery' && deliveryComment.trim()) {
+        const deliveryText = t('deliveryCommentPrefix', {
+          text: deliveryComment.trim(),
+        });
+        finalComment = finalComment
+          ? `${finalComment}\n${deliveryText}`
+          : deliveryText;
       }
 
       const orderData = {
@@ -282,6 +291,18 @@ const DrawerCheckout: FC<IProps> = ({
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
                     />
+                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                      <span className='text-[#A4A4A4] text-xs mb-1'>
+                        {t('deliveryCommentLabel')}
+                      </span>
+                      <input
+                        type='text'
+                        value={deliveryComment}
+                        onChange={(e) => setDeliveryComment(e.target.value)}
+                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                        placeholder={t('deliveryCommentPlaceholder')}
+                      />
+                    </label>
                   </div>
                 )}
 

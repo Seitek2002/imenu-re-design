@@ -299,3 +299,79 @@ export interface Product {
 
   isRecommended?: boolean;
 }
+
+// --- PROMOTIONS (v2) ---
+
+export type PromotionEntityType = 'product' | 'category';
+
+export type BenefitType =
+  | 'percent_discount'
+  | 'fixed_discount'
+  | 'bonus_products'
+  | 'fixed_prices';
+
+export type WeekDayShort =
+  | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+export interface PromotionSchedulePeriod {
+  start: string; // HH:MM (assumed venue-local time — pending backend confirmation)
+  end: string;   // HH:MM
+}
+
+export interface PromotionSchedule {
+  activeWeekDays: WeekDayShort[];
+  periods: PromotionSchedulePeriod[];
+}
+
+export interface PromotionCondition {
+  entityType: PromotionEntityType;
+  localId: number | null;          // resolved local entity id (Product.id / Category.id), null if not mapped
+  posterId: string;                // external id from POS
+  name: string;
+  quantity: number;                // required count of matching items
+  weightGrams: number;
+  minSum: number;                  // backend drops promos with non-zero minSum (auto-apply only)
+  productLocalId: number | null;
+}
+
+export interface PromotionBonusProductRef {
+  entityType: PromotionEntityType;
+  localId: number | null;          // null = local entity not found; resolve via posterId
+  posterId: string;
+  name: string;                    // may be "" — frontend resolves via posterId from /v2/products/
+  productLocalId: number | null;
+}
+
+export interface PromotionFixedPriceRef {
+  entityType: PromotionEntityType;
+  localId: number | null;
+  posterId: string;
+  name: string;
+  price: string;                   // decimal as string
+}
+
+export interface PromotionBenefit {
+  type: BenefitType;
+  label: string;
+  discountPercent: number | null;  // set when type === 'percent_discount'
+  discountAmount: string | null;   // set when type === 'fixed_discount' (decimal as string)
+  bonusProducts: PromotionBonusProductRef[];
+  fixedPrices: PromotionFixedPriceRef[];
+}
+
+export interface PromotionSpotRef {
+  id: number;
+  name: string;
+}
+
+export interface Promotion {
+  id: number;
+  name: string;
+  autoApply: boolean;
+  dateStart: string;               // ISO with offset
+  dateEnd: string | null;          // ISO with offset; null = open-ended
+  schedule: PromotionSchedule;
+  conditions: PromotionCondition[];
+  benefit: PromotionBenefit;
+  availableForSpots: PromotionSpotRef[]; // empty = all spots; backend already filters by current spot
+}

@@ -7,7 +7,13 @@ import { useTranslations } from 'next-intl';
 // Сторы и API
 import { useCheckout } from '@/store/checkout';
 import { useBonusStore } from '@/store/bonus';
-import { useClientBonus } from '@/lib/api/queries';
+import { useBasketStore } from '@/store/basket';
+import {
+  useClientBonus,
+  usePromotionsV2,
+  useVenueProducts,
+} from '@/lib/api/queries';
+import { pickAppliedPromotion } from '@/lib/promotions';
 
 // Ассеты
 import arrow from '@/assets/Cart/details-arrow.svg';
@@ -30,6 +36,7 @@ export default function OrderSummary({
 
   // 1. Данные для бонусов
   const venue = useVenueStore((state) => state.data);
+  const spotId = useVenueStore((state) => state.spotId);
   const { phone } = useCheckout();
   const { data: bonusData } = useClientBonus({ phone, venueSlug: venue?.slug ?? '' });
 
@@ -45,9 +52,19 @@ export default function OrderSummary({
   // Реальная скидка (если переключатель включен)
   const discount = isBonusUsed ? maxDeductible : 0;
 
+  // 4. Авто-промо акции (display-only — бэк применит при создании заказа сам)
+  const basketItems = useBasketStore((s) => s.items);
+  const { data: promotions } = usePromotionsV2(venue?.slug, spotId);
+  const { data: productsCatalog } = useVenueProducts(venue?.slug, spotId);
+  const applied = pickAppliedPromotion(promotions, basketItems, productsCatalog);
+  const promoDiscount = applied?.discount.amount ?? 0;
+
   // Итоговая сумма
   const finalTotal =
-    subtotal + (deliveryType === 'delivery' ? deliveryCost : 0) - discount;
+    subtotal +
+    (deliveryType === 'delivery' ? deliveryCost : 0) -
+    discount -
+    promoDiscount;
 
   return (
     <div className='bg-[#FAFAFA] p-3 rounded-xl mt-3'>
@@ -86,6 +103,14 @@ export default function OrderSummary({
               <div className='flex justify-between text-[#80868B]'>
                 <span>{t('delivery')}</span>
                 <span>{deliveryCost} c.</span>
+              </div>
+            )}
+
+            {/* Авто-применённая акция (display-only) */}
+            {applied && promoDiscount > 0 && (
+              <div className='flex justify-between text-brand'>
+                <span className='truncate pr-2'>{applied.promotion.name}</span>
+                <span className='whitespace-nowrap'>- {promoDiscount} c.</span>
               </div>
             )}
 
