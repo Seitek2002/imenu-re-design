@@ -46,7 +46,7 @@ export default function BasketPage() {
   console.log(orderType);
 
   // --- 🔥 ЛОГИКА БОНУСОВ (Копия из OrderSummary для синхронизации) ---
-  const { isBonusUsed } = useBonusStore();
+  const { isBonusUsed, bonusAmount } = useBonusStore();
   const { phone } = useCheckout();
   const venue = useVenueStore((state) => state.data);
   const spotId = useVenueStore((state) => state.spotId);
@@ -56,8 +56,10 @@ export default function BasketPage() {
   });
 
   const availableBonuses = bonusData?.bonus ?? 0;
-  const maxDeductible = Math.min(availableBonuses, subtotal * 0.5);
-  const discount = isBonusUsed ? maxDeductible : 0;
+  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * 0.5));
+  const discount = isBonusUsed
+    ? Math.min(Math.max(0, bonusAmount), maxDeductible)
+    : 0;
 
   // --- Авто-промо (та же логика, что в OrderSummary) ---
   const { data: promotions } = usePromotionsV2(venue?.slug, spotId);

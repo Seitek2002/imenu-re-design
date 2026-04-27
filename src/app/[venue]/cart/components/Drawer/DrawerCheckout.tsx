@@ -48,6 +48,8 @@ const DrawerCheckout: FC<IProps> = ({
   const items = useBasketStore((state) => state.items);
   const clearBasket = useBasketStore((state) => state.clearBasket);
   const isBonusUsed = useBonusStore((state) => state.isBonusUsed);
+  const bonusAmount = useBonusStore((state) => state.bonusAmount);
+  const resetBonus = useBonusStore((state) => state.resetBonus);
 
   // --- API ---
   const createOrderMutation = useCreateOrderV2();
@@ -217,7 +219,9 @@ const DrawerCheckout: FC<IProps> = ({
           };
         }),
         paymentMethod: (paymentMethod === 'cash' ? 1 : 2) as 1 | 2,
+        paymentMethods: paymentMethod,
         useBonus: isBonusUsed,
+        ...(isBonusUsed && bonusAmount > 0 ? { bonus: bonusAmount } : {}),
       };
 
       const response = await createOrderMutation.mutateAsync({
@@ -227,6 +231,7 @@ const DrawerCheckout: FC<IProps> = ({
 
       clearBasket();
       resetOrderOptions();
+      resetBonus();
 
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;
