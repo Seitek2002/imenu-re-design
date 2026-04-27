@@ -57,7 +57,8 @@
     },
     "promo": {
       "itemBadge": "−{percent}%",
-      "itemBadgeGeneric": "Акция"
+      "itemBadgeGeneric": "Акция",
+      "bonusBadge": "×{count} бесплатно"
     },
     "utensils": {
       "title": "Нужны приборы?",

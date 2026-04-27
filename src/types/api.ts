@@ -356,6 +356,7 @@ export interface PromotionBenefit {
   discountPercent: number | null;  // set when type === 'percent_discount'
   discountAmount: string | null;   // set when type === 'fixed_discount' (decimal as string)
   bonusProducts: PromotionBonusProductRef[];
+  bonusProductsPcs?: number;       // how many bonus units to grant; backend defaults to 1
   fixedPrices: PromotionFixedPriceRef[];
 }
 

@@ -57,7 +57,8 @@
     },
     "promo": {
       "itemBadge": "−{percent}%",
-      "itemBadgeGeneric": "Promo"
+      "itemBadgeGeneric": "Promo",
+      "bonusBadge": "×{count} free"
     },
     "utensils": {
       "title": "Need utensils?",

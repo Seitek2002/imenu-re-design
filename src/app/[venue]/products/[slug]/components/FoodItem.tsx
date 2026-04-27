@@ -18,12 +18,18 @@ interface Props {
 
 const FoodItem: FC<Props> = ({ product, index = 0 }) => {
   const tc = useTranslations('Common');
+  const tp = useTranslations('Cart.promo');
 
   const venueSlug = useVenueStore((s) => s.data?.slug ?? null);
   const spotId = useVenueStore((s) => s.spotId);
   const { data: promotions } = usePromotionsV2(venueSlug, spotId);
   const promo = findActivePromotionForProduct(product, promotions);
   const promoPercent = promo?.benefit.discountPercent ?? null;
+  const promoLabel = promo
+    ? promoPercent != null
+      ? `−${promoPercent}%`
+      : tp('itemBadgeGeneric')
+    : null;
   let price = product.productPrice;
   let isFrom = false;
 
@@ -81,9 +87,9 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
           isPriority={isPriority}
         />
 
-        {promo && promoPercent != null && (
+        {promoLabel && (
           <div className='absolute top-1.5 left-1.5 z-10 bg-brand text-white text-[11px] font-bold leading-none px-2 py-1 rounded-md shadow-sm'>
-            −{promoPercent}%
+            {promoLabel}
           </div>
         )}
 

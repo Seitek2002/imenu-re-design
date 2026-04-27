@@ -113,14 +113,23 @@ export default function BasketPage() {
                 const isInvolved =
                   applied?.discount.involvedItemKeys.includes(item.key) ??
                   false;
-                const promoBadge =
-                  isInvolved && applied
-                    ? applied.promotion.benefit.discountPercent != null
-                      ? t('promo.itemBadge', {
-                          percent: applied.promotion.benefit.discountPercent,
-                        })
-                      : t('promo.itemBadgeGeneric')
-                    : undefined;
+                let promoBadge: string | undefined;
+                if (isInvolved && applied) {
+                  const benefit = applied.promotion.benefit;
+                  if (benefit.discountPercent != null) {
+                    promoBadge = t('promo.itemBadge', {
+                      percent: benefit.discountPercent,
+                    });
+                  } else if (benefit.type === 'bonus_products') {
+                    const bonusQty =
+                      applied.discount.bonusItems?.find(
+                        (b) => b.productId === item.id,
+                      )?.quantity ?? 1;
+                    promoBadge = t('promo.bonusBadge', { count: bonusQty });
+                  } else {
+                    promoBadge = t('promo.itemBadgeGeneric');
+                  }
+                }
 
                 return (
                   <BasketItem

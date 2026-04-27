@@ -1,6 +1,7 @@
 import type {
   Product,
   Promotion,
+  PromotionBonusProductRef,
   PromotionCondition,
   WeekDayShort,
 } from '@/types/api';
@@ -9,6 +10,15 @@ import type { BasketItem } from '@/store/basket';
 const WEEKDAY_BY_INDEX: WeekDayShort[] = [
   'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat',
 ];
+
+// Venue timezone — Asia/Bishkek. Promo schedule gates (weekday + time-of-day)
+// are evaluated in this TZ regardless of the user's device timezone.
+const VENUE_TZ_OFFSET_MINUTES = 6 * 60;
+
+function nowInVenueTz(now: Date): Date {
+  // Shift the absolute instant by +6h so getUTC* returns venue-local components.
+  return new Date(now.getTime() + VENUE_TZ_OFFSET_MINUTES * 60_000);
+}
 
 function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(':').map(Number);
@@ -29,7 +39,7 @@ function isWithinPeriod(
 }
 
 export function isPromotionActive(p: Promotion, now: Date = new Date()): boolean {
-  // Date window
+  // Date window — compared as absolute instants (TZ-agnostic).
   const start = new Date(p.dateStart).getTime();
   if (Number.isNaN(start) || now.getTime() < start) return false;
   if (p.dateEnd) {
@@ -37,13 +47,12 @@ export function isPromotionActive(p: Promotion, now: Date = new Date()): boolean
     if (!Number.isNaN(end) && now.getTime() > end) return false;
   }
 
-  // Weekday — uses browser-local time (TZ confirmation pending from backend)
-  const weekday = WEEKDAY_BY_INDEX[now.getDay()];
+  const venueNow = nowInVenueTz(now);
+  const weekday = WEEKDAY_BY_INDEX[venueNow.getUTCDay()];
   if (!p.schedule.activeWeekDays.includes(weekday)) return false;
 
-  // Time-of-day window
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
   if (p.schedule.periods.length === 0) return true;
+  const nowMinutes = venueNow.getUTCHours() * 60 + venueNow.getUTCMinutes();
   return p.schedule.periods.some((per) => isWithinPeriod(nowMinutes, per.start, per.end));
 }
 
@@ -107,6 +116,68 @@ export function matchesConditions(
 export interface AppliedDiscount {
   amount: number;
   involvedItemKeys: string[];
+  // For bonus_products: which products in the cart will be granted free
+  // (resolved via localId). Empty for other benefit types.
+  bonusItems?: { productId: number; quantity: number; unitPrice: number }[];
+}
+
+function computeBonusProductsDiscount(
+  bonusProducts: PromotionBonusProductRef[],
+  bonusPcs: number,
+  conditions: PromotionCondition[],
+  resolved: ResolvedItem[],
+): AppliedDiscount {
+  const empty: AppliedDiscount = { amount: 0, involvedItemKeys: [] };
+  if (bonusPcs <= 0) return empty;
+
+  // Track how many of each productId conditions already consumed, so a 1+1 promo
+  // on the same SKU requires qty >= condition.quantity + bonusPcs in cart.
+  const consumedByConditions = new Map<number, number>();
+  for (const c of conditions) {
+    if (c.entityType !== 'product' || c.localId == null) continue;
+    consumedByConditions.set(
+      c.localId,
+      (consumedByConditions.get(c.localId) ?? 0) + (c.quantity || 1),
+    );
+  }
+
+  const cartQtyByProduct = new Map<number, number>();
+  const cartItemByProduct = new Map<number, ResolvedItem>();
+  for (const r of resolved) {
+    cartQtyByProduct.set(
+      r.item.id,
+      (cartQtyByProduct.get(r.item.id) ?? 0) + r.item.quantity,
+    );
+    if (!cartItemByProduct.has(r.item.id)) cartItemByProduct.set(r.item.id, r);
+  }
+
+  let remaining = bonusPcs;
+  let totalDiscount = 0;
+  const involvedKeys: string[] = [];
+  const bonusItems: NonNullable<AppliedDiscount['bonusItems']> = [];
+
+  for (const bp of bonusProducts) {
+    if (remaining <= 0) break;
+    if (bp.entityType !== 'product' || bp.localId == null) continue;
+
+    const cartItem = cartItemByProduct.get(bp.localId);
+    if (!cartItem) continue;
+
+    const total = cartQtyByProduct.get(bp.localId) ?? 0;
+    const consumed = consumedByConditions.get(bp.localId) ?? 0;
+    const available = Math.max(0, total - consumed);
+    const take = Math.min(available, remaining);
+    if (take <= 0) continue;
+
+    const unitPrice = cartItem.item.lineUnitPrice;
+    totalDiscount += unitPrice * take;
+    remaining -= take;
+    involvedKeys.push(cartItem.item.key);
+    bonusItems.push({ productId: bp.localId, quantity: take, unitPrice });
+  }
+
+  if (totalDiscount <= 0) return empty;
+  return { amount: totalDiscount, involvedItemKeys: involvedKeys, bonusItems };
 }
 
 export function computeDiscount(
@@ -132,7 +203,16 @@ export function computeDiscount(
     };
   }
 
-  // TODO: fixed_discount, bonus_products, fixed_prices — pending backend clarifications
+  if (p.benefit.type === 'bonus_products') {
+    return computeBonusProductsDiscount(
+      p.benefit.bonusProducts,
+      p.benefit.bonusProductsPcs ?? 1,
+      p.conditions,
+      resolved,
+    );
+  }
+
+  // TODO: fixed_discount, fixed_prices — pending backend clarifications
   return empty;
 }
 
