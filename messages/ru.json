@@ -55,6 +55,11 @@
       "discount": "Скидка:",
       "total": "Итого"
     },
+    "promo": {
+      "itemBadge": "−{percent}%",
+      "itemBadgeGeneric": "Акция",
+      "bonusBadge": "×{count} бесплатно"
+    },
     "utensils": {
       "title": "Нужны приборы?",
       "subtitle": "По умолчанию — без приборов 🌿"
@@ -65,6 +70,9 @@
       "removeComment": "− Убрать комментарий",
       "commentLabel": "Комментарий к заказу",
       "commentPlaceholder": "Например: без лука, острая...",
+      "deliveryCommentLabel": "Комментарий к доставке",
+      "deliveryCommentPlaceholder": "Например: подъезд 2, 5 этаж, домофон 15",
+      "deliveryCommentPrefix": "[Доставка: {text}]",
       "phoneAlertEmpty": "Пожалуйста, укажите номер телефона",
       "phoneAlertLength": "Номер телефона должен состоять из 9 цифр",
       "addressAlert": "Введите адрес доставки",

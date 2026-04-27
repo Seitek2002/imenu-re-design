@@ -10,12 +10,19 @@ import trashRed from '@/assets/Cart/trash-red.svg';
 
 interface Props {
   item: BasketItemType;
+  promoBadge?: string;
   onIncrement: () => void;
   onDecrement: () => void;
   onRemove: () => void;
 }
 
-function BasketItem({ item, onIncrement, onDecrement, onRemove }: Props) {
+function BasketItem({
+  item,
+  promoBadge,
+  onIncrement,
+  onDecrement,
+  onRemove,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const revealDelete = () => {
@@ -51,9 +58,16 @@ function BasketItem({ item, onIncrement, onDecrement, onRemove }: Props) {
             </div>
 
             <div className='flex flex-col min-w-0'>
-              <span className='text-sm font-semibold text-[#21201F] truncate'>
-                {item.productName}
-              </span>
+              <div className='flex items-center gap-1.5 min-w-0'>
+                <span className='text-sm font-semibold text-[#21201F] truncate'>
+                  {item.productName}
+                </span>
+                {promoBadge && (
+                  <span className='shrink-0 text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md bg-brand/15 text-brand'>
+                    {promoBadge}
+                  </span>
+                )}
+              </div>
               {item.flatModName && (
                 <span className='text-xs text-[#80868B] truncate'>
                   {item.flatModName}

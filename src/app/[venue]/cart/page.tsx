@@ -11,7 +11,12 @@ import BasketItem from './components/BasketItem';
 import { useBonusStore } from '@/store/bonus';
 import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
-import { useClientBonus } from '@/lib/api/queries';
+import {
+  useClientBonus,
+  usePromotionsV2,
+  useVenueProducts,
+} from '@/lib/api/queries';
+import { pickAppliedPromotion } from '@/lib/promotions';
 import TableBadge from './components/TableBadge';
 import UtensilsSelector from './components/UtensilsSelector';
 import EmptyBasket from './components/EmptyBasket';
@@ -44,6 +49,7 @@ export default function BasketPage() {
   const { isBonusUsed } = useBonusStore();
   const { phone } = useCheckout();
   const venue = useVenueStore((state) => state.data);
+  const spotId = useVenueStore((state) => state.spotId);
   const { data: bonusData } = useClientBonus({
     phone,
     venueSlug: venue?.slug ?? '',
@@ -53,8 +59,14 @@ export default function BasketPage() {
   const maxDeductible = Math.min(availableBonuses, subtotal * 0.5);
   const discount = isBonusUsed ? maxDeductible : 0;
 
+  // --- Авто-промо (та же логика, что в OrderSummary) ---
+  const { data: promotions } = usePromotionsV2(venue?.slug, spotId);
+  const { data: productsCatalog } = useVenueProducts(venue?.slug, spotId);
+  const applied = pickAppliedPromotion(promotions, items, productsCatalog);
+  const promoDiscount = applied?.discount.amount ?? 0;
+
   // Итоговая цена для Футера и Дровера
-  const finalDisplayTotal = Math.max(0, cartTotal - discount);
+  const finalDisplayTotal = Math.max(0, cartTotal - discount - promoDiscount);
   // ------------------------------------------------------------------
   const tableNumber = useVenueStore((state) => state.tableNumber);
 
@@ -97,15 +109,39 @@ export default function BasketPage() {
         ) : (
           <div className='flex flex-col'>
             <ul className='divide-y divide-[#E7E7E7]'>
-              {items.map((item) => (
-                <BasketItem
-                  key={item.key}
-                  item={item}
-                  onIncrement={() => handleIncrement(item.key)}
-                  onDecrement={() => handleDecrement(item.key)}
-                  onRemove={() => handleRemove(item.key)}
-                />
-              ))}
+              {items.map((item) => {
+                const isInvolved =
+                  applied?.discount.involvedItemKeys.includes(item.key) ??
+                  false;
+                let promoBadge: string | undefined;
+                if (isInvolved && applied) {
+                  const benefit = applied.promotion.benefit;
+                  if (benefit.discountPercent != null) {
+                    promoBadge = t('promo.itemBadge', {
+                      percent: benefit.discountPercent,
+                    });
+                  } else if (benefit.type === 'bonus_products') {
+                    const bonusQty =
+                      applied.discount.bonusItems?.find(
+                        (b) => b.productId === item.id,
+                      )?.quantity ?? 1;
+                    promoBadge = t('promo.bonusBadge', { count: bonusQty });
+                  } else {
+                    promoBadge = t('promo.itemBadgeGeneric');
+                  }
+                }
+
+                return (
+                  <BasketItem
+                    key={item.key}
+                    item={item}
+                    promoBadge={promoBadge}
+                    onIncrement={() => handleIncrement(item.key)}
+                    onDecrement={() => handleDecrement(item.key)}
+                    onRemove={() => handleRemove(item.key)}
+                  />
+                );
+              })}
             </ul>
 
             {orderType === 'delivery' && (
@@ -132,8 +168,8 @@ export default function BasketPage() {
                 <span className='text-xl font-bold'>
                   {Math.round(finalDisplayTotal)} c.
                 </span>
-                {/* Если есть скидка, можно показать старую цену зачеркнутой */}
-                {isBonusUsed && discount > 0 && (
+                {/* Если есть скидка, показываем старую цену зачеркнутой */}
+                {(discount > 0 || promoDiscount > 0) && (
                   <span className='text-xs text-gray-400 line-through'>
                     {cartTotal} c.
                   </span>

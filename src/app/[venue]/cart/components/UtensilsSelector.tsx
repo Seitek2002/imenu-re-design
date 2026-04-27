@@ -26,9 +26,7 @@ export default function UtensilsSelector({ className = '' }: Props) {
       <button
         type='button'
         onClick={() => setNeedUtensils(!needUtensils)}
-        className={`relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
-          needUtensils ? 'bg-brand' : 'bg-gray-300'
-        }`}
+        className='relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 bg-green-500'
       >
         <span
           className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${

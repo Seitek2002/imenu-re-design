@@ -299,3 +299,98 @@ export interface Product {
 
   isRecommended?: boolean;
 }
+
+// --- PROMOTIONS (v2) ---
+
+export type PromotionEntityType =
+  | 'product'
+  | 'category'
+  | 'product_with_modifiers'
+  | 'unknown';
+
+// Restricted set used in PromotionFixedPriceRef per swagger.
+export type FixedPriceEntityType = 'product' | 'category';
+
+// Empty string means backend couldn't determine the type (per swagger enum).
+export type BenefitType =
+  | ''
+  | 'percent_discount'
+  | 'fixed_discount'
+  | 'bonus_products'
+  | 'fixed_prices';
+
+export type WeekDayShort =
+  | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+// AND/OR over conditions. Pending backend exposing this in /v2/promotions/
+// (Q11 to backend); raw admin data shows all observed promos use 'or'.
+export type ConditionsRule = 'and' | 'or';
+
+export interface PromotionSchedulePeriod {
+  start: string; // HH:MM (venue-local time — Asia/Bishkek +6)
+  end: string;   // HH:MM
+}
+
+export interface PromotionSchedule {
+  // Empty list means "no day restriction" (per swagger description).
+  activeWeekDays: WeekDayShort[];
+  periods: PromotionSchedulePeriod[];
+}
+
+export interface PromotionCondition {
+  entityType: PromotionEntityType;
+  localId: number | null;          // resolved local entity id (Product.id / Category.id), null if not mapped
+  posterId: string;                // external id from POS
+  name: string;
+  quantity: number | null;         // required count; null = not quantity-based
+  weightGrams: number | null;
+  minSum: number | null;           // backend drops promos with non-zero minSum (auto-apply only)
+  productLocalId: number | null;
+}
+
+export interface PromotionBonusProductRef {
+  entityType: PromotionEntityType;
+  localId: number | null;          // null = local entity not found
+  posterId: string;
+  name: string;                    // may be "" if not resolved locally
+  productLocalId: number | null;
+}
+
+export interface PromotionFixedPriceRef {
+  entityType: FixedPriceEntityType;
+  localId: number | null;
+  posterId: string;
+  name: string;
+  price: number;                   // integer per swagger; units pending confirmation (likely сом)
+}
+
+export interface PromotionBenefit {
+  type: BenefitType;
+  label: string;
+  discountPercent: number | null;  // set when type === 'percent_discount'
+  discountAmount: number | null;   // set when type === 'fixed_discount'; integer per swagger
+  bonusProducts: PromotionBonusProductRef[];
+  fixedPrices: PromotionFixedPriceRef[];
+}
+
+export interface PromotionSpotRef {
+  id: number;
+  name: string;
+}
+
+export interface Promotion {
+  id: number;
+  name: string;
+  description?: string;
+  position?: number;
+  autoApply: boolean;
+  dateStart: string | null;        // ISO with offset; null per swagger
+  dateEnd: string | null;          // ISO with offset; null = open-ended
+  schedule: PromotionSchedule;
+  conditions: PromotionCondition[];
+  benefit: PromotionBenefit;
+  availableForSpots: PromotionSpotRef[]; // empty = all spots; backend already filters by current spot
+  // Optional until backend exposes it (Q11). Frontend defaults to 'or'
+  // (matches all observed production promos in admin raw data).
+  conditionsRule?: ConditionsRule;
+}

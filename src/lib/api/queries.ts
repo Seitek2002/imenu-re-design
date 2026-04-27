@@ -7,7 +7,7 @@ import {
   OrdersResponse,
 } from '../order';
 import { API_URL, API_V2_URL } from '../config';
-import { Product } from '@/types/api';
+import { Product, Promotion } from '@/types/api';
 import type { Locale } from '../locale';
 
 const API_BASE = API_V2_URL;
@@ -163,6 +163,34 @@ export const useVenueProducts = (
   return useQuery({
     queryKey: ['venue-products', venueSlug, spotId ?? null, locale],
     queryFn: () => fetchVenueProducts(venueSlug as string, spotId, locale),
+    enabled: !!venueSlug,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+async function fetchPromotions(
+  venueSlug: string,
+  spotId: number | null | undefined,
+  locale: Locale,
+): Promise<Promotion[]> {
+  const params = new URLSearchParams({ venueSlug });
+  if (spotId != null) params.set('spotId', String(spotId));
+  const res = await fetch(`${API_BASE}/promotions/?${params.toString()}`, {
+    headers: buildHeaders(locale),
+  });
+  if (!res.ok) throw new Error('Failed to fetch promotions');
+  return res.json();
+}
+
+export const usePromotionsV2 = (
+  venueSlug: string | null | undefined,
+  spotId?: number | null,
+) => {
+  const locale = useLocale() as Locale;
+
+  return useQuery({
+    queryKey: ['promotions', venueSlug, spotId ?? null, locale],
+    queryFn: () => fetchPromotions(venueSlug as string, spotId, locale),
     enabled: !!venueSlug,
     staleTime: 1000 * 60 * 5,
   });

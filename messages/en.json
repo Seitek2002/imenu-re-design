@@ -55,6 +55,11 @@
       "discount": "Discount:",
       "total": "Total"
     },
+    "promo": {
+      "itemBadge": "−{percent}%",
+      "itemBadgeGeneric": "Promo",
+      "bonusBadge": "×{count} free"
+    },
     "utensils": {
       "title": "Need utensils?",
       "subtitle": "By default — no utensils 🌿"
@@ -65,6 +70,9 @@
       "removeComment": "− Remove comment",
       "commentLabel": "Comment for the order",
       "commentPlaceholder": "E.g. no onions, spicy...",
+      "deliveryCommentLabel": "Delivery comment",
+      "deliveryCommentPlaceholder": "E.g. entrance 2, floor 5, intercom 15",
+      "deliveryCommentPrefix": "[Delivery: {text}]",
       "phoneAlertEmpty": "Please enter your phone number",
       "phoneAlertLength": "Phone number must be 9 digits",
       "addressAlert": "Please enter your delivery address",

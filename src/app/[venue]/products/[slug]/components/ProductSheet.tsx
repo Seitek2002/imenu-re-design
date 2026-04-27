@@ -61,16 +61,20 @@ const GroupSection = ({
   counts,
   onChange,
   error,
+  absolutePricing = false,
 }: {
   group: GroupModification;
   counts: CountsState;
   onChange: (next: CountsState) => void;
   error: string | null;
+  /** When true, single-select required group items show as variant prices ("140 c.") instead of deltas ("+140 c.") */
+  absolutePricing?: boolean;
 }) => {
   const t = useTranslations('Product');
   const tc = useTranslations('Common');
   const { type, min, max } = group.selection;
   const sum = sumGroupCount(group, counts);
+  const showAbsolute = absolutePricing && type === 'single' && min > 0;
 
   const badge =
     min === max
@@ -150,7 +154,11 @@ const GroupSection = ({
                   </div>
                 </div>
                 <span className='text-sm font-semibold shrink-0'>
-                  {priceNum > 0 ? t('pricePlus', { price: priceNum }) : t('included')}
+                  {priceNum > 0
+                    ? showAbsolute
+                      ? `${priceNum} ${tc('currency')}`
+                      : t('pricePlus', { price: priceNum })
+                    : t('included')}
                 </span>
               </button>
             );
@@ -225,6 +233,7 @@ const ProductContent = ({
 }) => {
   const addToBasket = useBasketStore((s) => s.addToBasket);
   const t = useTranslations('Product');
+  const tc = useTranslations('Common');
 
   const groups = useMemo(
     () => product.groupModifications ?? [],
@@ -235,7 +244,24 @@ const ProductContent = ({
   const flatMods: Modificator[] = hasGroups ? [] : product.modificators ?? [];
 
   const [qnty, setQnty] = useState(1);
-  const [counts, setCounts] = useState<CountsState>({});
+  const [counts, setCounts] = useState<CountsState>(() => {
+    // Pre-select the cheapest item in each required single-select group,
+    // so the header price never starts at 0 for variant-style products.
+    const init: CountsState = {};
+    for (const g of groups) {
+      if (
+        g.selection.type === 'single' &&
+        g.selection.min > 0 &&
+        g.items.length > 0
+      ) {
+        const cheapest = g.items.reduce((a, b) =>
+          Number(a.price) <= Number(b.price) ? a : b,
+        );
+        init[cheapest.id] = 1;
+      }
+    }
+    return init;
+  });
   const [selectedFlatId, setSelectedFlatId] = useState<number | null>(
     flatMods.length > 0 ? flatMods[0].id : null,
   );
@@ -313,9 +339,14 @@ const ProductContent = ({
 
           <div className='p-5 md:py-0 md:px-6 flex flex-col gap-5 w-full'>
             <div>
-              <h2 className='text-2xl font-bold leading-tight mb-2'>
+              <h2 className='text-2xl font-bold leading-tight mb-1'>
                 {product.productName}
               </h2>
+              {unitPrice > 0 && (
+                <div className='text-xl font-bold text-[#21201F] mb-2'>
+                  {unitPrice} {tc('currency')}
+                </div>
+              )}
               {product.productDescription && (
                 <p className='text-gray-500 text-sm leading-relaxed'>
                   {product.productDescription}
@@ -368,6 +399,7 @@ const ProductContent = ({
                 counts={counts}
                 onChange={setCounts}
                 error={errors[g.id] ?? null}
+                absolutePricing={product.productPrice === 0}
               />
             ))}
           </div>
