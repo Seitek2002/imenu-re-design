@@ -163,6 +163,8 @@
     "totalDue": "Total to pay:",
     "cancelled": "Order cancelled",
     "cancelledDesc": "Please contact the administrator",
+    "pendingPayment": "Awaiting payment",
+    "pendingPaymentDesc": "Complete the payment on the bank page. The status will update automatically.",
     "notFound": "Order not found",
     "notFoundDesc": "You may have followed a wrong link, or the order has been moved to the archive.",
     "backToMenu": "Back to menu",

@@ -1,15 +1,24 @@
 'use client';
 
-import { X } from 'lucide-react'; // 1. Импортируем иконку крестика
+import { X, Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { STEPS_CONFIG, StepKey } from '../steps';
+import {
+  isCancelled,
+  isPendingPayment,
+  statusToStepIndex,
+} from '@/lib/helpers/progressHelper';
 
 interface Props {
   serviceMode: number;
   status: number;
 }
 
-function stepText(t: ReturnType<typeof useTranslations>, key: StepKey, suffix: 'title' | 'desc'): string {
+function stepText(
+  t: ReturnType<typeof useTranslations>,
+  key: StepKey,
+  suffix: 'title' | 'desc',
+): string {
   const [mode, idx] = key.split('.');
   return t(`steps.${mode}.${idx}_${suffix}`);
 }
@@ -18,31 +27,41 @@ export default function StatusProgressBar({ serviceMode, status }: Props) {
   const t = useTranslations('OrderStatus');
   const steps = STEPS_CONFIG[serviceMode] || STEPS_CONFIG[2];
   const total = steps.length;
-  const isCancelled = status === 7;
 
-  // 2. 🔥 ИСПРАВЛЕНИЕ ЛОГИКИ:
-  // Если отмена (7) -> активный шаг всегда 0.
-  // Иначе -> ограничиваем статус длиной массива.
-  const currentStepIndex = isCancelled
+  const cancelled = isCancelled(status);
+  const pendingPayment = isPendingPayment(status);
+  const isOverlay = cancelled || pendingPayment;
+
+  const currentStepIndex = statusToStepIndex(status, serviceMode);
+
+  // При оверлее (отмена/ждёт оплату) прогресс на 0%, иначе считаем по шагам.
+  const progressPercent = isOverlay
     ? 0
-    : Math.min(Math.max(0, status), total - 1);
-
-  // Расчет ширины полоски
-  const progressPercent =
-    total <= 1 ? 0 : (currentStepIndex / (total - 1)) * 100;
+    : total <= 1
+      ? 0
+      : (currentStepIndex / (total - 1)) * 100;
 
   const CurrentStepInfo = steps[currentStepIndex];
+
+  let title: string;
+  let desc: string;
+  if (cancelled) {
+    title = t('cancelled');
+    desc = t('cancelledDesc');
+  } else if (pendingPayment) {
+    title = t('pendingPayment');
+    desc = t('pendingPaymentDesc');
+  } else {
+    title = CurrentStepInfo ? stepText(t, CurrentStepInfo.key, 'title') : '';
+    desc = CurrentStepInfo ? stepText(t, CurrentStepInfo.key, 'desc') : '';
+  }
 
   return (
     <div className='bg-white rounded-[30px] p-5 shadow-sm mb-4'>
       {/* Заголовок */}
       <div className='mb-6 text-center'>
-        <h2 className='text-2xl font-bold mb-1'>
-          {isCancelled ? t('cancelled') : CurrentStepInfo && stepText(t, CurrentStepInfo.key, 'title')}
-        </h2>
-        <p className='text-gray-400 text-sm'>
-          {isCancelled ? t('cancelledDesc') : CurrentStepInfo && stepText(t, CurrentStepInfo.key, 'desc')}
-        </p>
+        <h2 className='text-2xl font-bold mb-1'>{title}</h2>
+        <p className='text-gray-400 text-sm'>{desc}</p>
       </div>
 
       {/* Визуализация */}
@@ -59,12 +78,13 @@ export default function StatusProgressBar({ serviceMode, status }: Props) {
         {/* Кружочки */}
         <div className='relative z-10 flex justify-between'>
           {steps.map((step, index) => {
-            const isActive = index <= currentStepIndex;
+            const isActive = !isOverlay && index <= currentStepIndex;
+            const isOverlayActive = isOverlay && index === 0;
 
-            // 3. 🔥 ПОДМЕНА ИКОНКИ:
-            // Если заказ отменен И это первый шаг (активный) -> ставим крестик.
-            // Иначе -> берем иконку из конфига.
-            const IconComponent = isCancelled && index === 0 ? X : step.Icon;
+            // Отмена → крест на первом шаге; ожидание оплаты → кошелёк на первом шаге.
+            let IconComponent = step.Icon;
+            if (cancelled && index === 0) IconComponent = X;
+            else if (pendingPayment && index === 0) IconComponent = Wallet;
 
             return (
               <div
@@ -72,13 +92,16 @@ export default function StatusProgressBar({ serviceMode, status }: Props) {
                 className={`
                   flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-500
                   ${
-                    isActive
+                    isActive || isOverlayActive
                       ? 'bg-brand border-brand text-white shadow-lg scale-110'
                       : 'bg-white border-gray-200 text-gray-300'
                   }
                 `}
               >
-                <IconComponent size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <IconComponent
+                  size={20}
+                  strokeWidth={isActive || isOverlayActive ? 2.5 : 2}
+                />
               </div>
             );
           })}

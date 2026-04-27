@@ -2,7 +2,7 @@
 
 // 🔥 1. Импортируем useCallback
 import { FC, useEffect, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
@@ -37,6 +37,7 @@ const DrawerCheckout: FC<IProps> = ({
   finalTotal,
 }) => {
   const params = useParams();
+  const router = useRouter();
   const venueSlug = params.venue as string;
   const t = useTranslations('Cart.drawer');
   const tt = useTranslations('Cart.timePicker');
@@ -45,6 +46,7 @@ const DrawerCheckout: FC<IProps> = ({
 
   // --- STORE DATA ---
   const items = useBasketStore((state) => state.items);
+  const clearBasket = useBasketStore((state) => state.clearBasket);
   const isBonusUsed = useBonusStore((state) => state.isBonusUsed);
 
   // --- API ---
@@ -135,6 +137,8 @@ const DrawerCheckout: FC<IProps> = ({
   );
 
   const handlePay = async () => {
+    if (createOrderMutation.isPending) return;
+
     if (!phone && orderType !== 'dinein') {
       alert(t('phoneAlertEmpty'));
       return;
@@ -212,7 +216,7 @@ const DrawerCheckout: FC<IProps> = ({
               : {}),
           };
         }),
-        paymentMethods: paymentMethod,
+        paymentMethod: (paymentMethod === 'cash' ? 1 : 2) as 1 | 2,
         useBonus: isBonusUsed,
       };
 
@@ -221,13 +225,14 @@ const DrawerCheckout: FC<IProps> = ({
         venueSlug,
       });
 
+      clearBasket();
       resetOrderOptions();
 
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;
       } else {
         closeSheet();
-        alert(t('orderCreated', { id: response.id }));
+        router.push(`/${venueSlug}/order-status/${response.id}`);
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
