@@ -40,16 +40,21 @@ function isWithinPeriod(
 
 export function isPromotionActive(p: Promotion, now: Date = new Date()): boolean {
   // Date window — compared as absolute instants (TZ-agnostic).
-  const start = new Date(p.dateStart).getTime();
-  if (Number.isNaN(start) || now.getTime() < start) return false;
+  if (p.dateStart) {
+    const start = new Date(p.dateStart).getTime();
+    if (Number.isNaN(start) || now.getTime() < start) return false;
+  }
   if (p.dateEnd) {
     const end = new Date(p.dateEnd).getTime();
     if (!Number.isNaN(end) && now.getTime() > end) return false;
   }
 
   const venueNow = nowInVenueTz(now);
-  const weekday = WEEKDAY_BY_INDEX[venueNow.getUTCDay()];
-  if (!p.schedule.activeWeekDays.includes(weekday)) return false;
+  // Empty activeWeekDays means "no day restriction" per swagger.
+  if (p.schedule.activeWeekDays.length > 0) {
+    const weekday = WEEKDAY_BY_INDEX[venueNow.getUTCDay()];
+    if (!p.schedule.activeWeekDays.includes(weekday)) return false;
+  }
 
   if (p.schedule.periods.length === 0) return true;
   const nowMinutes = venueNow.getUTCHours() * 60 + venueNow.getUTCMinutes();
@@ -74,7 +79,10 @@ function itemMatchesCondition(
   resolved: ResolvedItem,
   c: PromotionCondition,
 ): boolean {
-  if (c.entityType === 'product') {
+  // 'product_with_modifiers' currently treated like 'product': match by localId
+  // against cart product id. BasketItem already carries selected modifiers, so
+  // the condition fires on any modifier combination of the same SKU.
+  if (c.entityType === 'product' || c.entityType === 'product_with_modifiers') {
     return c.localId != null && resolved.item.id === c.localId;
   }
   if (c.entityType === 'category') {
@@ -82,6 +90,7 @@ function itemMatchesCondition(
     const cats = resolved.product?.categories ?? [];
     return cats.some((cat) => cat.id === c.localId);
   }
+  // 'unknown' — backend couldn't resolve type; skip.
   return false;
 }
 
@@ -104,11 +113,26 @@ export function matchesConditions(
   if (p.conditions.length === 0) return false;
   const resolved = resolveItems(basketItems, productsCatalog);
 
+  // Default to 'or' until backend exposes conditionsRule (Q11). Raw admin data
+  // shows all observed production promos use 'or'; defaulting to 'and' would
+  // break promos with multiple conditions.
+  const rule = p.conditionsRule ?? 'or';
+
+  if (rule === 'or') {
+    return p.conditions.some((c) => {
+      const totalQty = resolved
+        .filter((r) => itemMatchesCondition(r, c))
+        .reduce((sum, r) => sum + r.item.quantity, 0);
+      return totalQty >= (c.quantity ?? 1);
+    });
+  }
+
+  // AND
   for (const c of p.conditions) {
     const totalQty = resolved
       .filter((r) => itemMatchesCondition(r, c))
       .reduce((sum, r) => sum + r.item.quantity, 0);
-    if (totalQty < (c.quantity || 1)) return false;
+    if (totalQty < (c.quantity ?? 1)) return false;
   }
   return true;
 }
@@ -121,23 +145,29 @@ export interface AppliedDiscount {
   bonusItems?: { productId: number; quantity: number; unitPrice: number }[];
 }
 
+// Per backend (Q8): bonus quantity comes from a single `bonus_products_pcs`
+// field which defaults to 1 and is NOT exposed in /v2/promotions/. Hardcoded
+// here until/unless backend exposes it.
+const BONUS_PRODUCTS_PCS_DEFAULT = 1;
+
 function computeBonusProductsDiscount(
   bonusProducts: PromotionBonusProductRef[],
-  bonusPcs: number,
   conditions: PromotionCondition[],
   resolved: ResolvedItem[],
 ): AppliedDiscount {
   const empty: AppliedDiscount = { amount: 0, involvedItemKeys: [] };
-  if (bonusPcs <= 0) return empty;
+  const bonusPcs = BONUS_PRODUCTS_PCS_DEFAULT;
 
   // Track how many of each productId conditions already consumed, so a 1+1 promo
   // on the same SKU requires qty >= condition.quantity + bonusPcs in cart.
   const consumedByConditions = new Map<number, number>();
   for (const c of conditions) {
-    if (c.entityType !== 'product' || c.localId == null) continue;
+    const isProductLike =
+      c.entityType === 'product' || c.entityType === 'product_with_modifiers';
+    if (!isProductLike || c.localId == null) continue;
     consumedByConditions.set(
       c.localId,
-      (consumedByConditions.get(c.localId) ?? 0) + (c.quantity || 1),
+      (consumedByConditions.get(c.localId) ?? 0) + (c.quantity ?? 1),
     );
   }
 
@@ -158,7 +188,9 @@ function computeBonusProductsDiscount(
 
   for (const bp of bonusProducts) {
     if (remaining <= 0) break;
-    if (bp.entityType !== 'product' || bp.localId == null) continue;
+    const isProductLike =
+      bp.entityType === 'product' || bp.entityType === 'product_with_modifiers';
+    if (!isProductLike || bp.localId == null) continue;
 
     const cartItem = cartItemByProduct.get(bp.localId);
     if (!cartItem) continue;
@@ -190,29 +222,41 @@ export function computeDiscount(
   const involved = involvedItemsForConditions(resolved, p.conditions);
   if (involved.length === 0) return empty;
 
+  const involvedTotal = involved.reduce(
+    (sum, r) => sum + r.item.lineUnitPrice * r.item.quantity,
+    0,
+  );
+  const involvedKeys = involved.map((r) => r.item.key);
+
   if (p.benefit.type === 'percent_discount') {
     const pct = p.benefit.discountPercent ?? 0;
     if (pct <= 0) return empty;
-    const involvedTotal = involved.reduce(
-      (sum, r) => sum + r.item.lineUnitPrice * r.item.quantity,
-      0,
-    );
     return {
       amount: Math.round((involvedTotal * pct) / 100),
-      involvedItemKeys: involved.map((r) => r.item.key),
+      involvedItemKeys: involvedKeys,
+    };
+  }
+
+  if (p.benefit.type === 'fixed_discount') {
+    const amount = p.benefit.discountAmount ?? 0;
+    if (amount <= 0) return empty;
+    // Cap at involvedTotal so the discount never exceeds the matched items
+    // (mirrors backend behavior when sending to Poster).
+    return {
+      amount: Math.min(amount, involvedTotal),
+      involvedItemKeys: involvedKeys,
     };
   }
 
   if (p.benefit.type === 'bonus_products') {
     return computeBonusProductsDiscount(
       p.benefit.bonusProducts,
-      p.benefit.bonusProductsPcs ?? 1,
       p.conditions,
       resolved,
     );
   }
 
-  // TODO: fixed_discount, fixed_prices — pending backend clarifications
+  // TODO: fixed_prices — per-item price override; deferred (mostly staff promos).
   return empty;
 }
 
@@ -226,7 +270,7 @@ function productMatchesAnyCondition(
   conditions: PromotionCondition[],
 ): boolean {
   return conditions.some((c) => {
-    if (c.entityType === 'product') {
+    if (c.entityType === 'product' || c.entityType === 'product_with_modifiers') {
       return c.localId != null && product.id === c.localId;
     }
     if (c.entityType === 'category') {
@@ -252,7 +296,7 @@ export function findActivePromotionForProduct(
   if (!promotions?.length) return null;
   for (const p of promotions) {
     if (!p.autoApply) continue;
-    if (p.conditions.some((c) => c.minSum > 0)) continue;
+    if (p.conditions.some((c) => (c.minSum ?? 0) > 0)) continue;
     if (!isPromotionActive(p, now)) continue;
     if (productMatchesAnyCondition(product, p.conditions)) return p;
   }
@@ -270,7 +314,7 @@ export function pickAppliedPromotion(
   for (const p of promotions) {
     if (!p.autoApply) continue;
     // Backend drops promos with non-zero minSum — mirror that
-    if (p.conditions.some((c) => c.minSum > 0)) continue;
+    if (p.conditions.some((c) => (c.minSum ?? 0) > 0)) continue;
     if (!isPromotionActive(p, now)) continue;
     if (!matchesConditions(p, basketItems, productsCatalog)) continue;
 
