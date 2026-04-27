@@ -59,7 +59,7 @@ export interface OrderCreateBody {
   deliveryLatitude?: string | null;
   deliveryLongitude?: string | null;
   orderProducts: OrderProductInput[];
-  paymentMethods?: 'cash' | 'card' | 'elqr'; // Если нужно
+  paymentMethod?: 1 | 2; // 1=Наличные, 2=Безналичная (ELQR/карта; провайдер настроен на бекенде per-venue)
   isTgBot?: boolean;
 
   useBonus?: boolean; // <--- САМОЕ ВАЖНОЕ ПОЛЕ!
