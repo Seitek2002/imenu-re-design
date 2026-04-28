@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import {
   BISHKEK_CENTER,
   Coords,
+  distanceKm,
   forwardGeocode,
   reverseGeocode,
 } from '@/lib/osm-maps';
@@ -18,6 +19,8 @@ const LeafletMap = dynamic(() => import('./LeafletMap'), { ssr: false });
 interface Props {
   open: boolean;
   initialCoords: Coords | null;
+  venueCoords?: Coords | null;
+  deliveryRadiusKm?: number | null;
   onClose: () => void;
   onConfirm: (coords: Coords, address: string) => void;
 }
@@ -27,6 +30,8 @@ type GeocodeSuggestion = { id: string; title: string; coords: Coords };
 const DeliveryMapModal: FC<Props> = ({
   open,
   initialCoords,
+  venueCoords,
+  deliveryRadiusKm,
   onClose,
   onConfirm,
 }) => {
@@ -37,6 +42,11 @@ const DeliveryMapModal: FC<Props> = ({
   );
   const [address, setAddress] = useState('');
   const [mapReady, setMapReady] = useState(false);
+
+  // true = адрес внутри зоны бесплатной доставки
+  const isFreeDelivery =
+    !!venueCoords && !!deliveryRadiusKm &&
+    distanceKm(venueCoords, coords) <= deliveryRadiusKm;
 
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
@@ -180,6 +190,8 @@ const DeliveryMapModal: FC<Props> = ({
           onMoveEnd={handleMoveEnd}
           onReady={() => setMapReady(true)}
           flyToRef={flyToRef}
+          venueCoords={venueCoords}
+          deliveryRadiusKm={deliveryRadiusKm}
         />
 
         {/* Centre pin — pointer-events-none so map stays interactive */}
@@ -207,6 +219,11 @@ const DeliveryMapModal: FC<Props> = ({
             {address || t('hint')}
           </div>
         </div>
+        {isFreeDelivery && (
+          <p className='text-xs text-green-600 font-medium mb-2'>
+            {t('freeDeliveryNote')}
+          </p>
+        )}
         <button
           type='button'
           onClick={() => onConfirm(coords, address)}

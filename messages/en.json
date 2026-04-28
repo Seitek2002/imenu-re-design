@@ -124,7 +124,8 @@
       "hint": "Drag the map to move the pin",
       "keyMissing": "Map is temporarily unavailable",
       "geoError": "Couldn't determine your location",
-      "searchEmpty": "Nothing found"
+      "searchEmpty": "Nothing found",
+      "freeDeliveryNote": "You are in the free delivery zone"
     },
     "footer": {
       "totalDue": "To pay",

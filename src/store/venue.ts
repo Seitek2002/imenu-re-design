@@ -26,6 +26,9 @@ export interface Venue {
   deliveryFixedFee: string;
   deliveryFreeFrom: string | null;
   isDeliveryAvailable: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  deliveryRadiusKm?: number | null;
   spots: VenueSpot[];
   schedules: VenueSchedule[];
   colorTheme?: string;

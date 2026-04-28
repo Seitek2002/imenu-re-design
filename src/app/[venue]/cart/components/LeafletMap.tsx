@@ -1,7 +1,7 @@
 'use client';
 
 import { MutableRefObject, useEffect } from 'react';
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
+import { Circle, MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import type { Coords } from '@/lib/osm-maps';
@@ -11,13 +11,15 @@ interface Props {
   onMoveEnd: (c: Coords) => void;
   onReady: () => void;
   flyToRef: MutableRefObject<((c: Coords) => void) | null>;
+  venueCoords?: Coords | null;
+  deliveryRadiusKm?: number | null;
 }
 
 function MapEventHandler({
   onMoveEnd,
   onReady,
   flyToRef,
-}: Omit<Props, 'initialCoords'>) {
+}: Pick<Props, 'onMoveEnd' | 'onReady' | 'flyToRef'>) {
   const map = useMapEvents({
     moveend() {
       const c = map.getCenter();
@@ -40,7 +42,14 @@ function MapEventHandler({
   return null;
 }
 
-export default function LeafletMap({ initialCoords, onMoveEnd, onReady, flyToRef }: Props) {
+export default function LeafletMap({
+  initialCoords,
+  onMoveEnd,
+  onReady,
+  flyToRef,
+  venueCoords,
+  deliveryRadiusKm,
+}: Props) {
   return (
     <MapContainer
       center={[initialCoords.lat, initialCoords.lng]}
@@ -54,6 +63,19 @@ export default function LeafletMap({ initialCoords, onMoveEnd, onReady, flyToRef
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         maxZoom={19}
       />
+      {venueCoords && deliveryRadiusKm && (
+        <Circle
+          center={[venueCoords.lat, venueCoords.lng]}
+          radius={deliveryRadiusKm * 1000}
+          pathOptions={{
+            color: '#22c55e',
+            fillColor: '#22c55e',
+            fillOpacity: 0.08,
+            weight: 2,
+            dashArray: '6 4',
+          }}
+        />
+      )}
       <MapEventHandler
         onMoveEnd={onMoveEnd}
         onReady={onReady}
