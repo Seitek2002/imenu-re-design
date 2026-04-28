@@ -39,7 +39,6 @@ export const VenueService = {
   ) => {
     return apiClient<Product[]>('v2/products/', {
       params: { venueSlug, spotId: spotId ?? undefined },
-      next: { revalidate: 300 }, // Кэш на 5 минут
       locale,
     });
   },

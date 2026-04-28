@@ -36,7 +36,6 @@ export async function apiClient<T>(
   const response = await fetch(url, {
     ...init,
     headers,
-    next: { revalidate: 300 },
   });
 
   if (!response.ok) {

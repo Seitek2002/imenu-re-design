@@ -1,3 +1,5 @@
+'use client';
+
 import { FC, memo } from 'react';
 import FoodItem from './FoodItem';
 import { Product } from '@/types/api';
