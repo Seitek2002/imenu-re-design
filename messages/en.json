@@ -65,6 +65,7 @@
       "subtitle": "By default — no utensils 🌿"
     },
     "drawer": {
+      "title": "Checkout",
       "phoneLabel": "Phone number",
       "addComment": "+ Add a comment",
       "removeComment": "− Remove comment",
@@ -77,7 +78,8 @@
       "phoneAlertLength": "Phone number must be 9 digits",
       "addressAlert": "Please enter your delivery address",
       "orderCreated": "Order #{id} created successfully!",
-      "preparePrefix": "[Pickup time: {time}]"
+      "preparePrefix": "[Pickup time: {time}]",
+      "commentPrefix": "[Comment: {text}]"
     },
     "checkoutForm": {
       "pickupTime": "Pickup time",

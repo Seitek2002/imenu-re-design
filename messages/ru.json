@@ -65,6 +65,7 @@
       "subtitle": "По умолчанию — без приборов 🌿"
     },
     "drawer": {
+      "title": "Оформление заказа",
       "phoneLabel": "Номер телефона",
       "addComment": "+ Добавить комментарий",
       "removeComment": "− Убрать комментарий",
@@ -77,7 +78,8 @@
       "phoneAlertLength": "Номер телефона должен состоять из 9 цифр",
       "addressAlert": "Введите адрес доставки",
       "orderCreated": "Заказ #{id} успешно создан!",
-      "preparePrefix": "[Время выдачи: {time}]"
+      "preparePrefix": "[Время выдачи: {time}]",
+      "commentPrefix": "[Комментарий: {text}]"
     },
     "checkoutForm": {
       "pickupTime": "Время выдачи",

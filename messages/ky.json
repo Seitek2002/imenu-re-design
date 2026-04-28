@@ -65,6 +65,7 @@
       "subtitle": "Демейки боюнча — аспапсыз 🌿"
     },
     "drawer": {
+      "title": "Буйрутманы тариздөө",
       "phoneLabel": "Телефон номери",
       "addComment": "+ Комментарий кошуу",
       "removeComment": "− Комментарийди алып салуу",
@@ -77,7 +78,8 @@
       "phoneAlertLength": "Телефон номери 9 цифрадан турушу керек",
       "addressAlert": "Жеткирүү дарегин жазыңыз",
       "orderCreated": "Буйрутма #{id} ийгиликтүү түзүлдү!",
-      "preparePrefix": "[Алып кетүү убактысы: {time}]"
+      "preparePrefix": "[Алып кетүү убактысы: {time}]",
+      "commentPrefix": "[Комментарий: {text}]"
     },
     "checkoutForm": {
       "pickupTime": "Алып кетүү убактысы",

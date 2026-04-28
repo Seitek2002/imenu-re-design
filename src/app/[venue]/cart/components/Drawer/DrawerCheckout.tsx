@@ -63,6 +63,7 @@ const DrawerCheckout: FC<IProps> = ({
     deliveryLng: storedLng,
     setDeliveryCoords,
     needUtensils,
+    comment,
     resetOrderOptions,
   } = useCheckout();
 
@@ -81,9 +82,7 @@ const DrawerCheckout: FC<IProps> = ({
   const spotId = useVenueStore((state) => state.spotId);
   const venueData = useVenueStore((state) => state.data);
 
-  const [comment, setComment] = useState('');
   const [deliveryComment, setDeliveryComment] = useState('');
-  const [showComment, setShowComment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
@@ -170,19 +169,17 @@ const DrawerCheckout: FC<IProps> = ({
 
     try {
       // 🔥 Формируем итоговый комментарий (склеиваем время, комментарий к еде и к доставке)
-      let finalComment = comment;
+      const parts: string[] = [];
       if (orderType !== 'dinein') {
-        const timeText = t('preparePrefix', { time: pickupTime });
-        finalComment = comment ? `${timeText}\n${comment}` : timeText;
+        parts.push(t('preparePrefix', { time: pickupTime }));
+      }
+      if (comment.trim()) {
+        parts.push(t('commentPrefix', { text: comment.trim() }));
       }
       if (orderType === 'delivery' && deliveryComment.trim()) {
-        const deliveryText = t('deliveryCommentPrefix', {
-          text: deliveryComment.trim(),
-        });
-        finalComment = finalComment
-          ? `${finalComment}\n${deliveryText}`
-          : deliveryText;
+        parts.push(t('deliveryCommentPrefix', { text: deliveryComment.trim() }));
       }
+      const finalComment = parts.join('\n');
 
       const orderData = {
         phone,
@@ -259,10 +256,11 @@ const DrawerCheckout: FC<IProps> = ({
         onClick={closeSheet}
       />
 
-      <div className='absolute inset-x-0 bottom-0 pointer-events-none'>
+      {/* Mobile: bottom sheet */}
+      <div className='lg:hidden absolute inset-x-0 bottom-0 pointer-events-none'>
         <div
           className={`
-            w-full bg-[#F5F5F5] overflow-hidden rounded-t-4xl shadow-2xl 
+            w-full bg-[#F5F5F5] overflow-hidden rounded-t-4xl shadow-2xl
             transform transition-transform duration-300 ease-cubic pointer-events-auto
             ${sheetAnim ? 'translate-y-0' : 'translate-y-full'}
           `}
@@ -337,30 +335,6 @@ const DrawerCheckout: FC<IProps> = ({
                   </div>
                 </label>
 
-                <button
-                  type='button'
-                  className='text-brand text-sm font-bold mt-4 px-1 flex items-center gap-1 active:opacity-70'
-                  onClick={() => setShowComment(!showComment)}
-                >
-                  {showComment
-                    ? t('removeComment')
-                    : t('addComment')}
-                </button>
-
-                {showComment && (
-                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4 animate-fadeIn'>
-                    <span className='text-[#A4A4A4] text-xs mb-1'>
-                      {t('commentLabel')}
-                    </span>
-                    <input
-                      type='text'
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                      placeholder={t('commentPlaceholder')}
-                    />
-                  </label>
-                )}
               </div>
 
               <div className='mt-3'>
@@ -377,6 +351,107 @@ const DrawerCheckout: FC<IProps> = ({
                 isSubmitting={isLoading}
                 onPay={handlePay}
               />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop: centered modal */}
+      <div className='hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none'>
+        <div
+          className={`
+            w-full max-w-lg bg-[#F5F5F5] rounded-3xl shadow-2xl overflow-hidden
+            transform transition-all duration-300
+            ${sheetAnim ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
+          `}
+          style={{ maxHeight: '90dvh' }}
+        >
+          <div className='flex flex-col' style={{ maxHeight: '90dvh' }}>
+            {/* Header */}
+            <div className='flex items-center justify-between px-6 pt-5 pb-3 shrink-0'>
+              <h2 className='text-lg font-bold text-[#111111]'>{t('title')}</h2>
+              <button
+                onClick={closeSheet}
+                className='w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-white transition-colors text-[#6B6B6B]'
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className='flex-1 overflow-y-auto px-6 pb-6 overscroll-contain'>
+              <div className='rounded-3xl bg-white p-5 shadow-sm'>
+                {orderType === 'dinein' ? (
+                  <div className='bg-[#F5F5F5] flex items-center gap-2 rounded-xl py-3 px-4 mb-4'>
+                    <Image src={tableIcon} alt='table' width={16} height={16} />
+                    <span className='text-[#111111] font-semibold'>
+                      {tTable('drawerTable', { num: tableNumber ?? '' })}
+                    </span>
+                  </div>
+                ) : (
+                  <CheckoutForm
+                    orderType={orderType}
+                    pickupTime={pickupTime}
+                    setPickupTime={setPickupTime}
+                  />
+                )}
+
+                {orderType === 'delivery' && (
+                  <div className='mt-4 border-t border-gray-100 pt-4'>
+                    <DeliveryInputs
+                      onAddressChange={handleAddressChange}
+                      onCoordsChange={handleCoordsChange}
+                      initialCoords={coords}
+                    />
+                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                      <span className='text-[#A4A4A4] text-xs mb-1'>
+                        {t('deliveryCommentLabel')}
+                      </span>
+                      <input
+                        type='text'
+                        value={deliveryComment}
+                        onChange={(e) => setDeliveryComment(e.target.value)}
+                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                        placeholder={t('deliveryCommentPlaceholder')}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>
+                  <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
+                    {t('phoneLabel')}
+                  </span>
+                  <div className='flex items-center'>
+                    <div className='font-semibold text-[#111111] text-base'>+996</div>
+                    <input
+                      type='tel'
+                      inputMode='numeric'
+                      placeholder='700123456'
+                      maxLength={9}
+                      minLength={9}
+                      value={phone}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base'
+                    />
+                  </div>
+                </label>
+
+              </div>
+
+              <div className='mt-3'>
+                <PaymentMethodRow
+                  method={paymentMethod}
+                  onClick={() => setShowPaymentModal(true)}
+                />
+              </div>
+
+              <div className='mt-4'>
+                <CheckoutFooter
+                  total={finalTotal}
+                  isSubmitting={isLoading}
+                  onPay={handlePay}
+                />
+              </div>
             </div>
           </div>
         </div>
