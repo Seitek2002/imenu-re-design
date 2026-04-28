@@ -49,7 +49,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
           href={orderWidgetLink}
           className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden group'
         >
-          <div className='text-[#0404138C] font-bold text-xs whitespace-nowrap mb-2 relative z-10'>
+          <div className='text-[#0404138C] font-bold text-xs mb-2 relative z-10 leading-tight'>
             {hasActiveOrder ? t('orderStatus') : t('myOrders')}
           </div>
 
@@ -88,7 +88,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
         </Link>
 
         <div className='home-widget bg-[#FAFAFA] rounded-3xl min-w-35 p-4 text-xs text-center snap-start'>
-          <div className='text-[#0404138C] font-bold text-xs whitespace-nowrap mb-2'>
+          <div className='text-[#0404138C] font-bold text-xs mb-2 leading-tight'>
             {t('bonus')}
           </div>
           <div className='flex items-center justify-center gap-2 mt-3'>
@@ -104,7 +104,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
           onClick={() => setScheduleOpen(true)}
           className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform cursor-pointer'
         >
-          <div className='text-[#0404138C] font-bold text-xs whitespace-nowrap mb-2'>
+          <div className='text-[#0404138C] font-bold text-xs mb-2 leading-tight'>
             {t('schedule')}
           </div>
           <div className='relative w-full h-12'>

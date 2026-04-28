@@ -1,8 +1,18 @@
 'use client';
 
 import { X, Clock, Calendar } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useVenueStore } from '@/store/venue';
+
+const DAY_NAMES_KY: Record<string, string> = {
+  'Понедельник': 'Дүйшөмбү',
+  'Вторник': 'Шейшемби',
+  'Среда': 'Шаршемби',
+  'Четверг': 'Бейшемби',
+  'Пятница': 'Жума',
+  'Суббота': 'Ишемби',
+  'Воскресенье': 'Жекшемби',
+};
 
 interface Props {
   isOpen: boolean;
@@ -18,6 +28,7 @@ const formatTime = (time?: string) => {
 export default function ScheduleModal({ isOpen, onClose }: Props) {
   const t = useTranslations('Schedule');
   const tc = useTranslations('Common');
+  const locale = useLocale();
   const venue = useVenueStore((state) => state.data);
 
   const jsDay = new Date().getDay();
@@ -87,7 +98,7 @@ export default function ScheduleModal({ isOpen, onClose }: Props) {
                       isToday ? 'text-brand' : 'text-gray-600'
                     }`}
                   >
-                    {day.dayName}
+                    {locale === 'ky' ? (DAY_NAMES_KY[day.dayName] ?? day.dayName) : day.dayName}
                   </span>
 
                   <span

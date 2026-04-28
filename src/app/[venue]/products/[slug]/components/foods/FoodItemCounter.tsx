@@ -8,6 +8,7 @@ import { useBasketStore } from '@/store/basket';
 import { useMounted } from '@/hooks/useMounted';
 import { Product } from '@/types/api';
 import { useProductStore } from '@/store/product';
+import { useVenueStore } from '@/store/venue';
 
 import plus from '@/assets/Goods/plus.svg';
 import minus from '@/assets/Goods/minus.svg';
@@ -21,6 +22,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
   const t = useTranslations('Product');
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const venueSlug = useVenueStore((s) => s.data?.slug ?? null);
   const addToBasket = useBasketStore((state) => state.addToBasket);
   const decrementItem = useBasketStore((state) => state.decrementItem);
   const setProduct = useProductStore((state) => state.setProduct);
@@ -30,6 +32,16 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
       .filter((item) => item.id === product.id)
       .reduce((acc, item) => acc + item.quantity, 0)
   );
+
+  // Количество разных конфигураций и ключ единственной — как примитивы,
+  // чтобы не создавать новый массив при каждом рендере.
+  const configEntryCount = useBasketStore((state) =>
+    state.items.filter((item) => item.id === product.id).length
+  );
+  const singleConfigKey = useBasketStore((state) => {
+    const entries = state.items.filter((item) => item.id === product.id);
+    return entries.length === 1 ? entries[0].key : null;
+  });
 
   const mounted = useMounted();
   const displayCount = mounted ? count : 0;
@@ -46,7 +58,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
     setProduct(product); // Сохраняем в стор
     const params = new URLSearchParams(searchParams.toString());
     params.set('product', product.id.toString());
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handlePlus = (e: React.MouseEvent) => {
@@ -68,7 +80,12 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
     if (navigator.vibrate) navigator.vibrate(20);
 
     if (requiresConfig) {
-      openSheet();
+      if (configEntryCount > 1 && venueSlug) {
+        // Несколько вариантов — идём в корзину, там каждый вариант со своими кнопками
+        router.push(`/${venueSlug}/cart`);
+      } else if (singleConfigKey) {
+        decrementItem(singleConfigKey);
+      }
     } else {
       decrementItem(simpleKey);
     }
