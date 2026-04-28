@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { MapPin, Check } from 'lucide-react';
 
-import type { Coords } from '@/lib/yandex-maps';
+import type { Coords } from '@/lib/osm-maps';
 import DeliveryMapModal from './DeliveryMapModal';
 
 interface Props {

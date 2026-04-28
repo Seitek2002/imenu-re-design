@@ -20,7 +20,7 @@ import CheckoutFooter from './CheckoutFooter';
 
 import tableIcon from '@/assets/Cart/table.svg';
 import { useVenueStore } from '@/store/venue';
-import type { Coords } from '@/lib/yandex-maps';
+import type { Coords } from '@/lib/osm-maps';
 
 interface IProps {
   sheetOpen: boolean;
