@@ -43,11 +43,10 @@ export default function BasketPage() {
 
   // Локальный UI стейт шторки
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
-  console.log(orderType);
 
   // --- 🔥 ЛОГИКА БОНУСОВ (Копия из OrderSummary для синхронизации) ---
-  const { isBonusUsed } = useBonusStore();
-  const { phone } = useCheckout();
+  const { isBonusUsed, bonusAmount } = useBonusStore();
+  const { phone, comment, setComment } = useCheckout();
   const venue = useVenueStore((state) => state.data);
   const spotId = useVenueStore((state) => state.spotId);
   const { data: bonusData } = useClientBonus({
@@ -56,8 +55,10 @@ export default function BasketPage() {
   });
 
   const availableBonuses = bonusData?.bonus ?? 0;
-  const maxDeductible = Math.min(availableBonuses, subtotal * 0.5);
-  const discount = isBonusUsed ? maxDeductible : 0;
+  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * 0.5));
+  const discount = isBonusUsed
+    ? Math.min(Math.max(0, bonusAmount), maxDeductible)
+    : 0;
 
   // --- Авто-промо (та же логика, что в OrderSummary) ---
   const { data: promotions } = usePromotionsV2(venue?.slug, spotId);
@@ -147,6 +148,19 @@ export default function BasketPage() {
             {orderType === 'delivery' && (
               <UtensilsSelector className='mt-3' />
             )}
+
+            <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4 cursor-text'>
+              <span className='text-[#A4A4A4] text-xs mb-1 font-medium'>
+                {t('drawer.commentLabel')}
+              </span>
+              <input
+                type='text'
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                placeholder={t('drawer.commentPlaceholder')}
+              />
+            </label>
 
             <OrderSummary
               deliveryCost={deliveryPrice}

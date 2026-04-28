@@ -7,10 +7,12 @@ interface CheckoutState {
   deliveryLat: number | null;
   deliveryLng: number | null;
   needUtensils: boolean;
+  comment: string;
   setAddress: (address: string) => void;
   setPhone: (phone: string) => void;
   setDeliveryCoords: (lat: number | null, lng: number | null) => void;
   setNeedUtensils: (val: boolean) => void;
+  setComment: (comment: string) => void;
   reset: () => void;
   resetOrderOptions: () => void;
 }
@@ -28,6 +30,8 @@ export const useCheckout = create<CheckoutState>()(
         set({ deliveryLat: lat, deliveryLng: lng }),
       needUtensils: false,
       setNeedUtensils: (needUtensils) => set({ needUtensils }),
+      comment: '',
+      setComment: (comment) => set({ comment }),
       reset: () =>
         set({
           phone: '',
@@ -35,8 +39,9 @@ export const useCheckout = create<CheckoutState>()(
           deliveryLat: null,
           deliveryLng: null,
           needUtensils: false,
+          comment: '',
         }),
-      resetOrderOptions: () => set({ needUtensils: false }),
+      resetOrderOptions: () => set({ needUtensils: false, comment: '' }),
     }),
     {
       name: 'imenu-checkout-storage', // Ключ в localStorage

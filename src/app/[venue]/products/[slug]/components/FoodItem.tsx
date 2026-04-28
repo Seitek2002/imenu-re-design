@@ -1,7 +1,7 @@
 'use client';
 
 import { FC } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Product } from '@/types/api';
 import placeholder from '@/assets/Foods/placeholder.webp';
 import FoodItemImage from './foods/FoodItemImage';
@@ -19,6 +19,7 @@ interface Props {
 const FoodItem: FC<Props> = ({ product, index = 0 }) => {
   const tc = useTranslations('Common');
   const tp = useTranslations('Cart.promo');
+  const locale = useLocale();
 
   const venueSlug = useVenueStore((s) => s.data?.slug ?? null);
   const spotId = useVenueStore((s) => s.spotId);
@@ -100,10 +101,19 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
 
       <div className='mt-2 flex flex-col flex-1 justify-between pointer-events-none'>
         <h2 className='text-[#21201F] text-lg font-semibold'>
-          {isFrom && (
-            <span className='text-sm font-normal text-gray-500 mr-1'>{tc('from')}</span>
+          {isFrom && locale === 'ky' ? (
+            <>
+              {price} {tc('currency')}{' '}
+              <span className='text-sm font-normal text-gray-500'>{tc('from')}</span>
+            </>
+          ) : (
+            <>
+              {isFrom && (
+                <span className='text-sm font-normal text-gray-500 mr-1'>{tc('from')}</span>
+              )}
+              {price} {tc('currency')}
+            </>
           )}
-          {price} {tc('currency')}
         </h2>
         <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-active:text-brand transition-colors'>
           {product.productName}

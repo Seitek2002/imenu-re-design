@@ -41,16 +41,31 @@ export default function OrderSummary({
   const { data: bonusData } = useClientBonus({ phone, venueSlug: venue?.slug ?? '' });
 
   // 2. Управление переключателем
-  const { isBonusUsed, toggleBonus } = useBonusStore();
+  const { isBonusUsed, bonusAmount, setBonusUsed, setBonusAmount } =
+    useBonusStore();
 
   // 3. Расчеты
   const availableBonuses = bonusData?.bonus ?? 0;
 
   // Правило: списываем не больше 50% от суммы товаров (без доставки)
-  const maxDeductible = Math.min(availableBonuses, subtotal * 0.5);
+  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * 0.5));
 
-  // Реальная скидка (если переключатель включен)
-  const discount = isBonusUsed ? maxDeductible : 0;
+  // Если переключатель включен — клампим хранимую сумму к актуальному максимуму
+  // (на случай, если subtotal уменьшился после изменения корзины)
+  const effectiveAmount = isBonusUsed
+    ? Math.min(Math.max(0, bonusAmount), maxDeductible)
+    : 0;
+  const discount = effectiveAmount;
+
+  const handleToggle = () => {
+    if (isBonusUsed) {
+      setBonusUsed(false);
+      setBonusAmount(0);
+    } else {
+      setBonusUsed(true);
+      setBonusAmount(maxDeductible);
+    }
+  };
 
   // 4. Авто-промо акции (display-only — бэк применит при создании заказа сам)
   const basketItems = useBasketStore((s) => s.items);
@@ -140,7 +155,7 @@ export default function OrderSummary({
                   {/* Переключатель (Toggle) */}
                   <button
                     type='button'
-                    onClick={toggleBonus}
+                    onClick={handleToggle}
                     className={`
                       relative w-10 h-6 rounded-full transition-colors duration-300
                       ${isBonusUsed ? 'bg-brand' : 'bg-gray-200'}
@@ -155,11 +170,21 @@ export default function OrderSummary({
                   </button>
                 </div>
 
-                {/* Если включено — показываем сколько спишется */}
-                {isBonusUsed && (
-                  <div className='mt-2 text-xs text-brand font-medium border-t border-dashed border-gray-200 pt-2 flex justify-between'>
-                    <span>{t('discount')}</span>
-                    <span>- {Math.round(discount)} c.</span>
+                {isBonusUsed && maxDeductible > 0 && (
+                  <div className='mt-3 border-t border-dashed border-gray-200 pt-2'>
+                    <input
+                      type='range'
+                      min={0}
+                      max={maxDeductible}
+                      step={1}
+                      value={effectiveAmount}
+                      onChange={(e) => setBonusAmount(Number(e.target.value))}
+                      className='w-full accent-brand cursor-pointer'
+                    />
+                    <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
+                      <span>{t('discount')}</span>
+                      <span>- {effectiveAmount} c.</span>
+                    </div>
                   </div>
                 )}
               </div>

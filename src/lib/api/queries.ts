@@ -5,9 +5,11 @@ import {
   OrderCreateBody,
   OrderCreateResponse,
   OrdersResponse,
+  OrderV2,
 } from '../order';
 import { API_URL, API_V2_URL } from '../config';
-import { Product, Promotion } from '@/types/api';
+import { OrderStatus, Product, Promotion } from '@/types/api';
+import { normalizePhoneForApi } from '../helpers/phone';
 import type { Locale } from '../locale';
 
 const API_BASE = API_V2_URL;
@@ -29,7 +31,7 @@ async function fetchOrders(
   locale: Locale,
 ): Promise<OrdersResponse> {
   const params = new URLSearchParams();
-  if (phone) params.append('phone', phone);
+  if (phone) params.append('phone', normalizePhoneForApi(phone));
 
   const res = await fetch(`${API_BASE}/orders/?${params.toString()}`, {
     method: 'GET',
@@ -52,6 +54,40 @@ export const useOrdersV2 = ({ phone, venueSlug }: OrdersParams) => {
   });
 };
 
+async function fetchOrderById(
+  id: number,
+  locale: Locale,
+): Promise<OrderV2> {
+  const res = await fetch(`${API_BASE}/orders/${id}/`, {
+    method: 'GET',
+    headers: buildHeaders(locale),
+  });
+  if (!res.ok) throw new Error('Failed to fetch order');
+  return res.json();
+}
+
+export const useOrderByIdV2 = (
+  id: number,
+  initialData?: OrderV2,
+) => {
+  const locale = useLocale() as Locale;
+
+  return useQuery<OrderV2>({
+    queryKey: ['order', id, locale],
+    queryFn: () => fetchOrderById(id, locale),
+    enabled: !!id,
+    initialData,
+    refetchInterval: (query) => {
+      const s = query.state.data?.status;
+      if (s === OrderStatus.Completed || s === OrderStatus.Cancelled) {
+        return false;
+      }
+      return 5000;
+    },
+    refetchOnWindowFocus: true,
+  });
+};
+
 async function fetchClientBonus(
   {
     phone,
@@ -63,7 +99,7 @@ async function fetchClientBonus(
   locale: Locale,
 ): Promise<BonusResponse> {
   const params = new URLSearchParams();
-  params.append('phone', phone); // Важно: имя параметра как в Swagger
+  params.append('phone', normalizePhoneForApi(phone));
   params.append('venueSlug', venueSlug);
 
   const res = await fetch(`${API_BASE}/client/bonus/?${params.toString()}`, {
@@ -110,7 +146,8 @@ async function createOrderApi({
 }): Promise<OrderCreateResponse> {
   const payload = {
     ...body,
-    venue_slug: venueSlug,
+    phone: normalizePhoneForApi(body.phone),
+    venueSlug,
   };
 
   const res = await fetch(`${API_BASE}/orders/`, {

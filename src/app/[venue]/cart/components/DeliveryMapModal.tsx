@@ -3,148 +3,99 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { MapPin, Search, X, Navigation, Check } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 import {
   BISHKEK_CENTER,
   Coords,
+  distanceKm,
   forwardGeocode,
-  getYandexKey,
-  loadYmaps,
   reverseGeocode,
-} from '@/lib/yandex-maps';
+} from '@/lib/osm-maps';
+
+// Leaflet must not be rendered on the server
+const LeafletMap = dynamic(() => import('./LeafletMap'), { ssr: false });
 
 interface Props {
   open: boolean;
   initialCoords: Coords | null;
+  venueCoords?: Coords | null;
+  deliveryRadiusKm?: number | null;
   onClose: () => void;
   onConfirm: (coords: Coords, address: string) => void;
 }
 
-type GeocodeSuggestion = {
-  id: string;
-  title: string;
-  coords: Coords;
-};
+type GeocodeSuggestion = { id: string; title: string; coords: Coords };
 
 const DeliveryMapModal: FC<Props> = ({
   open,
   initialCoords,
+  venueCoords,
+  deliveryRadiusKm,
   onClose,
   onConfirm,
 }) => {
   const t = useTranslations('Cart.deliveryMap');
-  const containerRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapRef = useRef<any>(null);
 
   const [coords, setCoords] = useState<Coords>(
     initialCoords ?? BISHKEK_CENTER,
   );
   const [address, setAddress] = useState('');
   const [mapReady, setMapReady] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
+
+  // true = адрес внутри зоны бесплатной доставки
+  const isFreeDelivery =
+    !!venueCoords && !!deliveryRadiusKm &&
+    distanceKm(venueCoords, coords) <= deliveryRadiusKm;
 
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const key = getYandexKey();
   const reverseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // flyTo is provided by LeafletMap via ref callback
+  const flyToRef = useRef<((c: Coords) => void) | null>(null);
 
   const scheduleReverse = useCallback((c: Coords) => {
     if (reverseTimer.current) clearTimeout(reverseTimer.current);
     reverseTimer.current = setTimeout(() => {
       reverseGeocode(c)
-        .then((addr) => {
-          if (addr) setAddress(addr);
-        })
-        .catch(() => {
-          // ignored — already logged inside helper
-        });
+        .then((addr) => { if (addr) setAddress(addr); })
+        .catch(() => {});
     }, 300);
   }, []);
 
+  // Reset state when modal opens
   useEffect(() => {
     if (!open) return;
-    if (!key) {
-      setMapError(t('keyMissing'));
-      return;
-    }
-    if (!containerRef.current) return;
-
-    let destroyed = false;
-
-    loadYmaps()
-      .then((ymaps3) => {
-        if (destroyed || !containerRef.current) return;
-
-        const start = initialCoords ?? BISHKEK_CENTER;
-
-        const map = new ymaps3.YMap(containerRef.current, {
-          location: { center: [start.lng, start.lat], zoom: 15 },
-        });
-        map.addChild(new ymaps3.YMapDefaultSchemeLayer());
-        map.addChild(new ymaps3.YMapDefaultFeaturesLayer());
-
-        const listener = new ymaps3.YMapListener({
-          layer: 'any',
-          onActionEnd: () => {
-            const center = map.center; // [lng, lat]
-            if (!center) return;
-            const next: Coords = { lat: center[1], lng: center[0] };
-            setCoords(next);
-            scheduleReverse(next);
-          },
-        });
-        map.addChild(listener);
-
-        mapRef.current = map;
-        setCoords(start);
-        setMapReady(true);
-        scheduleReverse(start);
-      })
-      .catch((err) => {
-        console.error('[Yandex Maps] failed to initialize:', err);
-        setMapError(t('keyMissing'));
-      });
-
+    const start = initialCoords ?? BISHKEK_CENTER;
+    setCoords(start);
+    setAddress('');
+    setMapReady(false);
+    scheduleReverse(start);
     return () => {
-      destroyed = true;
       if (reverseTimer.current) clearTimeout(reverseTimer.current);
-      if (mapRef.current) {
-        try {
-          mapRef.current.destroy();
-        } catch {
-          // ignore
-        }
-        mapRef.current = null;
-      }
-      setMapReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  // Forward geocode debounce
   useEffect(() => {
-    if (!query.trim()) {
-      setSuggestions([]);
-      setSearchLoading(false);
-      return;
-    }
+    if (!query.trim()) { setSuggestions([]); setSearchLoading(false); return; }
     setSearchLoading(true);
     const id = setTimeout(async () => {
       const items = await forwardGeocode(query);
       setSuggestions(items);
       setSearchLoading(false);
-    }, 350);
+    }, 500);
     return () => clearTimeout(id);
   }, [query]);
 
-  const flyTo = useCallback((c: Coords) => {
-    const map = mapRef.current;
-    if (!map) return;
-    map.update({ location: { center: [c.lng, c.lat], zoom: 17, duration: 400 } });
-  }, []);
+  const handleMoveEnd = useCallback((c: Coords) => {
+    setCoords(c);
+    scheduleReverse(c);
+  }, [scheduleReverse]);
 
   const handleSuggestionPick = (s: GeocodeSuggestion) => {
     setCoords(s.coords);
@@ -152,29 +103,19 @@ const DeliveryMapModal: FC<Props> = ({
     setQuery('');
     setSuggestions([]);
     setSearchOpen(false);
-    flyTo(s.coords);
+    flyToRef.current?.(s.coords);
   };
 
   const handleMyLocation = () => {
-    if (!navigator.geolocation) {
-      alert(t('geoError'));
-      return;
-    }
+    if (!navigator.geolocation) { alert(t('geoError')); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const c: Coords = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        };
-        flyTo(c);
+        const c: Coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        flyToRef.current?.(c);
       },
       () => alert(t('geoError')),
       { enableHighAccuracy: true, timeout: 8000 },
     );
-  };
-
-  const handleConfirm = () => {
-    onConfirm(coords, address);
   };
 
   if (!open) return null;
@@ -203,10 +144,7 @@ const DeliveryMapModal: FC<Props> = ({
           <input
             type='text'
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSearchOpen(true);
-            }}
+            onChange={(e) => { setQuery(e.target.value); setSearchOpen(true); }}
             onFocus={() => setSearchOpen(true)}
             placeholder={t('searchPlaceholder')}
             className='bg-transparent outline-none flex-1 text-[#111111] text-sm font-medium placeholder-gray-400'
@@ -214,10 +152,7 @@ const DeliveryMapModal: FC<Props> = ({
           {query && (
             <button
               type='button'
-              onClick={() => {
-                setQuery('');
-                setSuggestions([]);
-              }}
+              onClick={() => { setQuery(''); setSuggestions([]); }}
               className='text-[#A4A4A4] px-1'
               aria-label={t('close')}
             >
@@ -232,9 +167,7 @@ const DeliveryMapModal: FC<Props> = ({
               <div className='px-4 py-3 text-sm text-[#A4A4A4]'>…</div>
             )}
             {!searchLoading && suggestions.length === 0 && (
-              <div className='px-4 py-3 text-sm text-[#A4A4A4]'>
-                {t('searchEmpty')}
-              </div>
+              <div className='px-4 py-3 text-sm text-[#A4A4A4]'>{t('searchEmpty')}</div>
             )}
             {suggestions.map((s) => (
               <button
@@ -243,9 +176,7 @@ const DeliveryMapModal: FC<Props> = ({
                 onClick={() => handleSuggestionPick(s)}
                 className='w-full text-left px-4 py-3 hover:bg-gray-50 active:bg-gray-100 border-b border-gray-50 last:border-b-0'
               >
-                <span className='text-sm text-[#111111] font-medium'>
-                  {s.title}
-                </span>
+                <span className='text-sm text-[#111111] font-medium'>{s.title}</span>
               </button>
             ))}
           </div>
@@ -254,30 +185,25 @@ const DeliveryMapModal: FC<Props> = ({
 
       {/* Map */}
       <div className='relative flex-1 overflow-hidden'>
-        <div ref={containerRef} className='absolute inset-0 bg-gray-100' />
+        <LeafletMap
+          initialCoords={initialCoords ?? BISHKEK_CENTER}
+          onMoveEnd={handleMoveEnd}
+          onReady={() => setMapReady(true)}
+          flyToRef={flyToRef}
+          venueCoords={venueCoords}
+          deliveryRadiusKm={deliveryRadiusKm}
+        />
 
-        {mapError && (
-          <div className='absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-[#A4A4A4] bg-white'>
-            {mapError}
-          </div>
-        )}
-
-        {mapReady && (
-          <div className='pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full'>
-            <MapPin
-              size={42}
-              className='text-red-500 drop-shadow-lg'
-              fill='currentColor'
-              strokeWidth={1.5}
-            />
-          </div>
-        )}
+        {/* Centre pin — pointer-events-none so map stays interactive */}
+        <div className='pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full z-[400]'>
+          <MapPin size={42} className='text-red-500 drop-shadow-lg' fill='currentColor' strokeWidth={1.5} />
+        </div>
 
         {mapReady && (
           <button
             type='button'
             onClick={handleMyLocation}
-            className='absolute bottom-4 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center active:bg-gray-100 z-10'
+            className='absolute bottom-4 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center active:bg-gray-100 z-[400]'
             aria-label={t('myLocation')}
           >
             <Navigation size={20} className='text-[#111111]' />
@@ -293,10 +219,15 @@ const DeliveryMapModal: FC<Props> = ({
             {address || t('hint')}
           </div>
         </div>
+        {isFreeDelivery && (
+          <p className='text-xs text-green-600 font-medium mb-2'>
+            {t('freeDeliveryNote')}
+          </p>
+        )}
         <button
           type='button'
-          onClick={handleConfirm}
-          disabled={!mapReady || !!mapError}
+          onClick={() => onConfirm(coords, address)}
+          disabled={!mapReady}
           className='w-full h-12 rounded-xl bg-brand text-white font-semibold flex items-center justify-center gap-2 active:opacity-80 disabled:opacity-50'
         >
           <Check size={18} />

@@ -60,9 +60,12 @@ export interface OrderCreateBody {
   deliveryLongitude?: string | null;
   orderProducts: OrderProductInput[];
   paymentMethod?: 1 | 2; // 1=Наличные, 2=Безналичная (ELQR/карта; провайдер настроен на бекенде per-venue)
+  paymentMethods?: 'cash' | 'elqr' | 'card'; // legacy: прод-бекенд пока читает строковое поле
+
   isTgBot?: boolean;
 
-  useBonus?: boolean; // <--- САМОЕ ВАЖНОЕ ПОЛЕ!
+  useBonus?: boolean;
+  bonus?: number;
 }
 
 export interface OrderCreateResponse {
