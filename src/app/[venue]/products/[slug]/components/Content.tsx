@@ -127,6 +127,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const handleSlideChange = (swiper: SwiperType) => {
     const newIndex = swiper.activeIndex;
     setActiveIndex(newIndex);
+    window.scrollTo({ top: 0, behavior: 'instant' });
     const parent = parentSlides[newIndex]?.parent;
     if (parent) {
       window.history.replaceState(
@@ -164,7 +165,8 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
           spaceBetween={16}
           slidesPerView={1}
           initialSlide={initialParentIdx}
-          cssMode={true}
+          threshold={20}
+          touchRatio={0.5}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
             if (initialParentIdx > 0) swiper.slideTo(initialParentIdx, 0);
@@ -191,7 +193,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
                             key={section.category.id}
                             id={`subcat-${section.category.slug}`}
                             // scroll-mt компенсирует высоту липких родит. табов
-                            className='scroll-mt-28'
+                            className='scroll-mt-36'
                           >
                             {showHeader && (
                               <h2 className='text-xl font-bold text-[#21201F] mb-3 px-2.5'>

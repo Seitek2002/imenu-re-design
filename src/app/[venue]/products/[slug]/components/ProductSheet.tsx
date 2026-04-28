@@ -10,7 +10,7 @@ import React, {
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useSearchParams, usePathname, useParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 import {
   GroupModification,
@@ -451,32 +451,54 @@ export default function ProductSheet() {
   const closingRef = useRef(false);
   const productId = searchParams.get('product');
 
+  const locale = useLocale();
+  const prevLocaleRef = useRef(locale);
   const productFromStore = useProductStore((s) => s.selectedProduct);
   const setProductInStore = useProductStore((s) => s.setProduct);
 
-  // Fallback-фетч на случай прямого открытия по ?product=X (reload, шаринг).
-  // Грузим только если в сторе ничего нет и ID в URL существует.
-  const shouldFallback = !!productId && !productFromStore;
+  // При смене локали обнуляем стор — чтобы не показывать старые переводы.
+  // useVenueProducts перефетчит и активная модалка обновится.
+  useEffect(() => {
+    if (prevLocaleRef.current !== locale) {
+      prevLocaleRef.current = locale;
+      if (productFromStore) setProductInStore(null);
+    }
+  }, [locale, productFromStore, setProductInStore]);
+
+  // Грузим продукты всегда, когда модалка открыта — чтобы при смене локали
+  // подтягивались актуальные переводы (стор сохраняет старый язык).
+  // useVenueProducts включает локаль в queryKey, так что рефетч происходит сам.
+  const isOpenByStore = !!productFromStore;
+  const isOpenByUrl = !!productId;
   const { data: allProducts } = useVenueProducts(
-    shouldFallback ? venueSlug : null,
+    isOpenByStore || isOpenByUrl ? venueSlug : null,
     spotId,
   );
 
-  const fallbackProduct = useMemo(() => {
-    if (!shouldFallback || !allProducts || !productId) return null;
-    return allProducts.find((p) => String(p.id) === productId) ?? null;
-  }, [allProducts, productId, shouldFallback]);
+  const freshProduct = useMemo(() => {
+    if (!allProducts) return null;
+    const id = productId ?? (productFromStore ? String(productFromStore.id) : null);
+    if (!id) return null;
+    return allProducts.find((p) => String(p.id) === id) ?? null;
+  }, [allProducts, productId, productFromStore]);
 
-  const activeProduct = productFromStore ?? fallbackProduct;
+  // Свежие данные с актуальной локалью имеют приоритет над стором.
+  const activeProduct = freshProduct ?? productFromStore;
 
-  // Один раз синкаем fallback в стор, чтобы не пересчитывать при ре-рендерах.
+  // Синкаем свежие данные в стор, чтобы при смене языка стор обновлялся.
+  // Сравниваем по productName — он меняется при смене локали.
   useEffect(() => {
-    if (fallbackProduct && !productFromStore && !closingRef.current) {
-      setProductInStore(fallbackProduct);
+    if (!freshProduct || closingRef.current) return;
+    if (
+      !productFromStore ||
+      productFromStore.id !== freshProduct.id ||
+      productFromStore.productName !== freshProduct.productName
+    ) {
+      setProductInStore(freshProduct);
     }
-  }, [fallbackProduct, productFromStore, setProductInStore]);
+  }, [freshProduct, productFromStore, setProductInStore]);
 
-  const isOpen = !!productFromStore || (!!productId && !!fallbackProduct);
+  const isOpen = !!activeProduct;
 
   const handleClose = useCallback(() => {
     closingRef.current = true;
