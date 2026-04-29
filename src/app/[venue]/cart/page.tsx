@@ -75,7 +75,7 @@ export default function BasketPage() {
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
       <Header title={t('title')} />
 
-      <section className='bg-white pt-4 mt-1.5 px-2 rounded-4xl pb-5 lg:max-w-md lg:mx-auto shadow-sm min-h-[60vh]'>
+      <section className='bg-white pt-4 mt-4 px-2 rounded-4xl pb-5 lg:mx-auto shadow-sm min-h-[60vh]'>
         {/* Toggle */}
         {tableNumber ? (
           <TableBadge tableNumber={tableNumber} />

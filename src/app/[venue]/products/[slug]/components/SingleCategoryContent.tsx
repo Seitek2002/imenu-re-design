@@ -19,7 +19,7 @@ const SingleCategoryContent = ({ category, products }: Props) => {
   }, [category.categoryName, setHeaderTitleOverride]);
 
   return (
-    <div className='bg-white rounded-t-4xl mt-1.5 min-h-screen pb-40 border-t border-gray-100'>
+    <div className='bg-white rounded-t-4xl mt-4 min-h-screen pb-40 border-t border-gray-100'>
       <div className='pt-6'>
         <Goods products={products} />
       </div>
