@@ -51,7 +51,7 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
   };
 
   return (
-    <header className='sticky top-0 bg-white/95 backdrop-blur-sm z-20 transition-transform duration-300 min-h-16'>
+    <header className='sticky top-0 bg-white/95 backdrop-blur-sm z-20 transition-transform duration-300 min-h-16 rounded-b-4xl'>
       <div className='flex justify-between items-center px-5 pt-4 pb-4 h-full'>
         {/* Кнопка НАЗАД */}
         <button
