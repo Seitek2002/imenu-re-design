@@ -269,5 +269,30 @@
     "categoryPageTitle": "{name} - Menu of {venue}",
     "menuPageTitle": "Menu of {venue}",
     "categoryDesc": "Order delicious food at {venue}."
+  },
+  "TableOrder": {
+    "title": "Current order",
+    "tableLabel": "Table",
+    "statusLabel": "Status",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "paid": "Paid",
+    "remaining": "Due",
+    "currency": "c.",
+    "noTable": "No table selected. Please scan the table QR code.",
+    "loading": "Loading order...",
+    "loadError": "Failed to load the order",
+    "retry": "Retry",
+    "empty": "No active order for this table yet",
+    "noItems": "No items in the order yet",
+    "live": {
+      "connected": "● live",
+      "disconnected": "○ offline"
+    },
+    "payment": {
+      "pay": "Pay {amount} c.",
+      "creating": "Creating link...",
+      "unavailable": "Payment service is temporarily unavailable. Please try again."
+    }
   }
 }
