@@ -269,5 +269,30 @@
     "categoryPageTitle": "{name} - Меню {venue}",
     "menuPageTitle": "Меню {venue}",
     "categoryDesc": "Заказывайте вкусную еду в {venue}."
+  },
+  "TableOrder": {
+    "title": "Текущий заказ",
+    "tableLabel": "Стол",
+    "statusLabel": "Статус",
+    "subtotal": "Подытог",
+    "total": "Итого",
+    "paid": "Оплачено",
+    "remaining": "К оплате",
+    "currency": "c.",
+    "noTable": "Стол не выбран. Отсканируйте QR-код стола.",
+    "loading": "Загружаем заказ...",
+    "loadError": "Не удалось загрузить заказ",
+    "retry": "Повторить",
+    "empty": "По столу пока нет открытого заказа",
+    "noItems": "В заказе пока нет позиций",
+    "live": {
+      "connected": "● в реальном времени",
+      "disconnected": "○ нет соединения"
+    },
+    "payment": {
+      "pay": "Оплатить {amount} с.",
+      "creating": "Готовим ссылку...",
+      "unavailable": "Сервис оплаты временно недоступен. Попробуйте позже."
+    }
   }
 }
