@@ -11,6 +11,8 @@ import { useBasketStore } from '@/store/basket';
 import { useBonusStore } from '@/store/bonus';
 import { useCreateOrderV2 } from '@/lib/api/queries';
 import DevErrorModal from '@/components/ui/DevErrorModal';
+import Toast from '@/components/ui/Toast';
+import OtpModal from '@/components/ui/OtpModal';
 
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
@@ -21,6 +23,7 @@ import CheckoutFooter from './CheckoutFooter';
 import tableIcon from '@/assets/Cart/table.svg';
 import { useVenueStore } from '@/store/venue';
 import type { Coords } from '@/lib/osm-maps';
+import type { OrderCreateBody } from '@/lib/order';
 
 interface IProps {
   sheetOpen: boolean;
@@ -92,6 +95,9 @@ const DrawerCheckout: FC<IProps> = ({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const isLoading = createOrderMutation.isPending;
   const [apiError, setApiError] = useState(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [pendingOrderBody, setPendingOrderBody] = useState<OrderCreateBody | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   useEffect(() => {
     if (sheetOpen) {
@@ -140,23 +146,18 @@ const DrawerCheckout: FC<IProps> = ({
   const handlePay = async () => {
     if (createOrderMutation.isPending) return;
 
-    if (!phone && orderType !== 'dinein') {
-      alert(t('phoneAlertEmpty'));
-      return;
-    }
     if (orderType !== 'dinein') {
       if (!phone) {
-        alert(t('phoneAlertEmpty'));
+        setToastMessage(t('phoneAlertEmpty'));
         return;
       }
-      // Проверка на длину
       if (phone.length !== 9) {
-        alert(t('phoneAlertLength'));
+        setToastMessage(t('phoneAlertLength'));
         return;
       }
     }
     if (orderType === 'delivery' && !address) {
-      alert(t('addressAlert'));
+      setToastMessage(t('addressAlert'));
       return;
     }
 
@@ -181,7 +182,11 @@ const DrawerCheckout: FC<IProps> = ({
       }
       const finalComment = parts.join('\n');
 
-      const orderData = {
+      const savedHash = isBonusUsed
+        ? (localStorage.getItem(`bonus_hash_${venueSlug}_${phone}`) ?? undefined)
+        : undefined;
+
+      const orderData: OrderCreateBody = {
         phone,
         serviceMode: (orderType === 'dinein'
           ? 1
@@ -197,7 +202,6 @@ const DrawerCheckout: FC<IProps> = ({
           : {}),
         comment: finalComment,
         needsCutlery: needUtensils,
-        // 🔥 Берем реальные spotId и tableId из стора
         spot: spotId || venueData?.spots?.[0]?.id,
         table: tableId || undefined,
         orderProducts: items.map((i) => {
@@ -219,12 +223,25 @@ const DrawerCheckout: FC<IProps> = ({
         paymentMethods: paymentMethod,
         useBonus: isBonusUsed,
         ...(isBonusUsed && bonusAmount > 0 ? { bonus: bonusAmount } : {}),
+        ...(savedHash ? { hash: savedHash } : {}),
       };
 
       const response = await createOrderMutation.mutateAsync({
         body: orderData,
         venueSlug,
       });
+
+      if (response.status === 'waiting_for_code') {
+        setPendingOrderBody(orderData);
+        return;
+      }
+
+      if (response.phoneVerificationHash) {
+        localStorage.setItem(
+          `bonus_hash_${venueSlug}_${phone}`,
+          response.phoneVerificationHash,
+        );
+      }
 
       clearBasket();
       resetOrderOptions();
@@ -240,6 +257,36 @@ const DrawerCheckout: FC<IProps> = ({
     } catch (error: any) {
       console.error('Payment Error:', error);
       setApiError(error);
+    }
+  };
+
+  const handleOtpConfirm = async (code: string) => {
+    if (!pendingOrderBody) return;
+    setOtpError(null);
+    try {
+      const response = await createOrderMutation.mutateAsync({
+        body: { ...pendingOrderBody, code },
+        venueSlug,
+      });
+      setPendingOrderBody(null);
+      if (response.phoneVerificationHash) {
+        localStorage.setItem(
+          `bonus_hash_${venueSlug}_${pendingOrderBody.phone}`,
+          response.phoneVerificationHash,
+        );
+      }
+      clearBasket();
+      resetOrderOptions();
+      resetBonus();
+      if (response.paymentUrl) {
+        window.location.href = response.paymentUrl;
+      } else {
+        closeSheet();
+        router.push(`/${venueSlug}/order-status/${response.id}`);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      setOtpError(error?.message ?? 'Неверный код. Попробуйте ещё раз.');
     }
   };
 
@@ -468,6 +515,17 @@ const DrawerCheckout: FC<IProps> = ({
         isOpen={!!apiError}
         onClose={() => setApiError(null)}
         error={apiError}
+      />
+
+      <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
+
+      <OtpModal
+        open={pendingOrderBody !== null}
+        phone={phone}
+        isLoading={createOrderMutation.isPending}
+        error={otpError}
+        onConfirm={handleOtpConfirm}
+        onClose={() => { setPendingOrderBody(null); setOtpError(null); }}
       />
     </div>
   );

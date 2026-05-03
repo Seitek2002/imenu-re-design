@@ -3,87 +3,35 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useOrderSummary } from '@/hooks/useOrderSummary';
 
-// Сторы и API
-import { useCheckout } from '@/store/checkout';
-import { useBonusStore } from '@/store/bonus';
-import { useBasketStore } from '@/store/basket';
-import {
-  useClientBonus,
-  usePromotionsV2,
-  useVenueProducts,
-} from '@/lib/api/queries';
-import { pickAppliedPromotion } from '@/lib/promotions';
-
-// Ассеты
 import arrow from '@/assets/Cart/details-arrow.svg';
-import coinIcon from '@/assets/Widgets/widget-2.png'; // Возьмем монетку из виджетов
-import { useVenueStore } from '@/store/venue';
+import coinIcon from '@/assets/Widgets/widget-2.png';
 
 interface Props {
   subtotal: number;
   deliveryType: 'takeout' | 'delivery' | 'dinein';
-  deliveryCost: number; // Добавил пропсом, чтобы было явно
+  deliveryCost: number;
 }
 
-export default function OrderSummary({
-  subtotal,
-  deliveryType,
-  deliveryCost,
-}: Props) {
+export default function OrderSummary({ subtotal, deliveryType, deliveryCost }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations('Cart.summary');
 
-  // 1. Данные для бонусов
-  const venue = useVenueStore((state) => state.data);
-  const spotId = useVenueStore((state) => state.spotId);
-  const { phone } = useCheckout();
-  const { data: bonusData } = useClientBonus({ phone, venueSlug: venue?.slug ?? '' });
-
-  // 2. Управление переключателем
-  const { isBonusUsed, bonusAmount, setBonusUsed, setBonusAmount } =
-    useBonusStore();
-
-  // 3. Расчеты
-  const availableBonuses = bonusData?.bonus ?? 0;
-
-  // Правило: списываем не больше 50% от суммы товаров (без доставки)
-  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * 0.5));
-
-  // Если переключатель включен — клампим хранимую сумму к актуальному максимуму
-  // (на случай, если subtotal уменьшился после изменения корзины)
-  const effectiveAmount = isBonusUsed
-    ? Math.min(Math.max(0, bonusAmount), maxDeductible)
-    : 0;
-  const discount = effectiveAmount;
-
-  const handleToggle = () => {
-    if (isBonusUsed) {
-      setBonusUsed(false);
-      setBonusAmount(0);
-    } else {
-      setBonusUsed(true);
-      setBonusAmount(maxDeductible);
-    }
-  };
-
-  // 4. Авто-промо акции (display-only — бэк применит при создании заказа сам)
-  const basketItems = useBasketStore((s) => s.items);
-  const { data: promotions } = usePromotionsV2(venue?.slug, spotId);
-  const { data: productsCatalog } = useVenueProducts(venue?.slug, spotId);
-  const applied = pickAppliedPromotion(promotions, basketItems, productsCatalog);
-  const promoDiscount = applied?.discount.amount ?? 0;
-
-  // Итоговая сумма
-  const finalTotal =
-    subtotal +
-    (deliveryType === 'delivery' ? deliveryCost : 0) -
-    discount -
-    promoDiscount;
+  const {
+    availableBonuses,
+    maxDeductible,
+    effectiveAmount,
+    isBonusUsed,
+    setBonusAmount,
+    handleBonusToggle,
+    applied,
+    promoDiscount,
+    finalDisplayTotal,
+  } = useOrderSummary({ subtotal, deliveryType, deliveryCost });
 
   return (
     <div className='bg-[#FAFAFA] p-3 rounded-xl mt-3'>
-      {/* Заголовок */}
       <button
         type='button'
         onClick={() => setIsOpen(!isOpen)}
@@ -91,15 +39,12 @@ export default function OrderSummary({
       >
         <span className='text-base font-medium'>{t('details')}</span>
         <span
-          className={`transition-transform duration-300 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
+          className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
         >
           <Image src={arrow} alt='toggle' />
         </span>
       </button>
 
-      {/* Выпадающий контент */}
       <div
         className={`grid transition-[grid-template-rows] duration-300 ease-out ${
           isOpen ? 'grid-rows-[1fr] mt-3' : 'grid-rows-[0fr]'
@@ -107,13 +52,11 @@ export default function OrderSummary({
       >
         <div className='overflow-hidden'>
           <div className='flex flex-col gap-2 pb-1'>
-            {/* Товары */}
             <div className='flex justify-between text-[#80868B]'>
               <span>{t('subtotal')}</span>
               <span>{subtotal} c.</span>
             </div>
 
-            {/* Доставка */}
             {deliveryType === 'delivery' && (
               <div className='flex justify-between text-[#80868B]'>
                 <span>{t('delivery')}</span>
@@ -121,7 +64,6 @@ export default function OrderSummary({
               </div>
             )}
 
-            {/* Авто-применённая акция (display-only) */}
             {applied && promoDiscount > 0 && (
               <div className='flex justify-between text-brand'>
                 <span className='truncate pr-2'>{applied.promotion.name}</span>
@@ -129,12 +71,10 @@ export default function OrderSummary({
               </div>
             )}
 
-            {/* 🔥 БЛОК БОНУСОВ (Показываем только если есть баллы) */}
             {availableBonuses > 0 && (
               <div className='mt-2 bg-white rounded-lg p-3 border border-brand/20'>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-2'>
-                    {/* Монетка */}
                     <Image
                       src={coinIcon}
                       alt='bonus'
@@ -152,20 +92,18 @@ export default function OrderSummary({
                     </div>
                   </div>
 
-                  {/* Переключатель (Toggle) */}
                   <button
                     type='button'
-                    onClick={handleToggle}
-                    className={`
-                      relative w-10 h-6 rounded-full transition-colors duration-300
-                      ${isBonusUsed ? 'bg-brand' : 'bg-gray-200'}
-                    `}
+                    onClick={handleBonusToggle}
+                    aria-label={t('spendBonus')}
+                    className={`relative w-10 h-6 rounded-full transition-colors duration-300 ${
+                      isBonusUsed ? 'bg-brand' : 'bg-gray-200'
+                    }`}
                   >
                     <div
-                      className={`
-                        absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300
-                        ${isBonusUsed ? 'translate-x-4' : 'translate-x-0'}
-                      `}
+                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ${
+                        isBonusUsed ? 'translate-x-4' : 'translate-x-0'
+                      }`}
                     />
                   </button>
                 </div>
@@ -191,10 +129,9 @@ export default function OrderSummary({
             )}
           </div>
 
-          {/* ИТОГО */}
           <div className='border-t border-[#E7E7E7] mt-3 pt-2 flex justify-between font-bold text-[#21201F] text-lg'>
             <span>{t('total')}</span>
-            <span>{Math.max(0, finalTotal)} c.</span>
+            <span>{Math.round(finalDisplayTotal)} c.</span>
           </div>
         </div>
       </div>

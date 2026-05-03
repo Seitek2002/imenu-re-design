@@ -4,13 +4,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { useVenueStore } from '@/store/venue';
+import { useCheckout } from '@/store/checkout';
 import {
   useCreatePosPaymentLink,
   useCurrentPosOrder,
 } from '@/lib/api/pos-orders';
 import { useTableOrderSocket } from '@/hooks/useTableOrderSocket';
 import { useMounted } from '@/hooks/useMounted';
+import { useOrdersV2 } from '@/lib/api/queries';
 import { PosOrder } from '@/types/pos-order';
+import { OrderStatus } from '@/types/api';
 
 interface Props {
   venueSlug: string;
@@ -38,6 +41,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const mounted = useMounted();
   const tableId = useVenueStore((s) => s.tableId);
   const tableNumberFromStore = useVenueStore((s) => s.tableNumber);
+  const { phone } = useCheckout();
 
   const {
     data: restOrder,
@@ -45,6 +49,17 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     isError,
     refetch,
   } = useCurrentPosOrder(tableId);
+
+  const { data: guestOrdersData } = useOrdersV2({ phone, venueSlug });
+  const guestOrders = useMemo(() => {
+    if (!guestOrdersData?.results || !tableId) return [];
+    return guestOrdersData.results.filter(
+      (o) =>
+        o.table?.id === tableId &&
+        o.status !== OrderStatus.Completed &&
+        o.status !== OrderStatus.Cancelled,
+    );
+  }, [guestOrdersData, tableId]);
 
   const {
     order: wsOrder,
@@ -165,55 +180,96 @@ export default function CurrentOrderView({ venueSlug }: Props) {
         </div>
       </div>
 
-      {/* Список товаров */}
-      <ul className='bg-white rounded-2xl shadow-sm divide-y divide-[#E7E7E7]'>
-        {order.items.length === 0 && (
-          <li className='p-6 text-center text-[#6B6B6B]'>{t('noItems')}</li>
-        )}
-        {order.items.map((item) => (
-          <li key={item.id} className='px-4 py-3'>
-            <div className='flex justify-between items-start gap-3'>
-              <div className='flex-1'>
-                <div className='font-medium text-[#111111]'>
-                  {item.productName}
-                </div>
-                <div className='text-xs text-[#A4A4A4] mt-0.5'>
-                  {formatQty(item.qty)} × {formatMoney(item.price)}{' '}
-                  {t('currency')}
-                </div>
-                {item.modifiers.length > 0 && (
-                  <ul className='mt-1.5 space-y-0.5'>
-                    {item.modifiers.map((m) => (
-                      <li
-                        key={m.id}
-                        className='text-xs text-[#6B6B6B] flex justify-between'
-                      >
-                        <span>
-                          + {m.name}
-                          {toNumber(m.count) > 1 ? ` ×${m.count}` : ''}
-                        </span>
-                        {toNumber(m.sum) > 0 && (
-                          <span>
-                            {formatMoney(m.sum)} {t('currency')}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {item.comment ? (
-                  <div className='text-xs text-[#A4A4A4] mt-1 italic'>
-                    {item.comment}
+      {/* Гостевые заказы */}
+      {guestOrders.length > 0 && (
+        <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>
+          <div className='px-4 py-2.5 bg-brand/10 flex items-center gap-2'>
+            <span className='text-xs font-bold text-brand uppercase tracking-wide'>
+              {t('guestOrderLabel')}
+            </span>
+          </div>
+          <ul className='divide-y divide-[#E7E7E7]'>
+            {guestOrders.map((guestOrder) =>
+              guestOrder.orderProducts.map((item) => (
+                <li key={`${guestOrder.id}-${item.id}`} className='px-4 py-3'>
+                  <div className='flex justify-between items-start gap-3'>
+                    <div className='flex-1'>
+                      <div className='font-medium text-[#111111]'>
+                        {item.product.productName}
+                      </div>
+                      <div className='text-xs text-[#A4A4A4] mt-0.5'>
+                        {item.count} × {formatMoney(item.price)} {t('currency')}
+                      </div>
+                    </div>
+                    <div className='font-bold text-[#111111] whitespace-nowrap'>
+                      {formatMoney(String(item.count * parseFloat(item.price)))} {t('currency')}
+                    </div>
                   </div>
-                ) : null}
+                </li>
+              )),
+            )}
+          </ul>
+        </div>
+      )}
+
+      {/* POS-заказ официанта */}
+      <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>
+        {guestOrders.length > 0 && (
+          <div className='px-4 py-2.5 bg-[#F5F5F5] flex items-center gap-2'>
+            <span className='text-xs font-bold text-[#6B6B6B] uppercase tracking-wide'>
+              {t('posOrderLabel')}
+            </span>
+          </div>
+        )}
+        <ul className='divide-y divide-[#E7E7E7]'>
+          {order.items.length === 0 && (
+            <li className='p-6 text-center text-[#6B6B6B]'>{t('noItems')}</li>
+          )}
+          {order.items.map((item) => (
+            <li key={item.id} className='px-4 py-3'>
+              <div className='flex justify-between items-start gap-3'>
+                <div className='flex-1'>
+                  <div className='font-medium text-[#111111]'>
+                    {item.productName}
+                  </div>
+                  <div className='text-xs text-[#A4A4A4] mt-0.5'>
+                    {formatQty(item.qty)} × {formatMoney(item.price)}{' '}
+                    {t('currency')}
+                  </div>
+                  {item.modifiers.length > 0 && (
+                    <ul className='mt-1.5 space-y-0.5'>
+                      {item.modifiers.map((m) => (
+                        <li
+                          key={m.id}
+                          className='text-xs text-[#6B6B6B] flex justify-between'
+                        >
+                          <span>
+                            + {m.name}
+                            {toNumber(m.count) > 1 ? ` ×${m.count}` : ''}
+                          </span>
+                          {toNumber(m.sum) > 0 && (
+                            <span>
+                              {formatMoney(m.sum)} {t('currency')}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {item.comment ? (
+                    <div className='text-xs text-[#A4A4A4] mt-1 italic'>
+                      {item.comment}
+                    </div>
+                  ) : null}
+                </div>
+                <div className='font-bold text-[#111111] whitespace-nowrap'>
+                  {formatMoney(item.sum)} {t('currency')}
+                </div>
               </div>
-              <div className='font-bold text-[#111111] whitespace-nowrap'>
-                {formatMoney(item.sum)} {t('currency')}
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* Итоги */}
       <div className='bg-white rounded-2xl shadow-sm px-4 py-3 text-sm space-y-1.5'>

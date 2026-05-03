@@ -66,9 +66,20 @@ export interface OrderCreateBody {
 
   useBonus?: boolean;
   bonus?: number;
+  code?: string;
+  hash?: string;
+}
+
+export interface PhoneVerificationHash {
+  venueSlug: string;
+  phone: string;
+  hash: string;
 }
 
 export interface OrderCreateResponse {
   id: number;
   paymentUrl?: string;
+  status?: string;
+  message?: string;
+  phoneVerificationHash?: string;
 }

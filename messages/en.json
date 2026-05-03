@@ -285,6 +285,8 @@
     "retry": "Retry",
     "empty": "No active order for this table yet",
     "noItems": "No items in the order yet",
+    "guestOrderLabel": "Your order",
+    "posOrderLabel": "Waiter's order",
     "live": {
       "connected": "● live",
       "disconnected": "○ offline"
