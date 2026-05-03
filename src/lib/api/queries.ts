@@ -27,11 +27,12 @@ interface OrdersParams {
 }
 
 async function fetchOrders(
-  { phone }: OrdersParams,
+  { phone, venueSlug }: OrdersParams,
   locale: Locale,
 ): Promise<OrdersResponse> {
   const params = new URLSearchParams();
   if (phone) params.append('phone', normalizePhoneForApi(phone));
+  if (venueSlug) params.append('venue_slug', venueSlug);
 
   const res = await fetch(`${API_BASE}/orders/?${params.toString()}`, {
     method: 'GET',
@@ -100,9 +101,9 @@ async function fetchClientBonus(
 ): Promise<BonusResponse> {
   const params = new URLSearchParams();
   params.append('phone', normalizePhoneForApi(phone));
-  params.append('venueSlug', venueSlug);
+  params.append('venue_slug', venueSlug);
 
-  const res = await fetch(`${API_BASE}/client/bonus/?${params.toString()}`, {
+  const res = await fetch(`${API_URL}/v2/client/bonus/?${params.toString()}`, {
     method: 'GET',
     headers: buildHeaders(locale),
   });

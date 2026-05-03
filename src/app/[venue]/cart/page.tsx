@@ -8,15 +8,9 @@ import OrderSummary from './components/OrderSummary';
 import { useCartLogic } from '@/hooks/useCartLogic';
 import BasketItem from './components/BasketItem';
 
-import { useBonusStore } from '@/store/bonus';
 import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
-import {
-  useClientBonus,
-  usePromotionsV2,
-  useVenueProducts,
-} from '@/lib/api/queries';
-import { pickAppliedPromotion } from '@/lib/promotions';
+import { useOrderSummary } from '@/hooks/useOrderSummary';
 import TableBadge from './components/TableBadge';
 import UtensilsSelector from './components/UtensilsSelector';
 import EmptyBasket from './components/EmptyBasket';
@@ -41,35 +35,16 @@ export default function BasketPage() {
     deliveryPrice,
   } = useCartLogic();
 
-  // Локальный UI стейт шторки
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
 
-  // --- 🔥 ЛОГИКА БОНУСОВ (Копия из OrderSummary для синхронизации) ---
-  const { isBonusUsed, bonusAmount } = useBonusStore();
-  const { phone, comment, setComment } = useCheckout();
-  const venue = useVenueStore((state) => state.data);
-  const spotId = useVenueStore((state) => state.spotId);
-  const { data: bonusData } = useClientBonus({
-    phone,
-    venueSlug: venue?.slug ?? '',
-  });
-
-  const availableBonuses = bonusData?.bonus ?? 0;
-  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * 0.5));
-  const discount = isBonusUsed
-    ? Math.min(Math.max(0, bonusAmount), maxDeductible)
-    : 0;
-
-  // --- Авто-промо (та же логика, что в OrderSummary) ---
-  const { data: promotions } = usePromotionsV2(venue?.slug, spotId);
-  const { data: productsCatalog } = useVenueProducts(venue?.slug, spotId);
-  const applied = pickAppliedPromotion(promotions, items, productsCatalog);
-  const promoDiscount = applied?.discount.amount ?? 0;
-
-  // Итоговая цена для Футера и Дровера
-  const finalDisplayTotal = Math.max(0, cartTotal - discount - promoDiscount);
-  // ------------------------------------------------------------------
+  const { comment, setComment } = useCheckout();
   const tableNumber = useVenueStore((state) => state.tableNumber);
+
+  const { discount, promoDiscount, finalDisplayTotal, applied } = useOrderSummary({
+    subtotal,
+    deliveryType: orderType,
+    deliveryCost: deliveryPrice,
+  });
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
