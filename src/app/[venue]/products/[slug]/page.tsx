@@ -57,16 +57,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+async function ResolvedHeader({
+  venue,
+  slug,
+  locale,
+  fallback,
+}: {
+  venue: string;
+  slug: string;
+  locale: Locale;
+  fallback: string;
+}) {
+  const name = await resolveCategoryName(venue, slug, locale);
+  return <Header title={name ?? fallback} showSearch={true} />;
+}
+
 export default async function ProductsPage({ params }: Props) {
   const { venue, slug } = await params;
   const locale = (await getLocale()) as Locale;
   const tc = await getTranslations('Categories');
-
-  const displayTitle = (await resolveCategoryName(venue, slug, locale)) ?? tc('defaultTitle');
+  const fallbackTitle = tc('defaultTitle');
 
   return (
     <main className='px-2.5 min-h-svh pb-32 bg-[#F8F6F7]'>
-      <Header title={displayTitle} showSearch={true} />
+      <Suspense fallback={<Header title={fallbackTitle} showSearch={true} />}>
+        <ResolvedHeader
+          venue={venue}
+          slug={slug}
+          locale={locale}
+          fallback={fallbackTitle}
+        />
+      </Suspense>
 
       {/* Модалка товара теперь живет в [venue]/layout.tsx */}
 
