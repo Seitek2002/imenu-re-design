@@ -9,7 +9,7 @@ import GB from 'country-flag-icons/react/3x2/GB';
 import RU from 'country-flag-icons/react/3x2/RU';
 import KG from 'country-flag-icons/react/3x2/KG';
 
-const SETTLE_DELAY_MS = 250;
+const SETTLE_DELAY_MS = 120;
 
 export default function LanguageDropdown() {
   const locale = useLocale() as Locale;
