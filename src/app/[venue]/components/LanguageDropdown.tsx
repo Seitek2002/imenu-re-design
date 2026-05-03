@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
-import { LOCALE_COOKIE, type Locale } from '@/lib/locale';
+import { LOCALE_COOKIE, LOCALES, type Locale } from '@/lib/locale';
 import { Globe } from 'lucide-react';
 import GB from 'country-flag-icons/react/3x2/GB';
 import RU from 'country-flag-icons/react/3x2/RU';
@@ -29,6 +29,47 @@ export default function LanguageDropdown() {
     queuedAtPathRef.current = null;
     startTransition(() => router.refresh());
   };
+
+  // Прогрев Data Cache на сервере для остальных локалей. После idle
+  // дёргаем route handler — он триггерит серверные fetch'и с другим
+  // Accept-Language, и при реальном переключении ответы уже в кэше.
+  useEffect(() => {
+    const venueSlug = pathname.split('/').filter(Boolean)[0];
+    if (!venueSlug) return;
+
+    const others = LOCALES.filter((l) => l !== locale);
+
+    const run = () => {
+      others.forEach((l) => {
+        fetch(`/api/prefetch-locale?venue=${encodeURIComponent(venueSlug)}&locale=${l}`, {
+          cache: 'no-store',
+          keepalive: true,
+        }).catch(() => {});
+      });
+    };
+
+    type IdleWindow = Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const w = window as IdleWindow;
+    let handle: number;
+    let isIdle = false;
+    if (typeof w.requestIdleCallback === 'function') {
+      isIdle = true;
+      handle = w.requestIdleCallback(run, { timeout: 4000 });
+    } else {
+      handle = window.setTimeout(run, 1500);
+    }
+    return () => {
+      if (isIdle && typeof w.cancelIdleCallback === 'function') {
+        w.cancelIdleCallback(handle);
+      } else {
+        window.clearTimeout(handle);
+      }
+    };
+    // venueSlug определяется из pathname; перезапуск при смене venue/locale ок
+  }, [locale, pathname]);
 
   useEffect(() => {
     if (!isQueued) return;
