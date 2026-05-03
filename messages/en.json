@@ -240,8 +240,8 @@
     "intro": "Enter 'dish name'"
   },
   "StoreClosed": {
-    "title": "We're closed right now",
-    "defaultMessage": "See you tomorrow at 10:00"
+    "title": "We're taking a little break",
+    "defaultMessage": "We'll be open again soon — see you then!"
   },
   "Profile": {
     "title": "Personal account",
