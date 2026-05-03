@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { useCheckout } from '@/store/checkout';
 import { useOrdersV2, useClientBonus } from '@/lib/api/queries';
+import { OrderStatus } from '@/types/api';
 
 import ScheduleModal from '@/components/modals/ScheduleModal';
 import CircularProgress from '@/components/ui/CircularProgress';
@@ -30,7 +31,11 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const { data: bonusData } = useClientBonus({ phone, venueSlug });
   const { data: ordersData } = useOrdersV2({ phone, venueSlug });
 
-  const lastOrder = ordersData?.results?.[0];
+  const lastOrder = ordersData?.results?.find(
+    (o) =>
+      o.status !== OrderStatus.Completed &&
+      o.status !== OrderStatus.Cancelled,
+  );
 
   const hasActiveOrder = !!lastOrder;
 
