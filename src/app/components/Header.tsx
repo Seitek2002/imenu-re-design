@@ -89,7 +89,7 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
             </div>
           ) : (
             /* ОБЫЧНЫЙ ЗАГОЛОВОК */
-            <h2 className='text-2xl font-bold text-center leading-none mt-1 truncate'>
+            <h2 className='text-2xl font-bold text-center leading-none pb-1 truncate'>
               {displayTitle}
             </h2>
           )}

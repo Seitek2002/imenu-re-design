@@ -99,7 +99,7 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
         </div>
       </div>
 
-      <div className='mt-2 flex flex-col flex-1 justify-between pointer-events-none'>
+      <div className='mt-2 flex flex-col flex-1 pointer-events-none'>
         <h2 className='text-[#21201F] text-lg font-semibold'>
           {isFrom && locale === 'ky' ? (
             <>
@@ -115,13 +115,15 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
             </>
           )}
         </h2>
-        <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-active:text-brand transition-colors'>
+        <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-active:text-brand transition-colors mt-1 flex-1'>
           {product.productName}
         </h3>
-        {product.weight > 0 && (
+        {product.weight > 0 ? (
           <span className='text-[#757575] text-xs mt-1'>
             {product.weight} {product.unitDisplay || product.measureUnit || tc('weightUnit')}
           </span>
+        ) : (
+          <span className='text-xs mt-1 invisible'>&#8203;</span>
         )}
       </div>
     </div>
