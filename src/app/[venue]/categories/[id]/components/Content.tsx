@@ -6,7 +6,7 @@ import ContentItem from './ContentItem';
 import { Category } from '@/types/api';
 
 export type CategoryGroup = {
-  parent: Category | null; // null = "Остальное"
+  parent: Category | null; // null = orphans, рендерятся без заголовка
   items: Category[];
 };
 
@@ -74,29 +74,30 @@ const Content = ({ venueSlug, layout }: Props) => {
               .slice(0, groupIdx)
               .reduce((acc, g) => acc + g.items.length, 0);
 
-            const headerText = group.parent?.categoryName ?? t('other');
             const headerLink = group.parent
               ? `/${venueSlug}/products/${group.parent.slug}`
               : null;
 
             return (
               <section key={group.parent?.id ?? 'orphan'}>
-                {headerLink ? (
-                  <Link
-                    href={headerLink}
-                    className='flex items-center justify-between mb-3 px-1 group'
-                  >
-                    <h2 className='text-lg font-bold text-[#21201F]'>
-                      {headerText}
+                {group.parent && (
+                  headerLink ? (
+                    <Link
+                      href={headerLink}
+                      className='flex items-center justify-between mb-3 px-1 group'
+                    >
+                      <h2 className='text-lg font-bold text-[#21201F]'>
+                        {group.parent.categoryName}
+                      </h2>
+                      <span className='text-sm text-brand font-medium group-active:translate-x-0.5 transition-transform'>
+                        {t('viewAll')}
+                      </span>
+                    </Link>
+                  ) : (
+                    <h2 className='text-lg font-bold text-[#21201F] mb-3 px-1'>
+                      {group.parent.categoryName}
                     </h2>
-                    <span className='text-sm text-brand font-medium group-active:translate-x-0.5 transition-transform'>
-                      {t('viewAll')}
-                    </span>
-                  </Link>
-                ) : (
-                  <h2 className='text-lg font-bold text-[#21201F] mb-3 px-1'>
-                    {headerText}
-                  </h2>
+                  )
                 )}
                 {renderGrid(group.items, venueSlug, offset)}
               </section>

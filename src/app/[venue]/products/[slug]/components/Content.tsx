@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Swiper as SwiperType } from 'swiper/types';
 
@@ -25,6 +26,7 @@ type ParentSlide = {
 
 const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const swiperRef = useRef<SwiperType | null>(null);
+  const router = useRouter();
 
   const { parentSlides, initialParentIdx, initialChildSlug } = useMemo(() => {
     const slides: ParentSlide[] = [];
@@ -101,10 +103,6 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const [activeIndex, setActiveIndex] = useState(initialParentIdx);
   const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
 
-  useEffect(() => {
-    setActiveIndex(initialParentIdx);
-  }, [initialParentIdx]);
-
   // Синхронизируем заголовок Header с активным родителем
   useEffect(() => {
     const parent = parentSlides[activeIndex]?.parent;
@@ -130,11 +128,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     const parent = parentSlides[newIndex]?.parent;
     if (parent) {
-      window.history.replaceState(
-        null,
-        '',
-        `/${venueSlug}/products/${parent.slug}`,
-      );
+      router.replace(`/${venueSlug}/products/${parent.slug}`, { scroll: false });
     }
   };
 
@@ -147,7 +141,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const activeParentSlug = parentSlides[activeIndex]?.parent.slug ?? '';
 
   return (
-    <div className='bg-white rounded-t-4xl mt-1.5 min-h-screen pb-40 border-t border-gray-100 flex flex-col'>
+    <div className='bg-white rounded-t-4xl mt-1.5 pb-40 border-t border-gray-100'>
       <div className='sticky top-18 z-30 bg-white shadow-sm'>
         <div className='pt-2'>
           <Category
@@ -158,58 +152,49 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
         </div>
       </div>
 
-      <div className='flex-1'>
+      <div>
         <Swiper
           modules={[]}
-          className='w-full h-full'
+          className='w-full'
           spaceBetween={16}
           slidesPerView={1}
           initialSlide={initialParentIdx}
           threshold={20}
           touchRatio={0.5}
+          autoHeight
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
-            if (initialParentIdx > 0) swiper.slideTo(initialParentIdx, 0);
           }}
           onSlideChange={handleSlideChange}
         >
           {parentSlides.map((slide, index) => {
-            const shouldRender = Math.abs(index - activeIndex) <= 1;
+            const isNearby = Math.abs(index - activeIndex) <= 1;
 
             return (
               <SwiperSlide key={slide.parent.id}>
-                <div className='pb-10 min-h-[80vh]'>
-                  {shouldRender ? (
-                    <div className='flex flex-col gap-8 pt-4'>
-                      {slide.sections.map((section) => {
-                        // Заголовок не нужен, если секция одна и она же — сам родитель
-                        // (родитель без подкатегорий). Имя уже в топ-табе.
-                        const showHeader =
-                          slide.sections.length > 1 ||
-                          section.category.id !== slide.parent.id;
+                <div className='pb-10' hidden={!isNearby}>
+                  <div className='flex flex-col gap-8 pt-4'>
+                    {slide.sections.map((section) => {
+                      const showHeader =
+                        slide.sections.length > 1 ||
+                        section.category.id !== slide.parent.id;
 
-                        return (
-                          <section
-                            key={section.category.id}
-                            id={`subcat-${section.category.slug}`}
-                            // scroll-mt компенсирует высоту липких родит. табов
-                            className='scroll-mt-36'
-                          >
-                            {showHeader && (
-                              <h2 className='text-xl font-bold text-[#21201F] mb-3 px-2.5'>
-                                {section.category.categoryName}
-                              </h2>
-                            )}
-                            <Goods products={section.products} />
-                          </section>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className='h-full w-full flex items-center justify-center'>
-                      <div className='loading-spinner text-gray-300'>...</div>
-                    </div>
-                  )}
+                      return (
+                        <section
+                          key={section.category.id}
+                          id={`subcat-${section.category.slug}`}
+                          className='scroll-mt-36'
+                        >
+                          {showHeader && (
+                            <h2 className='text-xl font-bold text-[#21201F] mb-3 px-2.5'>
+                              {section.category.categoryName}
+                            </h2>
+                          )}
+                          <Goods products={section.products} />
+                        </section>
+                      );
+                    })}
+                  </div>
                 </div>
               </SwiperSlide>
             );

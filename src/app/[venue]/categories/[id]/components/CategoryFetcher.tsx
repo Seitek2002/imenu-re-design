@@ -51,11 +51,17 @@ function buildLayout(sectionCats: Category[]): CategoryLayout {
     }
   }
 
+  // Если реальных групп нет — все листья orphan-ы, возвращаем flat.
+  if (groupMap.size === 0) {
+    return { mode: 'flat', items: leaves };
+  }
+
   const groups: CategoryGroup[] = [];
   for (const [parentId, items] of groupMap) {
     const parent = all.get(parentId)!;
     groups.push({ parent, items });
   }
+  // Orphan-ы без заголовка (parent: null) — рендерятся без "Остальное".
   if (orphans.length > 0) {
     groups.push({ parent: null, items: orphans });
   }
