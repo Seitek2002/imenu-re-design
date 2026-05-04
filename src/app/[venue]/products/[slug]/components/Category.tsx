@@ -15,7 +15,7 @@ const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
 
   // --- Стейты для свайпа мышью ---
   const [isDragging, setIsDragging] = useState(false);
-  const [hasDragged, setHasDragged] = useState(false);
+  const hasDraggedRef = useRef(false);
 
   const startX = useRef(0);
   const scrollLeft = useRef(0);
@@ -35,21 +35,20 @@ const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
   const onMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
-    setHasDragged(false); // Сбрасываем флаг при новом нажатии
+    hasDraggedRef.current = false;
     startX.current = e.pageX - scrollContainerRef.current.offsetLeft;
     scrollLeft.current = scrollContainerRef.current.scrollLeft;
   };
 
   const onMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollContainerRef.current) return;
-    e.preventDefault(); // Предотвращаем выделение текста при тяге
+    e.preventDefault();
 
     const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX.current) * 2; // Умножаем на 2 для скорости свайпа
+    const walk = (x - startX.current) * 2;
 
-    // Если мышка сдвинулась больше чем на 5 пикселей, считаем это свайпом, а не кликом
     if (Math.abs(walk) > 5) {
-      setHasDragged(true);
+      hasDraggedRef.current = true;
     }
 
     scrollContainerRef.current.scrollLeft = scrollLeft.current - walk;
@@ -82,7 +81,7 @@ const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
             onClick={(e) => {
               // 🔥 Блокируем клик, если пользователь только что перетаскивал панель,
               // чтобы категория случайно не переключилась
-              if (hasDragged) {
+              if (hasDraggedRef.current) {
                 e.preventDefault();
                 e.stopPropagation();
                 return;

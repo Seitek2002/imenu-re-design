@@ -44,8 +44,7 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
     ),
   );
 
-  // Если нашли — берём категории только из неё; иначе fallback на все.
-  const sourceCats = (ownerButton ?? { categories: flatButtons.flatMap((b) => b.categories ?? []) }).categories ?? [];
+  const sourceCats = ownerButton?.categories ?? [];
 
   const hit = findCategory(sourceCats, slug);
 
