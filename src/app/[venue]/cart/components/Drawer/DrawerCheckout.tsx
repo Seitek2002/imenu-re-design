@@ -1,10 +1,10 @@
 'use client';
 
-// 🔥 1. Импортируем useCallback
 import { FC, useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { useCheckout } from '@/store/checkout';
 import { useBasketStore } from '@/store/basket';
@@ -53,6 +53,8 @@ const DrawerCheckout: FC<IProps> = ({
   const isBonusUsed = useBonusStore((state) => state.isBonusUsed);
   const bonusAmount = useBonusStore((state) => state.bonusAmount);
   const resetBonus = useBonusStore((state) => state.resetBonus);
+
+  const queryClient = useQueryClient();
 
   // --- API ---
   const createOrderMutation = useCreateOrderV2();
@@ -246,6 +248,7 @@ const DrawerCheckout: FC<IProps> = ({
       clearBasket();
       resetOrderOptions();
       resetBonus();
+      queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;
@@ -278,6 +281,7 @@ const DrawerCheckout: FC<IProps> = ({
       clearBasket();
       resetOrderOptions();
       resetBonus();
+      queryClient.invalidateQueries({ queryKey: ['bonus'] });
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;
       } else {
