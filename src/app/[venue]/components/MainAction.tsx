@@ -1,13 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { BellRing, Loader2, CheckCircle } from 'lucide-react';
 import { useVenueStore } from '@/store/venue';
 import { API_V2_URL } from '@/lib/config';
 
-export default function MainAction({ venueSlug }: { venueSlug: string }) {
+interface Props {
+  venueSlug: string;
+}
+
+export default function MainAction({ venueSlug }: Props) {
   const pathname = usePathname();
   const t = useTranslations('MainAction');
   const tc = useTranslations('Common');
@@ -19,10 +23,27 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
   const [showConfirm, setShowConfirm] = useState(false); // Модалка "Вы уверены?"
   const [showSuccess, setShowSuccess] = useState(false); // Модалка "Успешно"
   const [isLoading, setIsLoading] = useState(false); // Спиннер загрузки
+  const [showHint, setShowHint] = useState(false);
 
   const isMainPage = new RegExp(`^/${venueSlug}(?:/d)?(?:/\\d+)*$`).test(
     pathname,
   );
+
+  useEffect(() => {
+    if (!tableId || !isMainPage) {
+      setShowHint(false);
+      return;
+    }
+
+    const storageKey = `imenu-waiter-hint:${venueSlug}`;
+    if (sessionStorage.getItem(storageKey)) return;
+
+    setShowHint(true);
+    sessionStorage.setItem(storageKey, '1');
+
+    const timer = window.setTimeout(() => setShowHint(false), 4000);
+    return () => window.clearTimeout(timer);
+  }, [tableId, isMainPage, venueSlug]);
 
   // Если стола нет — скрываем кнопку полностью (как и договаривались)
   if (!tableId) return null;
@@ -70,7 +91,15 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
 
   return (
     <>
-      <div className='fixed px-4 left-0 right-0 bottom-20 z-40 pointer-events-none max-w-175 mx-auto w-full'>
+      <div
+        className='main-action-floating fixed px-4 left-0 right-0 z-40 pointer-events-none max-w-175 mx-auto w-full flex items-center justify-end gap-2'
+      >
+        {isMainPage && showHint && (
+          <div className='pointer-events-none rounded-full bg-white px-3 py-2 text-xs font-bold text-[#111111] shadow-lg animate-fade-in'>
+            {t('callBtn')}
+          </div>
+        )}
+
         <button
           onClick={handleInitialClick}
           className={`
@@ -78,23 +107,11 @@ export default function MainAction({ venueSlug }: { venueSlug: string }) {
             active:scale-95 transition-all duration-500 ease-in-out 
             flex items-center justify-center overflow-hidden will-change-transform
             h-14 rounded-full
-            ${isMainPage ? 'md:max-w-[90%] mx-auto w-full px-6 gap-3' : 'w-14 ml-auto px-0 gap-0 mb-16'}
+            w-14 px-0 gap-0
           `}
+          aria-label={t('callBtn')}
         >
           <BellRing size={20} className='shrink-0' />
-          <span
-            className={`
-              font-black text-[13px] uppercase tracking-wide whitespace-nowrap 
-              transition-all duration-500 ease-in-out
-              ${
-                isMainPage
-                  ? 'opacity-100 max-w-75 ml-0'
-                  : 'opacity-0 max-w-0 ml-0'
-              }
-            `}
-          >
-            {t('callBtn')}
-          </span>
         </button>
       </div>
 

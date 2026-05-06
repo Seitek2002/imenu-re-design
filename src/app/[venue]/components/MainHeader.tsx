@@ -14,6 +14,7 @@ const MainHeader = () => {
 
   // 3. Получаем данные заведения
   const venue = useVenueStore((state) => state.data);
+  const tableNumber = useVenueStore((state) => state.tableNumber);
 
   // 4. Проверяем наличие Wi-Fi (пока берем первую точку)
   const currentSpot = venue?.spots?.[0];
@@ -54,6 +55,12 @@ const MainHeader = () => {
         </div>
 
         <div className='flex gap-2 shrink-0'>
+          {tableNumber && (
+            <div className='flex items-center h-10 px-3 rounded-[14px] bg-[#FAFAFA] text-[12px] font-bold text-[#111111] whitespace-nowrap'>
+              Стол №{tableNumber}
+            </div>
+          )}
+
           {/* ПОКАЗЫВАЕМ КНОПКУ ТОЛЬКО ЕСЛИ ЕСТЬ WI-FI */}
           {hasWifiInfo && (
             <button
