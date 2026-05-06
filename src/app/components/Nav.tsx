@@ -29,7 +29,7 @@ export default function Nav({ venueSlug }: { venueSlug: string }) {
   }
 
   // 5. Передаем этот URL в хелпер
-  const items = getNavItems(venueSlug, homeUrl);
+  const items = getNavItems(venueSlug, homeUrl, !!tableId);
 
   const totalItems = useBasketStore((state) =>
     state.items.reduce((acc, item) => acc + item.quantity, 0)

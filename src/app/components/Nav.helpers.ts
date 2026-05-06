@@ -5,8 +5,15 @@ import profileIcon from '@/assets/Footer/profile.svg';
 
 export type NavItemKey = 'home' | 'cart' | 'history' | 'profile';
 
-export const getNavItems = (venueSlug: string, homeUrl?: string) => {
+export const getNavItems = (
+  venueSlug: string,
+  homeUrl?: string,
+  hasTable?: boolean,
+) => {
   const mainLink = homeUrl || `/${venueSlug}`;
+  const cartLink = hasTable
+    ? `/${venueSlug}/table-order`
+    : `/${venueSlug}/cart`;
 
   return [
     {
@@ -16,7 +23,7 @@ export const getNavItems = (venueSlug: string, homeUrl?: string) => {
     },
     {
       key: 'cart' as NavItemKey,
-      href: `/${venueSlug}/cart`,
+      href: cartLink,
       icon: cartIcon,
     },
     {

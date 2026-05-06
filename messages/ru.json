@@ -271,7 +271,7 @@
     "categoryDesc": "Заказывайте вкусную еду в {venue}."
   },
   "TableOrder": {
-    "title": "Текущий заказ",
+    "title": "Счёт стола",
     "tableLabel": "Стол",
     "statusLabel": "Статус",
     "subtotal": "Подытог",
@@ -283,10 +283,37 @@
     "loading": "Загружаем заказ...",
     "loadError": "Не удалось загрузить заказ",
     "retry": "Повторить",
-    "empty": "По столу пока нет открытого заказа",
+    "empty": "По столу пока нет позиций — добавьте первую",
     "noItems": "В заказе пока нет позиций",
-    "guestOrderLabel": "Ваш заказ",
-    "posOrderLabel": "Заказ официанта",
+    "addItems": "Добавить из меню",
+    "guestOrderLabel": "Ваш заказ №{id}",
+    "posOrderLabel": "Заказ через официанта",
+    "draftLabel": "Дозаказ",
+    "draftCommentLabel": "Комментарий",
+    "draftCommentPlaceholder": "Например: без лука",
+    "draftSubtotal": "Без скидки",
+    "submitDraft": "Отправить дозаказ · {amount} с.",
+    "summary": {
+      "tickets": "{count, plural, =0 {Чеков нет} one {# чек} few {# чека} other {# чеков}}",
+      "empty": "Чеков нет",
+      "allSettled": "Всё оплачено"
+    },
+    "status": {
+      "open": "Открыт",
+      "draft": "Черновик",
+      "created": "Оформлен",
+      "preparing": "Готовится",
+      "ready": "Готов",
+      "pendingPayment": "Ожидает оплаты",
+      "inDelivery": "В доставке",
+      "completed": "Выдан",
+      "cancelled": "Отменён"
+    },
+    "promo": {
+      "itemBadge": "−{percent}%",
+      "bonusBadge": "+{count} в подарок",
+      "itemBadgeGeneric": "акция"
+    },
     "live": {
       "connected": "● в реальном времени",
       "disconnected": "○ нет соединения"
@@ -296,5 +323,17 @@
       "creating": "Готовим ссылку...",
       "unavailable": "Сервис оплаты временно недоступен. Попробуйте позже."
     }
+  },
+  "TableOrderBar": {
+    "label": "Стол №{num}",
+    "summary": "{count} поз. · {amount} с."
+  },
+  "PosOrderStatus": {
+    "title": "Оплата",
+    "successTitle": "Оплата прошла",
+    "successDesc": "Спасибо! Платёж по заказу стола успешно зачислен.",
+    "orderRef": "Заказ №{id}",
+    "backToTable": "К заказу стола",
+    "backToMenu": "В меню"
   }
 }

@@ -5,6 +5,7 @@ import type { Metadata } from 'next'; // 1. Импортируем тип
 import { getLocale, getTranslations } from 'next-intl/server';
 import Footer from '../components/Footer';
 import MainAction from './components/MainAction';
+import TableOrderBar from './components/TableOrderBar';
 import FloatingCartButton from './components/FloatingCartButton';
 import VenueInitializer from '@/components/providers/VenueInitializer';
 import { API_V2_URL } from '@/lib/config';
@@ -93,6 +94,7 @@ export default async function VenueLayout({
 
       <VenueInitializer venue={venueData} />
       <FloatingCartButton venueSlug={venueSlug} />
+      <TableOrderBar venueSlug={venueSlug} />
       <MainAction venueSlug={venueSlug} />
       <Footer venueSlug={venueSlug} />
     </div>

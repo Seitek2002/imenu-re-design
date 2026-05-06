@@ -271,7 +271,7 @@
     "categoryDesc": "Order delicious food at {venue}."
   },
   "TableOrder": {
-    "title": "Current order",
+    "title": "Table tab",
     "tableLabel": "Table",
     "statusLabel": "Status",
     "subtotal": "Subtotal",
@@ -283,10 +283,37 @@
     "loading": "Loading order...",
     "loadError": "Failed to load the order",
     "retry": "Retry",
-    "empty": "No active order for this table yet",
+    "empty": "Nothing on the table yet — add your first item",
     "noItems": "No items in the order yet",
-    "guestOrderLabel": "Your order",
+    "addItems": "Add from menu",
+    "guestOrderLabel": "Your order #{id}",
     "posOrderLabel": "Waiter's order",
+    "draftLabel": "New items",
+    "draftCommentLabel": "Comment",
+    "draftCommentPlaceholder": "E.g.: no onions",
+    "draftSubtotal": "Before discount",
+    "submitDraft": "Send order · {amount} c.",
+    "summary": {
+      "tickets": "{count, plural, =0 {No tickets} one {# ticket} other {# tickets}}",
+      "empty": "No tickets",
+      "allSettled": "Everything is paid"
+    },
+    "status": {
+      "open": "Open",
+      "draft": "Draft",
+      "created": "Placed",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "pendingPayment": "Awaiting payment",
+      "inDelivery": "On the way",
+      "completed": "Served",
+      "cancelled": "Cancelled"
+    },
+    "promo": {
+      "itemBadge": "−{percent}%",
+      "bonusBadge": "+{count} free",
+      "itemBadgeGeneric": "promo"
+    },
     "live": {
       "connected": "● live",
       "disconnected": "○ offline"
@@ -296,5 +323,17 @@
       "creating": "Creating link...",
       "unavailable": "Payment service is temporarily unavailable. Please try again."
     }
+  },
+  "TableOrderBar": {
+    "label": "Table №{num}",
+    "summary": "{count} items · {amount} c."
+  },
+  "PosOrderStatus": {
+    "title": "Payment",
+    "successTitle": "Payment successful",
+    "successDesc": "Thank you! Your table payment has been received.",
+    "orderRef": "Order №{id}",
+    "backToTable": "Back to table order",
+    "backToMenu": "Back to menu"
   }
 }
