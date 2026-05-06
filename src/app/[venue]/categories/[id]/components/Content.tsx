@@ -64,7 +64,7 @@ const Content = ({ venueSlug, layout }: Props) => {
   }
 
   return (
-    <div className='bg-white rounded-4xl p-4 pb-36 min-h-screen shadow-sm mt-4'>
+    <div className='bg-white rounded-4xl p-4 pb-28 shadow-sm mt-4'>
       {layout.mode === 'flat' ? (
         renderGrid(layout.items, venueSlug)
       ) : (

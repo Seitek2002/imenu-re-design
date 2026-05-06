@@ -10,7 +10,7 @@ import Widgets from '../components/Widgets';
 import { VenueService } from '@/services/venue.service';
 import StoreClosedCard from '@/app/components/StoreClosedCard';
 import { getVenueStatus } from '@/lib/venue-status';
-import { API_V2_URL } from '@/lib/config';
+import { API_URL, API_V2_URL } from '@/lib/config';
 import { getLocale } from 'next-intl/server';
 import type { Locale } from '@/lib/locale';
 
@@ -18,9 +18,9 @@ async function getVenueData(slug: string, locale: Locale, tableId?: number) {
   // По дефолту обычный URL
   let url = `${API_V2_URL}/venues/${slug}/`;
 
-  // Если есть ID стола — добавляем tableId как query-param (v2 endpoint)
+  // Если есть ID стола — меняем URL на специальный (получаем и меню, и номер стола)
   if (tableId) {
-    url += `?tableId=${tableId}`;
+    url = `${API_URL}/venues/${slug}/table/${tableId}/`;
   }
 
   const res = await fetch(url, {

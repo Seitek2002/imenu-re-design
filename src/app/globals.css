@@ -19,6 +19,10 @@
   --foreground: #111111;
 }
 
+.main-action-floating {
+  bottom: 5rem;
+}
+
 /* Базовые стили */
 body {
   background-color: var(--background);
