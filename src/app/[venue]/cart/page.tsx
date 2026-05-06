@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import { useParams, useRouter } from 'next/navigation';
 import Header from '@/app/components/Header';
 import OrderSummary from './components/OrderSummary';
 import { useCartLogic } from '@/hooks/useCartLogic';
@@ -11,7 +12,7 @@ import BasketItem from './components/BasketItem';
 import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
 import { useOrderSummary } from '@/hooks/useOrderSummary';
-import TableBadge from './components/TableBadge';
+import { useMounted } from '@/hooks/useMounted';
 import UtensilsSelector from './components/UtensilsSelector';
 import EmptyBasket from './components/EmptyBasket';
 
@@ -39,6 +40,17 @@ export default function BasketPage() {
 
   const { comment, setComment } = useCheckout();
   const tableNumber = useVenueStore((state) => state.tableNumber);
+  const tableId = useVenueStore((state) => state.tableId);
+  const params = useParams<{ venue: string }>();
+  const venueSlug = params?.venue ?? '';
+  const router = useRouter();
+  const mounted = useMounted();
+
+  useEffect(() => {
+    if (mounted && tableId) {
+      router.replace(`/${venueSlug}/table-order`);
+    }
+  }, [mounted, tableId, venueSlug, router]);
 
   const { discount, promoDiscount, finalDisplayTotal, applied, effectiveAmount: bonusToApply } = useOrderSummary({
     subtotal,
@@ -51,10 +63,8 @@ export default function BasketPage() {
       <Header title={t('title')} />
 
       <section className='bg-white pt-4 mt-4 px-2 rounded-4xl pb-5 lg:mx-auto shadow-sm min-h-[60vh]'>
-        {/* Toggle */}
-        {tableNumber ? (
-          <TableBadge tableNumber={tableNumber} />
-        ) : (
+        {/* Toggle (только без стола — со столом пользователь увозится на /table-order) */}
+        {!tableNumber && (
           <div className='bg-[#FAFAFA] rounded-full mb-3 p-1 grid grid-cols-2 gap-2'>
             <button
               onClick={() => setOrderType('takeout')}

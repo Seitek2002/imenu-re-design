@@ -271,7 +271,7 @@
     "categoryDesc": "{venue} жеринен даамдуу тамак буйрутма бериңиз."
   },
   "TableOrder": {
-    "title": "Учурдагы буйрутма",
+    "title": "Столдун эсеби",
     "tableLabel": "Стол",
     "statusLabel": "Статус",
     "subtotal": "Жыйынтык",
@@ -283,10 +283,37 @@
     "loading": "Буйрутма жүктөлүүдө...",
     "loadError": "Буйрутманы жүктөө мүмкүн болбоду",
     "retry": "Кайталоо",
-    "empty": "Бул столдо ачык буйрутма жок",
+    "empty": "Столдо али эч нерсе жок — биринчи позицияны кошуңуз",
     "noItems": "Буйрутмада позиция жок",
-    "guestOrderLabel": "Сиздин буйрутма",
+    "addItems": "Менюдан кошуу",
+    "guestOrderLabel": "Сиздин буйрутма №{id}",
     "posOrderLabel": "Официанттын буйрутмасы",
+    "draftLabel": "Жаңы позициялар",
+    "draftCommentLabel": "Эскертүү",
+    "draftCommentPlaceholder": "Мисалы: пиязсыз",
+    "draftSubtotal": "Арзандатуусуз",
+    "submitDraft": "Буйрутма берүү · {amount} c.",
+    "summary": {
+      "tickets": "{count, plural, =0 {Чек жок} one {# чек} other {# чек}}",
+      "empty": "Чек жок",
+      "allSettled": "Бардыгы төлөнгөн"
+    },
+    "status": {
+      "open": "Ачык",
+      "draft": "Долбоор",
+      "created": "Кабыл алынды",
+      "preparing": "Даярдалууда",
+      "ready": "Даяр",
+      "pendingPayment": "Төлөм күтүлүүдө",
+      "inDelivery": "Жеткирүүдө",
+      "completed": "Берилди",
+      "cancelled": "Жокко чыгарылды"
+    },
+    "promo": {
+      "itemBadge": "−{percent}%",
+      "bonusBadge": "+{count} белекке",
+      "itemBadgeGeneric": "акция"
+    },
     "live": {
       "connected": "● реалдуу убакытта",
       "disconnected": "○ байланыш жок"
@@ -296,5 +323,17 @@
       "creating": "Шилтеме даярдалууда...",
       "unavailable": "Төлөм кызматы убактылуу жеткиликсиз. Кайра аракет кылыңыз."
     }
+  },
+  "TableOrderBar": {
+    "label": "Стол №{num}",
+    "summary": "{count} поз. · {amount} с."
+  },
+  "PosOrderStatus": {
+    "title": "Төлөм",
+    "successTitle": "Төлөм ийгиликтүү",
+    "successDesc": "Рахмат! Столдун буйрутмасы боюнча төлөм кабыл алынды.",
+    "orderRef": "Буйрутма №{id}",
+    "backToTable": "Столго кайтуу",
+    "backToMenu": "Менюга"
   }
 }

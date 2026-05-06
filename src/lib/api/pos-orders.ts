@@ -43,8 +43,8 @@ export const useCurrentPosOrder = (tableId: number | null | undefined) => {
 };
 
 export interface PaymentLinkResponse {
-  transaction_id: number;
-  payment_url: string;
+  transactionId: number;
+  paymentUrl: string;
 }
 
 async function createPaymentLink(
