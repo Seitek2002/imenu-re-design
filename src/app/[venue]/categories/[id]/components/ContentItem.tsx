@@ -29,15 +29,15 @@ const ContentItem: FC<Props> = ({
     <Link
       href={`/${venueSlug}/products/${slug}`}
       className={`
-        relative rounded-3xl bg-[#F6F6F6] overflow-hidden p-3 flex flex-col justify-between
+        relative rounded-2xl bg-[#F6F6F6] overflow-hidden p-3 flex flex-col justify-between
         active:scale-95 transition-transform isolate
-        ${isLarge ? 'col-span-3' : 'col-span-2'}
+        ${isLarge ? 'col-span-3 h-36' : 'col-span-2 h-28'}
       `}
     >
       <span
         className={`
-        text-[#21201F] font-bold leading-tight z-10 break-words
-        ${isLarge ? 'text-[120%] w-2/3' : 'text-[100%]'}
+        text-[#21201F] font-bold leading-tight z-10 break-words line-clamp-2
+        ${isLarge ? 'text-lg w-3/4' : 'text-base'}
       `}
       >
         {name}
@@ -49,7 +49,7 @@ const ContentItem: FC<Props> = ({
         ${
           isLarge
             ? 'w-24 h-24 self-end -mb-4 -mr-2'
-            : 'w-full h-16 mt-2 self-center'
+            : 'w-full h-14 mt-1 self-center'
         }
       `}
       >

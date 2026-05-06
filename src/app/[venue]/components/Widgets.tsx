@@ -41,7 +41,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
 
   return (
     <>
-      <div className='home-widgets bg-white rounded-4xl p-4 mt-2 flex gap-2 overflow-x-auto snap-x scrollbar-hide'>
+      <div className='home-widgets bg-white rounded-4xl p-4 mt-2 flex gap-2 overflow-x-auto snap-x no-scrollbar'>
         {hasActiveOrders ? (
           activeOrders.map((order) => {
             const progress = calculateOrderProgress(order.status, order.serviceMode);

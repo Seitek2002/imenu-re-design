@@ -46,7 +46,7 @@ export default async function CategoriesPage({ params }: PageProps) {
   const sectionId = Number(id);
 
   return (
-    <main className='px-2.5 min-h-svh pb-40 bg-[#F8F6F7]'>
+    <main className='px-2.5 min-h-svh pb-28 bg-[#F8F6F7]'>
       <Suspense fallback={<Header title={fallbackTitle} />}>
         <ResolvedHeader
           venue={venue}
