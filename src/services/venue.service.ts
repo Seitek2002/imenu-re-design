@@ -32,6 +32,17 @@ export const VenueService = {
     });
   },
 
+  getCategoriesBySection: async (
+    venueSlug: string,
+    sectionId: number,
+    locale?: Locale,
+  ) => {
+    return apiClient<import('@/types/api').Category[]>('/v2/categories/', {
+      params: { venueSlug, sectionId },
+      locale,
+    });
+  },
+
   getAllProducts: async (
     venueSlug: string,
     spotId?: number | null,

@@ -31,6 +31,7 @@ interface IProps {
   orderType: 'takeout' | 'delivery' | 'dinein';
   finalTotal: number;
   deliveryCost: number;
+  bonusToApply: number;
 }
 
 const DrawerCheckout: FC<IProps> = ({
@@ -38,6 +39,7 @@ const DrawerCheckout: FC<IProps> = ({
   closeSheet,
   orderType,
   finalTotal,
+  bonusToApply,
 }) => {
   const params = useParams();
   const router = useRouter();
@@ -51,7 +53,6 @@ const DrawerCheckout: FC<IProps> = ({
   const items = useBasketStore((state) => state.items);
   const clearBasket = useBasketStore((state) => state.clearBasket);
   const isBonusUsed = useBonusStore((state) => state.isBonusUsed);
-  const bonusAmount = useBonusStore((state) => state.bonusAmount);
   const resetBonus = useBonusStore((state) => state.resetBonus);
 
   const queryClient = useQueryClient();
@@ -224,7 +225,7 @@ const DrawerCheckout: FC<IProps> = ({
         paymentMethod: (paymentMethod === 'cash' ? 1 : 2) as 1 | 2,
         paymentMethods: paymentMethod,
         useBonus: isBonusUsed,
-        ...(isBonusUsed && bonusAmount > 0 ? { bonus: bonusAmount } : {}),
+        ...(isBonusUsed && bonusToApply > 0 ? { bonus: bonusToApply } : {}),
         ...(savedHash ? { hash: savedHash } : {}),
       };
 

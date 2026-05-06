@@ -40,7 +40,7 @@ export default function BasketPage() {
   const { comment, setComment } = useCheckout();
   const tableNumber = useVenueStore((state) => state.tableNumber);
 
-  const { discount, promoDiscount, finalDisplayTotal, applied } = useOrderSummary({
+  const { discount, promoDiscount, finalDisplayTotal, applied, effectiveAmount: bonusToApply } = useOrderSummary({
     subtotal,
     deliveryType: orderType,
     deliveryCost: deliveryPrice,
@@ -177,8 +177,9 @@ export default function BasketPage() {
             sheetOpen={isCheckoutOpen}
             closeSheet={() => setCheckoutOpen(false)}
             orderType={orderType}
-            finalTotal={finalDisplayTotal} // 🔥 Передаем правильную сумму
+            finalTotal={finalDisplayTotal}
             deliveryCost={deliveryPrice}
+            bonusToApply={bonusToApply}
           />
         </>
       )}

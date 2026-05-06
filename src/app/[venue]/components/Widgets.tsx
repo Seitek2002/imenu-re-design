@@ -31,66 +31,68 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const { data: bonusData } = useClientBonus({ phone, venueSlug });
   const { data: ordersData } = useOrdersV2({ phone, venueSlug });
 
-  const lastOrder = ordersData?.results?.find(
+  const activeOrders = ordersData?.results?.filter(
     (o) =>
       o.status !== OrderStatus.Completed &&
       o.status !== OrderStatus.Cancelled,
-  );
+  ) ?? [];
 
-  const hasActiveOrder = !!lastOrder;
-
-  const progress = hasActiveOrder
-    ? calculateOrderProgress(lastOrder.status, lastOrder.serviceMode)
-    : 0;
-
-  const orderWidgetLink = lastOrder
-    ? `/${venueSlug}/order-status/${lastOrder.id}`
-    : `/${venueSlug}/history`;
+  const hasActiveOrders = activeOrders.length > 0;
 
   return (
     <>
       <div className='home-widgets bg-white rounded-4xl p-4 mt-2 flex gap-2 overflow-x-auto snap-x scrollbar-hide'>
-        <Link
-          href={orderWidgetLink}
-          className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden group'
-        >
-          <div className='text-[#0404138C] font-bold text-xs mb-2 relative z-10 leading-tight'>
-            {hasActiveOrder ? t('orderStatus') : t('myOrders')}
-          </div>
-
-          <div className='relative w-full h-14 flex items-center justify-center'>
-            <Image
-              src={widget1}
-              alt='Orders'
-              fill
-              className={`
-                object-contain transition-all duration-500 
-                ${
-                  hasActiveOrder
-                    ? 'opacity-10 scale-90 blur-[1px]'
-                    : 'opacity-100 scale-100'
-                }
-              `}
-              sizes='120px'
-            />
-
-            {/* Блок с прогресс-баром и процентами по центру */}
-            {hasActiveOrder && (
-              <div className='absolute inset-0 z-20 flex items-center justify-center animate-in zoom-in duration-500'>
-                <div className='relative flex items-center justify-center'>
-                  <CircularProgress
-                    value={progress}
-                    size={50}
-                    strokeWidth={4}
-                  />
-                  <span className='absolute text-[12px] font-bold text-brand'>
-                    {progress}%
-                  </span>
+        {hasActiveOrders ? (
+          activeOrders.map((order) => {
+            const progress = calculateOrderProgress(order.status, order.serviceMode);
+            return (
+              <Link
+                key={order.id}
+                href={`/${venueSlug}/order-status/${order.id}`}
+                className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden group'
+              >
+                <div className='text-[#0404138C] font-bold text-xs mb-2 relative z-10 leading-tight'>
+                  {t('orderStatus')}
                 </div>
-              </div>
-            )}
-          </div>
-        </Link>
+                <div className='relative w-full h-14 flex items-center justify-center'>
+                  <Image
+                    src={widget1}
+                    alt='Orders'
+                    fill
+                    className='object-contain transition-all duration-500 opacity-10 scale-90 blur-[1px]'
+                    sizes='120px'
+                  />
+                  <div className='absolute inset-0 z-20 flex items-center justify-center animate-in zoom-in duration-500'>
+                    <div className='relative flex items-center justify-center'>
+                      <CircularProgress value={progress} size={50} strokeWidth={4} />
+                      <span className='absolute text-[12px] font-bold text-brand'>
+                        {progress}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            );
+          })
+        ) : (
+          <Link
+            href={`/${venueSlug}/history`}
+            className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden group'
+          >
+            <div className='text-[#0404138C] font-bold text-xs mb-2 relative z-10 leading-tight'>
+              {t('myOrders')}
+            </div>
+            <div className='relative w-full h-14 flex items-center justify-center'>
+              <Image
+                src={widget1}
+                alt='Orders'
+                fill
+                className='object-contain transition-all duration-500 opacity-100 scale-100'
+                sizes='120px'
+              />
+            </div>
+          </Link>
+        )}
 
         <div className='home-widget bg-[#FAFAFA] rounded-3xl min-w-35 p-4 text-xs text-center snap-start'>
           <div className='text-[#0404138C] font-bold text-xs mb-2 leading-tight'>
