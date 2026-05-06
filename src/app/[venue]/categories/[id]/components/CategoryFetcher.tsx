@@ -71,11 +71,9 @@ function buildLayout(sectionCats: Category[]): CategoryLayout {
 
 export default async function CategoryFetcher({ venue, id }: Props) {
   const locale = (await getLocale()) as Locale;
-  const buttons = await VenueService.getMainButtons(venue, locale);
   const sectionId = Number(id);
 
-  const button = buttons.flat().find((b) => b.section?.id === sectionId);
-  const sectionCats = button?.categories ?? [];
+  const sectionCats = await VenueService.getCategoriesBySection(venue, sectionId, locale);
 
   const layout = buildLayout(sectionCats);
 
