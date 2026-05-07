@@ -113,11 +113,19 @@ export default async function CategoryFetcher({ venue, id }: Props) {
   const layout = buildLayout(sectionCats);
   const promoLabels = buildPromoLabels(allProducts, promotions);
 
+  const productCountByCatId: Record<number, number> = {};
+  for (const product of allProducts) {
+    for (const c of product.categories ?? []) {
+      productCountByCatId[c.id] = (productCountByCatId[c.id] ?? 0) + 1;
+    }
+  }
+
   return (
     <Content
       venueSlug={venue}
       layout={layout}
       promoLabelByCatId={Object.fromEntries(promoLabels)}
+      productCountByCatId={productCountByCatId}
     />
   );
 }

@@ -57,9 +57,17 @@ export async function apiClient<T>(
   });
 
   if (!response.ok) {
-    console.log(response);
-    // Тут можно добавить логирование ошибок или выброс кастомного Error
-    throw new Error(`API Error: ${response.statusText}`);
+    let body = '';
+    try {
+      body = await response.text();
+    } catch {
+      // ignore
+    }
+    throw new Error(
+      `API Error ${response.status} ${response.statusText} @ ${url}${
+        body ? `: ${body.slice(0, 500)}` : ''
+      }`,
+    );
   }
 
   return response.json();

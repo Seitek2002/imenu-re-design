@@ -14,7 +14,7 @@ export const useUIStore = create<UIState>((set) => ({
   searchQuery: '',
   headerTitleOverride: null,
   setSearchOpen: (isOpen) =>
-    set({ isSearchOpen: isOpen, searchQuery: isOpen ? '' : '' }),
+    set({ isSearchOpen: isOpen, searchQuery: '' }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setHeaderTitleOverride: (title) => set({ headerTitleOverride: title }),
 }));

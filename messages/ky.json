@@ -160,7 +160,8 @@
     "defaultTitle": "Меню",
     "popular": "Хиттер",
     "discounts": "Арзандатуу менен",
-    "loading": "Меню жүктөлүүдө…"
+    "loading": "Меню жүктөлүүдө…",
+    "itemsCount": "{count, plural, other {# тамак}}"
   },
   "OrderStatus": {
     "header": "Буйрутма #{id}",

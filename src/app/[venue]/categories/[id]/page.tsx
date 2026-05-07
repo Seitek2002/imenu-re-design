@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import Header from '@/app/components/Header';
 import SearchOverlay from '@/app/components/SearchOverlay';
 import CategoriesSkeleton from './components/CategoriesSkeleton';
@@ -45,6 +46,7 @@ export default async function CategoriesPage({ params }: PageProps) {
   const tc = await getTranslations('Categories');
   const fallbackTitle = tc('defaultTitle');
   const sectionId = Number(id);
+  if (!Number.isFinite(sectionId)) notFound();
 
   return (
     <main className='px-2.5 min-h-svh pb-28 bg-[#F8F6F7]'>

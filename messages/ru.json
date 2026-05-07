@@ -160,7 +160,8 @@
     "defaultTitle": "Меню",
     "popular": "Хиты",
     "discounts": "Со скидкой",
-    "loading": "Загружаем меню…"
+    "loading": "Загружаем меню…",
+    "itemsCount": "{count, plural, one {# блюдо} few {# блюда} other {# блюд}}"
   },
   "OrderStatus": {
     "header": "Заказ #{id}",

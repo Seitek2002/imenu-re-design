@@ -169,6 +169,18 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
 
   const [activeSlug, setActiveSlug] = useState(initialActiveSlug);
 
+  // Если состав групп изменился (например, promotions подгрузились асинхронно
+  // и появилась/исчезла виртуальная группа "Со скидкой"), и текущий activeSlug
+  // больше не существует — выравниваем на актуальный initialActiveSlug.
+  useEffect(() => {
+    const stillExists = allParentGroups.some(
+      (g) => g.parent.slug === activeSlug,
+    );
+    if (!stillExists && initialActiveSlug) {
+      setActiveSlug(initialActiveSlug);
+    }
+  }, [allParentGroups, activeSlug, initialActiveSlug]);
+
   useEffect(() => {
     const group = allParentGroups.find((g) => g.parent.slug === activeSlug);
     if (group) setHeaderTitleOverride(group.parent.categoryName);

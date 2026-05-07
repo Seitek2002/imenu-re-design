@@ -30,9 +30,7 @@ async function getVenueData(slug: string, locale: Locale, tableId?: number) {
 
   if (res.status === 404) return null;
   if (!res.ok) {
-    console.log(tableId);
-    // Можно логировать, но не обязательно ронять всё
-    console.error('Fetch error');
+    console.error(`Venue fetch failed: ${res.status} (tableId=${tableId})`);
     return null;
   }
 

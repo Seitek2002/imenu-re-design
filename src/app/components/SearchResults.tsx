@@ -28,6 +28,7 @@ export default function SearchResults() {
       return;
     }
 
+    const controller = new AbortController();
     const timerId = setTimeout(async () => {
       setLoading(true);
       try {
@@ -35,19 +36,25 @@ export default function SearchResults() {
           `${API_V2_URL}/products/?venueSlug=${
             venue?.slug
           }&search=${encodeURIComponent(searchQuery)}`,
+          { signal: controller.signal },
         );
         if (res.ok) {
           const data = await res.json();
-          setProducts(data);
+          if (!controller.signal.aborted) setProducts(data);
         }
       } catch (e) {
-        console.error('Search error:', e);
+        if ((e as Error).name !== 'AbortError') {
+          console.error('Search error:', e);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, 500);
 
-    return () => clearTimeout(timerId);
+    return () => {
+      clearTimeout(timerId);
+      controller.abort();
+    };
   }, [searchQuery, venue?.slug, easterEggMessage, questState]);
 
   if (!searchQuery) {

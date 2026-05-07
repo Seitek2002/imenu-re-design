@@ -2,7 +2,7 @@
 
 import { FC, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useUIStore } from '@/store/ui'; // 1. Импорт стора
 import { X } from 'lucide-react'; // Возьмем иконку крестика из библиотеки, которая у тебя есть
@@ -20,14 +20,12 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
   const t = useTranslations('Common');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 2. Подключаем состояние
-  const {
-    isSearchOpen,
-    setSearchOpen,
-    searchQuery,
-    setSearchQuery,
-    headerTitleOverride,
-  } = useUIStore();
+  // 2. Подключаем состояние — селекторы, чтобы не ререндериться на чужие поля.
+  const isSearchOpen = useUIStore((s) => s.isSearchOpen);
+  const setSearchOpen = useUIStore((s) => s.setSearchOpen);
+  const searchQuery = useUIStore((s) => s.searchQuery);
+  const setSearchQuery = useUIStore((s) => s.setSearchQuery);
+  const headerTitleOverride = useUIStore((s) => s.headerTitleOverride);
 
   const displayTitle = headerTitleOverride ?? title;
 
@@ -37,6 +35,13 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
       inputRef.current.focus();
     }
   }, [isSearchOpen]);
+
+  // Закрываем оверлей поиска при смене маршрута, чтобы он не «прилипал»
+  // к новой странице.
+  const pathname = usePathname();
+  useEffect(() => {
+    setSearchOpen(false);
+  }, [pathname, setSearchOpen]);
 
   const handleBack = () => {
     if (navigator.vibrate) navigator.vibrate(20);

@@ -41,6 +41,8 @@ export function useTableOrderSocket(
   const closedByEffectRef = useRef(false);
 
   useEffect(() => {
+    setOrder(null);
+    setHasSnapshot(false);
     if (!tableId) return;
     closedByEffectRef.current = false;
 
