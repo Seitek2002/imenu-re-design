@@ -10,6 +10,11 @@ interface Props {
   img: string;
   venueSlug: string;
   slug: string;
+  // Если задан, элемент — подкатегория. Ведём на страницу родителя с якорем,
+  // чтобы пользователь видел соседние подкатегории и работал scroll-spy.
+  parentSlug?: string;
+  // "−20%" / "%" — если в категории есть товары с активным промо.
+  promoLabel?: string | null;
   isLarge: boolean;
   isPriority?: boolean;
   id: number;
@@ -20,14 +25,20 @@ const ContentItem: FC<Props> = ({
   img,
   venueSlug,
   slug,
+  parentSlug,
+  promoLabel,
   isLarge,
   isPriority,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const href = parentSlug
+    ? `/${venueSlug}/products/${parentSlug}#subcat-${slug}`
+    : `/${venueSlug}/products/${slug}`;
+
   return (
     <Link
-      href={`/${venueSlug}/products/${slug}`}
+      href={href}
       className={`
         relative rounded-2xl bg-[#F6F6F6] overflow-hidden p-3 flex flex-col justify-between
         active:scale-95 transition-transform isolate
@@ -42,6 +53,12 @@ const ContentItem: FC<Props> = ({
       >
         {name}
       </span>
+
+      {promoLabel && (
+        <div className='absolute top-1.5 left-1.5 z-20 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md shadow-sm'>
+          {promoLabel}
+        </div>
+      )}
 
       <div
         className={`

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Header from '@/app/components/Header';
+import SearchOverlay from '@/app/components/SearchOverlay';
 import CategoriesSkeleton from './components/CategoriesSkeleton';
 import CategoryFetcher from './components/CategoryFetcher';
 import { VenueService } from '@/services/venue.service';
@@ -35,7 +36,7 @@ async function ResolvedHeader({
   } catch {
     /* fallback */
   }
-  return <Header title={title} />;
+  return <Header title={title} showSearch={true} />;
 }
 
 export default async function CategoriesPage({ params }: PageProps) {
@@ -47,7 +48,7 @@ export default async function CategoriesPage({ params }: PageProps) {
 
   return (
     <main className='px-2.5 min-h-svh pb-28 bg-[#F8F6F7]'>
-      <Suspense fallback={<Header title={fallbackTitle} />}>
+      <Suspense fallback={<Header title={fallbackTitle} showSearch={true} />}>
         <ResolvedHeader
           venue={venue}
           sectionId={sectionId}
@@ -56,9 +57,11 @@ export default async function CategoriesPage({ params }: PageProps) {
         />
       </Suspense>
 
-      <Suspense fallback={<CategoriesSkeleton />}>
-        <CategoryFetcher venue={venue} id={id} />
-      </Suspense>
+      <SearchOverlay>
+        <Suspense fallback={<CategoriesSkeleton />}>
+          <CategoryFetcher venue={venue} id={id} />
+        </Suspense>
+      </SearchOverlay>
     </main>
   );
 }

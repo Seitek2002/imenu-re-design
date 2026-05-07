@@ -1,60 +1,80 @@
 'use client';
 
-import { useMemo, useRef, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Swiper as SwiperType } from 'swiper/types';
-
-import 'swiper/css';
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 
 import Goods from './Goods';
 import Category from './Category';
 import { Product, Category as CategoryType } from '@/types/api';
 import { useUIStore } from '@/store/ui';
+import { useVenueStore } from '@/store/venue';
+import { usePromotionsV2 } from '@/lib/api/queries';
+import { findActivePromotionForProduct } from '@/lib/promotions';
+
+// Виртуальные группы — синтетические "категории" с отрицательным id, чтобы
+// не пересекаться с реальными. Слаги никогда не попадают в URL.
+const VIRTUAL_DISCOUNTS_ID = -2;
+const VIRTUAL_POPULAR_ID = -1;
+const VIRTUAL_DISCOUNTS_SLUG = '__discounts__';
+const VIRTUAL_POPULAR_SLUG = '__popular__';
+
+function makeVirtualParent(
+  id: number,
+  slug: string,
+  name: string,
+): CategoryType {
+  return {
+    id,
+    slug,
+    categoryName: name,
+    parentCategory: null,
+    categoryPhoto: '',
+    categoryPhotoSmall: '',
+  };
+}
 
 interface Props {
   products: Product[];
-  categories: CategoryType[]; // top-level категории (родители)
+  categories: CategoryType[];
   venueSlug: string;
   initialSlug: string;
 }
 
-type ParentSlide = {
+type ParentGroup = {
   parent: CategoryType;
   sections: { category: CategoryType; products: Product[] }[];
+  totalCount: number;
 };
 
-const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
-  const swiperRef = useRef<SwiperType | null>(null);
-  const router = useRouter();
+const PARENT_ID_PREFIX = 'parent-';
 
-  const { parentSlides, initialParentIdx, initialChildSlug } = useMemo(() => {
-    const slides: ParentSlide[] = [];
+const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
+  const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
+  const spotId = useVenueStore((s) => s.spotId);
+  const { data: promotions } = usePromotionsV2(venueSlug, spotId);
+  const tCat = useTranslations('Categories');
+  const isProgrammaticScrollRef = useRef(false);
+
+  const { parentGroups, initialChildSlug } = useMemo(() => {
+    const groups: ParentGroup[] = [];
 
     for (const parent of categories) {
       const children = parent.children ?? [];
       const childIdSet = new Set(children.map((c) => c.id));
+      const sections: ParentGroup['sections'] = [];
 
-      const sections: ParentSlide['sections'] = [];
-
-      // Продукты, привязанные к родителю напрямую (минуя детей)
       const parentOnlyProducts = products.filter((p) => {
         const inParent = p.categories?.some((c) => c.id === parent.id);
         if (!inParent) return false;
-        // если продукт принадлежит какому-то ребёнку этого родителя, не дублируем
         return !p.categories?.some((c) => childIdSet.has(c.id));
       });
 
       if (children.length === 0) {
-        // Родитель без детей — одна плоская лента под именем родителя
         const all = products.filter((p) =>
           p.categories?.some((c) => c.id === parent.id),
         );
-        if (all.length > 0) {
-          sections.push({ category: parent, products: all });
-        }
+        if (all.length > 0) sections.push({ category: parent, products: all });
       } else {
-        // Родитель + дети — секции по каждой подкатегории
         if (parentOnlyProducts.length > 0) {
           sections.push({ category: parent, products: parentOnlyProducts });
         }
@@ -69,137 +89,224 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
       }
 
       if (sections.length > 0) {
-        slides.push({ parent, sections });
+        const totalCount = sections.reduce(
+          (s, sec) => s + sec.products.length,
+          0,
+        );
+        groups.push({ parent, sections, totalCount });
       }
     }
 
-    // Ищем, к какому родителю относится initialSlug
-    let parentIdx = 0;
     let childSlug: string | null = null;
-
-    for (let i = 0; i < slides.length; i++) {
-      const slide = slides[i];
-      if (slide.parent.slug === initialSlug) {
-        parentIdx = i;
-        break;
-      }
-      const hit = slide.sections.find(
-        (s) => s.category.slug === initialSlug && s.category.id !== slide.parent.id,
+    for (const g of groups) {
+      const hit = g.sections.find(
+        (s) =>
+          s.category.slug === initialSlug && s.category.id !== g.parent.id,
       );
       if (hit) {
-        parentIdx = i;
         childSlug = initialSlug;
         break;
       }
     }
 
-    return {
-      parentSlides: slides,
-      initialParentIdx: parentIdx,
-      initialChildSlug: childSlug,
-    };
+    return { parentGroups: groups, initialChildSlug: childSlug };
   }, [products, categories, initialSlug]);
 
-  const [activeIndex, setActiveIndex] = useState(initialParentIdx);
-  const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
+  // Виртуальные группы: «Со скидкой» (промо) и «Хиты» (isRecommended).
+  // Появляются автоматически если есть подходящие товары.
+  const virtualGroups = useMemo(() => {
+    const groups: ParentGroup[] = [];
 
-  // Синхронизируем заголовок Header с активным родителем
-  useEffect(() => {
-    const parent = parentSlides[activeIndex]?.parent;
-    if (parent) setHeaderTitleOverride(parent.categoryName);
-    return () => setHeaderTitleOverride(null);
-  }, [activeIndex, parentSlides, setHeaderTitleOverride]);
-
-  // При открытии с child-слагом скроллим к нужной подкатегории
-  useEffect(() => {
-    if (!initialChildSlug) return;
-    const el = document.getElementById(`subcat-${initialChildSlug}`);
-    if (el) {
-      // requestAnimationFrame — чтобы Swiper успел отрендерить текущий слайд
-      requestAnimationFrame(() => {
-        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+    const promoProducts = products.filter((p) =>
+      findActivePromotionForProduct(p, promotions),
+    );
+    if (promoProducts.length > 0) {
+      const parent = makeVirtualParent(
+        VIRTUAL_DISCOUNTS_ID,
+        VIRTUAL_DISCOUNTS_SLUG,
+        tCat('discounts'),
+      );
+      groups.push({
+        parent,
+        sections: [{ category: parent, products: promoProducts }],
+        totalCount: promoProducts.length,
       });
     }
-  }, [initialChildSlug]);
 
-  const handleSlideChange = (swiper: SwiperType) => {
-    const newIndex = swiper.activeIndex;
-    setActiveIndex(newIndex);
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    const parent = parentSlides[newIndex]?.parent;
-    if (parent) {
-      router.replace(`/${venueSlug}/products/${parent.slug}`, { scroll: false });
+    const popularProducts = products.filter((p) => p.isRecommended);
+    if (popularProducts.length > 0) {
+      const parent = makeVirtualParent(
+        VIRTUAL_POPULAR_ID,
+        VIRTUAL_POPULAR_SLUG,
+        tCat('popular'),
+      );
+      groups.push({
+        parent,
+        sections: [{ category: parent, products: popularProducts }],
+        totalCount: popularProducts.length,
+      });
     }
-  };
 
-  const handleParentClick = (idx: number) => {
-    setActiveIndex(idx);
-    swiperRef.current?.slideTo(idx);
-  };
+    return groups;
+  }, [products, promotions, tCat]);
 
-  const parentList = parentSlides.map((s) => s.parent);
-  const activeParentSlug = parentSlides[activeIndex]?.parent.slug ?? '';
+  const allParentGroups = useMemo(
+    () => [...virtualGroups, ...parentGroups],
+    [virtualGroups, parentGroups],
+  );
+
+  const initialActiveSlug = useMemo(() => {
+    const direct = allParentGroups.find((g) => g.parent.slug === initialSlug);
+    if (direct) return direct.parent.slug;
+    if (initialChildSlug) {
+      const owner = allParentGroups.find((g) =>
+        g.sections.some((s) => s.category.slug === initialChildSlug),
+      );
+      if (owner) return owner.parent.slug;
+    }
+    return allParentGroups[0]?.parent.slug ?? '';
+  }, [allParentGroups, initialSlug, initialChildSlug]);
+
+  const [activeSlug, setActiveSlug] = useState(initialActiveSlug);
+
+  useEffect(() => {
+    const group = allParentGroups.find((g) => g.parent.slug === activeSlug);
+    if (group) setHeaderTitleOverride(group.parent.categoryName);
+    return () => setHeaderTitleOverride(null);
+  }, [activeSlug, allParentGroups, setHeaderTitleOverride]);
+
+  // Initial scroll: к подкатегории либо из path-slug (legacy ссылки),
+  // либо из hash вида #subcat-{slug} (новые ссылки с страницы категорий).
+  useEffect(() => {
+    const hash = window.location.hash;
+    const fromHash = hash.startsWith('#subcat-')
+      ? decodeURIComponent(hash.slice('#subcat-'.length))
+      : null;
+    const target = initialChildSlug ?? fromHash;
+    if (!target) return;
+    const el = document.getElementById(`subcat-${target}`);
+    if (!el) return;
+    isProgrammaticScrollRef.current = true;
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'instant', block: 'start' });
+      window.setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, 300);
+    });
+    // run once after first paint
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Scroll-spy: highlight the parent whose top edge crosses the band just
+  // below the sticky header+tabs.
+  useEffect(() => {
+    if (allParentGroups.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isProgrammaticScrollRef.current) return;
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length === 0) return;
+        const topmost = visible.reduce((a, b) =>
+          a.boundingClientRect.top < b.boundingClientRect.top ? a : b,
+        );
+        const slug = topmost.target.getAttribute('data-parent-slug');
+        if (slug) setActiveSlug(slug);
+      },
+      {
+        rootMargin: '-130px 0px -60% 0px',
+        threshold: 0,
+      },
+    );
+
+    allParentGroups.forEach((g) => {
+      const el = document.getElementById(`${PARENT_ID_PREFIX}${g.parent.slug}`);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [allParentGroups]);
+
+  const handleTabClick = useCallback(
+    (idx: number) => {
+      const group = allParentGroups[idx];
+      if (!group) return;
+      const el = document.getElementById(
+        `${PARENT_ID_PREFIX}${group.parent.slug}`,
+      );
+      if (!el) return;
+
+      isProgrammaticScrollRef.current = true;
+      setActiveSlug(group.parent.slug);
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Виртуальные группы (id < 0) не должны попадать в URL — их слаги
+      // синтетические и не резолвятся бэкендом/маршрутом.
+      if (group.parent.id >= 0) {
+        window.history.replaceState(
+          null,
+          '',
+          `/${venueSlug}/products/${group.parent.slug}`,
+        );
+      }
+      window.setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, 700);
+    },
+    [allParentGroups, venueSlug],
+  );
+
+  if (allParentGroups.length === 0) return null;
+
+  const tabCategories = allParentGroups.map((g) => g.parent);
+  const tabCounts = allParentGroups.map((g) => g.totalCount);
 
   return (
     <div className='bg-white rounded-t-4xl mt-1.5 pb-40 border-t border-gray-100'>
       <div className='sticky top-18 z-30 bg-white shadow-sm'>
         <div className='pt-2'>
           <Category
-            categories={parentList}
-            activeSlug={activeParentSlug}
-            onSelect={handleParentClick}
+            categories={tabCategories}
+            counts={tabCounts}
+            activeSlug={activeSlug}
+            onSelect={handleTabClick}
           />
         </div>
       </div>
 
-      <div>
-        <Swiper
-          modules={[]}
-          className='w-full'
-          spaceBetween={16}
-          slidesPerView={1}
-          initialSlide={initialParentIdx}
-          threshold={20}
-          touchRatio={0.5}
-          autoHeight
-          onSwiper={(swiper) => {
-            swiperRef.current = swiper;
-          }}
-          onSlideChange={handleSlideChange}
-        >
-          {parentSlides.map((slide, index) => {
-            const isNearby = Math.abs(index - activeIndex) <= 1;
+      <div className='flex flex-col gap-10 pt-4'>
+        {allParentGroups.map((group) => (
+          <div
+            key={group.parent.id}
+            id={`${PARENT_ID_PREFIX}${group.parent.slug}`}
+            data-parent-slug={group.parent.slug}
+            className='scroll-mt-36'
+          >
+            <div className='flex flex-col gap-8'>
+              {group.sections.map((section) => {
+                const isVirtual = group.parent.id < 0;
+                const showHeader =
+                  isVirtual ||
+                  group.sections.length > 1 ||
+                  section.category.id !== group.parent.id;
 
-            return (
-              <SwiperSlide key={slide.parent.id}>
-                <div className='pb-10' hidden={!isNearby}>
-                  <div className='flex flex-col gap-8 pt-4'>
-                    {slide.sections.map((section) => {
-                      const showHeader =
-                        slide.sections.length > 1 ||
-                        section.category.id !== slide.parent.id;
-
-                      return (
-                        <section
-                          key={section.category.id}
-                          id={`subcat-${section.category.slug}`}
-                          className='scroll-mt-36'
-                        >
-                          {showHeader && (
-                            <h2 className='text-xl font-bold text-[#21201F] mb-3 px-2.5'>
-                              {section.category.categoryName}
-                            </h2>
-                          )}
-                          <Goods products={section.products} />
-                        </section>
-                      );
-                    })}
-                  </div>
-                </div>
-              </SwiperSlide>
-            );
-          })}
-        </Swiper>
+                return (
+                  <section
+                    key={section.category.id}
+                    id={`subcat-${section.category.slug}`}
+                    className='scroll-mt-36'
+                  >
+                    {showHeader && (
+                      <h2 className='text-xl font-bold text-[#21201F] mb-3 px-2.5'>
+                        {section.category.categoryName}
+                      </h2>
+                    )}
+                    <Goods products={section.products} />
+                  </section>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
