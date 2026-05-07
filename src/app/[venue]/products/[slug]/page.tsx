@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import Header from '@/app/components/Header'; // Твой обновленный Header с лупой
 import ContentSkeleton from './components/ContentSkeleton';
 import ProductContentFetcher from './components/ProductContentFetcher';
-import ProductsContentWrapper from './ProductsContentWrapper';
+import SearchOverlay from '@/app/components/SearchOverlay';
 import { VenueService } from '@/services/venue.service';
 import { getLocale, getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/locale';
@@ -91,11 +91,11 @@ export default async function ProductsPage({ params }: Props) {
 
       {/* Модалка товара теперь живет в [venue]/layout.tsx */}
 
-      <ProductsContentWrapper>
+      <SearchOverlay>
         <Suspense fallback={<ContentSkeleton />}>
           <ProductContentFetcher venue={venue} slug={slug} />
         </Suspense>
-      </ProductsContentWrapper>
+      </SearchOverlay>
     </main>
   );
 }

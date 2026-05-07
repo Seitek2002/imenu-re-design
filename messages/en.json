@@ -157,7 +157,10 @@
     "other": "Other",
     "viewAll": "All →",
     "empty": "No categories in this section yet",
-    "defaultTitle": "Menu"
+    "defaultTitle": "Menu",
+    "popular": "Popular",
+    "discounts": "On Sale",
+    "loading": "Loading menu…"
   },
   "OrderStatus": {
     "header": "Order #{id}",

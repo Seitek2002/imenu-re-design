@@ -64,8 +64,15 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
   }
 
   // Берём только top-level в рамках секции (children раскрываются внутри Content).
+  // Исключение: если перешли по slug категории, у которой parent тоже есть
+  // в catMap (категория одновременно top-level и child) — оставляем её как
+  // отдельный parent-таб, иначе она бы потерялась и активным становился
+  // первый таб секции.
   const categories = Array.from(catMap.values()).filter(
-    (c) => !c.parentCategory || !catMap.has(c.parentCategory),
+    (c) =>
+      !c.parentCategory ||
+      !catMap.has(c.parentCategory) ||
+      c.slug === slug,
   );
 
   return (

@@ -206,7 +206,7 @@ export const useVenueProducts = (
   });
 };
 
-async function fetchPromotions(
+export async function fetchPromotions(
   venueSlug: string,
   spotId: number | null | undefined,
   locale: Locale,

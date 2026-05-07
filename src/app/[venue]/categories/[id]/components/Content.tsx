@@ -17,9 +17,17 @@ export type CategoryLayout =
 interface Props {
   venueSlug: string;
   layout: CategoryLayout;
+  // catId → лейбл бейджа (e.g. "−20%" или "%"). Считается на сервере.
+  promoLabelByCatId?: Record<number, string>;
 }
 
-function renderGrid(items: Category[], venueSlug: string, offset = 0) {
+function renderGrid(
+  items: Category[],
+  venueSlug: string,
+  promoLabelByCatId: Record<number, string> | undefined,
+  offset = 0,
+  parentSlug?: string,
+) {
   return (
     <div className='grid grid-cols-6 gap-3'>
       {items.map((item, index) => {
@@ -40,6 +48,8 @@ function renderGrid(items: Category[], venueSlug: string, offset = 0) {
             }
             venueSlug={venueSlug}
             slug={item.slug}
+            parentSlug={parentSlug}
+            promoLabel={promoLabelByCatId?.[item.id] ?? null}
             isLarge={isLarge}
             isPriority={globalIndex < 5}
           />
@@ -49,7 +59,7 @@ function renderGrid(items: Category[], venueSlug: string, offset = 0) {
   );
 }
 
-const Content = ({ venueSlug, layout }: Props) => {
+const Content = ({ venueSlug, layout, promoLabelByCatId }: Props) => {
   const t = useTranslations('Categories');
   const isEmpty =
     (layout.mode === 'flat' && layout.items.length === 0) ||
@@ -66,7 +76,7 @@ const Content = ({ venueSlug, layout }: Props) => {
   return (
     <div className='bg-white rounded-4xl p-4 pb-28 shadow-sm mt-4'>
       {layout.mode === 'flat' ? (
-        renderGrid(layout.items, venueSlug)
+        renderGrid(layout.items, venueSlug, promoLabelByCatId)
       ) : (
         <div className='flex flex-col gap-6'>
           {layout.groups.map((group, groupIdx) => {
@@ -99,7 +109,13 @@ const Content = ({ venueSlug, layout }: Props) => {
                     </h2>
                   )
                 )}
-                {renderGrid(group.items, venueSlug, offset)}
+                {renderGrid(
+                  group.items,
+                  venueSlug,
+                  promoLabelByCatId,
+                  offset,
+                  group.parent?.slug,
+                )}
               </section>
             );
           })}

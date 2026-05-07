@@ -5,11 +5,12 @@ import { Category as CategoryType } from '@/types/api';
 
 interface Props {
   categories: CategoryType[];
+  counts?: number[];
   activeSlug: string;
   onSelect: (index: number) => void;
 }
 
-const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
+const Category: FC<Props> = ({ categories, counts, activeSlug, onSelect }) => {
   const scrollContainerRef = useRef<HTMLElement>(null);
   const activeBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -74,6 +75,7 @@ const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
     >
       {categories.map((item, i) => {
         const isActive = item.slug === activeSlug;
+        const count = counts?.[i];
         return (
           <button
             key={item.id}
@@ -93,11 +95,16 @@ const Category: FC<Props> = ({ categories, activeSlug, onSelect }) => {
               ${
                 isActive
                   ? 'text-[#21201F] font-bold border-b-2 border-[#21201F]'
-                  : 'text-[#757575] font-medium border-b-2 border-transparent hover:text-gray-600'
+                  : 'text-[#5C5C5C] font-medium border-b-2 border-transparent hover:text-[#21201F]'
               }
             `}
           >
             {item.categoryName}
+            {count != null && count > 0 && (
+              <span className='ml-1.5 text-sm font-normal text-[#9A9A9A]'>
+                · {count}
+              </span>
+            )}
           </button>
         );
       })}

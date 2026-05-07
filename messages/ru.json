@@ -157,7 +157,10 @@
     "other": "Остальное",
     "viewAll": "Все →",
     "empty": "В этом разделе пока нет категорий",
-    "defaultTitle": "Меню"
+    "defaultTitle": "Меню",
+    "popular": "Хиты",
+    "discounts": "Со скидкой",
+    "loading": "Загружаем меню…"
   },
   "OrderStatus": {
     "header": "Заказ #{id}",

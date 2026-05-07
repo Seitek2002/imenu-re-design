@@ -157,7 +157,10 @@
     "other": "Башкалар",
     "viewAll": "Баары →",
     "empty": "Бул бөлүмдө азырынча категориялар жок",
-    "defaultTitle": "Меню"
+    "defaultTitle": "Меню",
+    "popular": "Хиттер",
+    "discounts": "Арзандатуу менен",
+    "loading": "Меню жүктөлүүдө…"
   },
   "OrderStatus": {
     "header": "Буйрутма #{id}",
