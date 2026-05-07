@@ -66,7 +66,7 @@ const ContentItem: FC<Props> = ({
         ${
           isLarge
             ? 'w-24 h-24 self-end -mb-4 -mr-2'
-            : 'w-full h-14 mt-1 self-center'
+            : 'w-full h-12 self-center'
         }
       `}
       >

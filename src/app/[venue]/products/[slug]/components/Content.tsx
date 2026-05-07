@@ -183,8 +183,11 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
       ? decodeURIComponent(hash.slice('#subcat-'.length))
       : null;
     const target = initialChildSlug ?? fromHash;
-    if (!target) return;
-    const el = document.getElementById(`subcat-${target}`);
+    const el = target
+      ? document.getElementById(`subcat-${target}`)
+      : initialSlug
+        ? document.getElementById(`${PARENT_ID_PREFIX}${initialSlug}`)
+        : null;
     if (!el) return;
     isProgrammaticScrollRef.current = true;
     requestAnimationFrame(() => {

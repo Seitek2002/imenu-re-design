@@ -159,7 +159,8 @@
     "empty": "No categories in this section yet",
     "defaultTitle": "Menu",
     "popular": "Popular",
-    "discounts": "On Sale"
+    "discounts": "On Sale",
+    "loading": "Loading menu…"
   },
   "OrderStatus": {
     "header": "Order #{id}",
