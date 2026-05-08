@@ -49,6 +49,7 @@ export interface PaymentLinkResponse {
 
 async function createPaymentLink(
   orderId: number,
+  phone: string,
   locale: Locale,
 ): Promise<PaymentLinkResponse> {
   const res = await fetch(`${API_V2_URL}/pos-orders/${orderId}/payment-link/`, {
@@ -57,6 +58,7 @@ async function createPaymentLink(
       'Content-Type': 'application/json',
       'Accept-Language': locale,
     },
+    body: JSON.stringify({ phone }),
   });
 
   if (!res.ok) {
@@ -73,6 +75,7 @@ export const useCreatePosPaymentLink = () => {
   const locale = useLocale() as Locale;
 
   return useMutation({
-    mutationFn: (orderId: number) => createPaymentLink(orderId, locale),
+    mutationFn: ({ orderId, phone }: { orderId: number; phone: string }) =>
+      createPaymentLink(orderId, phone, locale),
   });
 };
