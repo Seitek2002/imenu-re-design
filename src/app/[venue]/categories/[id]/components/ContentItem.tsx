@@ -14,8 +14,6 @@ interface Props {
   // Если задан, элемент — подкатегория. Ведём на страницу родителя с якорем,
   // чтобы пользователь видел соседние подкатегории и работал scroll-spy.
   parentSlug?: string;
-  // "−20%" / "%" — если в категории есть товары с активным промо.
-  promoLabel?: string | null;
   // Число товаров в категории. 0 → бейдж не показываем.
   productCount?: number;
   isLarge: boolean;
@@ -30,7 +28,6 @@ const ContentItem: FC<Props> = ({
   venueSlug,
   slug,
   parentSlug,
-  promoLabel,
   productCount = 0,
   isLarge,
   isCover,
@@ -73,11 +70,6 @@ const ContentItem: FC<Props> = ({
               </span>
             )}
           </div>
-          {promoLabel && (
-            <div className='absolute top-2 left-2 z-20 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md shadow-sm'>
-              {promoLabel}
-            </div>
-          )}
         </Link>
       );
     }
@@ -101,11 +93,6 @@ const ContentItem: FC<Props> = ({
           )}
         </div>
         <span className='flex items-center gap-1 text-brand text-sm font-medium shrink-0'>
-          {promoLabel && (
-            <span className='bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md mr-1'>
-              {promoLabel}
-            </span>
-          )}
           <svg width='16' height='16' viewBox='0 0 24 24' fill='none' aria-hidden>
             <path d='M9 6l6 6-6 6' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round' />
           </svg>
@@ -151,12 +138,6 @@ const ContentItem: FC<Props> = ({
             </>
           )}
 
-          {promoLabel && (
-            <div className='absolute top-1.5 left-1.5 z-20 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md shadow-sm'>
-              {promoLabel}
-            </div>
-          )}
-
           <div className='relative z-10 flex flex-col items-center gap-0.5'>
             <span className='text-[#21201F] font-bold text-base leading-tight text-center break-words line-clamp-3'>
               {name}
@@ -185,12 +166,6 @@ const ContentItem: FC<Props> = ({
               </span>
             )}
           </div>
-
-          {promoLabel && (
-            <div className='absolute top-1.5 left-1.5 z-20 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md shadow-sm'>
-              {promoLabel}
-            </div>
-          )}
 
           <div className='relative w-full h-12 self-center'>
             {!isPriority && !isLoaded && (
@@ -253,12 +228,6 @@ const ContentItem: FC<Props> = ({
           </>
         )}
 
-        {promoLabel && (
-          <div className='absolute top-1.5 left-1.5 z-20 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md shadow-sm'>
-            {promoLabel}
-          </div>
-        )}
-
         <div className='relative z-10 flex flex-col items-center gap-0.5'>
           <span className='text-[#21201F] font-bold text-lg leading-tight text-center break-words line-clamp-3'>
             {name}
@@ -287,12 +256,6 @@ const ContentItem: FC<Props> = ({
             </span>
           )}
         </div>
-
-        {promoLabel && (
-          <div className='absolute top-1.5 left-1.5 z-20 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-md shadow-sm'>
-            {promoLabel}
-          </div>
-        )}
 
         <div className='relative w-24 h-24 self-end -mb-4 -mr-2'>
           {!isPriority && !isLoaded && (

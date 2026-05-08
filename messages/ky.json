@@ -159,7 +159,6 @@
     "empty": "Бул бөлүмдө азырынча категориялар жок",
     "defaultTitle": "Меню",
     "popular": "Хиттер",
-    "discounts": "Арзандатуу менен",
     "loading": "Меню жүктөлүүдө…",
     "itemsCount": "{count, plural, other {# тамак}}"
   },

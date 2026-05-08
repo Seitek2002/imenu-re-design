@@ -37,20 +37,44 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
       o.status !== OrderStatus.Cancelled,
   ) ?? [];
 
-  const hasActiveOrders = activeOrders.length > 0;
+  // Самый срочный = с максимальным прогрессом (ближе всего к готовности).
+  // Так пользователь видит то, что вот-вот изменится; остальные доступны в /history.
+  const featuredOrder = activeOrders.length
+    ? activeOrders.reduce((best, o) =>
+        calculateOrderProgress(o.status, o.serviceMode) >
+        calculateOrderProgress(best.status, best.serviceMode)
+          ? o
+          : best,
+      )
+    : null;
+
+  const extraCount = Math.max(0, activeOrders.length - 1);
+  const hasActiveOrders = featuredOrder !== null;
 
   return (
     <>
       <div className='home-widgets bg-white rounded-4xl p-4 mt-2 flex gap-2 overflow-x-auto snap-x no-scrollbar'>
         {hasActiveOrders ? (
-          activeOrders.map((order) => {
-            const progress = calculateOrderProgress(order.status, order.serviceMode);
+          (() => {
+            const progress = calculateOrderProgress(
+              featuredOrder.status,
+              featuredOrder.serviceMode,
+            );
+            // Если активных > 1, виджет ведёт на список (история), иначе — на конкретный заказ.
+            const href =
+              extraCount > 0
+                ? `/${venueSlug}/history`
+                : `/${venueSlug}/order-status/${featuredOrder.id}`;
             return (
               <Link
-                key={order.id}
-                href={`/${venueSlug}/order-status/${order.id}`}
+                href={href}
                 className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden group'
               >
+                {extraCount > 0 && (
+                  <span className='absolute top-1.5 right-1.5 z-30 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-full shadow-sm'>
+                    +{extraCount}
+                  </span>
+                )}
                 <div className='text-[#0404138C] font-bold text-xs mb-2 relative z-10 leading-tight'>
                   {t('orderStatus')}
                 </div>
@@ -73,7 +97,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
                 </div>
               </Link>
             );
-          })
+          })()
         ) : (
           <Link
             href={`/${venueSlug}/history`}

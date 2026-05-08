@@ -7,15 +7,10 @@ import Goods from './Goods';
 import Category from './Category';
 import { Product, Category as CategoryType } from '@/types/api';
 import { useUIStore } from '@/store/ui';
-import { useVenueStore } from '@/store/venue';
-import { usePromotionsV2 } from '@/lib/api/queries';
-import { findActivePromotionForProduct } from '@/lib/promotions';
 
 // Виртуальные группы — синтетические "категории" с отрицательным id, чтобы
 // не пересекаться с реальными. Слаги никогда не попадают в URL.
-const VIRTUAL_DISCOUNTS_ID = -2;
 const VIRTUAL_POPULAR_ID = -1;
-const VIRTUAL_DISCOUNTS_SLUG = '__discounts__';
 const VIRTUAL_POPULAR_SLUG = '__popular__';
 
 function makeVirtualParent(
@@ -50,8 +45,6 @@ const PARENT_ID_PREFIX = 'parent-';
 
 const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
-  const spotId = useVenueStore((s) => s.spotId);
-  const { data: promotions } = usePromotionsV2(venueSlug, spotId);
   const tCat = useTranslations('Categories');
   const isProgrammaticScrollRef = useRef(false);
 
@@ -112,26 +105,10 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     return { parentGroups: groups, initialChildSlug: childSlug };
   }, [products, categories, initialSlug]);
 
-  // Виртуальные группы: «Со скидкой» (промо) и «Хиты» (isRecommended).
-  // Появляются автоматически если есть подходящие товары.
+  // Виртуальная группа «Хиты» (isRecommended). Появляется автоматически,
+  // если есть подходящие товары.
   const virtualGroups = useMemo(() => {
     const groups: ParentGroup[] = [];
-
-    const promoProducts = products.filter((p) =>
-      findActivePromotionForProduct(p, promotions),
-    );
-    if (promoProducts.length > 0) {
-      const parent = makeVirtualParent(
-        VIRTUAL_DISCOUNTS_ID,
-        VIRTUAL_DISCOUNTS_SLUG,
-        tCat('discounts'),
-      );
-      groups.push({
-        parent,
-        sections: [{ category: parent, products: promoProducts }],
-        totalCount: promoProducts.length,
-      });
-    }
 
     const popularProducts = products.filter((p) => p.isRecommended);
     if (popularProducts.length > 0) {
@@ -148,7 +125,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     }
 
     return groups;
-  }, [products, promotions, tCat]);
+  }, [products, tCat]);
 
   const allParentGroups = useMemo(
     () => [...virtualGroups, ...parentGroups],
@@ -169,9 +146,8 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
 
   const [activeSlug, setActiveSlug] = useState(initialActiveSlug);
 
-  // Если состав групп изменился (например, promotions подгрузились асинхронно
-  // и появилась/исчезла виртуальная группа "Со скидкой"), и текущий activeSlug
-  // больше не существует — выравниваем на актуальный initialActiveSlug.
+  // Если состав групп изменился и текущий activeSlug больше не существует —
+  // выравниваем на актуальный initialActiveSlug.
   useEffect(() => {
     const stillExists = allParentGroups.some(
       (g) => g.parent.slug === activeSlug,

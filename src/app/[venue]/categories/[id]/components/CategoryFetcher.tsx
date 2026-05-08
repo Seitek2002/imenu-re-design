@@ -1,8 +1,6 @@
 import Content, { CategoryGroup, CategoryLayout } from './Content';
 import { VenueService } from '@/services/venue.service';
-import { Category, Product, Promotion } from '@/types/api';
-import { fetchPromotions } from '@/lib/api/queries';
-import { findActivePromotionForProduct } from '@/lib/promotions';
+import { Category } from '@/types/api';
 import { readSpotCookie } from '@/lib/spot-cookie.server';
 import { getLocale } from 'next-intl/server';
 import type { Locale } from '@/lib/locale';
@@ -67,51 +65,17 @@ function buildLayout(sectionCats: Category[]): CategoryLayout {
   return { mode: 'grouped', groups };
 }
 
-// Считаем для каждой категории «лучший» промо-лейбл: максимальный процент
-// скидки среди её товаров с активным промо. Если процентов нет, но есть
-// иной тип промо — отдаём дженерик-маркер.
-function buildPromoLabels(
-  products: Product[],
-  promotions: Promotion[],
-): Map<number, string> {
-  const data = new Map<number, { maxPct: number; hasGeneric: boolean }>();
-
-  for (const product of products) {
-    const promo = findActivePromotionForProduct(product, promotions);
-    if (!promo) continue;
-    const pct = promo.benefit.discountPercent ?? null;
-    for (const c of product.categories ?? []) {
-      const cur = data.get(c.id) ?? { maxPct: 0, hasGeneric: false };
-      if (pct != null) {
-        if (pct > cur.maxPct) cur.maxPct = pct;
-      } else {
-        cur.hasGeneric = true;
-      }
-      data.set(c.id, cur);
-    }
-  }
-
-  const labels = new Map<number, string>();
-  for (const [id, v] of data) {
-    if (v.maxPct > 0) labels.set(id, `−${v.maxPct}%`);
-    else if (v.hasGeneric) labels.set(id, '%');
-  }
-  return labels;
-}
-
 export default async function CategoryFetcher({ venue, id }: Props) {
   const locale = (await getLocale()) as Locale;
   const sectionId = Number(id);
   const spotId = await readSpotCookie(venue);
 
-  const [sectionCats, allProducts, promotions] = await Promise.all([
+  const [sectionCats, allProducts] = await Promise.all([
     VenueService.getCategoriesBySection(venue, sectionId, locale),
     VenueService.getAllProducts(venue, spotId, locale),
-    fetchPromotions(venue, spotId, locale).catch(() => [] as Promotion[]),
   ]);
 
   const layout = buildLayout(sectionCats);
-  const promoLabels = buildPromoLabels(allProducts, promotions);
 
   const productCountByCatId: Record<number, number> = {};
   for (const product of allProducts) {
@@ -124,7 +88,6 @@ export default async function CategoryFetcher({ venue, id }: Props) {
     <Content
       venueSlug={venue}
       layout={layout}
-      promoLabelByCatId={Object.fromEntries(promoLabels)}
       productCountByCatId={productCountByCatId}
     />
   );

@@ -16,8 +16,6 @@ export type CategoryLayout =
 interface Props {
   venueSlug: string;
   layout: CategoryLayout;
-  // catId → лейбл бейджа (e.g. "−20%" или "%"). Считается на сервере.
-  promoLabelByCatId?: Record<number, string>;
   // catId → число товаров в этой категории (по product.categories[].id).
   productCountByCatId?: Record<number, number>;
 }
@@ -25,7 +23,6 @@ interface Props {
 function renderGrid(
   items: Category[],
   venueSlug: string,
-  promoLabelByCatId: Record<number, string> | undefined,
   productCountByCatId: Record<number, number> | undefined,
   parent: Category | null,
   isFirstGroup: boolean,
@@ -48,7 +45,6 @@ function renderGrid(
           img={parent.categoryPhoto || parent.categoryPhotoSmall || '/placeholder.png'}
           venueSlug={venueSlug}
           slug={parent.slug}
-          promoLabel={promoLabelByCatId?.[parent.id] ?? null}
           productCount={parentCount}
           isLarge
           isCover
@@ -73,7 +69,6 @@ function renderGrid(
             venueSlug={venueSlug}
             slug={item.slug}
             parentSlug={parent?.slug}
-            promoLabel={promoLabelByCatId?.[item.id] ?? null}
             productCount={productCountByCatId?.[item.id] ?? 0}
             isLarge={isLarge}
             isPriority={isFirstGroup && index < 4}
@@ -84,7 +79,7 @@ function renderGrid(
   );
 }
 
-const Content = ({ venueSlug, layout, promoLabelByCatId, productCountByCatId }: Props) => {
+const Content = ({ venueSlug, layout, productCountByCatId }: Props) => {
   const t = useTranslations('Categories');
   const isEmpty =
     (layout.mode === 'flat' && layout.items.length === 0) ||
@@ -101,7 +96,7 @@ const Content = ({ venueSlug, layout, promoLabelByCatId, productCountByCatId }: 
   return (
     <div className='bg-white rounded-4xl p-4 pb-28 shadow-sm mt-4'>
       {layout.mode === 'flat' ? (
-        renderGrid(layout.items, venueSlug, promoLabelByCatId, productCountByCatId, null, true)
+        renderGrid(layout.items, venueSlug, productCountByCatId, null, true)
       ) : (
         <div className='flex flex-col gap-6'>
           {layout.groups.map((group, groupIdx) => (
@@ -114,7 +109,6 @@ const Content = ({ venueSlug, layout, promoLabelByCatId, productCountByCatId }: 
               {renderGrid(
                 group.items,
                 venueSlug,
-                promoLabelByCatId,
                 productCountByCatId,
                 group.parent,
                 groupIdx === 0,
