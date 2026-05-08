@@ -1,0 +1,65 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useBasketStore } from '@/store/basket';
+import { useUiFloatingStore } from '@/store/ui-floating';
+import { useMounted } from '@/hooks/useMounted';
+
+interface Props {
+  venueSlug: string;
+}
+
+export default function FloatingCartButton({ venueSlug }: Props) {
+  const mounted = useMounted();
+  const pathname = usePathname();
+  const t = useTranslations('Cart');
+
+  const totalPrice = useBasketStore((state) => state.getTotalPrice());
+  const totalCount = useBasketStore((state) => state.getItemCount());
+  const billBannerOpen = useUiFloatingStore((s) => s.billBannerOpen);
+
+  const isCartPage = pathname.endsWith('/cart');
+  const isTableOrderPage = pathname.includes('/table-order');
+
+  const isVisible =
+    mounted && totalCount > 0 && !isCartPage && !isTableOrderPage;
+
+  if (!mounted || totalCount === 0) return null;
+
+  return (
+    <div
+      className={`
+        fixed max-w-175 mx-auto left-0 right-0 z-30 px-4
+        transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)
+        ${
+          isVisible
+            ? 'translate-y-0 opacity-100 pointer-events-auto'
+            : 'translate-y-20 opacity-0 pointer-events-none'
+        }
+      `}
+      style={{ bottom: billBannerOpen ? '11rem' : '5rem' }}
+    >
+      <Link
+        href={`/${venueSlug}/cart`}
+        className='
+          flex items-center justify-between
+          w-full h-14 px-5
+          bg-brand text-white
+          rounded-full shadow-xl
+          active:scale-95 transition-transform
+        '
+      >
+        <div className='flex items-center gap-3'>
+          <div className='flex items-center justify-center w-6 h-6 bg-white/20 rounded-full text-xs font-bold'>
+            {totalCount}
+          </div>
+          <span className='font-medium text-sm'>{t('title')}</span>
+        </div>
+
+        <span className='font-bold text-sm'>{totalPrice} c.</span>
+      </Link>
+    </div>
+  );
+}

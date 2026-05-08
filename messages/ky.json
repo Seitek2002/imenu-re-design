@@ -32,6 +32,7 @@
     "delivery": "Жеткирүү",
     "totalDue": "Төлөө үчүн жалпы",
     "placeOrder": "Буйрутма берүү",
+    "bonusShort": "балл",
     "empty": {
       "title": "Себет бош",
       "hint": "Сунуштарыбыздан тандаңыз же менюга кайтыңыз",
@@ -53,6 +54,7 @@
       "spendBonus": "Балл пайдалануу",
       "available": "Жеткиликтүү: {amount}",
       "discount": "Жеңилдик:",
+      "earnBonus": "Балл кошобуз",
       "total": "Жалпы"
     },
     "promo": {
@@ -279,6 +281,8 @@
     "statusLabel": "Статус",
     "subtotal": "Жыйынтык",
     "total": "Бардыгы",
+    "earnBonus": "+{amount} балл",
+    "bonusShort": "балл",
     "paid": "Төлөнгөн",
     "remaining": "Калды",
     "currency": "c.",

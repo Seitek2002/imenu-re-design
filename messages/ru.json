@@ -32,6 +32,7 @@
     "delivery": "Доставка",
     "totalDue": "Итого к оплате",
     "placeOrder": "Оформить заказ",
+    "bonusShort": "баллов",
     "empty": {
       "title": "Корзина пуста",
       "hint": "Присмотрите что-нибудь из наших рекомендаций или зайдите в меню",
@@ -53,6 +54,7 @@
       "spendBonus": "Списать баллы",
       "available": "Доступно: {amount}",
       "discount": "Скидка:",
+      "earnBonus": "Начислим баллов",
       "total": "Итого"
     },
     "promo": {
@@ -279,6 +281,8 @@
     "statusLabel": "Статус",
     "subtotal": "Подытог",
     "total": "Итого",
+    "earnBonus": "+{amount} баллов",
+    "bonusShort": "баллов",
     "paid": "Оплачено",
     "remaining": "К оплате",
     "currency": "c.",

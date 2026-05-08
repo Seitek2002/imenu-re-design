@@ -127,6 +127,11 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const posTotal = toNumber(posOrder?.total);
   const posPaid = toNumber(posOrder?.paidAmount);
   const posRemaining = Math.max(0, posTotal - posPaid);
+
+  const venueData = useVenueStore((s) => s.data);
+  const accrualPercent = venueData?.isBonusSystemEnabled ? (venueData?.bonusAccrualPercent ?? 0) : 0;
+  const earnedDraftBonus = accrualPercent > 0 ? Math.floor((draftFinal * accrualPercent) / 100) : 0;
+  const earnedPosBonus = accrualPercent > 0 ? Math.floor((posRemaining * accrualPercent) / 100) : 0;
   const canPayPos = !!posOrder && posRemaining > 0;
 
   const onPayPos = async () => {
@@ -226,6 +231,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             title={t('posOrderLabel')}
             statusLabel={t('status.open')}
             sum={formatMoney(posOrder.subtotal)}
+            numericSum={toNumber(posOrder.subtotal)}
             currency={t('currency')}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
@@ -291,6 +297,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             statusLabel={t(statusKey(g.status))}
             statusTone={statusToneFor(g.status)}
             sum={formatMoney(g.totalPrice)}
+            numericSum={toNumber(g.totalPrice)}
             currency={t('currency')}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
@@ -340,6 +347,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             statusLabel={t('status.draft')}
             statusTone='draft'
             sum={formatMoney(draftFinal)}
+            numericSum={Number(draftFinal) || 0}
             currency={t('currency')}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
@@ -421,24 +429,38 @@ export default function CurrentOrderView({ venueSlug }: Props) {
           {hasDraft && (
             <button
               onClick={() => setCheckoutOpen(true)}
-              className='w-full bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-md flex items-center justify-center gap-2'
+              className='w-full bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-md flex flex-row items-center justify-center gap-2 leading-tight'
             >
-              {t('submitDraft', { amount: Math.round(draftFinal) })}
+              <span>{t('submitDraft', { amount: Math.round(draftFinal) })}</span>
+              {earnedDraftBonus > 0 && (
+                <span className='text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full bg-white/20'>
+                  +{earnedDraftBonus} {t('bonusShort')}
+                </span>
+              )}
             </button>
           )}
           {canPayPos && (
             <button
               onClick={onPayPos}
               disabled={paymentMutation.isPending}
-              className={`w-full font-bold h-12 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 ${
+              className={`w-full font-bold h-12 rounded-xl active:scale-95 transition-transform flex flex-row items-center justify-center gap-2 leading-tight disabled:opacity-50 ${
                 hasDraft
                   ? 'bg-white text-[#111111] border border-[#E7E7E7]'
                   : 'bg-brand text-white shadow-md'
               }`}
             >
-              {paymentMutation.isPending
-                ? t('payment.creating')
-                : t('payment.pay', { amount: Math.round(posRemaining) })}
+              {paymentMutation.isPending ? (
+                <span>{t('payment.creating')}</span>
+              ) : (
+                <>
+                  <span>{t('payment.pay', { amount: Math.round(posRemaining) })}</span>
+                  {earnedPosBonus > 0 && (
+                    <span className={`text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full ${hasDraft ? 'bg-black/5 text-[#111111]' : 'bg-white/20'}`}>
+                      +{earnedPosBonus} {t('bonusShort')}
+                    </span>
+                  )}
+                </>
+              )}
             </button>
           )}
           {!hasDraft && !canPayPos && (
@@ -518,6 +540,7 @@ interface TicketCardProps {
   statusLabel: string;
   statusTone?: 'draft' | 'progress' | 'done' | 'pending';
   sum: string;
+  numericSum: number;
   currency: string;
   children: React.ReactNode;
 }
@@ -529,9 +552,14 @@ function TicketCard({
   statusLabel,
   statusTone,
   sum,
+  numericSum,
   currency,
   children,
 }: TicketCardProps) {
+  const tt = useTranslations('TableOrder');
+  const venue = useVenueStore((s) => s.data);
+  const accrualPercent = venue?.isBonusSystemEnabled ? (venue?.bonusAccrualPercent ?? 0) : 0;
+  const earnedBonus = accrualPercent > 0 ? Math.floor((numericSum * accrualPercent) / 100) : 0;
   const stripeCls =
     stripe === 'brand'
       ? 'bg-brand'
@@ -566,7 +594,14 @@ function TicketCard({
       </div>
       <div className='px-4 pb-3'>{children}</div>
       <div className='px-4 py-2.5 bg-[#FAFAFA] border-t border-[#E7E7E7] flex justify-between items-center text-sm'>
-        <span className='text-[#6B6B6B]'>Σ</span>
+        <div className='flex items-center gap-2'>
+          <span className='text-[#6B6B6B]'>{tt('total')}</span>
+          {earnedBonus > 0 && (
+            <span className='text-[11px] font-semibold text-brand bg-brand/10 rounded-md px-1.5 py-0.5'>
+              {tt('earnBonus', { amount: earnedBonus })}
+            </span>
+          )}
+        </div>
         <span className='font-bold text-[#111111]'>
           {sum} {currency}
         </span>
