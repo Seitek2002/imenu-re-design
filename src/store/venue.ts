@@ -32,6 +32,8 @@ export interface Venue {
   spots: VenueSpot[];
   schedules: VenueSchedule[];
   colorTheme?: string;
+  isBonusSystemEnabled?: boolean;
+  bonusAccrualPercent?: number;
   table?: {
     id: number;
     tableNum: string;
@@ -83,6 +85,7 @@ export const useVenueStore = create<VenueState>()(
       storage: createJSONStorage(() => sessionStorage),
 
       partialize: (state) => ({
+        data: state.data,
         tableId: state.tableId,
         spotId: state.spotId,
         isKioskMode: state.isKioskMode,

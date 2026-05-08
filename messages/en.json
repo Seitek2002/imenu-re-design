@@ -32,6 +32,7 @@
     "delivery": "Delivery",
     "totalDue": "Total to pay",
     "placeOrder": "Place order",
+    "bonusShort": "points",
     "empty": {
       "title": "Your cart is empty",
       "hint": "Pick something from our recommendations or browse the menu",
@@ -53,6 +54,7 @@
       "spendBonus": "Use bonus points",
       "available": "Available: {amount}",
       "discount": "Discount:",
+      "earnBonus": "You'll earn",
       "total": "Total"
     },
     "promo": {
@@ -279,6 +281,8 @@
     "statusLabel": "Status",
     "subtotal": "Subtotal",
     "total": "Total",
+    "earnBonus": "+{amount} points",
+    "bonusShort": "points",
     "paid": "Paid",
     "remaining": "Due",
     "currency": "c.",

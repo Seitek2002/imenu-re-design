@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { BellRing, Loader2, CheckCircle } from 'lucide-react';
 import { useVenueStore } from '@/store/venue';
 import { useUiFloatingStore } from '@/store/ui-floating';
+import { useBasketStore } from '@/store/basket';
 import { API_V2_URL } from '@/lib/config';
 
 interface Props {
@@ -20,6 +21,7 @@ export default function MainAction({ venueSlug }: Props) {
   const tableId = useVenueStore((state) => state.tableId);
   const tableNumber = useVenueStore((state) => state.tableNumber);
   const billBannerOpen = useUiFloatingStore((s) => s.billBannerOpen);
+  const cartCount = useBasketStore((s) => s.getItemCount());
 
   // Состояния интерфейса
   const [showConfirm, setShowConfirm] = useState(false); // Модалка "Вы уверены?"
@@ -33,10 +35,15 @@ export default function MainAction({ venueSlug }: Props) {
 
   // На страницах с фиксированной CTA-плашкой (корзина, активный заказ стола)
   // дефолтное `bottom: 5rem` сажает колокольчик прямо на CTA — поднимаем выше.
+  const isCartPage = pathname.endsWith('/cart');
+  const isTableOrderPage = pathname.includes('/table-order');
+  const cartButtonVisible = cartCount > 0 && !isCartPage && !isTableOrderPage;
+
   const hasBottomCta =
     pathname.includes('/cart') ||
-    pathname.includes('/table-order') ||
-    billBannerOpen;
+    isTableOrderPage ||
+    billBannerOpen ||
+    cartButtonVisible;
 
   useEffect(() => {
     if (!tableId || !isMainPage) {

@@ -41,6 +41,7 @@ export default function BasketPage() {
   const { comment, setComment } = useCheckout();
   const tableNumber = useVenueStore((state) => state.tableNumber);
   const tableId = useVenueStore((state) => state.tableId);
+  const venueData = useVenueStore((state) => state.data);
   const params = useParams<{ venue: string }>();
   const venueSlug = params?.venue ?? '';
   const router = useRouter();
@@ -57,6 +58,9 @@ export default function BasketPage() {
     deliveryType: orderType,
     deliveryCost: deliveryPrice,
   });
+
+  const accrualPercent = venueData?.isBonusSystemEnabled ? (venueData?.bonusAccrualPercent ?? 0) : 0;
+  const earnedBonus = accrualPercent > 0 ? Math.floor((finalDisplayTotal * accrualPercent) / 100) : 0;
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
@@ -176,9 +180,12 @@ export default function BasketPage() {
               </div>
               <button
                 onClick={() => setCheckoutOpen(true)}
-                className='flex-1 bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-lg'
+                className='flex-1 bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-lg flex flex-col items-center justify-center leading-tight'
               >
-                {t('placeOrder')}
+                <span>{t('placeOrder')}</span>
+                {earnedBonus > 0 && (
+                  <span className='text-[10px] font-semibold opacity-90'>+{earnedBonus} {t('bonusShort')}</span>
+                )}
               </button>
             </div>
           </div>

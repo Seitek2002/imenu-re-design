@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useEffect, useState, useCallback } from 'react';
+import { FC, useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -48,6 +48,45 @@ const DrawerCheckout: FC<IProps> = ({
   const tt = useTranslations('Cart.timePicker');
   const tTable = useTranslations('Cart.table');
   const [sheetAnim, setSheetAnim] = useState(false);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartY = useRef<number | null>(null);
+
+  const handleDragStart = (e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY;
+    setIsDragging(true);
+  };
+  const handleDragMove = (e: React.TouchEvent) => {
+    if (dragStartY.current == null) return;
+    const dy = e.touches[0].clientY - dragStartY.current;
+    setDragY(Math.max(0, dy));
+  };
+  const handleDragEnd = () => {
+    if (dragY > 120) {
+      closeSheet();
+    }
+    setDragY(0);
+    setIsDragging(false);
+    dragStartY.current = null;
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardOffset(offset);
+    };
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
 
   // --- STORE DATA ---
   const items = useBasketStore((state) => state.items);
@@ -149,15 +188,13 @@ const DrawerCheckout: FC<IProps> = ({
   const handlePay = async () => {
     if (createOrderMutation.isPending) return;
 
-    if (orderType !== 'dinein') {
-      if (!phone) {
-        setToastMessage(t('phoneAlertEmpty'));
-        return;
-      }
-      if (phone.length !== 9) {
-        setToastMessage(t('phoneAlertLength'));
-        return;
-      }
+    if (!phone) {
+      setToastMessage(t('phoneAlertEmpty'));
+      return;
+    }
+    if (phone.length !== 9) {
+      setToastMessage(t('phoneAlertLength'));
+      return;
     }
     if (orderType === 'delivery' && !address) {
       setToastMessage(t('addressAlert'));
@@ -313,15 +350,22 @@ const DrawerCheckout: FC<IProps> = ({
         <div
           className={`
             w-full bg-[#F5F5F5] overflow-hidden rounded-t-4xl shadow-2xl
-            transform transition-transform duration-300 ease-cubic pointer-events-auto
-            ${sheetAnim ? 'translate-y-0' : 'translate-y-full'}
+            transform pointer-events-auto
+            ${isDragging ? '' : 'transition-transform duration-300 ease-cubic'}
+            ${sheetAnim ? '' : 'translate-y-full'}
           `}
-          style={{ height: '95dvh' }}
+          style={{
+            height: '95dvh',
+            transform: sheetAnim ? `translateY(${dragY}px)` : undefined,
+          }}
         >
           <div className='h-full flex flex-col'>
             <div
-              className='w-full flex justify-center pt-3 pb-1 shrink-0'
+              className='w-full flex justify-center pt-3 pb-2 shrink-0 touch-none cursor-grab active:cursor-grabbing'
               onClick={closeSheet}
+              onTouchStart={handleDragStart}
+              onTouchMove={handleDragMove}
+              onTouchEnd={handleDragEnd}
             >
               <div className='w-12 h-1.5 bg-gray-300 rounded-full' />
             </div>
@@ -381,7 +425,12 @@ const DrawerCheckout: FC<IProps> = ({
                       maxLength={9}
                       minLength={9}
                       value={phone}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      onChange={(e) => {
+                        handlePhoneChange(e.target.value);
+                        if (e.target.value.replace(/\D/g, '').length >= 9) {
+                          e.target.blur();
+                        }
+                      }}
                       className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base'
                     />
                   </div>
@@ -397,7 +446,10 @@ const DrawerCheckout: FC<IProps> = ({
               </div>
             </div>
 
-            <div className='absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-10 pb-8'>
+            <div
+              className='absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-10 pb-8 transition-transform duration-150'
+              style={{ transform: `translateY(-${keyboardOffset}px)` }}
+            >
               <CheckoutFooter
                 total={finalTotal}
                 isSubmitting={isLoading}
@@ -482,7 +534,12 @@ const DrawerCheckout: FC<IProps> = ({
                       maxLength={9}
                       minLength={9}
                       value={phone}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      onChange={(e) => {
+                        handlePhoneChange(e.target.value);
+                        if (e.target.value.replace(/\D/g, '').length >= 9) {
+                          e.target.blur();
+                        }
+                      }}
                       className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base'
                     />
                   </div>

@@ -6,6 +6,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import Footer from '../components/Footer';
 import MainAction from './components/MainAction';
 import TableBillBanner from './components/TableBillBanner';
+import FloatingCartButton from './components/FloatingCartButton';
 import VenueInitializer from '@/components/providers/VenueInitializer';
 import { API_V2_URL } from '@/lib/config';
 import type { Locale } from '@/lib/locale';
@@ -93,6 +94,7 @@ export default async function VenueLayout({
 
       <VenueInitializer venue={venueData} />
       <TableBillBanner venueSlug={venueSlug} />
+      <FloatingCartButton venueSlug={venueSlug} />
       <MainAction venueSlug={venueSlug} />
       <Footer venueSlug={venueSlug} />
     </div>
