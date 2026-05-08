@@ -120,7 +120,10 @@ export const useBasketStore = create<BasketState>()(
         const existingIndex = items.findIndex((i) => i.key === uniqueKey);
         if (existingIndex !== -1) {
           const updated = [...items];
-          updated[existingIndex].quantity += quantity;
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            quantity: updated[existingIndex].quantity + quantity,
+          };
           set({ items: updated });
           return;
         }
@@ -151,7 +154,7 @@ export const useBasketStore = create<BasketState>()(
         const item = items[idx];
         if (item.quantity > 1) {
           const updated = [...items];
-          updated[idx].quantity -= 1;
+          updated[idx] = { ...item, quantity: item.quantity - 1 };
           set({ items: updated });
         } else {
           set({ items: items.filter((i) => i.key !== key) });
@@ -186,7 +189,7 @@ export const useBasketStore = create<BasketState>()(
         const idx = items.findIndex((i) => i.key === key);
         if (idx === -1) return;
         const updated = [...items];
-        updated[idx].quantity += 1;
+        updated[idx] = { ...updated[idx], quantity: updated[idx].quantity + 1 };
         set({ items: updated });
       },
     }),

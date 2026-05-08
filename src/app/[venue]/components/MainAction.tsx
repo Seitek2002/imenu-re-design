@@ -29,6 +29,11 @@ export default function MainAction({ venueSlug }: Props) {
     pathname,
   );
 
+  // На страницах с фиксированной CTA-плашкой (корзина, активный заказ стола)
+  // дефолтное `bottom: 5rem` сажает колокольчик прямо на CTA — поднимаем выше.
+  const hasBottomCta =
+    pathname.includes('/cart') || pathname.includes('/table-order');
+
   useEffect(() => {
     if (!tableId || !isMainPage) {
       setShowHint(false);
@@ -93,6 +98,7 @@ export default function MainAction({ venueSlug }: Props) {
     <>
       <div
         className='main-action-floating fixed px-4 left-0 right-0 z-40 pointer-events-none max-w-175 mx-auto w-full flex items-center justify-end gap-2'
+        style={hasBottomCta ? { bottom: '11rem' } : undefined}
       >
         {isMainPage && showHint && (
           <div className='pointer-events-none rounded-full bg-white px-3 py-2 text-xs font-bold text-[#111111] shadow-lg animate-fade-in'>

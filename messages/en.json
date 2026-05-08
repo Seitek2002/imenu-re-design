@@ -159,8 +159,8 @@
     "empty": "No categories in this section yet",
     "defaultTitle": "Menu",
     "popular": "Popular",
-    "discounts": "On Sale",
-    "loading": "Loading menu…"
+    "loading": "Loading menu…",
+    "itemsCount": "{count, plural, one {# item} other {# items}}"
   },
   "OrderStatus": {
     "header": "Order #{id}",

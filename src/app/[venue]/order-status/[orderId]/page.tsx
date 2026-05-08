@@ -18,7 +18,7 @@ async function fetchOrder(id: string, locale: Locale): Promise<OrderV2 | null> {
     if (!res.ok) return null;
     return res.json();
   } catch (error) {
-    console.log(error);
+    console.error('order-status fetch failed:', error);
     return null;
   }
 }

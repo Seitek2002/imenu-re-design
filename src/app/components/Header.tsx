@@ -2,7 +2,7 @@
 
 import { FC, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useUIStore } from '@/store/ui'; // 1. Импорт стора
 import { X } from 'lucide-react'; // Возьмем иконку крестика из библиотеки, которая у тебя есть
@@ -20,16 +20,19 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
   const t = useTranslations('Common');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 2. Подключаем состояние
-  const {
-    isSearchOpen,
-    setSearchOpen,
-    searchQuery,
-    setSearchQuery,
-    headerTitleOverride,
-  } = useUIStore();
+  // 2. Подключаем состояние — селекторы, чтобы не ререндериться на чужие поля.
+  const isSearchOpen = useUIStore((s) => s.isSearchOpen);
+  const setSearchOpen = useUIStore((s) => s.setSearchOpen);
+  const searchQuery = useUIStore((s) => s.searchQuery);
+  const setSearchQuery = useUIStore((s) => s.setSearchQuery);
+  const headerTitleOverride = useUIStore((s) => s.headerTitleOverride);
+  const isCollapsed = useUIStore((s) => s.isHeaderCollapsed);
 
   const displayTitle = headerTitleOverride ?? title;
+  // В свернутом состоянии показываем заголовок только когда открыт поиск —
+  // иначе верхняя строка пустеет и активный pill в навбаре снизу единственный
+  // источник «где я».
+  const showCenter = !isCollapsed || isSearchOpen;
 
   // Фокус на инпут при открытии
   useEffect(() => {
@@ -37,6 +40,13 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
       inputRef.current.focus();
     }
   }, [isSearchOpen]);
+
+  // Закрываем оверлей поиска при смене маршрута, чтобы он не «прилипал»
+  // к новой странице.
+  const pathname = usePathname();
+  useEffect(() => {
+    setSearchOpen(false);
+  }, [pathname, setSearchOpen]);
 
   const handleBack = () => {
     if (navigator.vibrate) navigator.vibrate(20);
@@ -51,8 +61,20 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
   };
 
   return (
-    <header className='sticky top-0 bg-white/95 backdrop-blur-sm z-20 transition-transform duration-300 min-h-16 rounded-b-4xl'>
-      <div className='flex justify-between items-center px-5 pt-4 pb-4 h-full'>
+    <header
+      className={`
+        sticky top-0 bg-white/95 backdrop-blur-sm z-40
+        transition-[min-height,border-radius] duration-300
+        ${isCollapsed ? 'min-h-12 rounded-b-2xl' : 'min-h-16 rounded-b-4xl'}
+      `}
+    >
+      <div
+        className={`
+          flex justify-between items-center px-5 h-full
+          transition-[padding] duration-300
+          ${isCollapsed ? 'pt-1.5 pb-1.5' : 'pt-4 pb-4'}
+        `}
+      >
         {/* Кнопка НАЗАД */}
         <button
           onClick={handleBack}
@@ -69,7 +91,13 @@ const Header: FC<IProps> = ({ title, showSearch }) => {
         </button>
 
         {/* ЦЕНТРАЛЬНАЯ ЧАСТЬ: ИЛИ ЗАГОЛОВОК, ИЛИ ПОИСК */}
-        <div className='flex-1 flex justify-center mx-2 overflow-hidden'>
+        <div
+          className={`
+            flex-1 flex justify-center mx-2 overflow-hidden
+            transition-opacity duration-200
+            ${showCenter ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+          `}
+        >
           {isSearchOpen ? (
             /* РЕЖИМ ПОИСКА */
             <div className='w-full flex items-center bg-[#F5F5F5] rounded-xl px-3 h-10 animate-fadeIn'>
