@@ -247,7 +247,13 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             currency={t('currency')}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
-              {posOrder.items.map((item) => (
+              {posOrder.items.map((item) => {
+                const modsSum = item.modifiers.reduce(
+                  (acc, m) => acc + toNumber(m.sum),
+                  0,
+                );
+                const lineTotal = toNumber(item.sum) + modsSum;
+                return (
                 <li key={item.id} className='py-2.5 first:pt-0 last:pb-0'>
                   <div className='flex justify-between items-start gap-3'>
                     <div className='flex-1 min-w-0'>
@@ -284,11 +290,12 @@ export default function CurrentOrderView({ venueSlug }: Props) {
                       ) : null}
                     </div>
                     <div className='font-bold text-[#111111] whitespace-nowrap text-sm'>
-                      {formatMoney(item.sum)} {t('currency')}
+                      {formatMoney(lineTotal)} {t('currency')}
                     </div>
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
             {posPaid > 0 && (
               <div className='mt-3 pt-3 border-t border-[#E7E7E7] text-xs flex justify-between text-green-700'>

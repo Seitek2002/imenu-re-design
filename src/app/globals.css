@@ -23,6 +23,29 @@
   bottom: 6.5rem;
 }
 
+/* Блокируем landscape на телефонах. iPad не трогаем (его короткая сторона ≥ 768px). */
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  body > *:not(#__landscape-block) {
+    display: none !important;
+  }
+  body::before {
+    content: 'Поверните устройство вертикально';
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter), sans-serif;
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+}
+
 /* Базовые стили */
 body {
   background-color: var(--background);
