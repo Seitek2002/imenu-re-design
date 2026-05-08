@@ -210,34 +210,35 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Scroll-spy: highlight the parent whose top edge crosses the band just
-  // below the sticky header+tabs.
+  // Scroll-spy: активна та группа, чей верхний край последним пересёк
+  // линию ниже sticky-навбара. Offset-based — надёжнее IntersectionObserver
+  // для коротких групп (первая «Хиты» легко выпадала из узкой band-полосы).
   useEffect(() => {
     if (allParentGroups.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isProgrammaticScrollRef.current) return;
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length === 0) return;
-        const topmost = visible.reduce((a, b) =>
-          a.boundingClientRect.top < b.boundingClientRect.top ? a : b,
+    const OFFSET = 140;
+    const update = () => {
+      if (isProgrammaticScrollRef.current) return;
+      let best = allParentGroups[0].parent.slug;
+      for (const g of allParentGroups) {
+        const el = document.getElementById(
+          `${PARENT_ID_PREFIX}${g.parent.slug}`,
         );
-        const slug = topmost.target.getAttribute('data-parent-slug');
-        if (slug) setActiveSlug(slug);
-      },
-      {
-        rootMargin: '-130px 0px -60% 0px',
-        threshold: 0,
-      },
-    );
-
-    allParentGroups.forEach((g) => {
-      const el = document.getElementById(`${PARENT_ID_PREFIX}${g.parent.slug}`);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
+        if (!el) continue;
+        if (el.getBoundingClientRect().top - OFFSET <= 0) {
+          best = g.parent.slug;
+        } else {
+          break;
+        }
+      }
+      setActiveSlug(best);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
   }, [allParentGroups]);
 
   // Scroll-spy второго уровня — отслеживаем активную подсекцию по всем

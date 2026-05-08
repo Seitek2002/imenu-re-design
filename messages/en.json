@@ -331,6 +331,12 @@
     "label": "Table №{num}",
     "summary": "{count} items · {amount} c."
   },
+  "TableBillBanner": {
+    "title": "Open bill at your table",
+    "subtitle": "{count, plural, one {# item on the waiter's check} other {# items on the waiter's check}}",
+    "cta": "View bill · {amount} c.",
+    "dismiss": "Dismiss"
+  },
   "PosOrderStatus": {
     "title": "Payment",
     "successTitle": "Payment successful",

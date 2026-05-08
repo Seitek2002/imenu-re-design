@@ -6,6 +6,7 @@ import { getNavItems } from './Nav.helpers';
 import ActiveLink from './ActiveLink';
 import { useVenueStore } from '@/store/venue';
 import { useBasketStore } from '@/store/basket';
+import { useUiFloatingStore } from '@/store/ui-floating';
 import { useMounted } from '@/hooks/useMounted';
 
 export default function Nav({ venueSlug }: { venueSlug: string }) {
@@ -36,6 +37,7 @@ export default function Nav({ venueSlug }: { venueSlug: string }) {
   );
   const mounted = useMounted();
   const cartCount = mounted ? totalItems : 0;
+  const hasOpenBill = useUiFloatingStore((s) => s.hasOpenBill);
 
   return (
     <nav className='flex justify-around items-center w-full py-3 h-16'>
@@ -58,6 +60,9 @@ export default function Nav({ venueSlug }: { venueSlug: string }) {
                 <span className='absolute -top-1.5 -right-2 min-w-[18px] h-[18px] bg-brand text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none'>
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
+              )}
+              {item.key === 'cart' && cartCount === 0 && hasOpenBill && (
+                <span className='absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white' />
               )}
             </div>
             <span className='text-[10px] mt-1'>{label}</span>

@@ -331,6 +331,12 @@
     "label": "Стол №{num}",
     "summary": "{count} поз. · {amount} с."
   },
+  "TableBillBanner": {
+    "title": "У стола открыт счёт",
+    "subtitle": "{count, plural, one {# позиция в чеке от официанта} few {# позиции в чеке от официанта} other {# позиций в чеке от официанта}}",
+    "cta": "Открыть счёт · {amount} с.",
+    "dismiss": "Скрыть"
+  },
   "PosOrderStatus": {
     "title": "Оплата",
     "successTitle": "Оплата прошла",

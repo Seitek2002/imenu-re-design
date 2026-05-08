@@ -331,6 +331,12 @@
     "label": "Стол №{num}",
     "summary": "{count} поз. · {amount} с."
   },
+  "TableBillBanner": {
+    "title": "Столдо ачык эсеп бар",
+    "subtitle": "{count, plural, one {Официанттын чегинде # позиция} other {Официанттын чегинде # позиция}}",
+    "cta": "Эсепти ачуу · {amount} с.",
+    "dismiss": "Жашыруу"
+  },
   "PosOrderStatus": {
     "title": "Төлөм",
     "successTitle": "Төлөм ийгиликтүү",
