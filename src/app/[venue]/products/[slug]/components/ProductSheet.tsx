@@ -235,10 +235,15 @@ const ProductContent = ({
   const t = useTranslations('Product');
   const tc = useTranslations('Common');
 
-  const groups = useMemo(
-    () => product.groupModifications ?? [],
-    [product.groupModifications],
-  );
+  const groups = useMemo(() => {
+    const list = product.groupModifications ?? [];
+    const isSize = (name: string) => /разм|size|өлч/i.test(name);
+    return [...list].sort((a, b) => {
+      const aSize = isSize(a.name) ? 0 : 1;
+      const bSize = isSize(b.name) ? 0 : 1;
+      return aSize - bSize;
+    });
+  }, [product.groupModifications]);
   const hasGroups = groups.length > 0;
   // Правило: если есть groupModifications, плоские modificators игнорируем.
   const flatMods: Modificator[] = hasGroups ? [] : product.modificators ?? [];
