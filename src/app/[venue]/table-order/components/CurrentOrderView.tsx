@@ -14,6 +14,7 @@ import {
   useCreatePosPaymentLink,
   useCurrentPosOrder,
 } from '@/lib/api/pos-orders';
+import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { useTableOrderSocket } from '@/hooks/useTableOrderSocket';
 import { useMounted } from '@/hooks/useMounted';
 import { useOrdersV2 } from '@/lib/api/queries';
@@ -55,7 +56,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const mounted = useMounted();
   const tableId = useVenueStore((s) => s.tableId);
   const tableNumberFromStore = useVenueStore((s) => s.tableNumber);
-  const { phone, comment, setComment } = useCheckout();
+  const { phone, setPhone, comment, setComment } = useCheckout();
 
   const {
     data: restOrder,
@@ -137,8 +138,19 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const onPayPos = async () => {
     if (!posOrder) return;
     setPaymentError(null);
+    if (!phone) {
+      setPaymentError(t('payment.phoneRequired'));
+      return;
+    }
+    if (phone.length !== 9) {
+      setPaymentError(t('payment.phoneInvalid'));
+      return;
+    }
     try {
-      const res = await paymentMutation.mutateAsync(posOrder.id);
+      const res = await paymentMutation.mutateAsync({
+        orderId: posOrder.id,
+        phone: `+${normalizePhoneForApi(phone)}`,
+      });
       if (res.paymentUrl) window.location.href = res.paymentUrl;
     } catch (err: unknown) {
       const errObj = err as { error?: string } | null;
@@ -438,6 +450,25 @@ export default function CurrentOrderView({ venueSlug }: Props) {
                 </span>
               )}
             </button>
+          )}
+          {canPayPos && (
+            <label className='bg-[#F5F5F5] flex items-center rounded-xl py-2 px-3 gap-2'>
+              <span className='text-[#A4A4A4] text-xs font-medium shrink-0'>
+                +996
+              </span>
+              <input
+                type='tel'
+                inputMode='numeric'
+                value={phone}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 9);
+                  setPhone(digits);
+                }}
+                placeholder={t('payment.phonePlaceholder')}
+                className='bg-transparent outline-none text-[#111111] text-sm font-medium flex-1 min-w-0'
+                aria-label={t('payment.phoneLabel')}
+              />
+            </label>
           )}
           {canPayPos && (
             <button
