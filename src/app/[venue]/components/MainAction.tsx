@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { BellRing, Loader2, CheckCircle } from 'lucide-react';
 import { useVenueStore } from '@/store/venue';
+import { useUiFloatingStore } from '@/store/ui-floating';
 import { API_V2_URL } from '@/lib/config';
 
 interface Props {
@@ -18,6 +19,7 @@ export default function MainAction({ venueSlug }: Props) {
 
   const tableId = useVenueStore((state) => state.tableId);
   const tableNumber = useVenueStore((state) => state.tableNumber);
+  const billBannerOpen = useUiFloatingStore((s) => s.billBannerOpen);
 
   // Состояния интерфейса
   const [showConfirm, setShowConfirm] = useState(false); // Модалка "Вы уверены?"
@@ -32,7 +34,9 @@ export default function MainAction({ venueSlug }: Props) {
   // На страницах с фиксированной CTA-плашкой (корзина, активный заказ стола)
   // дефолтное `bottom: 5rem` сажает колокольчик прямо на CTA — поднимаем выше.
   const hasBottomCta =
-    pathname.includes('/cart') || pathname.includes('/table-order');
+    pathname.includes('/cart') ||
+    pathname.includes('/table-order') ||
+    billBannerOpen;
 
   useEffect(() => {
     if (!tableId || !isMainPage) {
@@ -98,7 +102,13 @@ export default function MainAction({ venueSlug }: Props) {
     <>
       <div
         className='main-action-floating fixed px-4 left-0 right-0 z-40 pointer-events-none max-w-175 mx-auto w-full flex items-center justify-end gap-2'
-        style={hasBottomCta ? { bottom: '11rem' } : undefined}
+        style={
+          billBannerOpen
+            ? { bottom: '15rem' }
+            : hasBottomCta
+              ? { bottom: '11rem' }
+              : undefined
+        }
       >
         {isMainPage && showHint && (
           <div className='pointer-events-none rounded-full bg-white px-3 py-2 text-xs font-bold text-[#111111] shadow-lg animate-fade-in'>
