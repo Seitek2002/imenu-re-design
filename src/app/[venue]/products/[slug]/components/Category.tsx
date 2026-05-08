@@ -1,6 +1,7 @@
 'use client';
 
 import { FC, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { Category as CategoryType } from '@/types/api';
 
 interface Props {
@@ -14,15 +15,17 @@ const Category: FC<Props> = ({ categories, counts, activeSlug, onSelect }) => {
   const scrollContainerRef = useRef<HTMLElement>(null);
   const activeBtnRef = useRef<HTMLButtonElement>(null);
 
-  // --- Стейты для свайпа мышью ---
   const [isDragging, setIsDragging] = useState(false);
   const hasDraggedRef = useRef(false);
 
   const startX = useRef(0);
   const scrollLeft = useRef(0);
 
+  // Fade-эджи: показываем градиенты только когда есть скрытый контент
+  // в соответствующую сторону.
+  const [edges, setEdges] = useState({ left: false, right: false });
+
   useEffect(() => {
-    // Нативный метод браузера - самый быстрый
     if (activeBtnRef.current) {
       activeBtnRef.current.scrollIntoView({
         behavior: 'smooth',
@@ -32,7 +35,26 @@ const Category: FC<Props> = ({ categories, counts, activeSlug, onSelect }) => {
     }
   }, [activeSlug]);
 
-  // --- Логика перетаскивания (Drag-to-Scroll) ---
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const update = () => {
+      const { scrollLeft: sl, scrollWidth, clientWidth } = el;
+      setEdges({
+        left: sl > 4,
+        right: sl + clientWidth < scrollWidth - 4,
+      });
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+    };
+  }, [categories.length]);
+
   const onMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
@@ -59,56 +81,111 @@ const Category: FC<Props> = ({ categories, counts, activeSlug, onSelect }) => {
     setIsDragging(false);
   };
 
+  // Если категорий мало и они влезают без скролла — растягиваем по ширине,
+  // чтобы не жались сиротливо к левому краю.
+  const fitsWithoutScroll = !edges.left && !edges.right && categories.length <= 4;
+
   return (
-    <nav
-      ref={scrollContainerRef}
-      // 🔥 Убрали scroll-smooth для устранения лагов при ручном свайпе.
-      // Добавили select-none и курсоры grab/grabbing для визуальной обратной связи.
-      className={`
-        flex gap-4 px-5 pb-2 overflow-x-auto no-scrollbar select-none
-        ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
-      `}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUpOrLeave}
-      onMouseLeave={onMouseUpOrLeave}
-    >
-      {categories.map((item, i) => {
-        const isActive = item.slug === activeSlug;
-        const count = counts?.[i];
-        return (
-          <button
-            key={item.id}
-            ref={isActive ? activeBtnRef : null}
-            onClick={(e) => {
-              // 🔥 Блокируем клик, если пользователь только что перетаскивал панель,
-              // чтобы категория случайно не переключилась
-              if (hasDraggedRef.current) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-              }
-              onSelect(i);
-            }}
-            className={`
-              whitespace-nowrap text-lg pb-2 transition-all duration-300
-              ${
-                isActive
-                  ? 'text-[#21201F] font-bold border-b-2 border-[#21201F]'
-                  : 'text-[#5C5C5C] font-medium border-b-2 border-transparent hover:text-[#21201F]'
-              }
-            `}
-          >
-            {item.categoryName}
-            {count != null && count > 0 && (
-              <span className='ml-1.5 text-sm font-normal text-[#9A9A9A]'>
-                · {count}
+    <div className='relative'>
+      <nav
+        ref={scrollContainerRef}
+        className={`
+          flex gap-2 px-4 pb-2 overflow-x-auto no-scrollbar select-none
+          ${fitsWithoutScroll ? 'justify-around' : ''}
+          ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
+        `}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUpOrLeave}
+        onMouseLeave={onMouseUpOrLeave}
+      >
+        {categories.map((item, i) => {
+          const isActive = item.slug === activeSlug;
+          const count = counts?.[i];
+          const isVirtual = item.id < 0;
+          const thumb = item.categoryPhotoSmall || item.categoryPhoto || '';
+
+          return (
+            <button
+              key={item.id}
+              ref={isActive ? activeBtnRef : null}
+              onClick={(e) => {
+                if (hasDraggedRef.current) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return;
+                }
+                onSelect(i);
+              }}
+              className={`
+                shrink-0 inline-flex items-center gap-2 pl-1.5 pr-3.5 py-1.5
+                rounded-full whitespace-nowrap text-base transition-colors duration-200
+                ${
+                  isActive
+                    ? 'bg-[#21201F] text-white font-semibold'
+                    : 'bg-gray-100 text-[#5C5C5C] font-medium hover:bg-gray-200'
+                }
+              `}
+            >
+              <span
+                className={`
+                  flex items-center justify-center w-7 h-7 rounded-full overflow-hidden text-base
+                  ${isActive ? 'bg-white/15' : 'bg-white'}
+                `}
+              >
+                {isVirtual ? (
+                  <span aria-hidden>🔥</span>
+                ) : thumb ? (
+                  <Image
+                    src={thumb}
+                    alt=''
+                    width={28}
+                    height={28}
+                    className='w-full h-full object-cover'
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className={isActive ? 'text-white/80' : 'text-[#9A9A9A]'}
+                  >
+                    {item.categoryName.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </span>
-            )}
-          </button>
-        );
-      })}
-    </nav>
+              <span>{item.categoryName}</span>
+              {count != null && count > 0 && (
+                <span
+                  className={`
+                    text-sm font-normal
+                    ${isActive ? 'text-white/70' : 'text-[#9A9A9A]'}
+                  `}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Fade-эджи: подсказывают, что в соответствующую сторону есть скрытые табы. */}
+      <div
+        className={`
+          pointer-events-none absolute left-0 top-0 bottom-2 w-6
+          bg-gradient-to-r from-white to-transparent
+          transition-opacity duration-200
+          ${edges.left ? 'opacity-100' : 'opacity-0'}
+        `}
+      />
+      <div
+        className={`
+          pointer-events-none absolute right-0 top-0 bottom-2 w-6
+          bg-gradient-to-l from-white to-transparent
+          transition-opacity duration-200
+          ${edges.right ? 'opacity-100' : 'opacity-0'}
+        `}
+      />
+    </div>
   );
 };
 

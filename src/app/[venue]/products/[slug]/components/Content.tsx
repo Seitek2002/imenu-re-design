@@ -45,8 +45,12 @@ const PARENT_ID_PREFIX = 'parent-';
 
 const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
+  const setHeaderCollapsed = useUIStore((s) => s.setHeaderCollapsed);
+  const isHeaderCollapsed = useUIStore((s) => s.isHeaderCollapsed);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const tCat = useTranslations('Categories');
   const isProgrammaticScrollRef = useRef(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const { parentGroups, initialChildSlug } = useMemo(() => {
     const groups: ParentGroup[] = [];
@@ -145,6 +149,8 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   }, [allParentGroups, initialSlug, initialChildSlug]);
 
   const [activeSlug, setActiveSlug] = useState(initialActiveSlug);
+  const [activeSubSlug, setActiveSubSlug] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
   // Если состав групп изменился и текущий activeSlug больше не существует —
   // выравниваем на актуальный initialActiveSlug.
@@ -162,6 +168,22 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     if (group) setHeaderTitleOverride(group.parent.categoryName);
     return () => setHeaderTitleOverride(null);
   }, [activeSlug, allParentGroups, setHeaderTitleOverride]);
+
+  // Collapse-on-scroll: когда сентинель уходит за верхнюю границу — сворачиваем
+  // хэдер, навбар подтягивается к самому верху и визуально занимает его место.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeaderCollapsed(!entry.isIntersecting),
+      { rootMargin: '0px', threshold: 0 },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      setHeaderCollapsed(false);
+    };
+  }, [setHeaderCollapsed]);
 
   // Initial scroll: к подкатегории либо из path-slug (legacy ссылки),
   // либо из hash вида #subcat-{slug} (новые ссылки с страницы категорий).
@@ -218,6 +240,69 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     return () => observer.disconnect();
   }, [allParentGroups]);
 
+  // Scroll-spy второго уровня — отслеживаем активную подсекцию по всем
+  // группам сразу. Используется для подсветки чипа в sub-tabs.
+  useEffect(() => {
+    if (allParentGroups.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isProgrammaticScrollRef.current) return;
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length === 0) return;
+        const topmost = visible.reduce((a, b) =>
+          a.boundingClientRect.top < b.boundingClientRect.top ? a : b,
+        );
+        const slug = topmost.target.getAttribute('data-subcat-slug');
+        if (slug) setActiveSubSlug(slug);
+      },
+      { rootMargin: '-180px 0px -60% 0px', threshold: 0 },
+    );
+
+    allParentGroups.forEach((g) =>
+      g.sections.forEach((s) => {
+        const el = document.getElementById(`subcat-${s.category.slug}`);
+        if (el) observer.observe(el);
+      }),
+    );
+
+    return () => observer.disconnect();
+  }, [allParentGroups]);
+
+  // Прогресс скролла по всему меню — тонкая полоска под навбаром.
+  useEffect(() => {
+    const STICKY_OFFSET = 130;
+    const update = () => {
+      const el = contentRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const traveled = Math.max(0, STICKY_OFFSET - rect.top);
+      const total = Math.max(
+        1,
+        el.offsetHeight - (window.innerHeight - STICKY_OFFSET),
+      );
+      setProgress(Math.min(1, traveled / total));
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [allParentGroups]);
+
+  const handleSubClick = useCallback((slug: string) => {
+    const el = document.getElementById(`subcat-${slug}`);
+    if (!el) return;
+    isProgrammaticScrollRef.current = true;
+    setActiveSubSlug(slug);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, 700);
+  }, []);
+
   const handleTabClick = useCallback(
     (idx: number) => {
       const group = allParentGroups[idx];
@@ -250,10 +335,19 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
 
   const tabCategories = allParentGroups.map((g) => g.parent);
   const tabCounts = allParentGroups.map((g) => g.totalCount);
+  const activeGroup = allParentGroups.find((g) => g.parent.slug === activeSlug);
+  const subSections =
+    activeGroup && activeGroup.sections.length > 1 ? activeGroup.sections : [];
 
   return (
     <div className='bg-white rounded-t-4xl mt-1.5 pb-40 border-t border-gray-100'>
-      <div className='sticky top-18 z-30 bg-white shadow-sm'>
+      <div ref={sentinelRef} className='h-1 -mt-1' aria-hidden />
+      <div
+        className={`
+          sticky z-30 bg-white/95 backdrop-blur-sm shadow-sm transition-[top] duration-300
+          ${isHeaderCollapsed ? 'top-12' : 'top-18'}
+        `}
+      >
         <div className='pt-2'>
           <Category
             categories={tabCategories}
@@ -262,15 +356,47 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
             onSelect={handleTabClick}
           />
         </div>
+
+        {subSections.length > 0 && (
+          <div className='flex gap-1.5 px-4 pb-2 overflow-x-auto no-scrollbar'>
+            {subSections.map((s) => {
+              const isActive = activeSubSlug === s.category.slug;
+              return (
+                <button
+                  key={s.category.id}
+                  onClick={() => handleSubClick(s.category.slug)}
+                  className={`
+                    shrink-0 px-3 py-1 rounded-full text-sm whitespace-nowrap
+                    transition-colors duration-200
+                    ${
+                      isActive
+                        ? 'bg-[#21201F]/10 text-[#21201F] font-semibold'
+                        : 'text-[#9A9A9A] hover:text-[#5C5C5C]'
+                    }
+                  `}
+                >
+                  {s.category.categoryName}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div className='h-0.5 bg-gray-100'>
+          <div
+            className='h-full bg-[#21201F] transition-[width] duration-150'
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
       </div>
 
-      <div className='flex flex-col gap-10 pt-4'>
+      <div ref={contentRef} className='flex flex-col gap-10 pt-4'>
         {allParentGroups.map((group) => (
           <div
             key={group.parent.id}
             id={`${PARENT_ID_PREFIX}${group.parent.slug}`}
             data-parent-slug={group.parent.slug}
-            className='scroll-mt-36'
+            className='scroll-mt-44'
           >
             <div className='flex flex-col gap-8'>
               {group.sections.map((section) => {
@@ -284,7 +410,8 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
                   <section
                     key={section.category.id}
                     id={`subcat-${section.category.slug}`}
-                    className='scroll-mt-36'
+                    data-subcat-slug={section.category.slug}
+                    className='scroll-mt-44'
                   >
                     {showHeader && (
                       <h2 className='text-xl font-bold text-[#21201F] mb-3 px-2.5'>
