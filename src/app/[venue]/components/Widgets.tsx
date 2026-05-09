@@ -29,7 +29,12 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const { phone } = useCheckout();
 
   const { data: bonusData } = useClientBonus({ phone, venueSlug });
-  const { data: ordersData } = useOrdersV2({ phone, venueSlug });
+  const { data: ordersData } = useOrdersV2({
+    phone,
+    venueSlug,
+    limit: 20,
+    includeUnpaid: true,
+  });
 
   const activeOrders = ordersData?.results?.filter(
     (o) =>

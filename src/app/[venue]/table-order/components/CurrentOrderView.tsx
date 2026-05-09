@@ -62,7 +62,12 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     refetch,
   } = useCurrentPosOrder(tableId);
 
-  const { data: guestOrdersData } = useOrdersV2({ phone, venueSlug });
+  const { data: guestOrdersData } = useOrdersV2({
+    phone,
+    venueSlug,
+    limit: 20,
+    includeUnpaid: true,
+  });
   const guestOrders = useMemo<OrderV2[]>(() => {
     if (!guestOrdersData?.results || !tableId) return [];
     return guestOrdersData.results

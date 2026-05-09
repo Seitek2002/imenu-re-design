@@ -24,15 +24,27 @@ function buildHeaders(locale: Locale): HeadersInit {
 interface OrdersParams {
   phone: string;
   venueSlug?: string;
+  limit?: number;
+  offset?: number;
+  startDate?: string;
+  endDate?: string;
+  // Бэк по умолчанию (по контракту 2026-04-27) скрывает заказы со статусом
+  // PendingPayment. Передаём true, чтобы countdown оплаты был видим.
+  includeUnpaid?: boolean;
 }
 
 async function fetchOrders(
-  { phone, venueSlug }: OrdersParams,
+  { phone, venueSlug, limit, offset, startDate, endDate, includeUnpaid }: OrdersParams,
   locale: Locale,
 ): Promise<OrdersResponse> {
   const params = new URLSearchParams();
   if (phone) params.append('phone', normalizePhoneForApi(phone));
   if (venueSlug) params.append('venueSlug', venueSlug);
+  if (limit != null) params.append('limit', String(limit));
+  if (offset != null) params.append('offset', String(offset));
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  if (includeUnpaid != null) params.append('includeUnpaid', String(includeUnpaid));
 
   const res = await fetch(`${API_BASE}/orders/?${params.toString()}`, {
     method: 'GET',
@@ -43,12 +55,23 @@ async function fetchOrders(
   return res.json();
 }
 
-export const useOrdersV2 = ({ phone, venueSlug }: OrdersParams) => {
+export const useOrdersV2 = (params: OrdersParams) => {
   const locale = useLocale() as Locale;
+  const { phone } = params;
 
   return useQuery({
-    queryKey: ['orders', phone, venueSlug, locale],
-    queryFn: () => fetchOrders({ phone, venueSlug }, locale),
+    queryKey: [
+      'orders',
+      phone,
+      params.venueSlug,
+      params.limit,
+      params.offset,
+      params.startDate,
+      params.endDate,
+      params.includeUnpaid,
+      locale,
+    ],
+    queryFn: () => fetchOrders(params, locale),
     // Не грузим, если телефона нет
     enabled: !!phone && phone.length > 5,
     refetchInterval: 15000, // Обновляем каждые 15 сек
