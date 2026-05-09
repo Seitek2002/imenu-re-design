@@ -13,6 +13,9 @@ import { useCreateOrderV2 } from '@/lib/api/queries';
 import DevErrorModal from '@/components/ui/DevErrorModal';
 import Toast from '@/components/ui/Toast';
 import OtpModal from '@/components/ui/OtpModal';
+import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
+import { getCountryById } from '@/lib/helpers/countryCodes';
+import { normalizePhoneForApi } from '@/lib/helpers/phone';
 
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
@@ -32,6 +35,9 @@ interface IProps {
   finalTotal: number;
   deliveryCost: number;
   bonusToApply: number;
+  showBonusInput?: boolean;
+  availableBonuses?: number;
+  maxDeductible?: number;
 }
 
 const DrawerCheckout: FC<IProps> = ({
@@ -40,6 +46,9 @@ const DrawerCheckout: FC<IProps> = ({
   orderType,
   finalTotal,
   bonusToApply,
+  showBonusInput = false,
+  availableBonuses = 0,
+  maxDeductible = 0,
 }) => {
   const params = useParams();
   const router = useRouter();
@@ -92,6 +101,9 @@ const DrawerCheckout: FC<IProps> = ({
   const items = useBasketStore((state) => state.items);
   const clearBasket = useBasketStore((state) => state.clearBasket);
   const isBonusUsed = useBonusStore((state) => state.isBonusUsed);
+  const bonusAmount = useBonusStore((state) => state.bonusAmount);
+  const setBonusUsed = useBonusStore((state) => state.setBonusUsed);
+  const setBonusAmount = useBonusStore((state) => state.setBonusAmount);
   const resetBonus = useBonusStore((state) => state.resetBonus);
 
   const queryClient = useQueryClient();
@@ -102,6 +114,8 @@ const DrawerCheckout: FC<IProps> = ({
   const {
     phone: storedPhone,
     setPhone: setStoredPhone,
+    countryId: storedCountryId,
+    setCountryId: setStoredCountryId,
     address: storedAddress,
     setAddress: setStoredAddress,
     deliveryLat: storedLat,
@@ -114,6 +128,8 @@ const DrawerCheckout: FC<IProps> = ({
 
   // --- FORM STATE ---
   const [phone, setPhone] = useState(storedPhone || '');
+  const [countryId, setCountryId] = useState(storedCountryId || 'KG');
+  const country = getCountryById(countryId);
   const [address, setAddress] = useState(storedAddress || '');
   const [coords, setCoords] = useState<Coords | null>(
     storedLat != null && storedLng != null
@@ -159,14 +175,28 @@ const DrawerCheckout: FC<IProps> = ({
         cleanVal = cleanVal.substring(1);
       }
 
-      if (cleanVal.length > 9) {
-        cleanVal = cleanVal.slice(0, 9);
+      if (cleanVal.length > country.length) {
+        cleanVal = cleanVal.slice(0, country.length);
       }
 
       setPhone(cleanVal);
       setStoredPhone(cleanVal);
     },
-    [setStoredPhone],
+    [setStoredPhone, country.length],
+  );
+
+  const handleCountryChange = useCallback(
+    (id: string) => {
+      setCountryId(id);
+      setStoredCountryId(id);
+      const newLen = getCountryById(id).length;
+      setPhone((prev) => {
+        const trimmed = prev.slice(0, newLen);
+        setStoredPhone(trimmed);
+        return trimmed;
+      });
+    },
+    [setStoredCountryId, setStoredPhone],
   );
 
   const handleAddressChange = useCallback(
@@ -192,7 +222,7 @@ const DrawerCheckout: FC<IProps> = ({
       setToastMessage(t('phoneAlertEmpty'));
       return;
     }
-    if (phone.length !== 9) {
+    if (phone.length !== country.length) {
       setToastMessage(t('phoneAlertLength'));
       return;
     }
@@ -222,12 +252,13 @@ const DrawerCheckout: FC<IProps> = ({
       }
       const finalComment = parts.join('\n');
 
+      const fullPhone = normalizePhoneForApi(phone, country.dial);
       const savedHash = isBonusUsed
-        ? (localStorage.getItem(`bonus_hash_${venueSlug}_${phone}`) ?? undefined)
+        ? (localStorage.getItem(`bonus_hash_${venueSlug}_${fullPhone}`) ?? undefined)
         : undefined;
 
       const orderData: OrderCreateBody = {
-        phone,
+        phone: fullPhone,
         serviceMode: (orderType === 'dinein'
           ? 1
           : orderType === 'delivery'
@@ -332,6 +363,69 @@ const DrawerCheckout: FC<IProps> = ({
     }
   };
 
+  const handleBonusToggle = () => {
+    if (isBonusUsed) {
+      setBonusUsed(false);
+      setBonusAmount(0);
+    } else {
+      setBonusUsed(true);
+      setBonusAmount(maxDeductible);
+    }
+  };
+
+  const effectiveBonus = isBonusUsed
+    ? Math.min(Math.max(0, bonusAmount), maxDeductible)
+    : 0;
+
+  const bonusBlock =
+    showBonusInput && availableBonuses > 0 ? (
+      <div className='bg-[#F5F5F5] rounded-xl mt-3 py-3 px-4'>
+        <div className='flex items-center justify-between'>
+          <div className='flex flex-col'>
+            <span className='text-sm font-bold text-[#111] leading-tight'>
+              {t('bonusLabel')}
+            </span>
+            <span className='text-[10px] text-gray-500'>
+              {t('bonusAvailableShort', { amount: availableBonuses })}
+            </span>
+          </div>
+          <button
+            type='button'
+            onClick={handleBonusToggle}
+            disabled={maxDeductible <= 0}
+            aria-label={t('bonusLabel')}
+            className={`relative w-10 h-6 rounded-full transition-colors duration-300 disabled:opacity-50 ${
+              isBonusUsed ? 'bg-brand' : 'bg-gray-200'
+            }`}
+          >
+            <div
+              className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ${
+                isBonusUsed ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        {isBonusUsed && maxDeductible > 0 && (
+          <div className='mt-3 border-t border-dashed border-gray-200 pt-2'>
+            <input
+              type='range'
+              min={0}
+              max={maxDeductible}
+              step={1}
+              value={effectiveBonus}
+              onChange={(e) => setBonusAmount(Number(e.target.value))}
+              className='w-full accent-brand cursor-pointer'
+            />
+            <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
+              <span>{t('bonusDiscount')}</span>
+              <span>− {effectiveBonus} c.</span>
+            </div>
+          </div>
+        )}
+      </div>
+    ) : null;
+
   return (
     <div
       className={`fixed inset-0 z-100 ${
@@ -414,27 +508,27 @@ const DrawerCheckout: FC<IProps> = ({
                   <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
                     {t('phoneLabel')}
                   </span>
-                  <div className='flex items-center'>
-                    <div className='font-semibold text-[#111111] placeholder-gray-400 text-base'>
-                      +996
-                    </div>
+                  <div className='flex items-center gap-2'>
+                    <CountryCodeSelect value={countryId} onChange={handleCountryChange} />
                     <input
                       type='tel'
                       inputMode='numeric'
-                      placeholder='700123456'
-                      maxLength={9}
-                      minLength={9}
+                      placeholder={country.placeholder}
+                      maxLength={country.length}
+                      minLength={country.length}
                       value={phone}
                       onChange={(e) => {
                         handlePhoneChange(e.target.value);
-                        if (e.target.value.replace(/\D/g, '').length >= 9) {
+                        if (e.target.value.replace(/\D/g, '').length >= country.length) {
                           e.target.blur();
                         }
                       }}
-                      className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base'
+                      className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base flex-1 min-w-0'
                     />
                   </div>
                 </label>
+
+                {bonusBlock}
 
               </div>
 
@@ -525,25 +619,27 @@ const DrawerCheckout: FC<IProps> = ({
                   <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
                     {t('phoneLabel')}
                   </span>
-                  <div className='flex items-center'>
-                    <div className='font-semibold text-[#111111] text-base'>+996</div>
+                  <div className='flex items-center gap-2'>
+                    <CountryCodeSelect value={countryId} onChange={handleCountryChange} />
                     <input
                       type='tel'
                       inputMode='numeric'
-                      placeholder='700123456'
-                      maxLength={9}
-                      minLength={9}
+                      placeholder={country.placeholder}
+                      maxLength={country.length}
+                      minLength={country.length}
                       value={phone}
                       onChange={(e) => {
                         handlePhoneChange(e.target.value);
-                        if (e.target.value.replace(/\D/g, '').length >= 9) {
+                        if (e.target.value.replace(/\D/g, '').length >= country.length) {
                           e.target.blur();
                         }
                       }}
-                      className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base'
+                      className='bg-transparent outline-none font-semibold text-[#111111] placeholder-gray-400 text-base flex-1 min-w-0'
                     />
                   </div>
                 </label>
+
+                {bonusBlock}
 
               </div>
 

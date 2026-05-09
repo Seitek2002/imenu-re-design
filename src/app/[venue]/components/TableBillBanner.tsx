@@ -45,7 +45,8 @@ export default function TableBillBanner({ venueSlug }: Props) {
   const total = toNumber(order?.total);
   const paid = toNumber(order?.paidAmount);
   const remaining = Math.max(0, total - paid);
-  const itemsCount = order?.items.length ?? 0;
+  const itemsCount =
+    order?.items.filter((it) => toNumber(it.qty) > 0).length ?? 0;
   const stateKey = order ? `${order.id}:${order.version}` : null;
 
   const visible =

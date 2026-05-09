@@ -69,6 +69,9 @@
     "drawer": {
       "title": "Буйрутманы тариздөө",
       "phoneLabel": "Телефон номери",
+      "bonusLabel": "Бонустарды колдонуу",
+      "bonusAvailableShort": "{amount} бар",
+      "bonusDiscount": "Жеңилдик",
       "addComment": "+ Комментарий кошуу",
       "removeComment": "− Комментарийди алып салуу",
       "commentLabel": "Буйрутмага комментарий",
@@ -332,7 +335,14 @@
       "phoneLabel": "Чек үчүн телефон номери",
       "phonePlaceholder": "700 123 456",
       "phoneRequired": "Телефон номерин жазыңыз",
-      "phoneInvalid": "+996 кийин 9 сан жазыңыз"
+      "phoneInvalid": "+996 кийин 9 сан жазыңыз",
+      "modalTitle": "Эсепти төлөө",
+      "bonusLabel": "Бонустарды колдонуу",
+      "bonusAvailableShort": "{amount} бар",
+      "bonusDiscount": "Жеңилдик",
+      "bonusApplied": "Бонустар",
+      "checkSum": "Эсептин суммасы",
+      "toPay": "Төлөөгө"
     }
   },
   "TableOrderBar": {

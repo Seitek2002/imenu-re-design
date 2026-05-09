@@ -10,11 +10,8 @@ import { Bell, Plus, ReceiptText, UtensilsCrossed } from 'lucide-react';
 
 import { useVenueStore } from '@/store/venue';
 import { useCheckout } from '@/store/checkout';
-import {
-  useCreatePosPaymentLink,
-  useCurrentPosOrder,
-} from '@/lib/api/pos-orders';
-import { normalizePhoneForApi } from '@/lib/helpers/phone';
+import { useCurrentPosOrder } from '@/lib/api/pos-orders';
+import PosPaymentModal from './PosPaymentModal';
 import { useTableOrderSocket } from '@/hooks/useTableOrderSocket';
 import { useMounted } from '@/hooks/useMounted';
 import { useOrdersV2 } from '@/lib/api/queries';
@@ -56,7 +53,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const mounted = useMounted();
   const tableId = useVenueStore((s) => s.tableId);
   const tableNumberFromStore = useVenueStore((s) => s.tableNumber);
-  const { phone, setPhone, comment, setComment } = useCheckout();
+  const { phone, comment, setComment } = useCheckout();
 
   const {
     data: restOrder,
@@ -94,6 +91,21 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   }, [reconnectKey, queryClient, tableId]);
 
   const posOrder: PosOrder | null = hasSnapshot ? wsOrder : (restOrder ?? null);
+  const posItems = useMemo(
+    () => posOrder?.items.filter((it) => toNumber(it.qty) > 0) ?? [],
+    [posOrder],
+  );
+  const posVisibleSubtotal = useMemo(
+    () =>
+      posItems.reduce((acc, it) => {
+        const modsSum = it.modifiers.reduce(
+          (s, m) => s + toNumber(m.sum),
+          0,
+        );
+        return acc + toNumber(it.sum) + modsSum;
+      }, 0),
+    [posItems],
+  );
 
   // ===== Draft (basket) =====
   const {
@@ -113,6 +125,8 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     finalDisplayTotal: draftFinal,
     applied,
     effectiveAmount: bonusToApply,
+    availableBonuses,
+    maxDeductible,
   } = useOrderSummary({
     subtotal: draftSubtotal,
     deliveryType: orderType,
@@ -120,10 +134,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   });
 
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
-
-  // ===== Pay POS =====
-  const paymentMutation = useCreatePosPaymentLink();
-  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isPayOpen, setPayOpen] = useState(false);
 
   const posTotal = toNumber(posOrder?.total);
   const posPaid = toNumber(posOrder?.paidAmount);
@@ -135,32 +146,9 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const earnedPosBonus = accrualPercent > 0 ? Math.floor((posRemaining * accrualPercent) / 100) : 0;
   const canPayPos = !!posOrder && posRemaining > 0;
 
-  const onPayPos = async () => {
-    if (!posOrder) return;
-    setPaymentError(null);
-    if (!phone) {
-      setPaymentError(t('payment.phoneRequired'));
-      return;
-    }
-    if (phone.length !== 9) {
-      setPaymentError(t('payment.phoneInvalid'));
-      return;
-    }
-    try {
-      const res = await paymentMutation.mutateAsync({
-        orderId: posOrder.id,
-        phone: `+${normalizePhoneForApi(phone)}`,
-      });
-      if (res.paymentUrl) window.location.href = res.paymentUrl;
-    } catch (err: unknown) {
-      const errObj = err as { error?: string } | null;
-      setPaymentError(errObj?.error || t('payment.unavailable'));
-    }
-  };
-
   // ===== Aggregate counts =====
   const ticketCount =
-    (posOrder && posOrder.items.length > 0 ? 1 : 0) +
+    (posItems.length > 0 ? 1 : 0) +
     guestOrders.length +
     (draftItems.length > 0 ? 1 : 0);
 
@@ -236,18 +224,18 @@ export default function CurrentOrderView({ venueSlug }: Props) {
         />
 
         {/* === POS-чек официанта === */}
-        {posOrder && posOrder.items.length > 0 && (
+        {posOrder && posItems.length > 0 && (
           <TicketCard
             stripe='neutral'
             icon={<Bell size={14} />}
             title={t('posOrderLabel')}
             statusLabel={t('status.open')}
-            sum={formatMoney(posOrder.subtotal)}
-            numericSum={toNumber(posOrder.subtotal)}
+            sum={formatMoney(posVisibleSubtotal)}
+            numericSum={posVisibleSubtotal}
             currency={t('currency')}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
-              {posOrder.items.map((item) => {
+              {posItems.map((item) => {
                 const modsSum = item.modifiers.reduce(
                   (acc, m) => acc + toNumber(m.sum),
                   0,
@@ -435,11 +423,6 @@ export default function CurrentOrderView({ venueSlug }: Props) {
           <Plus size={16} /> {t('addItems')}
         </Link>
 
-        {paymentError && (
-          <div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3'>
-            {paymentError}
-          </div>
-        )}
       </div>
 
       {/* === Sticky bottom action === */}
@@ -459,45 +442,19 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             </button>
           )}
           {canPayPos && (
-            <label className='bg-[#F5F5F5] flex items-center rounded-xl py-2 px-3 gap-2'>
-              <span className='text-[#A4A4A4] text-xs font-medium shrink-0'>
-                +996
-              </span>
-              <input
-                type='tel'
-                inputMode='numeric'
-                value={phone}
-                onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, '').slice(0, 9);
-                  setPhone(digits);
-                }}
-                placeholder={t('payment.phonePlaceholder')}
-                className='bg-transparent outline-none text-[#111111] text-sm font-medium flex-1 min-w-0'
-                aria-label={t('payment.phoneLabel')}
-              />
-            </label>
-          )}
-          {canPayPos && (
             <button
-              onClick={onPayPos}
-              disabled={paymentMutation.isPending}
-              className={`w-full font-bold h-12 rounded-xl active:scale-95 transition-transform flex flex-row items-center justify-center gap-2 leading-tight disabled:opacity-50 ${
+              onClick={() => setPayOpen(true)}
+              className={`w-full font-bold h-12 rounded-xl active:scale-95 transition-transform flex flex-row items-center justify-center gap-2 leading-tight ${
                 hasDraft
                   ? 'bg-white text-[#111111] border border-[#E7E7E7]'
                   : 'bg-brand text-white shadow-md'
               }`}
             >
-              {paymentMutation.isPending ? (
-                <span>{t('payment.creating')}</span>
-              ) : (
-                <>
-                  <span>{t('payment.pay', { amount: Math.round(posRemaining) })}</span>
-                  {earnedPosBonus > 0 && (
-                    <span className={`text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full ${hasDraft ? 'bg-black/5 text-[#111111]' : 'bg-white/20'}`}>
-                      +{earnedPosBonus} {t('bonusShort')}
-                    </span>
-                  )}
-                </>
+              <span>{t('payment.pay', { amount: Math.round(posRemaining) })}</span>
+              {earnedPosBonus > 0 && (
+                <span className={`text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full ${hasDraft ? 'bg-black/5 text-[#111111]' : 'bg-white/20'}`}>
+                  +{earnedPosBonus} {t('bonusShort')}
+                </span>
               )}
             </button>
           )}
@@ -516,7 +473,20 @@ export default function CurrentOrderView({ venueSlug }: Props) {
         finalTotal={draftFinal}
         deliveryCost={deliveryPrice}
         bonusToApply={bonusToApply}
+        showBonusInput
+        availableBonuses={availableBonuses}
+        maxDeductible={maxDeductible}
       />
+
+      {posOrder && canPayPos && (
+        <PosPaymentModal
+          open={isPayOpen}
+          onClose={() => setPayOpen(false)}
+          orderId={posOrder.id}
+          remaining={posRemaining}
+          venueSlug={venueSlug}
+        />
+      )}
     </>
   );
 }

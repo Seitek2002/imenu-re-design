@@ -1,0 +1,245 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { X } from 'lucide-react';
+import { useCheckout } from '@/store/checkout';
+import { useVenueStore } from '@/store/venue';
+import { useClientBonus } from '@/lib/api/queries';
+import { useCreatePosPaymentLink } from '@/lib/api/pos-orders';
+import { normalizePhoneForApi } from '@/lib/helpers/phone';
+import { getCountryById } from '@/lib/helpers/countryCodes';
+import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
+
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  orderId: number;
+  remaining: number;
+  venueSlug: string;
+}
+
+export default function PosPaymentModal({
+  open,
+  onClose,
+  orderId,
+  remaining,
+  venueSlug,
+}: Props) {
+  const t = useTranslations('TableOrder');
+  const { phone, setPhone, countryId, setCountryId } = useCheckout();
+  const country = getCountryById(countryId);
+
+  const venueData = useVenueStore((s) => s.data);
+  const accrualPercent = venueData?.isBonusSystemEnabled
+    ? (venueData?.bonusAccrualPercent ?? 0)
+    : 0;
+
+  const fullPhone = phone ? `+${normalizePhoneForApi(phone, country.dial)}` : '';
+  const { data: bonusData } = useClientBonus({ phone: fullPhone, venueSlug });
+  const availableBonuses = bonusData?.bonus ?? 0;
+  const maxDeductible = Math.floor(Math.min(availableBonuses, remaining * 0.5));
+
+  const [bonusUsed, setBonusUsed] = useState(false);
+  const [bonusValue, setBonusValue] = useState(0);
+  const bonusToUse = bonusUsed
+    ? Math.min(Math.max(0, bonusValue), maxDeductible)
+    : 0;
+
+  useEffect(() => {
+    if (open) {
+      setBonusUsed(false);
+      setBonusValue(0);
+    }
+  }, [open]);
+
+  const handleBonusToggle = () => {
+    if (bonusUsed) {
+      setBonusUsed(false);
+      setBonusValue(0);
+    } else {
+      setBonusUsed(true);
+      setBonusValue(maxDeductible);
+    }
+  };
+
+  const finalToPay = Math.max(0, remaining - bonusToUse);
+  const earnedBonus =
+    accrualPercent > 0 ? Math.floor((finalToPay * accrualPercent) / 100) : 0;
+
+  const paymentMutation = useCreatePosPaymentLink();
+  const [error, setError] = useState<string | null>(null);
+
+  const onPay = async () => {
+    setError(null);
+    if (!phone) {
+      setError(t('payment.phoneRequired'));
+      return;
+    }
+    if (phone.length !== country.length) {
+      setError(t('payment.phoneInvalid'));
+      return;
+    }
+    try {
+      const res = await paymentMutation.mutateAsync({
+        orderId,
+        phone: fullPhone,
+        bonus: bonusToUse,
+      });
+      if (res.paymentUrl) window.location.href = res.paymentUrl;
+    } catch (err: unknown) {
+      const errObj = err as { error?: string } | null;
+      setError(errObj?.error || t('payment.unavailable'));
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className='fixed inset-0 z-200 flex items-end lg:items-center justify-center'>
+      <div
+        className='absolute inset-0 bg-black/60 backdrop-blur-[2px]'
+        onClick={onClose}
+      />
+      <div className='relative w-full lg:max-w-md bg-white rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl'>
+        <div className='flex items-center justify-between mb-4'>
+          <h2 className='text-lg font-bold text-[#111111]'>
+            {t('payment.modalTitle')}
+          </h2>
+          <button
+            onClick={onClose}
+            aria-label='close'
+            className='w-8 h-8 rounded-lg text-[#A4A4A4] flex items-center justify-center active:scale-95 transition-transform'
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className='flex flex-col gap-3'>
+          {/* Phone */}
+          <div>
+            <label className='text-xs text-[#A4A4A4] font-medium mb-1 block'>
+              {t('payment.phoneLabel')}
+            </label>
+            <div className='bg-[#F5F5F5] flex items-center rounded-xl py-2.5 px-3 gap-2'>
+              <CountryCodeSelect
+                value={countryId}
+                onChange={(id) => {
+                  setCountryId(id);
+                  const newLen = getCountryById(id).length;
+                  if (phone.length > newLen) setPhone(phone.slice(0, newLen));
+                }}
+              />
+              <input
+                type='tel'
+                inputMode='numeric'
+                value={phone}
+                onChange={(e) => {
+                  const digits = e.target.value
+                    .replace(/\D/g, '')
+                    .slice(0, country.length);
+                  setPhone(digits);
+                }}
+                placeholder={country.placeholder}
+                className='bg-transparent outline-none text-[#111111] text-sm font-medium flex-1 min-w-0'
+              />
+            </div>
+          </div>
+
+          {/* Bonuses */}
+          {availableBonuses > 0 && (
+            <div className='bg-[#F5F5F5] rounded-xl py-3 px-4'>
+              <div className='flex items-center justify-between'>
+                <div className='flex flex-col'>
+                  <span className='text-sm font-bold text-[#111] leading-tight'>
+                    {t('payment.bonusLabel')}
+                  </span>
+                  <span className='text-[10px] text-gray-500'>
+                    {t('payment.bonusAvailableShort', { amount: availableBonuses })}
+                  </span>
+                </div>
+                <button
+                  type='button'
+                  onClick={handleBonusToggle}
+                  disabled={maxDeductible <= 0}
+                  aria-label={t('payment.bonusLabel')}
+                  className={`relative w-10 h-6 rounded-full transition-colors duration-300 disabled:opacity-50 ${
+                    bonusUsed ? 'bg-green-500' : 'bg-gray-200'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ${
+                      bonusUsed ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+              {bonusUsed && maxDeductible > 0 && (
+                <div className='mt-3 border-t border-dashed border-gray-200 pt-2'>
+                  <input
+                    type='range'
+                    min={0}
+                    max={maxDeductible}
+                    step={1}
+                    value={bonusToUse}
+                    onChange={(e) => setBonusValue(Number(e.target.value))}
+                    className='w-full accent-brand cursor-pointer'
+                  />
+                  <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
+                    <span>{t('payment.bonusDiscount')}</span>
+                    <span>− {bonusToUse} {t('currency')}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Summary */}
+          <div className='bg-[#FAFAFA] border border-[#E7E7E7] rounded-xl p-3 text-sm flex flex-col gap-1.5'>
+            <div className='flex justify-between text-[#6B6B6B]'>
+              <span>{t('payment.checkSum')}</span>
+              <span>
+                {Math.round(remaining)} {t('currency')}
+              </span>
+            </div>
+            {bonusToUse > 0 && (
+              <div className='flex justify-between text-brand'>
+                <span>{t('payment.bonusApplied')}</span>
+                <span>
+                  −{bonusToUse} {t('currency')}
+                </span>
+              </div>
+            )}
+            <div className='flex justify-between font-bold text-[#111111] pt-1.5 border-t border-[#E7E7E7]'>
+              <span>{t('payment.toPay')}</span>
+              <span>
+                {Math.round(finalToPay)} {t('currency')}
+              </span>
+            </div>
+            {earnedBonus > 0 && (
+              <div className='text-[11px] text-brand'>
+                {t('earnBonus', { amount: earnedBonus })}
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3'>
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={onPay}
+            disabled={paymentMutation.isPending || finalToPay <= 0}
+            className='w-full bg-green-500 text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-md disabled:opacity-50'
+          >
+            {paymentMutation.isPending
+              ? t('payment.creating')
+              : t('payment.pay', { amount: Math.round(finalToPay) })}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
