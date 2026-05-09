@@ -176,6 +176,8 @@
     "cancelledDesc": "Please contact the administrator",
     "pendingPayment": "Awaiting payment",
     "pendingPaymentDesc": "Complete the payment on the bank page. The status will update automatically.",
+    "paymentExpiresIn": "Pay within {time}",
+    "paymentExpired": "Payment time has expired",
     "notFound": "Order not found",
     "notFoundDesc": "You may have followed a wrong link, or the order has been moved to the archive.",
     "backToMenu": "Back to menu",
@@ -235,6 +237,7 @@
   "Widgets": {
     "orderStatus": "Order status",
     "myOrders": "My orders",
+    "activeOrdersTitle": "{count, plural, one {# active order} other {# active orders}}",
     "bonus": "Bonus points",
     "schedule": "Schedule"
   },
@@ -332,6 +335,7 @@
       "pay": "Pay {amount} c.",
       "creating": "Creating link...",
       "unavailable": "Payment service is temporarily unavailable. Please try again.",
+      "invalidCode": "Invalid code. Please try again.",
       "phoneLabel": "Phone number for receipt",
       "phonePlaceholder": "700 123 456",
       "phoneRequired": "Please enter your phone number",

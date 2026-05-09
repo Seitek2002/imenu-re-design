@@ -23,6 +23,7 @@ export interface OrderV2 {
     tableNum: string;
   };
   created_at?: string;
+  paymentExpiresAt?: string | null;
 }
 
 export interface OrdersResponse {

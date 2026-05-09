@@ -16,6 +16,7 @@ import OtpModal from '@/components/ui/OtpModal';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import { normalizePhoneForApi } from '@/lib/helpers/phone';
+import { buildOrderRedirectUrl } from '@/lib/config';
 
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
@@ -295,6 +296,10 @@ const DrawerCheckout: FC<IProps> = ({
         useBonus: isBonusUsed,
         ...(isBonusUsed && bonusToApply > 0 ? { bonus: bonusToApply } : {}),
         ...(savedHash ? { hash: savedHash } : {}),
+        ...(() => {
+          const redirectUrl = buildOrderRedirectUrl(venueSlug);
+          return redirectUrl ? { redirectUrl } : {};
+        })(),
       };
 
       const response = await createOrderMutation.mutateAsync({

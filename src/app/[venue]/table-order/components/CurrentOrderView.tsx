@@ -62,7 +62,12 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     refetch,
   } = useCurrentPosOrder(tableId);
 
-  const { data: guestOrdersData } = useOrdersV2({ phone, venueSlug });
+  const { data: guestOrdersData } = useOrdersV2({
+    phone,
+    venueSlug,
+    limit: 20,
+    includeUnpaid: true,
+  });
   const guestOrders = useMemo<OrderV2[]>(() => {
     if (!guestOrdersData?.results || !tableId) return [];
     return guestOrdersData.results
@@ -527,15 +532,24 @@ function TableHeaderCard({
         </div>
       </div>
       <div className='flex flex-col items-end'>
-        <span className='text-xs text-[#6B6B6B]'>{ticketsLabel}</span>
-        <span
-          className={`text-[10px] mt-1 ${
-            isConnected ? 'text-green-600' : 'text-gray-400'
-          }`}
-        >
-          {isConnected ? liveOn : liveOff}
-          {ticketCount > 0 ? '' : ''}
-        </span>
+        <div className='flex items-center gap-1.5'>
+          <span className='text-xs text-[#6B6B6B]'>{ticketsLabel}</span>
+          <span
+            role='status'
+            aria-label={isConnected ? liveOn : liveOff}
+            title={isConnected ? liveOn : liveOff}
+            className='relative inline-flex h-2 w-2'
+          >
+            {isConnected && (
+              <span className='absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-60 animate-ping' />
+            )}
+            <span
+              className={`relative inline-flex h-2 w-2 rounded-full ${
+                isConnected ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+            />
+          </span>
+        </div>
       </div>
     </div>
   );
