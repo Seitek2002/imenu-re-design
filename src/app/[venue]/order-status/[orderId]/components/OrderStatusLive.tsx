@@ -9,6 +9,7 @@ import { OrderStatus } from '@/types/api';
 import { useOrderByIdV2 } from '@/lib/api/queries';
 import StatusProgressBar from './StatusProgressBar';
 import OrderItemsList from './OrderItemsList';
+import PaymentCountdown from './PaymentCountdown';
 
 interface Props {
   initialOrder: OrderV2;
@@ -26,6 +27,7 @@ export default function OrderStatusLive({ initialOrder }: Props) {
   const isKioskMode = useVenueStore((s) => s.isKioskMode);
 
   const isCompleted = order.status === OrderStatus.Completed;
+  const isPendingPayment = order.status === OrderStatus.PendingPayment;
 
   let backUrl = `/${venueSlug}`;
   if (tableId && spotId) {
@@ -40,6 +42,9 @@ export default function OrderStatusLive({ initialOrder }: Props) {
         serviceMode={order.serviceMode}
         status={order.status}
       />
+      {isPendingPayment && order.paymentExpiresAt && (
+        <PaymentCountdown expiresAt={order.paymentExpiresAt} />
+      )}
       <OrderItemsList items={order.orderProducts} />
       <div className='bg-white rounded-[20px] p-5 mt-4 shadow-sm flex justify-between items-center'>
         <span className='text-gray-500 font-medium'>{t('totalDue')}</span>

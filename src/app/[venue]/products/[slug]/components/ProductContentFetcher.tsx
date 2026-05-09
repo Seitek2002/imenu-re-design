@@ -30,10 +30,7 @@ function findCategory(
 export default async function ProductContentFetcher({ venue, slug }: Props) {
   const spotId = await readSpotCookie(venue);
   const locale = (await getLocale()) as Locale;
-  const [allProducts, buttons] = await Promise.all([
-    VenueService.getAllProducts(venue, spotId, locale),
-    VenueService.getMainButtons(venue, locale),
-  ]);
+  const buttons = await VenueService.getMainButtons(venue, locale);
 
   const flatButtons = buttons.flat();
 
@@ -51,8 +48,11 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
   // Child-кейс: кликнули подкатегорию. Показываем только её продукты плоским
   // списком, без соседних child’ов и без Swiper’а между top-level.
   if (hit?.isChild) {
-    const products = allProducts.filter((p) =>
-      p.categories?.some((c) => c.id === hit.category.id),
+    const products = await VenueService.getAllProducts(
+      venue,
+      spotId,
+      locale,
+      [hit.category.id],
     );
     return <SingleCategoryContent category={hit.category} products={products} />;
   }
@@ -73,6 +73,16 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
       !c.parentCategory ||
       !catMap.has(c.parentCategory) ||
       c.slug === slug,
+  );
+
+  // Бэк фильтрует ветку (включая дочерние) по ids — тащим только товары
+  // секции вместо всего меню.
+  const categoryIds = categories.length > 0 ? categories.map((c) => c.id) : null;
+  const allProducts = await VenueService.getAllProducts(
+    venue,
+    spotId,
+    locale,
+    categoryIds,
   );
 
   return (
