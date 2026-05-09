@@ -237,6 +237,7 @@
   "Widgets": {
     "orderStatus": "Буйрутманын статусу",
     "myOrders": "Менин буйрутмаларым",
+    "activeOrdersTitle": "{count, plural, other {# активдүү буйрутма}}",
     "bonus": "Бонус баллдар",
     "schedule": "График"
   },

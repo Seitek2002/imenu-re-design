@@ -237,6 +237,7 @@
   "Widgets": {
     "orderStatus": "Статус заказа",
     "myOrders": "Мои заказы",
+    "activeOrdersTitle": "{count, plural, one {# активный заказ} few {# активных заказа} other {# активных заказов}}",
     "bonus": "Бонусные баллы",
     "schedule": "График"
   },

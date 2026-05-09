@@ -237,6 +237,7 @@
   "Widgets": {
     "orderStatus": "Order status",
     "myOrders": "My orders",
+    "activeOrdersTitle": "{count, plural, one {# active order} other {# active orders}}",
     "bonus": "Bonus points",
     "schedule": "Schedule"
   },
