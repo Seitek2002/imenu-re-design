@@ -10,6 +10,7 @@ import { useCreatePosPaymentLink } from '@/lib/api/pos-orders';
 import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
+import OtpModal from '@/components/ui/OtpModal';
 
 interface Props {
   open: boolean;
@@ -69,6 +70,34 @@ export default function PosPaymentModal({
 
   const paymentMutation = useCreatePosPaymentLink();
   const [error, setError] = useState<string | null>(null);
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [pendingArgs, setPendingArgs] = useState<{
+    orderId: number;
+    phone: string;
+    bonus?: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setOtpOpen(false);
+      setOtpError(null);
+      setPendingArgs(null);
+      setError(null);
+    }
+  }, [open]);
+
+  const hashStorageKey = (rawPhone: string) =>
+    `bonus_hash_${venueSlug}_${rawPhone}`;
+
+  const handlePaymentSuccess = (res: { paymentUrl?: string; phoneVerificationHash?: string }, savedPhone: string) => {
+    if (res.phoneVerificationHash) {
+      try {
+        localStorage.setItem(hashStorageKey(savedPhone), res.phoneVerificationHash);
+      } catch {}
+    }
+    if (res.paymentUrl) window.location.href = res.paymentUrl;
+  };
 
   const onPay = async () => {
     setError(null);
@@ -80,16 +109,44 @@ export default function PosPaymentModal({
       setError(t('payment.phoneInvalid'));
       return;
     }
+
+    let savedHash: string | null = null;
+    try {
+      savedHash = localStorage.getItem(hashStorageKey(fullPhone));
+    } catch {}
+
+    const args = { orderId, phone: fullPhone, bonus: bonusToUse };
     try {
       const res = await paymentMutation.mutateAsync({
-        orderId,
-        phone: fullPhone,
-        bonus: bonusToUse,
+        ...args,
+        ...(savedHash ? { hash: savedHash } : {}),
       });
-      if (res.paymentUrl) window.location.href = res.paymentUrl;
+      if (res.status === 'waiting_for_code') {
+        setPendingArgs(args);
+        setOtpError(null);
+        setOtpOpen(true);
+        return;
+      }
+      handlePaymentSuccess(res, fullPhone);
     } catch (err: unknown) {
       const errObj = err as { error?: string } | null;
       setError(errObj?.error || t('payment.unavailable'));
+    }
+  };
+
+  const handleOtpConfirm = async (code: string) => {
+    if (!pendingArgs) return;
+    setOtpError(null);
+    try {
+      const res = await paymentMutation.mutateAsync({ ...pendingArgs, code });
+      setOtpOpen(false);
+      setPendingArgs(null);
+      handlePaymentSuccess(res, pendingArgs.phone);
+    } catch (err: unknown) {
+      const errObj = err as { error?: string; message?: string } | null;
+      setOtpError(
+        errObj?.error || errObj?.message || t('payment.invalidCode'),
+      );
     }
   };
 
@@ -240,6 +297,19 @@ export default function PosPaymentModal({
           </button>
         </div>
       </div>
+
+      <OtpModal
+        open={otpOpen}
+        phone={fullPhone.replace(/^\+?/, '')}
+        isLoading={paymentMutation.isPending}
+        error={otpError}
+        onConfirm={handleOtpConfirm}
+        onClose={() => {
+          setOtpOpen(false);
+          setPendingArgs(null);
+          setOtpError(null);
+        }}
+      />
     </div>
   );
 }

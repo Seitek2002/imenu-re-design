@@ -332,6 +332,7 @@
       "pay": "Pay {amount} c.",
       "creating": "Creating link...",
       "unavailable": "Payment service is temporarily unavailable. Please try again.",
+      "invalidCode": "Invalid code. Please try again.",
       "phoneLabel": "Phone number for receipt",
       "phonePlaceholder": "700 123 456",
       "phoneRequired": "Please enter your phone number",

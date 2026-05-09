@@ -43,18 +43,25 @@ export const useCurrentPosOrder = (tableId: number | null | undefined) => {
 };
 
 export interface PaymentLinkResponse {
-  transactionId: number;
-  paymentUrl: string;
+  transactionId?: number;
+  paymentUrl?: string;
+  totalPrice?: string;
+  bonus?: number;
+  phoneVerificationHash?: string;
+  status?: string;
+  message?: string;
 }
 
 interface CreatePaymentLinkArgs {
   orderId: number;
   phone: string;
   bonus?: number;
+  code?: string;
+  hash?: string;
 }
 
 async function createPaymentLink(
-  { orderId, phone, bonus }: CreatePaymentLinkArgs,
+  { orderId, phone, bonus, code, hash }: CreatePaymentLinkArgs,
   locale: Locale,
 ): Promise<PaymentLinkResponse> {
   const body: Record<string, unknown> = { phone };
@@ -62,6 +69,8 @@ async function createPaymentLink(
     body.useBonus = true;
     body.bonus = bonus;
   }
+  if (code) body.code = code;
+  if (hash) body.hash = hash;
 
   const res = await fetch(`${API_V2_URL}/pos-orders/${orderId}/payment-link/`, {
     method: 'POST',
