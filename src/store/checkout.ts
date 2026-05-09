@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface CheckoutState {
   phone: string;
+  countryId: string;
   address: string;
   deliveryLat: number | null;
   deliveryLng: number | null;
@@ -10,6 +11,7 @@ interface CheckoutState {
   comment: string;
   setAddress: (address: string) => void;
   setPhone: (phone: string) => void;
+  setCountryId: (id: string) => void;
   setDeliveryCoords: (lat: number | null, lng: number | null) => void;
   setNeedUtensils: (val: boolean) => void;
   setComment: (comment: string) => void;
@@ -22,6 +24,8 @@ export const useCheckout = create<CheckoutState>()(
     (set) => ({
       phone: '',
       setPhone: (phone) => set({ phone }),
+      countryId: 'KG',
+      setCountryId: (countryId) => set({ countryId }),
       address: '',
       setAddress: (address) => set({ address }),
       deliveryLat: null,
@@ -35,6 +39,7 @@ export const useCheckout = create<CheckoutState>()(
       reset: () =>
         set({
           phone: '',
+          countryId: 'KG',
           address: '',
           deliveryLat: null,
           deliveryLng: null,

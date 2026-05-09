@@ -47,18 +47,29 @@ export interface PaymentLinkResponse {
   paymentUrl: string;
 }
 
+interface CreatePaymentLinkArgs {
+  orderId: number;
+  phone: string;
+  bonus?: number;
+}
+
 async function createPaymentLink(
-  orderId: number,
-  phone: string,
+  { orderId, phone, bonus }: CreatePaymentLinkArgs,
   locale: Locale,
 ): Promise<PaymentLinkResponse> {
+  const body: Record<string, unknown> = { phone };
+  if (bonus && bonus > 0) {
+    body.useBonus = true;
+    body.bonus = bonus;
+  }
+
   const res = await fetch(`${API_V2_URL}/pos-orders/${orderId}/payment-link/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept-Language': locale,
     },
-    body: JSON.stringify({ phone }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
@@ -75,7 +86,6 @@ export const useCreatePosPaymentLink = () => {
   const locale = useLocale() as Locale;
 
   return useMutation({
-    mutationFn: ({ orderId, phone }: { orderId: number; phone: string }) =>
-      createPaymentLink(orderId, phone, locale),
+    mutationFn: (args: CreatePaymentLinkArgs) => createPaymentLink(args, locale),
   });
 };

@@ -69,6 +69,9 @@
     "drawer": {
       "title": "Оформление заказа",
       "phoneLabel": "Номер телефона",
+      "bonusLabel": "Списать бонусы",
+      "bonusAvailableShort": "доступно {amount}",
+      "bonusDiscount": "Скидка",
       "addComment": "+ Добавить комментарий",
       "removeComment": "− Убрать комментарий",
       "commentLabel": "Комментарий к заказу",
@@ -332,7 +335,14 @@
       "phoneLabel": "Номер телефона для чека",
       "phonePlaceholder": "700 123 456",
       "phoneRequired": "Укажите номер телефона",
-      "phoneInvalid": "Введите 9 цифр после +996"
+      "phoneInvalid": "Введите 9 цифр после +996",
+      "modalTitle": "Оплата счёта",
+      "bonusLabel": "Списать бонусы",
+      "bonusAvailableShort": "доступно {amount}",
+      "bonusDiscount": "Скидка",
+      "bonusApplied": "Бонусы",
+      "checkSum": "Сумма счёта",
+      "toPay": "К оплате"
     }
   },
   "TableOrderBar": {

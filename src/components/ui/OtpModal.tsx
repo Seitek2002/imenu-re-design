@@ -50,7 +50,9 @@ export default function OtpModal({ open, phone, isLoading, error, onConfirm, onC
     }
   };
 
-  const maskedPhone = phone ? `+996 ${'*'.repeat(6)}${phone.slice(-3)}` : '';
+  const maskedPhone = phone
+    ? `+${phone.slice(0, -3).replace(/\d/g, '*')}${phone.slice(-3)}`
+    : '';
 
   return (
     <div className='fixed inset-0 z-200 flex items-end lg:items-center justify-center'>
