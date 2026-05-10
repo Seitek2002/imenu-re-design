@@ -4,7 +4,10 @@ import type { Locale } from './locale';
 const BASE_URL = `${API_URL}/`;
 
 type FetchOptions = RequestInit & {
-  params?: Record<string, string | number | boolean | undefined>;
+  params?: Record<
+    string,
+    string | number | boolean | ReadonlyArray<string | number> | undefined
+  >;
   locale?: Locale;
   revalidate?: number | false;
   tags?: string[];
@@ -23,7 +26,12 @@ export async function apiClient<T>(
   if (params) {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (value === undefined) return;
+      if (Array.isArray(value)) {
+        // Бэк ждёт повторяющиеся параметры (`?categories=9&categories=7`),
+        // CSV-форма падает с 500.
+        for (const item of value) searchParams.append(key, String(item));
+      } else {
         searchParams.append(key, String(value));
       }
     });
