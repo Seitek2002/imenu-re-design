@@ -31,11 +31,10 @@ export default function TableBillBanner({ venueSlug }: Props) {
   const skip = isOnTableOrder || isOnCart;
   const { order } = useTableOrderSocket(skip ? null : tableId);
 
-  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    setDismissedKey(sessionStorage.getItem(`imenu-bill-dismissed:${venueSlug}`));
-  }, [venueSlug]);
+  const [dismissedKey, setDismissedKey] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return sessionStorage.getItem(`imenu-bill-dismissed:${venueSlug}`);
+  });
 
   const remainingStr = subtractMoney(order?.total ?? '0.00', order?.paidAmount ?? '0.00');
   const remaining = toNumber(remainingStr);
