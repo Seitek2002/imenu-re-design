@@ -1,4 +1,5 @@
 import OrderStatusLive from './components/OrderStatusLive';
+import PaymentSuccessOverlay from './components/PaymentSuccessOverlay';
 import { OrderV2 } from '@/lib/order';
 import StatusHeader from './components/StatusHeader';
 import OrderNotFound from './components/OrderNotFound';
@@ -40,6 +41,7 @@ export default async function OrderStatusPage({ params }: Props) {
     <main className='min-h-svh bg-[#F8F6F7] pb-10'>
       <StatusHeader venueSlug={venue} orderId={order.id} />
       <OrderSaver orderId={order.id} />
+      <PaymentSuccessOverlay orderId={order.id} />
 
       <div className='px-4 pt-2'>
         <OrderStatusLive initialOrder={order} />

@@ -18,6 +18,7 @@ import { getCountryById } from '@/lib/helpers/countryCodes';
 import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
 
+import { markPaymentSuccess } from '@/app/[venue]/order-status/[orderId]/components/PaymentSuccessOverlay';
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
 import PaymentMethodRow from './PaymentMethodRow';
@@ -324,6 +325,8 @@ const DrawerCheckout: FC<IProps> = ({
       resetBonus();
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
+      markPaymentSuccess(response.id);
+
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;
       } else {
@@ -356,6 +359,9 @@ const DrawerCheckout: FC<IProps> = ({
       resetOrderOptions();
       resetBonus();
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
+
+      markPaymentSuccess(response.id);
+
       if (response.paymentUrl) {
         window.location.href = response.paymentUrl;
       } else {

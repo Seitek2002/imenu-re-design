@@ -232,7 +232,7 @@ export function computeDiscount(
     const pct = p.benefit.discountPercent ?? 0;
     if (pct <= 0) return empty;
     return {
-      amount: Math.round((involvedTotal * pct) / 100),
+      amount: Math.round(((involvedTotal * pct) / 100) * 100) / 100,
       involvedItemKeys: involvedKeys,
     };
   }
