@@ -46,6 +46,18 @@
   }
 }
 
+/* Отключаем pinch-zoom через CSS (работает в Chrome/Android, частично в Safari) */
+html {
+  touch-action: pan-x pan-y;
+}
+
+/* Фикс авто-зума на iOS при фокусе на input (срабатывает когда font-size < 16px) */
+input,
+textarea,
+select {
+  font-size: max(16px, 1em);
+}
+
 /* Базовые стили */
 body {
   background-color: var(--background);
