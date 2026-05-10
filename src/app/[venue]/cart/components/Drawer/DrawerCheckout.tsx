@@ -382,8 +382,10 @@ const DrawerCheckout: FC<IProps> = ({
     ? Math.min(Math.max(0, bonusAmount), maxDeductible)
     : 0;
 
+  const isPhoneComplete = phone.length === country.length;
+
   const bonusBlock =
-    showBonusInput && availableBonuses > 0 ? (
+    showBonusInput && isPhoneComplete && availableBonuses > 0 ? (
       <div className='bg-[#F5F5F5] rounded-xl mt-3 py-3 px-4'>
         <div className='flex items-center justify-between'>
           <div className='flex flex-col'>
