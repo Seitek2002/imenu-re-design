@@ -2,14 +2,10 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocale } from 'next-intl';
 import { API_V2_URL } from '../config';
 import type { Locale } from '../locale';
-import {
-  PosOrder,
-  PosOrderSnake,
-  normalizePosOrder,
-} from '@/types/pos-order';
+import type { PosOrder } from '@/types/pos-order';
 
 interface CurrentOrderResponse {
-  order: PosOrderSnake | null;
+  order: PosOrder | null;
 }
 
 async function fetchCurrentOrder(
@@ -29,7 +25,7 @@ async function fetchCurrentOrder(
 
   if (!res.ok) throw new Error('Failed to fetch current POS order');
   const data: CurrentOrderResponse = await res.json();
-  return normalizePosOrder(data.order);
+  return data.order;
 }
 
 export const useCurrentPosOrder = (tableId: number | null | undefined) => {

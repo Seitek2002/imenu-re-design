@@ -11,12 +11,13 @@ import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
+import { toMoneyNumber, subtractMoney, formatMoney } from '@/types/pos-order';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   orderId: number;
-  remaining: number;
+  remaining: string;
   venueSlug: string;
 }
 
@@ -39,7 +40,8 @@ export default function PosPaymentModal({
   const fullPhone = phone ? `+${normalizePhoneForApi(phone, country.dial)}` : '';
   const { data: bonusData } = useClientBonus({ phone: fullPhone, venueSlug });
   const availableBonuses = bonusData?.bonus ?? 0;
-  const maxDeductible = Math.floor(Math.min(availableBonuses, remaining * 0.5));
+  const remainingNum = toMoneyNumber(remaining);
+  const maxDeductible = Math.floor(Math.min(availableBonuses, remainingNum * 0.5));
 
   const [bonusUsed, setBonusUsed] = useState(false);
   const [bonusValue, setBonusValue] = useState(0);
@@ -64,7 +66,8 @@ export default function PosPaymentModal({
     }
   };
 
-  const finalToPay = Math.max(0, remaining - bonusToUse);
+  const finalToPayStr = subtractMoney(remaining, formatMoney(bonusToUse));
+  const finalToPay = toMoneyNumber(finalToPayStr);
   const earnedBonus =
     accrualPercent > 0 ? Math.floor((finalToPay * accrualPercent) / 100) : 0;
 
@@ -256,7 +259,7 @@ export default function PosPaymentModal({
             <div className='flex justify-between text-[#6B6B6B]'>
               <span>{t('payment.checkSum')}</span>
               <span>
-                {Math.round(remaining)} {t('currency')}
+                {remaining} {t('currency')}
               </span>
             </div>
             {bonusToUse > 0 && (
@@ -270,7 +273,7 @@ export default function PosPaymentModal({
             <div className='flex justify-between font-bold text-[#111111] pt-1.5 border-t border-[#E7E7E7]'>
               <span>{t('payment.toPay')}</span>
               <span>
-                {Math.round(finalToPay)} {t('currency')}
+                {finalToPayStr} {t('currency')}
               </span>
             </div>
             {earnedBonus > 0 && (
@@ -293,7 +296,7 @@ export default function PosPaymentModal({
           >
             {paymentMutation.isPending
               ? t('payment.creating')
-              : t('payment.pay', { amount: Math.round(finalToPay) })}
+              : t('payment.pay', { amount: finalToPayStr })}
           </button>
         </div>
       </div>

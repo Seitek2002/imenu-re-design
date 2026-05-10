@@ -2,11 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '@/lib/config';
-import {
-  PosOrder,
-  PosOrderSnake,
-  normalizePosOrder,
-} from '@/types/pos-order';
+import type { PosOrder } from '@/types/pos-order';
 
 function buildWsUrl(tableId: number): string {
   // API_BASE_URL is like "https://imenu.kg" — replace scheme with ws/wss.
@@ -17,8 +13,8 @@ function buildWsUrl(tableId: number): string {
 
 interface SnapshotMessage {
   type: 'order.snapshot';
-  table_id: number;
-  order: PosOrderSnake | PosOrder | null;
+  tableId: number;
+  order: PosOrder | null;
 }
 
 export interface TableSocketState {
@@ -26,6 +22,16 @@ export interface TableSocketState {
   hasSnapshot: boolean;
   isConnected: boolean;
   reconnectKey: number;
+}
+
+function shouldApplySnapshot(
+  current: PosOrder | null,
+  incoming: PosOrder | null,
+): boolean {
+  if (!incoming) return true;
+  if (!current) return true;
+  if (incoming.id !== current.id) return true;
+  return incoming.version >= current.version;
 }
 
 export function useTableOrderSocket(
@@ -61,7 +67,9 @@ export function useTableOrderSocket(
         try {
           const msg = JSON.parse(evt.data) as SnapshotMessage;
           if (msg.type === 'order.snapshot') {
-            setOrder(normalizePosOrder(msg.order));
+            setOrder((prev) =>
+              shouldApplySnapshot(prev, msg.order) ? msg.order : prev,
+            );
             setHasSnapshot(true);
           }
         } catch {
