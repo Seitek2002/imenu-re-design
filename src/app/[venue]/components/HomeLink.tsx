@@ -26,19 +26,21 @@ const HomeLink: FC<IProps> = ({
           <ImageSkeleton />
         </div>
 
-        <Image
-          src={img}
-          alt={label}
-          fill
-          className='object-cover z-10 relative'
-          sizes={
-            isPriority
-              ? '(max-width: 640px) 40vw, 200px'
-              : '(max-width: 640px) 25vw, 200px'
-          }
-          priority={isPriority}
-          loading={isPriority ? 'eager' : 'lazy'}
-        />
+        {img && (
+          <Image
+            src={img}
+            alt={label}
+            fill
+            className='object-cover z-10 relative'
+            sizes={
+              isPriority
+                ? '(max-width: 640px) 40vw, 200px'
+                : '(max-width: 640px) 25vw, 200px'
+            }
+            priority={isPriority}
+            loading={isPriority ? 'eager' : 'lazy'}
+          />
+        )}
       </div>
 
       <div

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -35,16 +35,7 @@ export default function PaymentSuccessOverlay({ orderId }: Props) {
   });
   const [fading, setFading] = useState(false);
 
-  // auto-hide after 3 seconds
-  useEffect(() => {
-    if (!visible) return;
-    const fadeTimer = setTimeout(() => setFading(true), 2500);
-    const hideTimer = setTimeout(() => setVisible(false), 3000);
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(hideTimer);
-    };
-  }, [visible]);
+  // no auto-hide — user dismisses by tapping
 
   const dismiss = () => {
     setFading(true);

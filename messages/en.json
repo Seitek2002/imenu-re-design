@@ -135,7 +135,8 @@
     "footer": {
       "totalDue": "To pay",
       "processing": "Processing...",
-      "pay": "Pay for order"
+      "pay": "Pay for order",
+      "confirm": "Confirm?"
     }
   },
   "Product": {
