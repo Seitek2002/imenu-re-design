@@ -8,15 +8,10 @@ import { ChevronRight, ReceiptText, X } from 'lucide-react';
 import { useVenueStore } from '@/store/venue';
 import { useUiFloatingStore } from '@/store/ui-floating';
 import { useTableOrderSocket } from '@/hooks/useTableOrderSocket';
+import { toMoneyNumber as toNumber, subtractMoney } from '@/types/pos-order';
 
 interface Props {
   venueSlug: string;
-}
-
-function toNumber(v: string | undefined | null): number {
-  if (!v) return 0;
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? n : 0;
 }
 
 export default function TableBillBanner({ venueSlug }: Props) {
@@ -42,9 +37,8 @@ export default function TableBillBanner({ venueSlug }: Props) {
     setDismissedKey(sessionStorage.getItem(`imenu-bill-dismissed:${venueSlug}`));
   }, [venueSlug]);
 
-  const total = toNumber(order?.total);
-  const paid = toNumber(order?.paidAmount);
-  const remaining = Math.max(0, total - paid);
+  const remainingStr = subtractMoney(order?.total ?? '0.00', order?.paidAmount ?? '0.00');
+  const remaining = toNumber(remainingStr);
   const itemsCount =
     order?.items.filter((it) => toNumber(it.qty) > 0).length ?? 0;
   const stateKey = order ? `${order.id}:${order.version}` : null;
@@ -118,7 +112,7 @@ export default function TableBillBanner({ venueSlug }: Props) {
           href={`/${venueSlug}/table-order`}
           className='flex items-center justify-between gap-2 mx-3 mb-3 h-12 rounded-xl bg-brand text-white font-bold text-sm px-4 active:scale-[0.98] transition-transform shadow-md'
         >
-          <span>{t('cta', { amount: Math.round(remaining) })}</span>
+          <span>{t('cta', { amount: remainingStr })}</span>
           <ChevronRight size={18} />
         </Link>
       </div>

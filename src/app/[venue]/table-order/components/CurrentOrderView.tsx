@@ -19,7 +19,7 @@ import { useCartLogic } from '@/hooks/useCartLogic';
 import { useOrderSummary } from '@/hooks/useOrderSummary';
 import { OrderV2 } from '@/lib/order';
 import { OrderStatus } from '@/types/api';
-import { PosOrder } from '@/types/pos-order';
+import { PosOrder, toMoneyNumber, formatMoney as formatMoneyStr, subtractMoney } from '@/types/pos-order';
 import BasketItem from '../../cart/components/BasketItem';
 
 const DrawerCheckout = dynamic(
@@ -31,20 +31,17 @@ interface Props {
   venueSlug: string;
 }
 
-function toNumber(v: string | undefined | null): number {
-  if (!v) return 0;
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? n : 0;
-}
+const toNumber = toMoneyNumber;
 
-function formatMoney(value: string | number): string {
-  const n = typeof value === 'string' ? toNumber(value) : value;
-  return Math.round(n).toString();
+function formatMoney(value: string | number | undefined | null): string {
+  if (value == null) return '0.00';
+  if (typeof value === 'string') return value;
+  return formatMoneyStr(value);
 }
 
 function formatQty(qty: string): string {
   const n = toNumber(qty);
-  return Number.isInteger(n) ? String(n) : n.toString();
+  return Number.isInteger(n) ? String(n) : String(n);
 }
 
 export default function CurrentOrderView({ venueSlug }: Props) {
@@ -100,17 +97,8 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     () => posOrder?.items.filter((it) => toNumber(it.qty) > 0) ?? [],
     [posOrder],
   );
-  const posVisibleSubtotal = useMemo(
-    () =>
-      posItems.reduce((acc, it) => {
-        const modsSum = it.modifiers.reduce(
-          (s, m) => s + toNumber(m.sum),
-          0,
-        );
-        return acc + toNumber(it.sum) + modsSum;
-      }, 0),
-    [posItems],
-  );
+  const posSubtotalDisplay = posOrder?.subtotal ?? '0.00';
+  const posSubtotalNumeric = toNumber(posOrder?.subtotal);
 
   // ===== Draft (basket) =====
   const {
@@ -141,9 +129,11 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   const [isPayOpen, setPayOpen] = useState(false);
 
-  const posTotal = toNumber(posOrder?.total);
-  const posPaid = toNumber(posOrder?.paidAmount);
-  const posRemaining = Math.max(0, posTotal - posPaid);
+  const posTotalStr = posOrder?.total ?? '0.00';
+  const posPaidStr = posOrder?.paidAmount ?? '0.00';
+  const posRemainingStr = subtractMoney(posTotalStr, posPaidStr);
+  const posRemaining = toNumber(posRemainingStr);
+  const posPaid = toNumber(posPaidStr);
 
   const venueData = useVenueStore((s) => s.data);
   const accrualPercent = venueData?.isBonusSystemEnabled ? (venueData?.bonusAccrualPercent ?? 0) : 0;
@@ -235,41 +225,35 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             icon={<Bell size={14} />}
             title={t('posOrderLabel')}
             statusLabel={t('status.open')}
-            sum={formatMoney(posVisibleSubtotal)}
-            numericSum={posVisibleSubtotal}
+            sum={formatMoney(posSubtotalDisplay)}
+            numericSum={posSubtotalNumeric}
             currency={t('currency')}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
-              {posItems.map((item) => {
-                const modsSum = item.modifiers.reduce(
-                  (acc, m) => acc + toNumber(m.sum),
-                  0,
-                );
-                const lineTotal = toNumber(item.sum) + modsSum;
-                return (
-                <li key={item.id} className='py-2.5 first:pt-0 last:pb-0'>
+              {posItems.map((item, idx) => (
+                <li key={item.id ?? idx} className='py-2.5 first:pt-0 last:pb-0'>
                   <div className='flex justify-between items-start gap-3'>
                     <div className='flex-1 min-w-0'>
                       <div className='font-medium text-[#111111] text-sm'>
                         {item.productName}
                       </div>
                       <div className='text-xs text-[#A4A4A4] mt-0.5'>
-                        {formatQty(item.qty)} × {formatMoney(item.price)} {t('currency')}
+                        {formatQty(item.qty)} × {formatMoney(item.unitPrice)} {t('currency')}
                       </div>
                       {item.modifiers.length > 0 && (
                         <ul className='mt-1 space-y-0.5'>
-                          {item.modifiers.map((m) => (
+                          {item.modifiers.map((m, mIdx) => (
                             <li
-                              key={m.id}
+                              key={m.id ?? `${idx}-${mIdx}`}
                               className='text-xs text-[#6B6B6B] flex justify-between'
                             >
                               <span className='truncate'>
                                 + {m.name}
-                                {toNumber(m.count) > 1 ? ` ×${m.count}` : ''}
+                                {toNumber(m.qty) > 1 ? ` ×${m.qty}` : ''}
                               </span>
-                              {toNumber(m.sum) > 0 && (
+                              {toNumber(m.total) > 0 && (
                                 <span className='shrink-0 ml-2'>
-                                  {formatMoney(m.sum)} {t('currency')}
+                                  {formatMoney(m.total)} {t('currency')}
                                 </span>
                               )}
                             </li>
@@ -281,19 +265,23 @@ export default function CurrentOrderView({ venueSlug }: Props) {
                           {item.comment}
                         </div>
                       ) : null}
+                      {toNumber(item.discountAmount) > 0 && (
+                        <div className='text-xs text-brand mt-1'>
+                          −{formatMoney(item.discountAmount)} {t('currency')}
+                        </div>
+                      )}
                     </div>
                     <div className='font-bold text-[#111111] whitespace-nowrap text-sm'>
-                      {formatMoney(lineTotal)} {t('currency')}
+                      {formatMoney(item.total)} {t('currency')}
                     </div>
                   </div>
                 </li>
-                );
-              })}
+              ))}
             </ul>
             {posPaid > 0 && (
               <div className='mt-3 pt-3 border-t border-[#E7E7E7] text-xs flex justify-between text-green-700'>
                 <span>{t('paid')}</span>
-                <span className='font-bold'>{formatMoney(posPaid)} {t('currency')}</span>
+                <span className='font-bold'>{formatMoney(posPaidStr)} {t('currency')}</span>
               </div>
             )}
           </TicketCard>
@@ -455,7 +443,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
                   : 'bg-brand text-white shadow-md'
               }`}
             >
-              <span>{t('payment.pay', { amount: Math.round(posRemaining) })}</span>
+              <span>{t('payment.pay', { amount: posRemainingStr })}</span>
               {earnedPosBonus > 0 && (
                 <span className={`text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full ${hasDraft ? 'bg-black/5 text-[#111111]' : 'bg-white/20'}`}>
                   +{earnedPosBonus} {t('bonusShort')}
@@ -488,7 +476,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
           open={isPayOpen}
           onClose={() => setPayOpen(false)}
           orderId={posOrder.id}
-          remaining={posRemaining}
+          remaining={posRemainingStr}
           venueSlug={venueSlug}
         />
       )}

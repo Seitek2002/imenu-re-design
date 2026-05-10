@@ -1,11 +1,11 @@
+export type PosOrderStatus = 'open' | 'paid' | 'closed' | string;
+
 export interface PosOrderModifier {
-  id: number;
-  groupId?: number;
-  groupName?: string;
+  id: number | null;
   name: string;
-  count: string;
-  price: string;
-  sum: string;
+  qty: string;
+  unitPrice: string;
+  total: string;
 }
 
 export interface PosOrderItem {
@@ -13,110 +13,53 @@ export interface PosOrderItem {
   productId: number | null;
   productName: string;
   qty: string;
-  price: string;
-  sum: string;
+  unitPrice: string;
+  subtotal: string;
+  discountAmount: string;
+  total: string;
   modifiers: PosOrderModifier[];
-  comment?: string;
+  comment: string;
 }
 
 export interface PosOrder {
   id: number;
-  venueId: number;
-  spotId: number;
-  tableId: number;
+  source: 'pos';
+  tableId: number | null;
   tableName: string;
-  status: string;
+  status: PosOrderStatus;
   guestsCount: number;
   subtotal: string;
+  discountAmount: string;
   total: string;
   paidAmount: string;
-  openedAt: string;
+  openedAt: string | null;
   closedAt: string | null;
   version: number;
-  updatedAt: string;
+  updatedAt: string | null;
   items: PosOrderItem[];
 }
 
-interface PosOrderModifierSnake {
-  id: number;
-  group_id?: number;
-  group_name?: string;
-  name: string;
-  count: string;
-  price: string;
-  sum: string;
+export type PosOrderSnapshot = PosOrder;
+
+export function toMoneyNumber(value: string | undefined | null): number {
+  if (!value) return 0;
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : 0;
 }
 
-interface PosOrderItemSnake {
-  id: number;
-  product_id: number | null;
-  product_name: string;
-  qty: string;
-  price: string;
-  sum: string;
-  modifiers: PosOrderModifierSnake[];
-  comment?: string;
+export function formatMoney(value: string | number | undefined | null): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '0.00';
+  return value.toFixed(2);
 }
 
-export interface PosOrderSnake {
-  id: number;
-  venue_id: number;
-  spot_id: number;
-  table_id: number;
-  table_name: string;
-  status: string;
-  guests_count: number;
-  subtotal: string;
-  total: string;
-  paid_amount: string;
-  opened_at: string;
-  closed_at: string | null;
-  version: number;
-  updated_at: string;
-  items: PosOrderItemSnake[];
-}
-
-export function normalizePosOrder(
-  raw: PosOrderSnake | PosOrder | null | undefined,
-): PosOrder | null {
-  if (!raw) return null;
-
-  // Already camelCase (WS payload)
-  if ('venueId' in raw) return raw as PosOrder;
-
-  const r = raw as PosOrderSnake;
-  return {
-    id: r.id,
-    venueId: r.venue_id,
-    spotId: r.spot_id,
-    tableId: r.table_id,
-    tableName: r.table_name,
-    status: r.status,
-    guestsCount: r.guests_count,
-    subtotal: r.subtotal,
-    total: r.total,
-    paidAmount: r.paid_amount,
-    openedAt: r.opened_at,
-    closedAt: r.closed_at,
-    version: r.version,
-    updatedAt: r.updated_at,
-    items: r.items.map((it) => ({
-      id: it.id,
-      productId: it.product_id,
-      productName: it.product_name,
-      qty: it.qty,
-      price: it.price,
-      sum: it.sum,
-      comment: it.comment,
-      modifiers: it.modifiers.map((m) => ({
-        id: m.id,
-        groupId: m.group_id,
-        groupName: m.group_name,
-        name: m.name,
-        count: m.count,
-        price: m.price,
-        sum: m.sum,
-      })),
-    })),
-  };
+export function subtractMoney(a: string, b: string): string {
+  const [aWhole, aFrac = ''] = a.split('.');
+  const [bWhole, bFrac = ''] = b.split('.');
+  const aCents = Number(aWhole) * 100 + Number(aFrac.padEnd(2, '0').slice(0, 2));
+  const bCents = Number(bWhole) * 100 + Number(bFrac.padEnd(2, '0').slice(0, 2));
+  const diff = Math.max(0, aCents - bCents);
+  return (diff / 100).toFixed(2);
 }
