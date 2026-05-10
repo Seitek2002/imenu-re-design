@@ -49,9 +49,8 @@ export const VenueService = {
     locale?: Locale,
     categoryIds?: number[] | null,
   ) => {
-    const categories = categoryIds && categoryIds.length > 0
-      ? categoryIds.join(',')
-      : undefined;
+    const categories =
+      categoryIds && categoryIds.length > 0 ? categoryIds : undefined;
     return apiClient<Product[]>('v2/products/', {
       params: { venueSlug, spotId: spotId ?? undefined, categories },
       locale,
