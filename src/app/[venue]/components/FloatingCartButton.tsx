@@ -39,7 +39,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
             : 'translate-y-20 opacity-0 pointer-events-none'
         }
       `}
-      style={{ bottom: billBannerOpen ? '11rem' : '5rem' }}
+      style={{ bottom: billBannerOpen ? '14.5rem' : '5rem' }}
     >
       <Link
         href={`/${venueSlug}/cart`}
