@@ -53,13 +53,14 @@ export default function BasketPage() {
     }
   }, [mounted, tableId, venueSlug, router]);
 
-  const { discount, promoDiscount, finalDisplayTotal, applied, effectiveAmount: bonusToApply } = useOrderSummary({
+  const { discount, promoDiscount, finalDisplayTotal, applied, effectiveAmount: bonusToApply, availableBonuses, maxDeductible } = useOrderSummary({
     subtotal,
     deliveryType: orderType,
     deliveryCost: deliveryPrice,
   });
 
-  const accrualPercent = venueData?.isBonusSystemEnabled ? (venueData?.bonusAccrualPercent ?? 0) : 0;
+  const isBonusEnabled = venueData?.isBonusSystemEnabled ?? false;
+  const accrualPercent = isBonusEnabled ? (venueData?.bonusAccrualPercent ?? 0) : 0;
   const earnedBonus = accrualPercent > 0 ? Math.floor((finalDisplayTotal * accrualPercent) / 100) : 0;
 
   return (
@@ -197,6 +198,9 @@ export default function BasketPage() {
             finalTotal={finalDisplayTotal}
             deliveryCost={deliveryPrice}
             bonusToApply={bonusToApply}
+            showBonusInput={isBonusEnabled}
+            availableBonuses={availableBonuses}
+            maxDeductible={maxDeductible}
           />
         </>
       )}
