@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { BellRing, Loader2, CheckCircle } from 'lucide-react';
@@ -27,8 +27,6 @@ export default function MainAction({ venueSlug }: Props) {
   const [showConfirm, setShowConfirm] = useState(false); // Модалка "Вы уверены?"
   const [showSuccess, setShowSuccess] = useState(false); // Модалка "Успешно"
   const [isLoading, setIsLoading] = useState(false); // Спиннер загрузки
-  const [showHint, setShowHint] = useState(false);
-
   const isMainPage = new RegExp(`^/${venueSlug}(?:/d)?(?:/\\d+)*$`).test(
     pathname,
   );
@@ -37,7 +35,8 @@ export default function MainAction({ venueSlug }: Props) {
   // дефолтное `bottom: 5rem` сажает колокольчик прямо на CTA — поднимаем выше.
   const isCartPage = pathname.endsWith('/cart');
   const isTableOrderPage = pathname.includes('/table-order');
-  const cartButtonVisible = cartCount > 0 && !isCartPage && !isTableOrderPage;
+  // Корзина скрыта когда баннер счёта открыт
+  const cartButtonVisible = cartCount > 0 && !isCartPage && !isTableOrderPage && !billBannerOpen;
 
   const hasBottomCta =
     pathname.includes('/cart') ||
@@ -45,21 +44,24 @@ export default function MainAction({ venueSlug }: Props) {
     billBannerOpen ||
     cartButtonVisible;
 
-  useEffect(() => {
-    if (!tableId || !isMainPage) {
-      setShowHint(false);
-      return;
-    }
+  const shouldShowHint = tableId && isMainPage;
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [showHint, setShowHint] = useState(() => {
+    if (!shouldShowHint || typeof window === 'undefined') return false;
     const storageKey = `imenu-waiter-hint:${venueSlug}`;
-    if (sessionStorage.getItem(storageKey)) return;
-
-    setShowHint(true);
+    if (sessionStorage.getItem(storageKey)) return false;
     sessionStorage.setItem(storageKey, '1');
+    return true;
+  });
 
-    const timer = window.setTimeout(() => setShowHint(false), 4000);
-    return () => window.clearTimeout(timer);
-  }, [tableId, isMainPage, venueSlug]);
+  const hideHint = useCallback(() => setShowHint(false), []);
+
+  useEffect(() => {
+    if (!showHint) return;
+    hintTimerRef.current = setTimeout(hideHint, 4000);
+    return () => { if (hintTimerRef.current) clearTimeout(hintTimerRef.current); };
+  }, [showHint, hideHint]);
 
   // Если стола нет — скрываем кнопку полностью (как и договаривались)
   if (!tableId) return null;
@@ -113,7 +115,7 @@ export default function MainAction({ venueSlug }: Props) {
           billBannerOpen
             ? { bottom: '15rem' }
             : hasBottomCta
-              ? { bottom: '11rem' }
+              ? { bottom: '10rem' }
               : undefined
         }
       >

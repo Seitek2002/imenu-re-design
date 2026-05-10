@@ -80,6 +80,16 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
+      {/* Блокируем pinch-zoom на iOS Safari — touch-action и viewport user-scalable=no там игнорируются */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('touchmove', function(e) { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+          `,
+        }}
+      />
       <body
         className={`${cruinn.variable} ${geistInter.variable} max-w-175 mx-auto antialiased`}
       >

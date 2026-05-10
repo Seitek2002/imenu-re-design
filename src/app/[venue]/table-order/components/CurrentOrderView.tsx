@@ -98,7 +98,6 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     [posOrder],
   );
   const posSubtotalDisplay = posOrder?.subtotal ?? '0.00';
-  const posSubtotalNumeric = toNumber(posOrder?.subtotal);
 
   // ===== Draft (basket) =====
   const {
@@ -182,7 +181,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
         <TableHeaderCard
           tableLabel={tableLabel}
           isConnected={isConnected}
-          ticketCount={0}
+
           tableLabelText={t('tableLabel')}
           liveOn={t('live.connected')}
           liveOff={t('live.disconnected')}
@@ -211,7 +210,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
         <TableHeaderCard
           tableLabel={tableLabel}
           isConnected={isConnected}
-          ticketCount={ticketCount}
+
           tableLabelText={t('tableLabel')}
           liveOn={t('live.connected')}
           liveOff={t('live.disconnected')}
@@ -225,8 +224,9 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             icon={<Bell size={14} />}
             title={t('posOrderLabel')}
             statusLabel={t('status.open')}
-            sum={formatMoney(posSubtotalDisplay)}
-            numericSum={posSubtotalNumeric}
+            sum={formatMoney(posOrder.total)}
+            numericSum={toNumber(posOrder.total)}
+            originalSum={formatMoney(posSubtotalDisplay)}
             currency={t('currency')}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
@@ -426,7 +426,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
               onClick={() => setCheckoutOpen(true)}
               className='w-full bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-md flex flex-row items-center justify-center gap-2 leading-tight'
             >
-              <span>{t('submitDraft', { amount: Math.round(draftFinal) })}</span>
+              <span>{t('submitDraft', { amount: formatMoney(draftFinal) })}</span>
               {earnedDraftBonus > 0 && (
                 <span className='text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full bg-white/20'>
                   +{earnedDraftBonus} {t('bonusShort')}
@@ -497,7 +497,6 @@ function CardEmpty({ children }: { children: React.ReactNode }) {
 function TableHeaderCard({
   tableLabel,
   isConnected,
-  ticketCount,
   tableLabelText,
   liveOn,
   liveOff,
@@ -505,7 +504,6 @@ function TableHeaderCard({
 }: {
   tableLabel: string;
   isConnected: boolean;
-  ticketCount: number;
   tableLabelText: string;
   liveOn: string;
   liveOff: string;
@@ -551,6 +549,7 @@ interface TicketCardProps {
   statusTone?: 'draft' | 'progress' | 'done' | 'pending';
   sum: string;
   numericSum: number;
+  originalSum?: string;
   currency: string;
   children: React.ReactNode;
 }
@@ -563,6 +562,7 @@ function TicketCard({
   statusTone,
   sum,
   numericSum,
+  originalSum,
   currency,
   children,
 }: TicketCardProps) {
@@ -612,7 +612,12 @@ function TicketCard({
             </span>
           )}
         </div>
-        <span className='font-bold text-[#111111]'>
+        <span className='font-bold text-[#111111] flex items-center gap-2'>
+          {originalSum && originalSum !== sum && (
+            <span className='line-through text-[#A4A4A4] font-normal text-xs'>
+              {originalSum} {currency}
+            </span>
+          )}
           {sum} {currency}
         </span>
       </div>

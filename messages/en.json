@@ -181,6 +181,8 @@
     "notFound": "Order not found",
     "notFoundDesc": "You may have followed a wrong link, or the order has been moved to the archive.",
     "backToMenu": "Back to menu",
+    "paymentSuccess": "Payment successful!",
+    "paymentSuccessDesc": "Thank you for your order! We're already starting to prepare it.",
     "steps": {
       "takeout": {
         "0_title": "Order received!",

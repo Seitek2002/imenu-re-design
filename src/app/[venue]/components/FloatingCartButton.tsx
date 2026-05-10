@@ -24,7 +24,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
   const isTableOrderPage = pathname.includes('/table-order');
 
   const isVisible =
-    mounted && totalCount > 0 && !isCartPage && !isTableOrderPage;
+    mounted && totalCount > 0 && !isCartPage && !isTableOrderPage && !billBannerOpen;
 
   if (!mounted || totalCount === 0) return null;
 
@@ -39,7 +39,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
             : 'translate-y-20 opacity-0 pointer-events-none'
         }
       `}
-      style={{ bottom: billBannerOpen ? '11rem' : '5rem' }}
+      style={{ bottom: '5rem' }}
     >
       <Link
         href={`/${venueSlug}/cart`}
