@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useOrderSummary } from '@/hooks/useOrderSummary';
-import { useVenueStore } from '@/store/venue';
+import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 
 import arrow from '@/assets/Cart/details-arrow.svg';
 import coinIcon from '@/assets/Widgets/widget-2.png';
@@ -13,9 +13,15 @@ interface Props {
   subtotal: number;
   deliveryType: 'takeout' | 'delivery' | 'dinein';
   deliveryCost: number;
+  isFreeDelivery?: boolean;
 }
 
-export default function OrderSummary({ subtotal, deliveryType, deliveryCost }: Props) {
+export default function OrderSummary({
+  subtotal,
+  deliveryType,
+  deliveryCost,
+  isFreeDelivery = false,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations('Cart.summary');
 
@@ -30,10 +36,6 @@ export default function OrderSummary({ subtotal, deliveryType, deliveryCost }: P
     promoDiscount,
     finalDisplayTotal,
   } = useOrderSummary({ subtotal, deliveryType, deliveryCost });
-
-  const venue = useVenueStore((s) => s.data);
-  const accrualPercent = venue?.isBonusSystemEnabled ? (venue?.bonusAccrualPercent ?? 0) : 0;
-  const earnedBonus = accrualPercent > 0 ? Math.floor((finalDisplayTotal * accrualPercent) / 100) : 0;
 
   return (
     <div className='bg-[#FAFAFA] p-3 rounded-xl mt-3'>
@@ -65,7 +67,13 @@ export default function OrderSummary({ subtotal, deliveryType, deliveryCost }: P
             {deliveryType === 'delivery' && (
               <div className='flex justify-between text-[#80868B]'>
                 <span>{t('delivery')}</span>
-                <span>{deliveryCost} c.</span>
+                {isFreeDelivery ? (
+                  <span className='text-green-600 font-semibold'>
+                    {t('freeDelivery')}
+                  </span>
+                ) : (
+                  <span>{deliveryCost} c.</span>
+                )}
               </div>
             )}
 
@@ -142,18 +150,7 @@ export default function OrderSummary({ subtotal, deliveryType, deliveryCost }: P
         </div>
       </div>
 
-      {earnedBonus > 0 && (
-        <div className='mt-3 flex items-center justify-between bg-gradient-to-r from-brand/10 to-brand/5 border border-brand/20 rounded-xl px-4 py-3'>
-          <div className='flex items-center gap-3'>
-            <Image src={coinIcon} alt='bonus' width={28} height={28} className='object-contain' />
-            <div className='flex flex-col'>
-              <span className='text-sm font-bold text-[#111] leading-tight'>{t('earnBonus')}</span>
-              <span className='text-[11px] text-gray-500'>{accrualPercent}%</span>
-            </div>
-          </div>
-          <span className='text-lg font-extrabold text-brand'>+{earnedBonus}</span>
-        </div>
-      )}
+      <BonusAccrualBadge total={finalDisplayTotal} className='mt-3' />
     </div>
   );
 }

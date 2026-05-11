@@ -55,7 +55,8 @@
       "available": "Доступно: {amount}",
       "discount": "Скидка:",
       "earnBonus": "Начислим баллов",
-      "total": "Итого"
+      "total": "Итого",
+      "freeDelivery": "Бесплатно"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -75,10 +76,13 @@
       "addComment": "+ Добавить комментарий",
       "removeComment": "− Убрать комментарий",
       "commentLabel": "Комментарий к заказу",
-      "commentPlaceholder": "Например: без лука, острая...",
+      "commentPlaceholder": "Без лука, аллергии, особые просьбы",
       "deliveryCommentLabel": "Комментарий к доставке",
-      "deliveryCommentPlaceholder": "Например: подъезд 2, 5 этаж, домофон 15",
+      "deliveryCommentPlaceholder": "Подъезд, домофон, кто встретит",
       "deliveryCommentPrefix": "[Доставка: {text}]",
+      "pickupCommentLabel": "Комментарий к самовывозу",
+      "pickupCommentPlaceholder": "Скажите, что важно при получении — мы запомним",
+      "pickupCommentPrefix": "[Самовывоз: {text}]",
       "phoneAlertEmpty": "Пожалуйста, укажите номер телефона",
       "phoneAlertLength": "Номер телефона должен состоять из 9 цифр",
       "addressAlert": "Введите адрес доставки",
@@ -118,7 +122,10 @@
       "aptPart": "кв/офис {value}",
       "mapPickTitle": "Точка на карте",
       "mapPickHintEmpty": "Укажите, куда доставить",
-      "mapPickHintSelected": "Точка выбрана"
+      "mapPickHintSelected": "Точка выбрана",
+      "zoneFree": "Адрес в зоне бесплатной доставки",
+      "zonePaid": "Адрес вне зоны бесплатной доставки",
+      "zonePaidFee": "Платная доставка: {amount} с."
     },
     "deliveryMap": {
       "title": "Укажите адрес доставки",
@@ -130,12 +137,15 @@
       "keyMissing": "Карта временно недоступна",
       "geoError": "Не удалось определить местоположение",
       "searchEmpty": "Ничего не найдено",
-      "freeDeliveryNote": "Вы находитесь в зоне бесплатной доставки"
+      "freeDeliveryNote": "Вы находитесь в зоне бесплатной доставки",
+      "paidDeliveryNote": "Вне зоны бесплатной доставки. Платная доставка: {amount} с.",
+      "outsideZoneNote": "Адрес вне зоны бесплатной доставки"
     },
     "footer": {
       "totalDue": "К оплате",
       "processing": "Обработка...",
-      "pay": "Оплатить заказ"
+      "pay": "Оплатить заказ",
+      "confirm": "Подтвердить?"
     }
   },
   "Product": {
@@ -183,6 +193,8 @@
     "backToMenu": "Вернуться к меню",
     "paymentSuccess": "Оплата прошла успешно!",
     "paymentSuccessDesc": "Спасибо за заказ! Мы уже начинаем его готовить.",
+    "resumePayment": "Продолжить оплату",
+    "cancelResume": "Отменить",
     "steps": {
       "takeout": {
         "0_title": "Заказ принят!",
@@ -348,7 +360,11 @@
       "bonusDiscount": "Скидка",
       "bonusApplied": "Бонусы",
       "checkSum": "Сумма счёта",
-      "toPay": "К оплате"
+      "toPay": "К оплате",
+      "resumePendingTitle": "Незавершённая оплата",
+      "resumePendingDesc": "Вы не завершили предыдущий платёж по счёту",
+      "resume": "Продолжить",
+      "resumeDismiss": "Закрыть"
     }
   },
   "TableOrderBar": {

@@ -4,13 +4,15 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { useCheckout } from '@/store/checkout';
-import { useVenueStore } from '@/store/venue';
 import { useClientBonus } from '@/lib/api/queries';
 import { useCreatePosPaymentLink } from '@/lib/api/pos-orders';
 import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
+import BonusAccrualBadge from '@/components/BonusAccrualBadge';
+import { savePendingPosPayment } from '@/lib/payment-link-store';
+import { useClientStore } from '@/store/client';
 import { toMoneyNumber, subtractMoney, formatMoney } from '@/types/pos-order';
 
 interface Props {
@@ -31,11 +33,7 @@ export default function PosPaymentModal({
   const t = useTranslations('TableOrder');
   const { phone, setPhone, countryId, setCountryId } = useCheckout();
   const country = getCountryById(countryId);
-
-  const venueData = useVenueStore((s) => s.data);
-  const accrualPercent = venueData?.isBonusSystemEnabled
-    ? (venueData?.bonusAccrualPercent ?? 0)
-    : 0;
+  const saveClient = useClientStore((s) => s.saveClient);
 
   const fullPhone = phone ? `+${normalizePhoneForApi(phone, country.dial)}` : '';
   const { data: bonusData } = useClientBonus({ phone: fullPhone, venueSlug });
@@ -68,8 +66,6 @@ export default function PosPaymentModal({
 
   const finalToPayStr = subtractMoney(remaining, formatMoney(bonusToUse));
   const finalToPay = toMoneyNumber(finalToPayStr);
-  const earnedBonus =
-    accrualPercent > 0 ? Math.floor((finalToPay * accrualPercent) / 100) : 0;
 
   const paymentMutation = useCreatePosPaymentLink();
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +95,23 @@ export default function PosPaymentModal({
         localStorage.setItem(hashStorageKey(savedPhone), res.phoneVerificationHash);
       } catch {}
     }
-    if (res.paymentUrl) window.location.href = res.paymentUrl;
+    saveClient({ phone: savedPhone, countryId });
+    if (res.paymentUrl) {
+      // Flag a pending bonus refresh — read on next mount of CurrentOrderView
+      // when the paygate redirects the user back to the table page.
+      try {
+        sessionStorage.setItem('bonus_refresh_pending', '1');
+      } catch {}
+      // Persist the link so we can offer "Resume payment" if the user cancels
+      // on the gateway. Cleared by CurrentOrderView when remaining drops to 0
+      // or TTL passes.
+      savePendingPosPayment({
+        posOrderId: orderId,
+        paymentUrl: res.paymentUrl,
+        savedAt: Date.now(),
+      });
+      window.location.href = res.paymentUrl;
+    }
   };
 
   const onPay = async () => {
@@ -276,12 +288,9 @@ export default function PosPaymentModal({
                 {finalToPayStr} {t('currency')}
               </span>
             </div>
-            {earnedBonus > 0 && (
-              <div className='text-[11px] text-brand'>
-                {t('earnBonus', { amount: earnedBonus })}
-              </div>
-            )}
           </div>
+
+          <BonusAccrualBadge total={finalToPay} />
 
           {error && (
             <div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3'>

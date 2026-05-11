@@ -55,7 +55,8 @@
       "available": "Available: {amount}",
       "discount": "Discount:",
       "earnBonus": "You'll earn",
-      "total": "Total"
+      "total": "Total",
+      "freeDelivery": "Free"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -74,11 +75,14 @@
       "bonusDiscount": "Discount",
       "addComment": "+ Add a comment",
       "removeComment": "− Remove comment",
-      "commentLabel": "Comment for the order",
-      "commentPlaceholder": "E.g. no onions, spicy...",
+      "commentLabel": "Order comment",
+      "commentPlaceholder": "No onions, allergies, special requests",
       "deliveryCommentLabel": "Delivery comment",
-      "deliveryCommentPlaceholder": "E.g. entrance 2, floor 5, intercom 15",
+      "deliveryCommentPlaceholder": "Entrance, intercom, who will meet",
       "deliveryCommentPrefix": "[Delivery: {text}]",
+      "pickupCommentLabel": "Pickup comment",
+      "pickupCommentPlaceholder": "Tell us what matters at pickup — we'll remember",
+      "pickupCommentPrefix": "[Pickup: {text}]",
       "phoneAlertEmpty": "Please enter your phone number",
       "phoneAlertLength": "Phone number must be 9 digits",
       "addressAlert": "Please enter your delivery address",
@@ -118,7 +122,10 @@
       "aptPart": "apt/office {value}",
       "mapPickTitle": "Point on the map",
       "mapPickHintEmpty": "Mark where to deliver",
-      "mapPickHintSelected": "Point selected"
+      "mapPickHintSelected": "Point selected",
+      "zoneFree": "Address is in the free delivery zone",
+      "zonePaid": "Address is outside the free delivery zone",
+      "zonePaidFee": "Paid delivery: {amount} c."
     },
     "deliveryMap": {
       "title": "Pin the delivery address",
@@ -130,12 +137,15 @@
       "keyMissing": "Map is temporarily unavailable",
       "geoError": "Couldn't determine your location",
       "searchEmpty": "Nothing found",
-      "freeDeliveryNote": "You are in the free delivery zone"
+      "freeDeliveryNote": "You are in the free delivery zone",
+      "paidDeliveryNote": "Outside the free zone. Paid delivery: {amount} c.",
+      "outsideZoneNote": "Address is outside the free delivery zone"
     },
     "footer": {
       "totalDue": "To pay",
       "processing": "Processing...",
-      "pay": "Pay for order"
+      "pay": "Pay for order",
+      "confirm": "Confirm?"
     }
   },
   "Product": {
@@ -183,6 +193,8 @@
     "backToMenu": "Back to menu",
     "paymentSuccess": "Payment successful!",
     "paymentSuccessDesc": "Thank you for your order! We're already starting to prepare it.",
+    "resumePayment": "Resume payment",
+    "cancelResume": "Cancel",
     "steps": {
       "takeout": {
         "0_title": "Order received!",
@@ -348,7 +360,11 @@
       "bonusDiscount": "Discount",
       "bonusApplied": "Bonuses",
       "checkSum": "Check total",
-      "toPay": "To pay"
+      "toPay": "To pay",
+      "resumePendingTitle": "Unfinished payment",
+      "resumePendingDesc": "You didn't complete the previous payment for this check",
+      "resume": "Resume",
+      "resumeDismiss": "Dismiss"
     }
   },
   "TableOrderBar": {

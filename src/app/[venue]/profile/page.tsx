@@ -1,88 +1,283 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import {
+  ChevronLeft,
+  Pencil,
+  ArrowRight,
+  ChevronRight,
+  Plus,
+  X,
+  Store,
+  ShoppingBag,
+  MessageSquareText,
+  MapPin,
+  CreditCard,
+  LogOut,
+  User as UserIcon,
+} from 'lucide-react';
+import { useClientStore } from '@/store/client';
+import { useClient, useClientBonus } from '@/lib/api/queries';
+import { getCountryById } from '@/lib/helpers/countryCodes';
 
-const ProfilePage = () => {
-  const t = useTranslations('Profile');
+const TASTES = ['Без лука', 'Без кинзы', 'Без острого', 'Без чеснока'];
+const ADDRESSES = [
+  { id: 'home', label: 'Дом', address: 'ул. Киевская 95, кв. 12' },
+  { id: 'work', label: 'Работа', address: 'пр. Чуй 219' },
+];
+const PAYMENTS = [
+  { id: 'visa', brand: 'VISA', last: '4242' },
+  { id: 'mc', brand: 'MC', last: '8810' },
+];
+
+export default function ProfilePage() {
+  const { venue } = useParams<{ venue: string }>();
+  const router = useRouter();
+  const phone = useClientStore((s) => s.phone);
+  const countryId = useClientStore((s) => s.countryId);
+  const clear = useClientStore((s) => s.clear);
+
+  const fullPhone = phone
+    ? `+${getCountryById(countryId).dial}${phone}`
+    : '';
+
+  const { data: client, isLoading: clientLoading } = useClient(phone);
+  const { data: bonus, isLoading: bonusLoading } = useClientBonus({
+    phone,
+    venueSlug: venue,
+  });
+
+  const handleLogout = () => {
+    clear();
+    router.push(`/${venue}`);
+  };
+
+  if (!phone) {
+    return <EmptyState venueSlug={venue} />;
+  }
+
+  const displayName =
+    [client?.firstname, client?.lastname].filter(Boolean).join(' ').trim() ||
+    'Гость';
+
   return (
-    <div className='relative min-h-screen bg-[#F8F6F7] overflow-hidden'>
-      {/* --- ЗАДНИЙ ПЛАН (Фейковый интерфейс) --- */}
-      {/* Мы используем blur-sm и opacity-60, чтобы создать эффект "за стеклом".
-          pointer-events-none, чтобы нельзя было нажать. */}
-      <div className='filter blur-[6px] opacity-40 pointer-events-none select-none p-5 flex flex-col gap-6 h-screen'>
-        {/* Фейковая шапка профиля */}
-        <div className='flex items-center gap-4 mt-8'>
-          <div className='w-20 h-20 bg-gray-300 rounded-full animate-pulse' />
-          <div className='flex flex-col gap-2'>
-            <div className='w-40 h-6 bg-gray-300 rounded animate-pulse' />
-            <div className='w-24 h-4 bg-gray-200 rounded animate-pulse' />
+    <div className='min-h-svh pb-24'>
+      <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
+        <Link
+          href={`/${venue}`}
+          className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
+          aria-label='Назад'
+        >
+          <ChevronLeft size={24} />
+        </Link>
+        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>Аккаунт</h1>
+        <button
+          className='ml-auto w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
+          aria-label='Редактировать'
+        >
+          <Pencil size={18} />
+        </button>
+      </header>
+
+      <div className='px-4 mt-2 flex flex-col gap-3'>
+        <section className='grid grid-cols-[1.45fr_1fr] gap-3'>
+          <div className='bg-white rounded-2xl p-4'>
+            <div className='text-[13px] text-[#9E9E9E]'>Имя</div>
+            <div className='mt-1 flex items-center justify-between'>
+              <span className='text-[15px] font-bold text-[#21201F] truncate'>
+                {clientLoading ? '…' : displayName}
+              </span>
+              <Pencil size={14} className='text-[#9E9E9E] shrink-0' />
+            </div>
+            <div className='mt-3 text-[12px] text-[#9E9E9E]'>{fullPhone}</div>
           </div>
-        </div>
+          <Link
+            href={`/${venue}/profile/points`}
+            className='bg-[#21201F] text-white rounded-2xl p-4 flex flex-col justify-between active:scale-[0.99] transition-transform'
+          >
+            <div className='flex items-center justify-between text-[12px] opacity-70'>
+              <span>Баллы</span>
+              <ArrowRight size={14} />
+            </div>
+            <div className='mt-2 text-[22px] font-extrabold'>
+              {bonusLoading ? '…' : (bonus?.bonus ?? 0).toLocaleString('ru-RU').replace(',', ' ')}
+            </div>
+          </Link>
+        </section>
 
-        {/* Фейковые карточки статистики */}
-        <div className='grid grid-cols-2 gap-3'>
-          <div className='h-24 bg-gray-200 rounded-3xl' />
-          <div className='h-24 bg-gray-200 rounded-3xl' />
-        </div>
+        <SoonSection title='Вкусовые предпочтения' subtitle='Учтём при формировании заказа'>
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {TASTES.map((t) => (
+              <span
+                key={t}
+                className='inline-flex items-center gap-1.5 h-[30px] px-3 rounded-full bg-[#F4F1EE] text-[12px] text-[#21201F]'
+              >
+                {t}
+                <X size={12} className='text-[#9E9E9E]' />
+              </span>
+            ))}
+            <button className='inline-flex items-center gap-1.5 h-[30px] px-3 rounded-full border border-dashed border-[#D7D2CC] text-[12px] text-[#9E9E9E]'>
+              <Plus size={12} />
+              Добавить
+            </button>
+          </div>
+        </SoonSection>
 
-        {/* Фейковое меню */}
-        <div className='flex flex-col gap-3 mt-4'>
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className='h-16 bg-white rounded-2xl flex items-center px-4 justify-between'
-            >
-              <div className='flex items-center gap-4'>
-                <div className='w-8 h-8 bg-gray-100 rounded-lg' />
-                <div className='w-32 h-4 bg-gray-100 rounded' />
+        <SoonSection title='Мои адреса' count={ADDRESSES.length}>
+          <div className='mt-3 grid grid-cols-3 gap-2'>
+            {ADDRESSES.map((a) => (
+              <div
+                key={a.id}
+                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2'
+              >
+                <div className='flex items-center gap-1.5'>
+                  <MapPin size={14} className='text-brand' />
+                  <span className='text-[12px] font-semibold'>{a.label}</span>
+                </div>
+                <div className='text-[11px] text-[#9E9E9E] leading-snug line-clamp-2'>
+                  {a.address}
+                </div>
               </div>
-              <div className='w-4 h-4 bg-gray-100 rounded-full' />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* --- ПЕРЕДНИЙ ПЛАН (Контент) --- */}
-      <div className='absolute inset-0 flex flex-col items-center justify-center z-10 px-6'>
-        {/* Анимированная иконка замка или профиля */}
-        <div className='relative mb-6'>
-          <div className='absolute inset-0 bg-[#FFE600] rounded-full blur-xl opacity-20 animate-pulse' />
-          <div className='relative w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center -rotate-6'>
-            <span className='text-5xl'>👤</span>
-            {/* Маленький замочек */}
-            <div className='absolute -top-2 -right-2 bg-[#21201F] text-white w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-md rotate-12'>
-              🔒
-            </div>
+            ))}
+            <button className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'>
+              <Plus size={16} />
+              <span className='text-[11px]'>Добавить</span>
+            </button>
           </div>
-        </div>
+        </SoonSection>
 
-        <h1 className='text-2xl font-bold text-[#21201F] text-center mb-3'>
-          {t('title')}
-        </h1>
+        <SoonSection title='Способы оплаты' count={PAYMENTS.length}>
+          <div className='mt-3 grid grid-cols-3 gap-2'>
+            {PAYMENTS.map((p) => (
+              <div
+                key={p.id}
+                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-3'
+              >
+                <CreditCard size={18} className='text-[#21201F]' />
+                <div className='flex items-center gap-1 text-[12px] text-[#21201F]'>
+                  <span className='inline-flex gap-[2px]'>
+                    <Dot /><Dot /><Dot /><Dot />
+                  </span>
+                  <span>{p.last}</span>
+                </div>
+              </div>
+            ))}
+            <button className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'>
+              <Plus size={16} />
+              <span className='text-[11px]'>Добавить</span>
+            </button>
+          </div>
+        </SoonSection>
 
-        <p className='text-[#9E9E9E] text-center mb-8 max-w-70 leading-relaxed'>
-          {t('description')}
-        </p>
+        <section className='bg-white rounded-2xl p-4'>
+          <div className='text-[13px] font-semibold text-[#21201F]'>Быстрые ссылки</div>
+          <div className='mt-3 grid grid-cols-3 gap-2'>
+            <Link
+              href={`/${venue}/history`}
+              className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'
+            >
+              <ShoppingBag size={20} />
+              <span className='text-[11px]'>Заказы</span>
+            </Link>
+            <QuickLink icon={<Store size={20} />} label='Филиалы' />
+            <QuickLink icon={<MessageSquareText size={20} />} label='Чат' />
+          </div>
+        </section>
 
-        {/* Кнопки */}
-        <div className='flex flex-col gap-3 w-full max-w-xs'>
-          {/* <Link
-            href='/'
-            className='w-full py-3.5 bg-[#21201F] text-white rounded-2xl font-bold text-center shadow-lg active:scale-95 transition-transform'
-          >
-            Перейти к меню
-          </Link> */}
-
-          <button
-            disabled
-            className='w-full py-3.5 bg-white text-[#9E9E9E] rounded-2xl font-medium text-center border border-gray-100 cursor-not-allowed'
-          >
-            {t('loginSoon')}
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className='bg-white rounded-2xl p-4 flex items-center gap-3 text-[14px] text-[#E0533A] font-medium active:scale-[0.99] transition-transform'
+        >
+          <LogOut size={18} />
+          Выйти из аккаунта
+        </button>
       </div>
     </div>
   );
-};
+}
 
-export default ProfilePage;
+function EmptyState({ venueSlug }: { venueSlug: string }) {
+  return (
+    <div className='min-h-svh pb-24 flex flex-col'>
+      <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
+        <Link
+          href={`/${venueSlug}`}
+          className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
+          aria-label='Назад'
+        >
+          <ChevronLeft size={24} />
+        </Link>
+        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>Аккаунт</h1>
+      </header>
+
+      <div className='flex-1 flex flex-col items-center justify-center px-6 text-center'>
+        <div className='w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-5'>
+          <UserIcon size={36} className='text-[#C4B59C]' strokeWidth={1.5} />
+        </div>
+        <h2 className='text-[18px] font-bold text-[#21201F]'>Войдите в аккаунт</h2>
+        <p className='mt-2 text-[13px] text-[#9E9E9E] max-w-xs'>
+          Оформите первый заказ — мы запомним ваш номер, чтобы показать историю, баллы и любимые блюда.
+        </p>
+        <Link
+          href={`/${venueSlug}`}
+          className='mt-6 inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium active:scale-[0.99] transition-transform'
+        >
+          Перейти в меню
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SoonSection({
+  title,
+  subtitle,
+  count,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  count?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className='bg-white rounded-2xl p-4 relative'>
+      <div className='flex items-center justify-between'>
+        <div>
+          <div className='text-[13px] font-semibold text-[#21201F]'>
+            {title}
+            {count != null && (
+              <span className='text-[#9E9E9E] font-normal ml-1'>({count})</span>
+            )}
+          </div>
+          {subtitle && (
+            <div className='mt-1 text-[12px] text-[#9E9E9E]'>{subtitle}</div>
+          )}
+        </div>
+        <div className='flex items-center gap-2'>
+          <span className='text-[10px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-2 py-0.5 rounded-full'>
+            скоро
+          </span>
+          <button className='flex items-center gap-1 text-[12px] text-[#9E9E9E]'>
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function QuickLink({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <button className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'>
+      {icon}
+      <span className='text-[11px]'>{label}</span>
+    </button>
+  );
+}
+
+function Dot() {
+  return <span className='w-[3px] h-[3px] rounded-full bg-[#21201F]' />;
+}

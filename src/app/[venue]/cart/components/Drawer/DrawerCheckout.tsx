@@ -19,6 +19,8 @@ import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
 
 import { markPaymentSuccess } from '@/app/[venue]/order-status/[orderId]/components/PaymentSuccessOverlay';
+import { useClientStore } from '@/store/client';
+import { savePendingPayment } from '@/lib/payment-link-store';
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
 import PaymentMethodRow from './PaymentMethodRow';
@@ -112,6 +114,7 @@ const DrawerCheckout: FC<IProps> = ({
 
   // --- API ---
   const createOrderMutation = useCreateOrderV2();
+  const saveClient = useClientStore((s) => s.saveClient);
 
   const {
     phone: storedPhone,
@@ -125,6 +128,11 @@ const DrawerCheckout: FC<IProps> = ({
     setDeliveryCoords,
     needUtensils,
     comment,
+    setComment,
+    deliveryComment,
+    setDeliveryComment,
+    pickupComment,
+    setPickupComment,
     resetOrderOptions,
   } = useCheckout();
 
@@ -145,7 +153,6 @@ const DrawerCheckout: FC<IProps> = ({
   const spotId = useVenueStore((state) => state.spotId);
   const venueData = useVenueStore((state) => state.data);
 
-  const [deliveryComment, setDeliveryComment] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
@@ -252,6 +259,9 @@ const DrawerCheckout: FC<IProps> = ({
       if (orderType === 'delivery' && deliveryComment.trim()) {
         parts.push(t('deliveryCommentPrefix', { text: deliveryComment.trim() }));
       }
+      if (orderType === 'takeout' && pickupComment.trim()) {
+        parts.push(t('pickupCommentPrefix', { text: pickupComment.trim() }));
+      }
       const finalComment = parts.join('\n');
 
       const fullPhone = normalizePhoneForApi(phone, country.dial);
@@ -326,8 +336,13 @@ const DrawerCheckout: FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
       markPaymentSuccess(response.id);
+      saveClient({ phone, countryId });
 
       if (response.paymentUrl) {
+        savePendingPayment({
+          orderId: response.id,
+          paymentUrl: response.paymentUrl,
+        });
         window.location.href = response.paymentUrl;
       } else {
         closeSheet();
@@ -361,8 +376,13 @@ const DrawerCheckout: FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
       markPaymentSuccess(response.id);
+      saveClient({ phone, countryId });
 
       if (response.paymentUrl) {
+        savePendingPayment({
+          orderId: response.id,
+          paymentUrl: response.paymentUrl,
+        });
         window.location.href = response.paymentUrl;
       } else {
         closeSheet();
@@ -502,19 +522,50 @@ const DrawerCheckout: FC<IProps> = ({
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
                     />
-                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                      <span className='text-[#A4A4A4] text-xs mb-1'>
-                        {t('deliveryCommentLabel')}
-                      </span>
-                      <input
-                        type='text'
-                        value={deliveryComment}
-                        onChange={(e) => setDeliveryComment(e.target.value)}
-                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                        placeholder={t('deliveryCommentPlaceholder')}
-                      />
-                    </label>
                   </div>
+                )}
+
+                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                  <span className='text-[#A4A4A4] text-xs mb-1'>
+                    {t('commentLabel')}
+                  </span>
+                  <input
+                    type='text'
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                    placeholder={t('commentPlaceholder')}
+                  />
+                </label>
+
+                {orderType === 'delivery' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {t('deliveryCommentLabel')}
+                    </span>
+                    <input
+                      type='text'
+                      value={deliveryComment}
+                      onChange={(e) => setDeliveryComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('deliveryCommentPlaceholder')}
+                    />
+                  </label>
+                )}
+
+                {orderType === 'takeout' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {t('pickupCommentLabel')}
+                    </span>
+                    <input
+                      type='text'
+                      value={pickupComment}
+                      onChange={(e) => setPickupComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('pickupCommentPlaceholder')}
+                    />
+                  </label>
                 )}
 
                 <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>
@@ -613,19 +664,50 @@ const DrawerCheckout: FC<IProps> = ({
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
                     />
-                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                      <span className='text-[#A4A4A4] text-xs mb-1'>
-                        {t('deliveryCommentLabel')}
-                      </span>
-                      <input
-                        type='text'
-                        value={deliveryComment}
-                        onChange={(e) => setDeliveryComment(e.target.value)}
-                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                        placeholder={t('deliveryCommentPlaceholder')}
-                      />
-                    </label>
                   </div>
+                )}
+
+                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                  <span className='text-[#A4A4A4] text-xs mb-1'>
+                    {t('commentLabel')}
+                  </span>
+                  <input
+                    type='text'
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                    placeholder={t('commentPlaceholder')}
+                  />
+                </label>
+
+                {orderType === 'delivery' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {t('deliveryCommentLabel')}
+                    </span>
+                    <input
+                      type='text'
+                      value={deliveryComment}
+                      onChange={(e) => setDeliveryComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('deliveryCommentPlaceholder')}
+                    />
+                  </label>
+                )}
+
+                {orderType === 'takeout' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {t('pickupCommentLabel')}
+                    </span>
+                    <input
+                      type='text'
+                      value={pickupComment}
+                      onChange={(e) => setPickupComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('pickupCommentPlaceholder')}
+                    />
+                  </label>
                 )}
 
                 <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>

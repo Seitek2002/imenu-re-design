@@ -138,6 +138,29 @@ async function fetchClientBonus(
   return res.json();
 }
 
+async function fetchClient(
+  phone: string,
+  locale: Locale,
+): Promise<import('@/types/api').Client> {
+  const normalized = normalizePhoneForApi(phone);
+  const res = await fetch(`${API_BASE}/clients/${normalized}/`, {
+    method: 'GET',
+    headers: buildHeaders(locale),
+  });
+  if (!res.ok) throw new Error('Failed to fetch client');
+  return res.json();
+}
+
+export const useClient = (phone: string) => {
+  const locale = useLocale() as Locale;
+  return useQuery({
+    queryKey: ['client', phone, locale],
+    queryFn: () => fetchClient(phone, locale),
+    enabled: !!phone && phone.length > 5,
+    staleTime: 1000 * 60,
+  });
+};
+
 export const useClientBonus = ({
   phone,
   venueSlug,
@@ -154,8 +177,11 @@ export const useClientBonus = ({
     // Грузим только если есть телефон и слаг
     enabled: !!phone && phone.length > 5 && !!venueSlug,
 
-    // Бонусы не меняются каждую секунду, можно не обновлять слишком часто
-    staleTime: 1000 * 60 * 5, // 5 минут кеша
+    // Балансы должны быть свежими: маленький staleTime + рефетч на фокус/маунт.
+    // Глобальный refetchOnWindowFocus=false переопределяем тут точечно.
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
   });
 };
 

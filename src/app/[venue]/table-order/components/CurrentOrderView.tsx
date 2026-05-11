@@ -11,6 +11,11 @@ import { Bell, Plus, ReceiptText, UtensilsCrossed } from 'lucide-react';
 import { useVenueStore } from '@/store/venue';
 import { useCheckout } from '@/store/checkout';
 import { useCurrentPosOrder } from '@/lib/api/pos-orders';
+import {
+  clearPendingPosPayment,
+  getPendingPosPayment,
+  isPosPaymentLinkFresh,
+} from '@/lib/payment-link-store';
 import PosPaymentModal from './PosPaymentModal';
 import { useTableOrderSocket } from '@/hooks/useTableOrderSocket';
 import { useMounted } from '@/hooks/useMounted';
@@ -92,6 +97,16 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     }
   }, [reconnectKey, queryClient, tableId]);
 
+  // Refresh bonus balance after returning from POS payment gateway.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('bonus_refresh_pending') === '1') {
+        sessionStorage.removeItem('bonus_refresh_pending');
+        queryClient.invalidateQueries({ queryKey: ['bonus'] });
+      }
+    } catch {}
+  }, [queryClient]);
+
   const posOrder: PosOrder | null = hasSnapshot ? wsOrder : (restOrder ?? null);
   const posItems = useMemo(
     () => posOrder?.items.filter((it) => toNumber(it.qty) > 0) ?? [],
@@ -139,6 +154,35 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const earnedDraftBonus = accrualPercent > 0 ? Math.floor((draftFinal * accrualPercent) / 100) : 0;
   const earnedPosBonus = accrualPercent > 0 ? Math.floor((posRemaining * accrualPercent) / 100) : 0;
   const canPayPos = !!posOrder && posRemaining > 0;
+
+  // Resume-payment banner: if user returned from paygate without completing,
+  // surface the saved link as long as the bill still has something to pay.
+  const [posResumeUrl, setPosResumeUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!posOrder?.id) {
+      setPosResumeUrl(null);
+      return;
+    }
+    const saved = getPendingPosPayment(posOrder.id);
+    if (!saved) {
+      setPosResumeUrl(null);
+      return;
+    }
+    if (posRemaining <= 0 || !isPosPaymentLinkFresh(saved)) {
+      clearPendingPosPayment(posOrder.id);
+      setPosResumeUrl(null);
+      return;
+    }
+    setPosResumeUrl(saved.paymentUrl);
+  }, [posOrder?.id, posRemaining]);
+
+  const handleResumePos = () => {
+    if (posResumeUrl) window.location.href = posResumeUrl;
+  };
+  const handleDismissResumePos = () => {
+    if (posOrder?.id) clearPendingPosPayment(posOrder.id);
+    setPosResumeUrl(null);
+  };
 
   // ===== Aggregate counts =====
   const ticketCount =
@@ -421,6 +465,33 @@ export default function CurrentOrderView({ venueSlug }: Props) {
       {/* === Sticky bottom action === */}
       <div className='fixed bottom-16 left-0 right-0 z-40 max-w-175 mx-auto px-3 pb-2'>
         <div className='bg-white rounded-2xl shadow-2xl border border-[#E7E7E7] p-3 flex flex-col gap-2'>
+          {posResumeUrl && canPayPos && (
+            <div className='flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2'>
+              <div className='flex-1 min-w-0'>
+                <div className='text-[#111111] text-xs font-bold leading-tight'>
+                  {t('payment.resumePendingTitle')}
+                </div>
+                <div className='text-[11px] text-[#6B6B6B] leading-tight mt-0.5'>
+                  {t('payment.resumePendingDesc')}
+                </div>
+              </div>
+              <button
+                type='button'
+                onClick={handleResumePos}
+                className='h-9 px-3 rounded-lg bg-brand text-white text-xs font-bold active:scale-95 transition-transform whitespace-nowrap'
+              >
+                {t('payment.resume')}
+              </button>
+              <button
+                type='button'
+                onClick={handleDismissResumePos}
+                className='h-9 w-9 flex items-center justify-center text-[#6B6B6B] hover:text-[#111] active:scale-95 transition-transform'
+                aria-label={t('payment.resumeDismiss')}
+              >
+                ✕
+              </button>
+            </div>
+          )}
           {hasDraft && (
             <button
               onClick={() => setCheckoutOpen(true)}

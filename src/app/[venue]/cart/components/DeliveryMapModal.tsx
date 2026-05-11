@@ -20,7 +20,8 @@ interface Props {
   open: boolean;
   initialCoords: Coords | null;
   venueCoords?: Coords | null;
-  deliveryRadiusKm?: number | null;
+  freeDeliveryRadiusKm?: number | null;
+  deliveryFixedFee?: number;
   onClose: () => void;
   onConfirm: (coords: Coords, address: string) => void;
 }
@@ -31,7 +32,8 @@ const DeliveryMapModal: FC<Props> = ({
   open,
   initialCoords,
   venueCoords,
-  deliveryRadiusKm,
+  freeDeliveryRadiusKm,
+  deliveryFixedFee = 0,
   onClose,
   onConfirm,
 }) => {
@@ -45,8 +47,8 @@ const DeliveryMapModal: FC<Props> = ({
 
   // true = адрес внутри зоны бесплатной доставки
   const isFreeDelivery =
-    !!venueCoords && !!deliveryRadiusKm &&
-    distanceKm(venueCoords, coords) <= deliveryRadiusKm;
+    !!venueCoords && !!freeDeliveryRadiusKm &&
+    distanceKm(venueCoords, coords) <= freeDeliveryRadiusKm;
 
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
@@ -191,7 +193,7 @@ const DeliveryMapModal: FC<Props> = ({
           onReady={() => setMapReady(true)}
           flyToRef={flyToRef}
           venueCoords={venueCoords}
-          deliveryRadiusKm={deliveryRadiusKm}
+          freeDeliveryRadiusKm={freeDeliveryRadiusKm}
         />
 
         {/* Centre pin — pointer-events-none so map stays interactive */}
@@ -219,10 +221,18 @@ const DeliveryMapModal: FC<Props> = ({
             {address || t('hint')}
           </div>
         </div>
-        {isFreeDelivery && (
-          <p className='text-xs text-green-600 font-medium mb-2'>
-            {t('freeDeliveryNote')}
-          </p>
+        {!!freeDeliveryRadiusKm && !!venueCoords && (
+          isFreeDelivery ? (
+            <p className='text-xs text-green-600 font-medium mb-2'>
+              {t('freeDeliveryNote')}
+            </p>
+          ) : (
+            <p className='text-xs text-amber-700 font-medium mb-2'>
+              {deliveryFixedFee > 0
+                ? t('paidDeliveryNote', { amount: deliveryFixedFee })
+                : t('outsideZoneNote')}
+            </p>
+          )
         )}
         <button
           type='button'

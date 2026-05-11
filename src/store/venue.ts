@@ -29,6 +29,8 @@ export interface Venue {
   latitude?: number | null;
   longitude?: number | null;
   deliveryRadiusKm?: number | null;
+  /** Decimal string per swagger (e.g. "5.00"). Parse with parseFloat. */
+  freeDeliveryRadiusKm?: string | null;
   spots: VenueSpot[];
   schedules: VenueSchedule[];
   colorTheme?: string;

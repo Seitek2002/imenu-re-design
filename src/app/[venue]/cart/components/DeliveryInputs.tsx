@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { MapPin, Check } from 'lucide-react';
 
-import type { Coords } from '@/lib/osm-maps';
+import { distanceKm, type Coords } from '@/lib/osm-maps';
 import DeliveryMapModal from './DeliveryMapModal';
 import { useVenueStore } from '@/store/venue';
 
@@ -27,7 +27,10 @@ export default function DeliveryInputs({
     venue?.latitude && venue?.longitude
       ? { lat: venue.latitude, lng: venue.longitude }
       : null;
-  const deliveryRadiusKm = venue?.deliveryRadiusKm ?? null;
+  const freeDeliveryRadiusKm = venue?.freeDeliveryRadiusKm
+    ? parseFloat(venue.freeDeliveryRadiusKm)
+    : null;
+  const deliveryFixedFee = parseFloat(venue?.deliveryFixedFee || '0');
 
   const [street, setStreet] = useState(initialStreet ?? '');
   const [entrance, setEntrance] = useState('');
@@ -55,6 +58,11 @@ export default function DeliveryInputs({
     setMapOpen(false);
   };
 
+  const insideFreeZone =
+    !!venueCoords && !!coords && !!freeDeliveryRadiusKm
+      ? distanceKm(venueCoords, coords) <= freeDeliveryRadiusKm
+      : null;
+
   return (
     <div className='flex flex-col gap-2 animate-fadeIn'>
       {/* Точка на карте */}
@@ -81,6 +89,32 @@ export default function DeliveryInputs({
           </span>
         </div>
       </button>
+
+      {insideFreeZone !== null && (
+        <div
+          className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ${
+            insideFreeZone
+              ? 'bg-green-50 text-green-700'
+              : 'bg-amber-50 text-amber-800'
+          }`}
+        >
+          {insideFreeZone ? (
+            <>
+              <Check size={14} strokeWidth={2.5} />
+              <span>{t('zoneFree')}</span>
+            </>
+          ) : (
+            <>
+              <MapPin size={14} strokeWidth={2.5} />
+              <span>
+                {deliveryFixedFee > 0
+                  ? t('zonePaidFee', { amount: deliveryFixedFee })
+                  : t('zonePaid')}
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Улица */}
       <label className='bg-[#F5F5F5] flex flex-col rounded-xl py-2 px-4 focus-within:ring-1 focus-within:ring-brand/20 transition-all'>
@@ -137,7 +171,8 @@ export default function DeliveryInputs({
         open={mapOpen}
         initialCoords={coords}
         venueCoords={venueCoords}
-        deliveryRadiusKm={deliveryRadiusKm}
+        freeDeliveryRadiusKm={freeDeliveryRadiusKm}
+        deliveryFixedFee={deliveryFixedFee}
         onClose={() => setMapOpen(false)}
         onConfirm={handleMapConfirm}
       />

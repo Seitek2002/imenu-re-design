@@ -34,6 +34,7 @@ export default function BasketPage() {
     subtotal,
     total: cartTotal, // Переименуем, так как это "грязная" цена без бонусов
     deliveryPrice,
+    isFreeDelivery,
   } = useCartLogic();
 
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
@@ -156,6 +157,7 @@ export default function BasketPage() {
               deliveryCost={deliveryPrice}
               subtotal={subtotal}
               deliveryType={orderType}
+              isFreeDelivery={isFreeDelivery}
             />
           </div>
         )}
