@@ -19,6 +19,7 @@ import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
 
 import { markPaymentSuccess } from '@/app/[venue]/order-status/[orderId]/components/PaymentSuccessOverlay';
+import { savePendingPayment } from '@/lib/payment-link-store';
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
 import PaymentMethodRow from './PaymentMethodRow';
@@ -335,6 +336,10 @@ const DrawerCheckout: FC<IProps> = ({
       markPaymentSuccess(response.id);
 
       if (response.paymentUrl) {
+        savePendingPayment({
+          orderId: response.id,
+          paymentUrl: response.paymentUrl,
+        });
         window.location.href = response.paymentUrl;
       } else {
         closeSheet();
@@ -370,6 +375,10 @@ const DrawerCheckout: FC<IProps> = ({
       markPaymentSuccess(response.id);
 
       if (response.paymentUrl) {
+        savePendingPayment({
+          orderId: response.id,
+          paymentUrl: response.paymentUrl,
+        });
         window.location.href = response.paymentUrl;
       } else {
         closeSheet();

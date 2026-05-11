@@ -187,6 +187,8 @@
     "backToMenu": "Вернуться к меню",
     "paymentSuccess": "Оплата прошла успешно!",
     "paymentSuccessDesc": "Спасибо за заказ! Мы уже начинаем его готовить.",
+    "resumePayment": "Продолжить оплату",
+    "cancelResume": "Отменить",
     "steps": {
       "takeout": {
         "0_title": "Заказ принят!",
@@ -352,7 +354,11 @@
       "bonusDiscount": "Скидка",
       "bonusApplied": "Бонусы",
       "checkSum": "Сумма счёта",
-      "toPay": "К оплате"
+      "toPay": "К оплате",
+      "resumePendingTitle": "Незавершённая оплата",
+      "resumePendingDesc": "Вы не завершили предыдущий платёж по счёту",
+      "resume": "Продолжить",
+      "resumeDismiss": "Закрыть"
     }
   },
   "TableOrderBar": {

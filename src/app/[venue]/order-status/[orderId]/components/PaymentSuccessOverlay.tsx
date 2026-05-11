@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
+import { clearPendingPayment } from '@/lib/payment-link-store';
 
 const STORAGE_KEY = 'payment_success';
 
@@ -37,11 +38,13 @@ export default function PaymentSuccessOverlay({ orderId }: Props) {
   });
   const [fading, setFading] = useState(false);
 
-  // After a successful payment the bonus balance has just changed server-side.
+  // After a successful payment the bonus balance has just changed server-side,
+  // and the saved payment-link is no longer relevant.
   useEffect(() => {
     if (!visible) return;
     queryClient.invalidateQueries({ queryKey: ['bonus'] });
-  }, [visible, queryClient]);
+    clearPendingPayment(orderId);
+  }, [visible, queryClient, orderId]);
 
   // no auto-hide — user dismisses by tapping
 

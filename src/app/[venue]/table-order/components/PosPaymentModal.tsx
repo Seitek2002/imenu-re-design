@@ -11,6 +11,7 @@ import { getCountryById } from '@/lib/helpers/countryCodes';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
+import { savePendingPosPayment } from '@/lib/payment-link-store';
 import { toMoneyNumber, subtractMoney, formatMoney } from '@/types/pos-order';
 
 interface Props {
@@ -98,6 +99,14 @@ export default function PosPaymentModal({
       try {
         sessionStorage.setItem('bonus_refresh_pending', '1');
       } catch {}
+      // Persist the link so we can offer "Resume payment" if the user cancels
+      // on the gateway. Cleared by CurrentOrderView when remaining drops to 0
+      // or TTL passes.
+      savePendingPosPayment({
+        posOrderId: orderId,
+        paymentUrl: res.paymentUrl,
+        savedAt: Date.now(),
+      });
       window.location.href = res.paymentUrl;
     }
   };

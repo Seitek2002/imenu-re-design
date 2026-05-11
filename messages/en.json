@@ -187,6 +187,8 @@
     "backToMenu": "Back to menu",
     "paymentSuccess": "Payment successful!",
     "paymentSuccessDesc": "Thank you for your order! We're already starting to prepare it.",
+    "resumePayment": "Resume payment",
+    "cancelResume": "Cancel",
     "steps": {
       "takeout": {
         "0_title": "Order received!",
@@ -352,7 +354,11 @@
       "bonusDiscount": "Discount",
       "bonusApplied": "Bonuses",
       "checkSum": "Check total",
-      "toPay": "To pay"
+      "toPay": "To pay",
+      "resumePendingTitle": "Unfinished payment",
+      "resumePendingDesc": "You didn't complete the previous payment for this check",
+      "resume": "Resume",
+      "resumeDismiss": "Dismiss"
     }
   },
   "TableOrderBar": {

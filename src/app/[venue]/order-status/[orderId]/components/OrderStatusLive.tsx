@@ -10,6 +10,7 @@ import { useOrderByIdV2 } from '@/lib/api/queries';
 import StatusProgressBar from './StatusProgressBar';
 import OrderItemsList from './OrderItemsList';
 import PaymentCountdown from './PaymentCountdown';
+import PaymentResumeAction from './PaymentResumeAction';
 
 interface Props {
   initialOrder: OrderV2;
@@ -44,6 +45,12 @@ export default function OrderStatusLive({ initialOrder }: Props) {
       />
       {isPendingPayment && order.paymentExpiresAt && (
         <PaymentCountdown expiresAt={order.paymentExpiresAt} />
+      )}
+      {isPendingPayment && (
+        <PaymentResumeAction
+          orderId={order.id}
+          expiresAt={order.paymentExpiresAt}
+        />
       )}
       <OrderItemsList items={order.orderProducts} />
       <div className='bg-white rounded-[20px] p-5 mt-4 shadow-sm flex justify-between items-center'>
