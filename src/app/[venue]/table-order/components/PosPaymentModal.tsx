@@ -12,6 +12,7 @@ import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 import { savePendingPosPayment } from '@/lib/payment-link-store';
+import { useClientStore } from '@/store/client';
 import { toMoneyNumber, subtractMoney, formatMoney } from '@/types/pos-order';
 
 interface Props {
@@ -32,6 +33,7 @@ export default function PosPaymentModal({
   const t = useTranslations('TableOrder');
   const { phone, setPhone, countryId, setCountryId } = useCheckout();
   const country = getCountryById(countryId);
+  const saveClient = useClientStore((s) => s.saveClient);
 
   const fullPhone = phone ? `+${normalizePhoneForApi(phone, country.dial)}` : '';
   const { data: bonusData } = useClientBonus({ phone: fullPhone, venueSlug });
@@ -93,6 +95,7 @@ export default function PosPaymentModal({
         localStorage.setItem(hashStorageKey(savedPhone), res.phoneVerificationHash);
       } catch {}
     }
+    saveClient({ phone: savedPhone, countryId });
     if (res.paymentUrl) {
       // Flag a pending bonus refresh — read on next mount of CurrentOrderView
       // when the paygate redirects the user back to the table page.

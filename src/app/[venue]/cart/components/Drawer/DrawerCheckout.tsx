@@ -19,6 +19,7 @@ import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
 
 import { markPaymentSuccess } from '@/app/[venue]/order-status/[orderId]/components/PaymentSuccessOverlay';
+import { useClientStore } from '@/store/client';
 import { savePendingPayment } from '@/lib/payment-link-store';
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
@@ -113,6 +114,7 @@ const DrawerCheckout: FC<IProps> = ({
 
   // --- API ---
   const createOrderMutation = useCreateOrderV2();
+  const saveClient = useClientStore((s) => s.saveClient);
 
   const {
     phone: storedPhone,
@@ -334,6 +336,7 @@ const DrawerCheckout: FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
       markPaymentSuccess(response.id);
+      saveClient({ phone, countryId });
 
       if (response.paymentUrl) {
         savePendingPayment({
@@ -373,6 +376,7 @@ const DrawerCheckout: FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
       markPaymentSuccess(response.id);
+      saveClient({ phone, countryId });
 
       if (response.paymentUrl) {
         savePendingPayment({

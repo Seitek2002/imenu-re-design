@@ -43,3 +43,9 @@ next-env.d.ts
 # claude code local memory (per-user, do not commit)
 /memory/
 .claude/
+
+# agent-browser tooling artifacts
+.agents/
+skills-lock.json
+/tmp/
+/*.png
