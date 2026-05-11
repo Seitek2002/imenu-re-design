@@ -125,8 +125,11 @@ const DrawerCheckout: FC<IProps> = ({
     setDeliveryCoords,
     needUtensils,
     comment,
+    setComment,
     resetOrderOptions,
   } = useCheckout();
+
+  const [noteOpen, setNoteOpen] = useState(!!comment);
 
   // --- FORM STATE ---
   const [phone, setPhone] = useState(storedPhone || '');
@@ -145,7 +148,6 @@ const DrawerCheckout: FC<IProps> = ({
   const spotId = useVenueStore((state) => state.spotId);
   const venueData = useVenueStore((state) => state.data);
 
-  const [deliveryComment, setDeliveryComment] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
@@ -247,10 +249,7 @@ const DrawerCheckout: FC<IProps> = ({
         parts.push(t('preparePrefix', { time: pickupTime }));
       }
       if (comment.trim()) {
-        parts.push(t('commentPrefix', { text: comment.trim() }));
-      }
-      if (orderType === 'delivery' && deliveryComment.trim()) {
-        parts.push(t('deliveryCommentPrefix', { text: deliveryComment.trim() }));
+        parts.push(comment.trim());
       }
       const finalComment = parts.join('\n');
 
@@ -502,19 +501,41 @@ const DrawerCheckout: FC<IProps> = ({
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
                     />
-                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                      <span className='text-[#A4A4A4] text-xs mb-1'>
-                        {t('deliveryCommentLabel')}
-                      </span>
-                      <input
-                        type='text'
-                        value={deliveryComment}
-                        onChange={(e) => setDeliveryComment(e.target.value)}
-                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                        placeholder={t('deliveryCommentPlaceholder')}
-                      />
-                    </label>
                   </div>
+                )}
+
+                {!noteOpen ? (
+                  <button
+                    type='button'
+                    onClick={() => setNoteOpen(true)}
+                    className='mt-4 w-full text-left text-sm font-medium text-brand py-3 px-4 rounded-xl bg-[#F5F5F5] hover:bg-gray-200 transition-colors'
+                  >
+                    + {t('noteButton')}
+                  </button>
+                ) : (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {orderType === 'delivery'
+                        ? t('deliveryCommentLabel')
+                        : orderType === 'takeout'
+                          ? t('pickupCommentLabel')
+                          : t('commentLabel')}
+                    </span>
+                    <textarea
+                      autoFocus
+                      rows={2}
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium resize-none'
+                      placeholder={
+                        orderType === 'delivery'
+                          ? t('deliveryCommentPlaceholder')
+                          : orderType === 'takeout'
+                            ? t('pickupCommentPlaceholder')
+                            : t('commentPlaceholder')
+                      }
+                    />
+                  </label>
                 )}
 
                 <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>
@@ -613,19 +634,41 @@ const DrawerCheckout: FC<IProps> = ({
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
                     />
-                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                      <span className='text-[#A4A4A4] text-xs mb-1'>
-                        {t('deliveryCommentLabel')}
-                      </span>
-                      <input
-                        type='text'
-                        value={deliveryComment}
-                        onChange={(e) => setDeliveryComment(e.target.value)}
-                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                        placeholder={t('deliveryCommentPlaceholder')}
-                      />
-                    </label>
                   </div>
+                )}
+
+                {!noteOpen ? (
+                  <button
+                    type='button'
+                    onClick={() => setNoteOpen(true)}
+                    className='mt-4 w-full text-left text-sm font-medium text-brand py-3 px-4 rounded-xl bg-[#F5F5F5] hover:bg-gray-200 transition-colors'
+                  >
+                    + {t('noteButton')}
+                  </button>
+                ) : (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {orderType === 'delivery'
+                        ? t('deliveryCommentLabel')
+                        : orderType === 'takeout'
+                          ? t('pickupCommentLabel')
+                          : t('commentLabel')}
+                    </span>
+                    <textarea
+                      autoFocus
+                      rows={2}
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium resize-none'
+                      placeholder={
+                        orderType === 'delivery'
+                          ? t('deliveryCommentPlaceholder')
+                          : orderType === 'takeout'
+                            ? t('pickupCommentPlaceholder')
+                            : t('commentPlaceholder')
+                      }
+                    />
+                  </label>
                 )}
 
                 <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>
