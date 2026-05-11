@@ -7,11 +7,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { clearPendingPayment } from '@/lib/payment-link-store';
 
 const STORAGE_KEY = 'payment_success';
+const EVENT_NAME = 'payment-success';
 
-/** Call before navigating to order-status to trigger the overlay */
+/** Call after confirming payment actually succeeded (status transitioned away from PendingPayment) */
 export function markPaymentSuccess(orderId: string | number) {
   try {
     sessionStorage.setItem(STORAGE_KEY, String(orderId));
+    window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: String(orderId) }));
   } catch {
     // SSR / private-browsing guard
   }
@@ -24,22 +26,31 @@ interface Props {
 export default function PaymentSuccessOverlay({ orderId }: Props) {
   const t = useTranslations('OrderStatus');
   const queryClient = useQueryClient();
-  const [visible, setVisible] = useState(() => {
+  const [visible, setVisible] = useState(false);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored === String(orderId)) {
         sessionStorage.removeItem(STORAGE_KEY);
-        return true;
+        setVisible(true);
       }
     } catch {
       // ignore
     }
-    return false;
-  });
-  const [fading, setFading] = useState(false);
+    const onSuccess = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail === String(orderId)) {
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+        setFading(false);
+        setVisible(true);
+      }
+    };
+    window.addEventListener(EVENT_NAME, onSuccess);
+    return () => window.removeEventListener(EVENT_NAME, onSuccess);
+  }, [orderId]);
 
-  // After a successful payment the bonus balance has just changed server-side,
-  // and the saved payment-link is no longer relevant.
   useEffect(() => {
     if (!visible) return;
     queryClient.invalidateQueries({ queryKey: ['bonus'] });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -13,11 +13,12 @@ import {
   MapPin,
   NotebookText,
   Loader2,
+  CreditCard,
   History as HistoryIcon,
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
 import { useOrdersV2 } from '@/lib/api/queries';
-import { ServiceMode } from '@/types/api';
+import { OrderStatus, ServiceMode } from '@/types/api';
 import type { OrderV2 } from '@/lib/order';
 
 type FilterKey = 'all' | ServiceMode;
@@ -29,10 +30,31 @@ const FILTERS: { key: FilterKey; label: string; Icon?: typeof Bike }[] = [
   { key: ServiceMode.Takeaway, label: 'Самовывоз', Icon: ShoppingBag },
 ];
 
+
 const TYPE_LABEL: Record<number, { label: string; bg: string; fg: string }> = {
   [ServiceMode.Delivery]: { label: 'Доставка', bg: 'bg-[#E7F1FF]', fg: 'text-[#2E7DFF]' },
   [ServiceMode.DineIn]: { label: 'На месте', bg: 'bg-[#E8F8EE]', fg: 'text-[#22A05A]' },
   [ServiceMode.Takeaway]: { label: 'Самовывоз', bg: 'bg-[#F1ECFF]', fg: 'text-[#7A5AF8]' },
+};
+
+const STATUS_LABEL: Record<number, string> = {
+  [OrderStatus.Created]: 'Оформлен',
+  [OrderStatus.Preparing]: 'Готовится',
+  [OrderStatus.Ready]: 'Готов',
+  [OrderStatus.Completed]: 'Выполнен',
+  [OrderStatus.PendingPayment]: 'Ожидает оплату',
+  [OrderStatus.InDelivery]: 'В доставке',
+  [OrderStatus.Cancelled]: 'Отменён',
+};
+
+const STATUS_TONE: Record<number, { bg: string; fg: string }> = {
+  [OrderStatus.Created]: { bg: 'bg-[#FFF4E5]', fg: 'text-[#B8731A]' },
+  [OrderStatus.Preparing]: { bg: 'bg-[#FFF4E5]', fg: 'text-[#B8731A]' },
+  [OrderStatus.Ready]: { bg: 'bg-[#E8F8EE]', fg: 'text-[#22A05A]' },
+  [OrderStatus.Completed]: { bg: 'bg-[#EFEFEF]', fg: 'text-[#6B6B6B]' },
+  [OrderStatus.PendingPayment]: { bg: 'bg-[#FFF1E0]', fg: 'text-[#D97706]' },
+  [OrderStatus.InDelivery]: { bg: 'bg-[#E7F1FF]', fg: 'text-[#2E7DFF]' },
+  [OrderStatus.Cancelled]: { bg: 'bg-[#FDECEC]', fg: 'text-[#DC2626]' },
 };
 
 const fmtMoney = (s: string) => {
@@ -153,10 +175,20 @@ export default function HistoryPage() {
           const t = TYPE_LABEL[o.serviceMode];
           const { date, time } = fmtDate(o.created_at);
           const subtitle = subtitleFor(o);
+          const statusLabel = o.statusText || STATUS_LABEL[o.status];
+          const statusTone = STATUS_TONE[o.status];
+          const isPending =
+            o.status === OrderStatus.PendingPayment ||
+            (o.paymentStatus === 'pending' &&
+              !!o.paymentExpiresAt &&
+              new Date(o.paymentExpiresAt).getTime() > Date.now());
+          const href = isPending
+            ? `/${venue}/order-status/${o.id}`
+            : `/${venue}/history/${o.id}`;
           return (
             <Link
               key={o.id}
-              href={`/${venue}/history/${o.id}`}
+              href={href}
               className='block bg-white rounded-2xl px-4 py-4 active:scale-[0.99] transition-transform'
             >
               <div className='flex items-start justify-between gap-2'>
@@ -176,12 +208,19 @@ export default function HistoryPage() {
                   </div>
 
                   <div className='mt-2.5 flex items-center justify-between'>
-                    <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-2 flex-wrap'>
                       {t && (
                         <span
                           className={`h-[26px] px-3 rounded-full text-[11px] font-medium inline-flex items-center ${t.bg} ${t.fg}`}
                         >
                           {t.label}
+                        </span>
+                      )}
+                      {statusLabel && statusTone && (
+                        <span
+                          className={`h-[26px] px-3 rounded-full text-[11px] font-medium inline-flex items-center ${statusTone.bg} ${statusTone.fg}`}
+                        >
+                          {statusLabel}
                         </span>
                       )}
                       <span className='flex items-center gap-1 text-[13px] text-[#21201F]'>
@@ -200,6 +239,10 @@ export default function HistoryPage() {
                       <span className='truncate'>{subtitle}</span>
                     </div>
                   )}
+
+                  {isPending && (
+                    <ResumePaymentRow expiresAt={o.paymentExpiresAt} />
+                  )}
                 </div>
                 <ChevronRight size={20} className='text-[#C4C4C4] mt-9' />
               </div>
@@ -207,6 +250,41 @@ export default function HistoryPage() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ResumePaymentRow({ expiresAt }: { expiresAt?: string | null }) {
+  const target = expiresAt ? new Date(expiresAt).getTime() : NaN;
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    if (Number.isNaN(target)) return;
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [target]);
+
+  const remaining = Number.isNaN(target) || now === null ? null : target - now;
+  const expired = remaining != null && remaining <= 0;
+
+  let timeText = '';
+  if (remaining != null && !expired) {
+    const total = Math.floor(remaining / 1000);
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    timeText = ` · ${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  return (
+    <div
+      className={`mt-3 inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-[13px] font-semibold ${
+        expired
+          ? 'bg-[#FDECEC] text-[#DC2626]'
+          : 'bg-[#21201F] text-white'
+      }`}
+    >
+      <CreditCard size={16} strokeWidth={2.2} />
+      <span>{expired ? 'Время оплаты истекло' : `Продолжить оплату${timeText}`}</span>
     </div>
   );
 }
