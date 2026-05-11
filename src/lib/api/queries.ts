@@ -154,8 +154,11 @@ export const useClientBonus = ({
     // Грузим только если есть телефон и слаг
     enabled: !!phone && phone.length > 5 && !!venueSlug,
 
-    // Бонусы не меняются каждую секунду, можно не обновлять слишком часто
-    staleTime: 1000 * 60 * 5, // 5 минут кеша
+    // Балансы должны быть свежими: маленький staleTime + рефетч на фокус/маунт.
+    // Глобальный refetchOnWindowFocus=false переопределяем тут точечно.
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
   });
 };
 

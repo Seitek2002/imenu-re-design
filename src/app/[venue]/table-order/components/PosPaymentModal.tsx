@@ -99,7 +99,14 @@ export default function PosPaymentModal({
         localStorage.setItem(hashStorageKey(savedPhone), res.phoneVerificationHash);
       } catch {}
     }
-    if (res.paymentUrl) window.location.href = res.paymentUrl;
+    if (res.paymentUrl) {
+      // Flag a pending bonus refresh — read on next mount of CurrentOrderView
+      // when the paygate redirects the user back to the table page.
+      try {
+        sessionStorage.setItem('bonus_refresh_pending', '1');
+      } catch {}
+      window.location.href = res.paymentUrl;
+    }
   };
 
   const onPay = async () => {

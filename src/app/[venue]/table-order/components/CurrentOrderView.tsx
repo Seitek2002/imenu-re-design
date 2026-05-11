@@ -92,6 +92,16 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     }
   }, [reconnectKey, queryClient, tableId]);
 
+  // Refresh bonus balance after returning from POS payment gateway.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('bonus_refresh_pending') === '1') {
+        sessionStorage.removeItem('bonus_refresh_pending');
+        queryClient.invalidateQueries({ queryKey: ['bonus'] });
+      }
+    } catch {}
+  }, [queryClient]);
+
   const posOrder: PosOrder | null = hasSnapshot ? wsOrder : (restOrder ?? null);
   const posItems = useMemo(
     () => posOrder?.items.filter((it) => toNumber(it.qty) > 0) ?? [],
