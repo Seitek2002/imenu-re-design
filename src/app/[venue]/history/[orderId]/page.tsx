@@ -139,15 +139,33 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
         </section>
 
-        {order.serviceMode === ServiceMode.DineIn && order.table?.tableNum && (
-          <section className='bg-white rounded-2xl px-4 py-4'>
-            <div className='flex items-center justify-between text-[13px]'>
-              <span className='text-[#9E9E9E]'>Стол</span>
-              <span className='text-[#21201F] font-medium'>№ {order.table.tableNum}</span>
-            </div>
-          </section>
-        )}
+        <DetailsBlock order={order} />
       </div>
     </div>
+  );
+}
+
+function DetailsBlock({ order }: { order: OrderV2 }) {
+  const tableNum = order.tableNum ?? order.table?.tableNum;
+  const rows: { label: string; value: string }[] = [];
+  if (order.paymentStatus) rows.push({ label: 'Статус оплаты', value: order.paymentStatus });
+  if (order.statusText) rows.push({ label: 'Статус заказа', value: order.statusText });
+  if (order.serviceMode === ServiceMode.DineIn && tableNum)
+    rows.push({ label: 'Стол', value: `№ ${tableNum}` });
+  if (order.serviceMode === ServiceMode.Delivery && order.address)
+    rows.push({ label: 'Адрес доставки', value: order.address });
+  if (order.needsCutlery) rows.push({ label: 'Приборы', value: 'Да' });
+  if (order.comment) rows.push({ label: 'Комментарий', value: order.comment });
+
+  if (rows.length === 0) return null;
+  return (
+    <section className='bg-white rounded-2xl px-4 py-4 flex flex-col gap-3'>
+      {rows.map((r) => (
+        <div key={r.label} className='flex items-start justify-between gap-3 text-[13px]'>
+          <span className='text-[#9E9E9E] shrink-0'>{r.label}</span>
+          <span className='text-[#21201F] font-medium text-right break-words'>{r.value}</span>
+        </div>
+      ))}
+    </section>
   );
 }

@@ -15,13 +15,25 @@ export interface OrderProduct {
 export interface OrderV2 {
   id: number;
   status: number;
+  statusText?: string;
   serviceMode: number; // 1=DineIn, 2=Takeout, 3=Delivery
   totalPrice: string;
   orderProducts: OrderProduct[];
+  /** Поле плоское в свагере (OrderList.tableNum). Старый код может смотреть в `table.tableNum` — оставлено для совместимости. */
+  tableNum?: string;
   table?: {
     id: number;
     tableNum: string;
   };
+  address?: string | null;
+  deliveryLatitude?: string | null;
+  deliveryLongitude?: string | null;
+  comment?: string | null;
+  needsCutlery?: boolean;
+  phone?: string;
+  paymentStatus?: string;
+  promotion?: string;
+  source?: string;
   created_at?: string;
   paymentExpiresAt?: string | null;
 }

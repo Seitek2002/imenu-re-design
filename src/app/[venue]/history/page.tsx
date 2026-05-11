@@ -58,9 +58,11 @@ const itemsCount = (o: OrderV2) =>
   o.orderProducts?.reduce((acc, p) => acc + (p.count || 0), 0) ?? 0;
 
 const subtitleFor = (o: OrderV2): string => {
-  if (o.serviceMode === ServiceMode.DineIn && o.table?.tableNum) {
-    return `Стол №${o.table.tableNum}`;
+  if (o.serviceMode === ServiceMode.DineIn) {
+    const t = o.tableNum ?? o.table?.tableNum;
+    if (t) return `Стол №${t}`;
   }
+  if (o.address) return o.address;
   const first = o.orderProducts?.[0]?.product?.productName;
   const extra = (o.orderProducts?.length ?? 0) - 1;
   if (!first) return '';
