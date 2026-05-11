@@ -55,7 +55,8 @@
       "available": "Available: {amount}",
       "discount": "Discount:",
       "earnBonus": "You'll earn",
-      "total": "Total"
+      "total": "Total",
+      "freeDelivery": "Free"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -121,7 +122,10 @@
       "aptPart": "apt/office {value}",
       "mapPickTitle": "Point on the map",
       "mapPickHintEmpty": "Mark where to deliver",
-      "mapPickHintSelected": "Point selected"
+      "mapPickHintSelected": "Point selected",
+      "zoneFree": "Address is in the free delivery zone",
+      "zonePaid": "Address is outside the free delivery zone",
+      "zonePaidFee": "Paid delivery: {amount} c."
     },
     "deliveryMap": {
       "title": "Pin the delivery address",
@@ -133,7 +137,9 @@
       "keyMissing": "Map is temporarily unavailable",
       "geoError": "Couldn't determine your location",
       "searchEmpty": "Nothing found",
-      "freeDeliveryNote": "You are in the free delivery zone"
+      "freeDeliveryNote": "You are in the free delivery zone",
+      "paidDeliveryNote": "Outside the free zone. Paid delivery: {amount} c.",
+      "outsideZoneNote": "Address is outside the free delivery zone"
     },
     "footer": {
       "totalDue": "To pay",

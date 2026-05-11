@@ -55,7 +55,8 @@
       "available": "Доступно: {amount}",
       "discount": "Скидка:",
       "earnBonus": "Начислим баллов",
-      "total": "Итого"
+      "total": "Итого",
+      "freeDelivery": "Бесплатно"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -121,7 +122,10 @@
       "aptPart": "кв/офис {value}",
       "mapPickTitle": "Точка на карте",
       "mapPickHintEmpty": "Укажите, куда доставить",
-      "mapPickHintSelected": "Точка выбрана"
+      "mapPickHintSelected": "Точка выбрана",
+      "zoneFree": "Адрес в зоне бесплатной доставки",
+      "zonePaid": "Адрес вне зоны бесплатной доставки",
+      "zonePaidFee": "Платная доставка: {amount} с."
     },
     "deliveryMap": {
       "title": "Укажите адрес доставки",
@@ -133,7 +137,9 @@
       "keyMissing": "Карта временно недоступна",
       "geoError": "Не удалось определить местоположение",
       "searchEmpty": "Ничего не найдено",
-      "freeDeliveryNote": "Вы находитесь в зоне бесплатной доставки"
+      "freeDeliveryNote": "Вы находитесь в зоне бесплатной доставки",
+      "paidDeliveryNote": "Вне зоны бесплатной доставки. Платная доставка: {amount} с.",
+      "outsideZoneNote": "Адрес вне зоны бесплатной доставки"
     },
     "footer": {
       "totalDue": "К оплате",

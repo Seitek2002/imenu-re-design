@@ -55,7 +55,8 @@
       "available": "Жеткиликтүү: {amount}",
       "discount": "Жеңилдик:",
       "earnBonus": "Балл кошобуз",
-      "total": "Жалпы"
+      "total": "Жалпы",
+      "freeDelivery": "Акысыз"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -121,7 +122,10 @@
       "aptPart": "кв/офис {value}",
       "mapPickTitle": "Картадагы чекит",
       "mapPickHintEmpty": "Кайда жеткирерди белгилеңиз",
-      "mapPickHintSelected": "Чекит тандалды"
+      "mapPickHintSelected": "Чекит тандалды",
+      "zoneFree": "Дарек акысыз жеткирүү аймагында",
+      "zonePaid": "Дарек акысыз жеткирүү аймагынан тышкары",
+      "zonePaidFee": "Акылуу жеткирүү: {amount} с."
     },
     "deliveryMap": {
       "title": "Жеткирүү дарегин көрсөтүңүз",
@@ -133,7 +137,9 @@
       "keyMissing": "Карта убактылуу жеткиликсиз",
       "geoError": "Жайгашкан жерди аныктоо мүмкүн болбоду",
       "searchEmpty": "Эч нерсе табылган жок",
-      "freeDeliveryNote": "Сиз акысыз жеткирүү аймагындасыз"
+      "freeDeliveryNote": "Сиз акысыз жеткирүү аймагындасыз",
+      "paidDeliveryNote": "Акысыз жеткирүү аймагынан тышкары. Акылуу жеткирүү: {amount} с.",
+      "outsideZoneNote": "Дарек акысыз жеткирүү аймагынан тышкары"
     },
     "footer": {
       "totalDue": "Төлөнөт",

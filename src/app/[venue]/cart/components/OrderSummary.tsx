@@ -13,9 +13,15 @@ interface Props {
   subtotal: number;
   deliveryType: 'takeout' | 'delivery' | 'dinein';
   deliveryCost: number;
+  isFreeDelivery?: boolean;
 }
 
-export default function OrderSummary({ subtotal, deliveryType, deliveryCost }: Props) {
+export default function OrderSummary({
+  subtotal,
+  deliveryType,
+  deliveryCost,
+  isFreeDelivery = false,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations('Cart.summary');
 
@@ -61,7 +67,13 @@ export default function OrderSummary({ subtotal, deliveryType, deliveryCost }: P
             {deliveryType === 'delivery' && (
               <div className='flex justify-between text-[#80868B]'>
                 <span>{t('delivery')}</span>
-                <span>{deliveryCost} c.</span>
+                {isFreeDelivery ? (
+                  <span className='text-green-600 font-semibold'>
+                    {t('freeDelivery')}
+                  </span>
+                ) : (
+                  <span>{deliveryCost} c.</span>
+                )}
               </div>
             )}
 

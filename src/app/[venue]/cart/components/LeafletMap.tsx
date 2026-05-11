@@ -12,7 +12,7 @@ interface Props {
   onReady: () => void;
   flyToRef: MutableRefObject<((c: Coords) => void) | null>;
   venueCoords?: Coords | null;
-  deliveryRadiusKm?: number | null;
+  freeDeliveryRadiusKm?: number | null;
 }
 
 function MapEventHandler({
@@ -48,7 +48,7 @@ export default function LeafletMap({
   onReady,
   flyToRef,
   venueCoords,
-  deliveryRadiusKm,
+  freeDeliveryRadiusKm,
 }: Props) {
   return (
     <MapContainer
@@ -63,10 +63,10 @@ export default function LeafletMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         maxZoom={19}
       />
-      {venueCoords && deliveryRadiusKm && (
+      {venueCoords && freeDeliveryRadiusKm && (
         <Circle
           center={[venueCoords.lat, venueCoords.lng]}
-          radius={deliveryRadiusKm * 1000}
+          radius={freeDeliveryRadiusKm * 1000}
           pathOptions={{
             color: '#22c55e',
             fillColor: '#22c55e',
