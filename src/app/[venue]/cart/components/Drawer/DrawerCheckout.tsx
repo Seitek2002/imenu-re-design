@@ -126,10 +126,12 @@ const DrawerCheckout: FC<IProps> = ({
     needUtensils,
     comment,
     setComment,
+    deliveryComment,
+    setDeliveryComment,
+    pickupComment,
+    setPickupComment,
     resetOrderOptions,
   } = useCheckout();
-
-  const [noteOpen, setNoteOpen] = useState(!!comment);
 
   // --- FORM STATE ---
   const [phone, setPhone] = useState(storedPhone || '');
@@ -249,7 +251,13 @@ const DrawerCheckout: FC<IProps> = ({
         parts.push(t('preparePrefix', { time: pickupTime }));
       }
       if (comment.trim()) {
-        parts.push(comment.trim());
+        parts.push(t('commentPrefix', { text: comment.trim() }));
+      }
+      if (orderType === 'delivery' && deliveryComment.trim()) {
+        parts.push(t('deliveryCommentPrefix', { text: deliveryComment.trim() }));
+      }
+      if (orderType === 'takeout' && pickupComment.trim()) {
+        parts.push(t('pickupCommentPrefix', { text: pickupComment.trim() }));
       }
       const finalComment = parts.join('\n');
 
@@ -504,36 +512,45 @@ const DrawerCheckout: FC<IProps> = ({
                   </div>
                 )}
 
-                {!noteOpen ? (
-                  <button
-                    type='button'
-                    onClick={() => setNoteOpen(true)}
-                    className='mt-4 w-full text-left text-sm font-medium text-brand py-3 px-4 rounded-xl bg-[#F5F5F5] hover:bg-gray-200 transition-colors'
-                  >
-                    + {t('noteButton')}
-                  </button>
-                ) : (
-                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                  <span className='text-[#A4A4A4] text-xs mb-1'>
+                    {t('commentLabel')}
+                  </span>
+                  <input
+                    type='text'
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                    placeholder={t('commentPlaceholder')}
+                  />
+                </label>
+
+                {orderType === 'delivery' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
                     <span className='text-[#A4A4A4] text-xs mb-1'>
-                      {orderType === 'delivery'
-                        ? t('deliveryCommentLabel')
-                        : orderType === 'takeout'
-                          ? t('pickupCommentLabel')
-                          : t('commentLabel')}
+                      {t('deliveryCommentLabel')}
                     </span>
-                    <textarea
-                      autoFocus
-                      rows={2}
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      className='bg-transparent outline-none text-[#111111] text-sm font-medium resize-none'
-                      placeholder={
-                        orderType === 'delivery'
-                          ? t('deliveryCommentPlaceholder')
-                          : orderType === 'takeout'
-                            ? t('pickupCommentPlaceholder')
-                            : t('commentPlaceholder')
-                      }
+                    <input
+                      type='text'
+                      value={deliveryComment}
+                      onChange={(e) => setDeliveryComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('deliveryCommentPlaceholder')}
+                    />
+                  </label>
+                )}
+
+                {orderType === 'takeout' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {t('pickupCommentLabel')}
+                    </span>
+                    <input
+                      type='text'
+                      value={pickupComment}
+                      onChange={(e) => setPickupComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('pickupCommentPlaceholder')}
                     />
                   </label>
                 )}
@@ -637,36 +654,45 @@ const DrawerCheckout: FC<IProps> = ({
                   </div>
                 )}
 
-                {!noteOpen ? (
-                  <button
-                    type='button'
-                    onClick={() => setNoteOpen(true)}
-                    className='mt-4 w-full text-left text-sm font-medium text-brand py-3 px-4 rounded-xl bg-[#F5F5F5] hover:bg-gray-200 transition-colors'
-                  >
-                    + {t('noteButton')}
-                  </button>
-                ) : (
-                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
+                  <span className='text-[#A4A4A4] text-xs mb-1'>
+                    {t('commentLabel')}
+                  </span>
+                  <input
+                    type='text'
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                    placeholder={t('commentPlaceholder')}
+                  />
+                </label>
+
+                {orderType === 'delivery' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
                     <span className='text-[#A4A4A4] text-xs mb-1'>
-                      {orderType === 'delivery'
-                        ? t('deliveryCommentLabel')
-                        : orderType === 'takeout'
-                          ? t('pickupCommentLabel')
-                          : t('commentLabel')}
+                      {t('deliveryCommentLabel')}
                     </span>
-                    <textarea
-                      autoFocus
-                      rows={2}
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      className='bg-transparent outline-none text-[#111111] text-sm font-medium resize-none'
-                      placeholder={
-                        orderType === 'delivery'
-                          ? t('deliveryCommentPlaceholder')
-                          : orderType === 'takeout'
-                            ? t('pickupCommentPlaceholder')
-                            : t('commentPlaceholder')
-                      }
+                    <input
+                      type='text'
+                      value={deliveryComment}
+                      onChange={(e) => setDeliveryComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('deliveryCommentPlaceholder')}
+                    />
+                  </label>
+                )}
+
+                {orderType === 'takeout' && (
+                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                      {t('pickupCommentLabel')}
+                    </span>
+                    <input
+                      type='text'
+                      value={pickupComment}
+                      onChange={(e) => setPickupComment(e.target.value)}
+                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                      placeholder={t('pickupCommentPlaceholder')}
                     />
                   </label>
                 )}
