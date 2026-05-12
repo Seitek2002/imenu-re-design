@@ -36,6 +36,7 @@ export interface OrderV2 {
   source?: string;
   created_at?: string;
   paymentExpiresAt?: string | null;
+  paymentUrl?: string | null;
 }
 
 export interface OrdersResponse {
