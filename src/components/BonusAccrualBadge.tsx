@@ -6,19 +6,37 @@ import { useVenueStore } from '@/store/venue';
 import coinIcon from '@/assets/Widgets/widget-2.png';
 
 interface Props {
-  /** Сумма, с которой считаются баллы (итог после всех скидок). */
+  /** Сумма, с которой считаются баллы (итог после всех скидок). Используется как fallback. */
   total: number;
+  /** Точное значение из серверного /calculate/ (учитывает clientGroup). Если задано — используется вместо локального расчёта. */
+  bonusEarned?: number;
+  /** Процент начисления из серверного /calculate/ (учитывает Poster clientGroup). */
+  bonusAccrualPercent?: number;
   className?: string;
 }
 
-export default function BonusAccrualBadge({ total, className = '' }: Props) {
+export default function BonusAccrualBadge({
+  total,
+  bonusEarned,
+  bonusAccrualPercent,
+  className = '',
+}: Props) {
   const t = useTranslations('Cart.summary');
   const venue = useVenueStore((s) => s.data);
-  const accrualPercent = venue?.isBonusSystemEnabled
-    ? (venue?.bonusAccrualPercent ?? 0)
-    : 0;
+  // Серверный процент — приоритет (учитывает clientGroup из Poster).
+  // Если backend не прислал — fallback на venue.bonusAccrualPercent.
+  const accrualPercent =
+    bonusAccrualPercent != null && bonusAccrualPercent >= 0
+      ? bonusAccrualPercent
+      : venue?.isBonusSystemEnabled
+        ? (venue?.bonusAccrualPercent ?? 0)
+        : 0;
   const earnedBonus =
-    accrualPercent > 0 ? Math.floor((total * accrualPercent) / 100) : 0;
+    bonusEarned != null
+      ? bonusEarned
+      : accrualPercent > 0
+        ? Math.floor((total * accrualPercent) / 100)
+        : 0;
 
   if (earnedBonus <= 0) return null;
 

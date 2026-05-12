@@ -16,6 +16,13 @@ export interface VenueSpot {
   address: string;
   wifiText?: string;
   wifiUrl?: string | null;
+  /** Spot-level флаг доставки (контракт Kuma 2026-05-12). Если undefined — поле не пришло с бэка, считать "доступно". */
+  isDeliveryAvailable?: boolean;
+  /** Координаты точки. Decimal string ("42.875100"). */
+  latitude?: string | null;
+  longitude?: string | null;
+  /** Радиус бесплатной доставки в км (decimal string), per-spot. */
+  freeDeliveryRadiusKm?: string | null;
 }
 
 export interface Venue {
@@ -31,6 +38,10 @@ export interface Venue {
   deliveryRadiusKm?: number | null;
   /** Decimal string per swagger (e.g. "5.00"). Parse with parseFloat. */
   freeDeliveryRadiusKm?: string | null;
+  /** ID точки по умолчанию для доставки (контракт Kuma 2026-05-12). */
+  defaultDeliverySpot?: number | null;
+  isTakeoutAvailable?: boolean;
+  isDineinAvailable?: boolean;
   spots: VenueSpot[];
   schedules: VenueSchedule[];
   colorTheme?: string;

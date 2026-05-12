@@ -18,15 +18,16 @@ function formatRemaining(ms: number): string {
 export default function PaymentCountdown({ expiresAt }: Props) {
   const t = useTranslations('OrderStatus');
   const target = new Date(expiresAt).getTime();
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
     if (Number.isNaN(target)) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [target]);
 
-  if (Number.isNaN(target)) return null;
+  if (Number.isNaN(target) || now === null) return null;
 
   const remaining = target - now;
   const expired = remaining <= 0;

@@ -12,6 +12,8 @@ interface Props {
   orderId: number;
   /** ISO-8601 from order.paymentExpiresAt; if null, treated as still valid. */
   expiresAt?: string | null;
+  /** Payment URL coming from the backend (order.paymentUrl). Used as a fallback when no link is cached locally — e.g. opened from /history on another device. */
+  paymentUrl?: string | null;
 }
 
 function isExpired(expiresAt?: string | null): boolean {
@@ -21,26 +23,21 @@ function isExpired(expiresAt?: string | null): boolean {
   return target <= Date.now();
 }
 
-export default function PaymentResumeAction({ orderId, expiresAt }: Props) {
+export default function PaymentResumeAction({ orderId, expiresAt, paymentUrl: paymentUrlProp }: Props) {
   const t = useTranslations('OrderStatus');
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  // Re-evaluate expiry every second so the button hides exactly when the
-  // countdown reaches zero without requiring a page refetch.
-  const [now, setNow] = useState(() => Date.now());
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(paymentUrlProp ?? null);
+  const [, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     const saved = getPendingPayment(orderId);
-    setPaymentUrl(saved?.paymentUrl ?? null);
-  }, [orderId]);
+    setPaymentUrl(saved?.paymentUrl ?? paymentUrlProp ?? null);
+  }, [orderId, paymentUrlProp]);
 
   useEffect(() => {
     if (!expiresAt) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [expiresAt]);
-
-  // Reference `now` so React tracks the dependency and re-renders on tick.
-  void now;
 
   if (!paymentUrl) return null;
   if (isExpired(expiresAt)) return null;

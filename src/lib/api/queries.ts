@@ -1,7 +1,9 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale } from 'next-intl';
 import {
   BonusResponse,
+  CalculateRequest,
+  CalculateResponse,
   OrderCreateBody,
   OrderCreateResponse,
   OrdersResponse,
@@ -161,6 +163,36 @@ export const useClient = (phone: string) => {
   });
 };
 
+async function patchClient(
+  phone: string,
+  body: Partial<Pick<import('@/types/api').Client, 'firstname' | 'lastname' | 'patronymic' | 'email'>>,
+  locale: Locale,
+): Promise<import('@/types/api').Client> {
+  const normalized = normalizePhoneForApi(phone);
+  const res = await fetch(`${API_BASE}/clients/${normalized}/`, {
+    method: 'PATCH',
+    headers: buildHeaders(locale),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Network error' }));
+    throw err;
+  }
+  return res.json();
+}
+
+export const useUpdateClient = (phone: string) => {
+  const locale = useLocale() as Locale;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<Pick<import('@/types/api').Client, 'firstname' | 'lastname' | 'patronymic' | 'email'>>) =>
+      patchClient(phone, body, locale),
+    onSuccess: (data) => {
+      qc.setQueryData(['client', phone, locale], data);
+    },
+  });
+};
+
 export const useClientBonus = ({
   phone,
   venueSlug,
@@ -226,6 +258,55 @@ export const useCreateOrderV2 = () => {
       createOrderApi({ ...args, locale }),
   });
 };
+
+// --- /api/v2/orders/calculate/ (Kuma 2026-05-12) ---
+// Серверный расчёт корзины. Ничего не создаёт; не требует авторизации.
+// Бэк сам ограничивает bonusApplied доступным балансом и суммой заказа,
+// сам добавляет контейнеры (serviceMode=2/3) и применяет промо-акции.
+async function calculateOrderApi(
+  body: import('../order').CalculateRequest,
+  locale: Locale,
+): Promise<CalculateResponse> {
+  const payload: CalculateRequest = {
+    ...body,
+    phone: body.phone ? normalizePhoneForApi(body.phone) : body.phone,
+  };
+
+  const res = await fetch(`${API_BASE}/orders/calculate/`, {
+    method: 'POST',
+    headers: buildHeaders(locale),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errData = await res
+      .json()
+      .catch(() => ({ message: 'Network error' }));
+    throw errData;
+  }
+
+  return res.json();
+}
+
+/**
+ * Mutation-обёртка над /orders/calculate/. Mutation, а не useQuery —
+ * чтобы вызывающий код мог сам контролировать debounce и порядок
+ * вызовов при частых изменениях корзины.
+ */
+export const useCalculateOrder = () => {
+  const locale = useLocale() as Locale;
+  return useMutation({
+    mutationFn: (body: CalculateRequest) => calculateOrderApi(body, locale),
+  });
+};
+
+/** Низкоуровневый вызов — если нужен расчёт вне React-контекста. */
+export async function calculateOrder(
+  body: CalculateRequest,
+  locale: Locale,
+): Promise<CalculateResponse> {
+  return calculateOrderApi(body, locale);
+}
 
 async function fetchVenueProducts(
   venueSlug: string,

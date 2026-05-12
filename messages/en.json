@@ -50,6 +50,8 @@
     "summary": {
       "details": "Order details",
       "subtotal": "Subtotal",
+      "containers": "Packaging",
+      "service": "Service",
       "delivery": "Delivery",
       "spendBonus": "Use bonus points",
       "available": "Available: {amount}",
@@ -61,7 +63,19 @@
     "promo": {
       "itemBadge": "−{percent}%",
       "itemBadgeGeneric": "Promo",
-      "bonusBadge": "×{count} free"
+      "bonusBadge": "×{count} free",
+      "partialBadge": "{discounted} of {total} discounted"
+    },
+    "errors": {
+      "generic": "Couldn't place the order. Please try again.",
+      "calculateFailed": "Couldn't calculate the order.",
+      "deliveryUnavailableVenue": "Delivery is temporarily unavailable at this venue.",
+      "deliveryUnavailableSpot": "Delivery is unavailable at the selected spot.",
+      "spotMismatch": "The spot doesn't belong to this venue.",
+      "notEnoughBonus": "Not enough bonus points on your balance.",
+      "venueClosed": "Orders can only be placed during venue working hours.",
+      "venueNotFound": "Venue not found.",
+      "invalidGroupMods": "Invalid modifier selection. Please re-open the item."
     },
     "utensils": {
       "title": "Need utensils?",

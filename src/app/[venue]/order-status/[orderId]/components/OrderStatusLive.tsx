@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
@@ -11,6 +12,7 @@ import StatusProgressBar from './StatusProgressBar';
 import OrderItemsList from './OrderItemsList';
 import PaymentCountdown from './PaymentCountdown';
 import PaymentResumeAction from './PaymentResumeAction';
+import { markPaymentSuccess } from './PaymentSuccessOverlay';
 
 interface Props {
   initialOrder: OrderV2;
@@ -29,6 +31,19 @@ export default function OrderStatusLive({ initialOrder }: Props) {
 
   const isCompleted = order.status === OrderStatus.Completed;
   const isPendingPayment = order.status === OrderStatus.PendingPayment;
+
+  const prevStatusRef = useRef<number>(initialOrder.status);
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    if (
+      prev === OrderStatus.PendingPayment &&
+      order.status !== OrderStatus.PendingPayment &&
+      order.status !== OrderStatus.Cancelled
+    ) {
+      markPaymentSuccess(order.id);
+    }
+    prevStatusRef.current = order.status;
+  }, [order.status, order.id, initialOrder.status]);
 
   let backUrl = `/${venueSlug}`;
   if (tableId && spotId) {
@@ -50,6 +65,7 @@ export default function OrderStatusLive({ initialOrder }: Props) {
         <PaymentResumeAction
           orderId={order.id}
           expiresAt={order.paymentExpiresAt}
+          paymentUrl={order.paymentUrl}
         />
       )}
       <OrderItemsList items={order.orderProducts} />

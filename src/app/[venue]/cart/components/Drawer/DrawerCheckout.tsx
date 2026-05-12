@@ -17,8 +17,8 @@ import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import { normalizePhoneForApi } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
+import { parseApiError } from '@/lib/apiErrors';
 
-import { markPaymentSuccess } from '@/app/[venue]/order-status/[orderId]/components/PaymentSuccessOverlay';
 import { useClientStore } from '@/store/client';
 import { savePendingPayment } from '@/lib/payment-link-store';
 import DeliveryInputs from '../DeliveryInputs';
@@ -60,6 +60,7 @@ const DrawerCheckout: FC<IProps> = ({
   const t = useTranslations('Cart.drawer');
   const tt = useTranslations('Cart.timePicker');
   const tTable = useTranslations('Cart.table');
+  const tErr = useTranslations('Cart.errors');
   const [sheetAnim, setSheetAnim] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [dragY, setDragY] = useState(0);
@@ -335,7 +336,6 @@ const DrawerCheckout: FC<IProps> = ({
       resetBonus();
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
-      markPaymentSuccess(response.id);
       saveClient({ phone, countryId });
 
       if (response.paymentUrl) {
@@ -351,7 +351,13 @@ const DrawerCheckout: FC<IProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Payment Error:', error);
-      setApiError(error);
+      const msg = parseApiError(error, {
+        t: (key) => tErr(key),
+        fallback: tErr('generic'),
+      });
+      setToastMessage(msg);
+      // DevErrorModal оставляем только для разработки.
+      if (process.env.NODE_ENV !== 'production') setApiError(error);
     }
   };
 
@@ -375,7 +381,6 @@ const DrawerCheckout: FC<IProps> = ({
       resetBonus();
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
-      markPaymentSuccess(response.id);
       saveClient({ phone, countryId });
 
       if (response.paymentUrl) {
