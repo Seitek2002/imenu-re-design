@@ -180,7 +180,9 @@
     "errorMax": "Не более {n}",
     "ariaAdd": "Добавить {name}",
     "ariaOpen": "Открыть {name}",
-    "ariaDecrement": "Уменьшить"
+    "ariaDecrement": "Уменьшить",
+    "showMore": "Показать ещё {n}",
+    "showLess": "Свернуть"
   },
   "Categories": {
     "other": "Остальное",
