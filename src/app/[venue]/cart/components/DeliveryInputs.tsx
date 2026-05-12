@@ -7,6 +7,7 @@ import { MapPin, Check } from 'lucide-react';
 import { distanceKm, type Coords } from '@/lib/osm-maps';
 import DeliveryMapModal from './DeliveryMapModal';
 import { useVenueStore } from '@/store/venue';
+import { getDeliveryGeo } from '@/lib/delivery';
 
 interface Props {
   onAddressChange: (fullAddress: string) => void;
@@ -23,13 +24,9 @@ export default function DeliveryInputs({
 }: Props) {
   const t = useTranslations('Cart.address');
   const venue = useVenueStore((s) => s.data);
-  const venueCoords =
-    venue?.latitude && venue?.longitude
-      ? { lat: venue.latitude, lng: venue.longitude }
-      : null;
-  const freeDeliveryRadiusKm = venue?.freeDeliveryRadiusKm
-    ? parseFloat(venue.freeDeliveryRadiusKm)
-    : null;
+  const spotId = useVenueStore((s) => s.spotId);
+  const { venueCoords, freeRadiusKm } = getDeliveryGeo(venue, spotId);
+  const freeDeliveryRadiusKm = freeRadiusKm > 0 ? freeRadiusKm : null;
   const deliveryFixedFee = parseFloat(venue?.deliveryFixedFee || '0');
 
   const [street, setStreet] = useState(initialStreet ?? '');

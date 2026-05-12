@@ -11,6 +11,10 @@ import trashRed from '@/assets/Cart/trash-red.svg';
 interface Props {
   item: BasketItemType;
   promoBadge?: string;
+  /** Цена строки до промо-скидки (с бэка). Если задана и > discountedLineTotal — рисуется зачёркнутой. */
+  originalLineTotal?: number;
+  /** Цена строки после промо-скидки (с бэка). */
+  discountedLineTotal?: number;
   onIncrement: () => void;
   onDecrement: () => void;
   onRemove: () => void;
@@ -19,6 +23,8 @@ interface Props {
 function BasketItem({
   item,
   promoBadge,
+  originalLineTotal,
+  discountedLineTotal,
   onIncrement,
   onDecrement,
   onRemove,
@@ -84,9 +90,25 @@ function BasketItem({
                     .join(', ')}
                 </span>
               )}
-              <span className='text-sm font-medium text-[#21201F] mt-1'>
-                {item.lineUnitPrice * item.quantity} c.
-              </span>
+              {(() => {
+                const localTotal = item.lineUnitPrice * item.quantity;
+                const finalTotal =
+                  discountedLineTotal != null ? Math.round(discountedLineTotal) : localTotal;
+                const showStrike =
+                  originalLineTotal != null &&
+                  discountedLineTotal != null &&
+                  originalLineTotal - discountedLineTotal > 0.5;
+                return (
+                  <span className='mt-1 flex items-baseline gap-1.5'>
+                    <span className='text-sm font-medium text-[#21201F]'>{finalTotal} c.</span>
+                    {showStrike && (
+                      <span className='text-[11px] text-[#A4A4A4] line-through'>
+                        {Math.round(originalLineTotal!)} c.
+                      </span>
+                    )}
+                  </span>
+                );
+              })()}
             </div>
           </div>
 

@@ -11,8 +11,9 @@ import BasketItem from './components/BasketItem';
 
 import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
-import { useOrderSummary } from '@/hooks/useOrderSummary';
+import { useCheckoutCalculate } from '@/hooks/useCheckoutCalculate';
 import { useMounted } from '@/hooks/useMounted';
+import { parseApiError } from '@/lib/apiErrors';
 import UtensilsSelector from './components/UtensilsSelector';
 import EmptyBasket from './components/EmptyBasket';
 
@@ -24,6 +25,7 @@ const DrawerCheckout = dynamic(
 
 export default function BasketPage() {
   const t = useTranslations('Cart');
+  const tErr = useTranslations('Cart.errors');
   const {
     items,
     orderType,
@@ -35,6 +37,8 @@ export default function BasketPage() {
     total: cartTotal, // Переименуем, так как это "грязная" цена без бонусов
     deliveryPrice,
     isFreeDelivery,
+    canDeliver,
+    canTakeout,
   } = useCartLogic();
 
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
@@ -54,23 +58,33 @@ export default function BasketPage() {
     }
   }, [mounted, tableId, venueSlug, router]);
 
-  const { discount, promoDiscount, finalDisplayTotal, applied, effectiveAmount: bonusToApply, availableBonuses, maxDeductible } = useOrderSummary({
-    subtotal,
-    deliveryType: orderType,
-    deliveryCost: deliveryPrice,
-  });
+  // Серверный расчёт (контракт Kuma 2026-05-12). Источник истины
+  // для total/promo/delivery/bonus. Локальный subtotal используем
+  // только как fallback, пока пришёл первый ответ.
+  const calc = useCheckoutCalculate({ orderType });
 
   const isBonusEnabled = venueData?.isBonusSystemEnabled ?? false;
-  const accrualPercent = isBonusEnabled ? (venueData?.bonusAccrualPercent ?? 0) : 0;
-  const earnedBonus = accrualPercent > 0 ? Math.floor((finalDisplayTotal * accrualPercent) / 100) : 0;
+  const serverTotal = calc.raw ? calc.totalPrice : subtotal + deliveryPrice;
+  const bonusToApply = calc.bonusApplied;
+  const promoDiscount = calc.promotionDiscount;
+  const discount = bonusToApply;
+  const earnedBonus = calc.bonusEarned;
+  const serverDeliveryPrice = calc.raw ? calc.deliveryPrice : deliveryPrice;
+  const serverIsFreeDelivery =
+    orderType === 'delivery' && calc.raw
+      ? calc.deliveryPrice === 0
+      : isFreeDelivery;
+  const availableBonuses = calc.bonusAvailable;
+  const maxDeductible = calc.bonusAvailable;
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
       <Header title={t('title')} />
 
       <section className='bg-white pt-4 mt-4 px-2 rounded-4xl pb-5 lg:mx-auto shadow-sm min-h-[60vh]'>
-        {/* Toggle (только без стола — со столом пользователь увозится на /table-order) */}
-        {!tableNumber && (
+        {/* Toggle (только без стола — со столом пользователь увозится на /table-order).
+            Если доставка недоступна (venue или spot), показываем только takeout. */}
+        {!tableNumber && canDeliver && canTakeout && (
           <div className='bg-[#FAFAFA] rounded-full mb-3 p-1 grid grid-cols-2 gap-2'>
             <button
               onClick={() => setOrderType('takeout')}
@@ -102,32 +116,51 @@ export default function BasketPage() {
           <div className='flex flex-col'>
             <ul className='divide-y divide-[#E7E7E7]'>
               {items.map((item) => {
-                const isInvolved =
-                  applied?.discount.involvedItemKeys.includes(item.key) ??
-                  false;
-                let promoBadge: string | undefined;
-                if (isInvolved && applied) {
-                  const benefit = applied.promotion.benefit;
-                  if (benefit.discountPercent != null) {
-                    promoBadge = t('promo.itemBadge', {
-                      percent: benefit.discountPercent,
-                    });
-                  } else if (benefit.type === 'bonus_products') {
-                    const bonusQty =
-                      applied.discount.bonusItems?.find(
-                        (b) => b.productId === item.id,
-                      )?.quantity ?? 1;
-                    promoBadge = t('promo.bonusBadge', { count: bonusQty });
-                  } else {
-                    promoBadge = t('promo.itemBadgeGeneric');
-                  }
-                }
+                // Промо-бейдж берём из серверного calc: строка считается
+                // участвующей, если backend насчитал по ней promotionDiscountAmount.
+                const calcLine = calc.orderProducts.find(
+                  (l) => l.product === item.id && !l.isContainer && !l.isServiceItem,
+                );
+                const lineDiscount = calcLine
+                  ? parseFloat(calcLine.promotionDiscountAmount)
+                  : 0;
+                // Если backend применил скидку только к части единиц
+                // (promotionDiscountedCount < count) — показываем явный бейдж
+                // "1 из 2 со скидкой", иначе обычный процент/generic.
+                const discountedCount = calcLine?.promotionDiscountedCount ?? 0;
+                const lineCount = calcLine?.count ?? item.quantity;
+                const isPartial =
+                  lineDiscount > 0 &&
+                  discountedCount > 0 &&
+                  discountedCount < lineCount;
+                const promoBadge =
+                  lineDiscount > 0 && calc.promotion
+                    ? isPartial
+                      ? t('promo.partialBadge', {
+                          discounted: discountedCount,
+                          total: lineCount,
+                        })
+                      : calc.promotion.discountPercent > 0
+                        ? t('promo.itemBadge', {
+                            percent: calc.promotion.discountPercent,
+                          })
+                        : t('promo.itemBadgeGeneric')
+                    : undefined;
+
+                const originalLineTotal = calcLine
+                  ? parseFloat(calcLine.totalPrice)
+                  : undefined;
+                const discountedLineTotal = calcLine
+                  ? parseFloat(calcLine.discountedTotalPrice)
+                  : undefined;
 
                 return (
                   <BasketItem
                     key={item.key}
                     item={item}
                     promoBadge={promoBadge}
+                    originalLineTotal={originalLineTotal}
+                    discountedLineTotal={discountedLineTotal}
                     onIncrement={() => handleIncrement(item.key)}
                     onDecrement={() => handleDecrement(item.key)}
                     onRemove={() => handleRemove(item.key)}
@@ -135,6 +168,15 @@ export default function BasketPage() {
                 );
               })}
             </ul>
+
+            {calc.error != null && (
+              <div className='mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600'>
+                {parseApiError(calc.error, {
+                  t: (k) => tErr(k),
+                  fallback: tErr('calculateFailed'),
+                })}
+              </div>
+            )}
 
             {orderType === 'delivery' && (
               <UtensilsSelector className='mt-3' />
@@ -154,10 +196,20 @@ export default function BasketPage() {
             </label>
 
             <OrderSummary
-              deliveryCost={deliveryPrice}
+              deliveryCost={serverDeliveryPrice}
               subtotal={subtotal}
               deliveryType={orderType}
-              isFreeDelivery={isFreeDelivery}
+              isFreeDelivery={serverIsFreeDelivery}
+              promotion={calc.promotion}
+              promotionDiscount={promoDiscount}
+              bonusAvailable={availableBonuses}
+              bonusApplied={bonusToApply}
+              bonusEarned={earnedBonus}
+              bonusAccrualPercent={calc.bonusAccrualPercent}
+              finalTotal={serverTotal}
+              servicePrice={calc.servicePrice}
+              containerTotal={calc.containerTotal}
+              isCalculating={calc.isLoading}
             />
           </div>
         )}
@@ -171,8 +223,10 @@ export default function BasketPage() {
               <div className='flex flex-col'>
                 <span className='text-xs text-brand'>{t('totalDue')}</span>
                 {/* 🔥 Показываем цену с учетом бонусов */}
-                <span className='text-xl font-bold'>
-                  {Math.round(finalDisplayTotal)} c.
+                <span
+                  className={`text-xl font-bold ${calc.isLoading ? 'opacity-60' : ''}`}
+                >
+                  {Math.round(serverTotal)} c.
                 </span>
                 {/* Если есть скидка, показываем старую цену зачеркнутой */}
                 {(discount > 0 || promoDiscount > 0) && (
@@ -197,8 +251,8 @@ export default function BasketPage() {
             sheetOpen={isCheckoutOpen}
             closeSheet={() => setCheckoutOpen(false)}
             orderType={orderType}
-            finalTotal={finalDisplayTotal}
-            deliveryCost={deliveryPrice}
+            finalTotal={serverTotal}
+            deliveryCost={serverDeliveryPrice}
             bonusToApply={bonusToApply}
             showBonusInput={isBonusEnabled}
             availableBonuses={availableBonuses}

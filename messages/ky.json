@@ -50,6 +50,8 @@
     "summary": {
       "details": "Буйрутманын чоо-жайы",
       "subtotal": "Товарлардын суммасы",
+      "containers": "Таңгак",
+      "service": "Тейлөө",
       "delivery": "Жеткирүү",
       "spendBonus": "Балл пайдалануу",
       "available": "Жеткиликтүү: {amount}",
@@ -61,7 +63,19 @@
     "promo": {
       "itemBadge": "−{percent}%",
       "itemBadgeGeneric": "Акция",
-      "bonusBadge": "×{count} бекер"
+      "bonusBadge": "×{count} бекер",
+      "partialBadge": "{total} ичинен {discounted} жеңилдик менен"
+    },
+    "errors": {
+      "generic": "Буйрутма берилген жок. Кайра аракет кылыңыз.",
+      "calculateFailed": "Буйрутманы эсептеп болбоду.",
+      "deliveryUnavailableVenue": "Бул мекемеде жеткирүү убактылуу жок.",
+      "deliveryUnavailableSpot": "Тандалган чекитте жеткирүү жок.",
+      "spotMismatch": "Чекит мекемеге таандык эмес.",
+      "notEnoughBonus": "Эсебиңизде балл жетишсиз.",
+      "venueClosed": "Буйрутма мекеменин иштеген убагында гана берилет.",
+      "venueNotFound": "Мекеме табылган жок.",
+      "invalidGroupMods": "Модификаторлор туура эмес тандалган. Товарды кайра ачыңыз."
     },
     "utensils": {
       "title": "Аспаптар керекпи?",

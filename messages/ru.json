@@ -50,6 +50,8 @@
     "summary": {
       "details": "Детали заказа",
       "subtotal": "Сумма товаров",
+      "containers": "Упаковка",
+      "service": "Сервис",
       "delivery": "Доставка",
       "spendBonus": "Списать баллы",
       "available": "Доступно: {amount}",
@@ -61,7 +63,19 @@
     "promo": {
       "itemBadge": "−{percent}%",
       "itemBadgeGeneric": "Акция",
-      "bonusBadge": "×{count} бесплатно"
+      "bonusBadge": "×{count} бесплатно",
+      "partialBadge": "Скидка на {discounted} из {total}"
+    },
+    "errors": {
+      "generic": "Не удалось создать заказ. Попробуйте ещё раз.",
+      "calculateFailed": "Не удалось рассчитать заказ.",
+      "deliveryUnavailableVenue": "Доставка временно недоступна в этом заведении.",
+      "deliveryUnavailableSpot": "Доставка недоступна для выбранной точки.",
+      "spotMismatch": "Точка не принадлежит заведению.",
+      "notEnoughBonus": "Недостаточно бонусов на счёте.",
+      "venueClosed": "Заказ можно оформить только в рабочее время.",
+      "venueNotFound": "Заведение не найдено.",
+      "invalidGroupMods": "Неверный выбор модификаторов. Откройте товар заново."
     },
     "utensils": {
       "title": "Нужны приборы?",

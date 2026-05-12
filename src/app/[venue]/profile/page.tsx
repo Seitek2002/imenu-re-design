@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -20,6 +21,7 @@ import {
 import { useClientStore } from '@/store/client';
 import { useClient, useClientBonus } from '@/lib/api/queries';
 import { getCountryById } from '@/lib/helpers/countryCodes';
+import EditProfileModal from '@/components/modals/EditProfileModal';
 
 const TASTES = ['Без лука', 'Без кинзы', 'Без острого', 'Без чеснока'];
 const ADDRESSES = [
@@ -37,6 +39,7 @@ export default function ProfilePage() {
   const phone = useClientStore((s) => s.phone);
   const countryId = useClientStore((s) => s.countryId);
   const clear = useClientStore((s) => s.clear);
+  const [editOpen, setEditOpen] = useState(false);
 
   const fullPhone = phone
     ? `+${getCountryById(countryId).dial}${phone}`
@@ -73,6 +76,7 @@ export default function ProfilePage() {
         </Link>
         <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>Аккаунт</h1>
         <button
+          onClick={() => setEditOpen(true)}
           className='ml-auto w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
           aria-label='Редактировать'
         >
@@ -82,7 +86,11 @@ export default function ProfilePage() {
 
       <div className='px-4 mt-2 flex flex-col gap-3'>
         <section className='grid grid-cols-[1.45fr_1fr] gap-3'>
-          <div className='bg-white rounded-2xl p-4'>
+          <button
+            type='button'
+            onClick={() => setEditOpen(true)}
+            className='bg-white rounded-2xl p-4 text-left active:scale-[0.99] transition-transform'
+          >
             <div className='text-[13px] text-[#9E9E9E]'>Имя</div>
             <div className='mt-1 flex items-center justify-between'>
               <span className='text-[15px] font-bold text-[#21201F] truncate'>
@@ -91,7 +99,7 @@ export default function ProfilePage() {
               <Pencil size={14} className='text-[#9E9E9E] shrink-0' />
             </div>
             <div className='mt-3 text-[12px] text-[#9E9E9E]'>{fullPhone}</div>
-          </div>
+          </button>
           <Link
             href={`/${venue}/profile/points`}
             className='bg-[#21201F] text-white rounded-2xl p-4 flex flex-col justify-between active:scale-[0.99] transition-transform'
@@ -103,6 +111,15 @@ export default function ProfilePage() {
             <div className='mt-2 text-[22px] font-extrabold'>
               {bonusLoading ? '…' : (bonus?.bonus ?? 0).toLocaleString('ru-RU').replace(',', ' ')}
             </div>
+            {bonus?.clientGroup && bonus.clientGroup.loyaltyType !== '' && (
+              <div className='mt-1 text-[11px] opacity-70 truncate'>
+                {bonus.clientGroup.name}
+                {bonus.clientGroup.discountPercent > 0 && (
+                  <> · {bonus.clientGroup.loyaltyType === 'discount' ? '−' : '+'}
+                  {bonus.clientGroup.discountPercent}%</>
+                )}
+              </div>
+            )}
           </Link>
         </section>
 
@@ -193,6 +210,13 @@ export default function ProfilePage() {
           Выйти из аккаунта
         </button>
       </div>
+
+      <EditProfileModal
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        phone={phone}
+        client={client}
+      />
     </div>
   );
 }

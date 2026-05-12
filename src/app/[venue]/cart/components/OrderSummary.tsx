@@ -3,17 +3,29 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useOrderSummary } from '@/hooks/useOrderSummary';
+import { useBonusStore } from '@/store/bonus';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 
 import arrow from '@/assets/Cart/details-arrow.svg';
 import coinIcon from '@/assets/Widgets/widget-2.png';
+
+import type { CalculatePromotion } from '@/lib/order';
 
 interface Props {
   subtotal: number;
   deliveryType: 'takeout' | 'delivery' | 'dinein';
   deliveryCost: number;
   isFreeDelivery?: boolean;
+  promotion: CalculatePromotion | null;
+  promotionDiscount: number;
+  bonusAvailable: number;
+  bonusApplied: number;
+  bonusEarned: number;
+  bonusAccrualPercent: number;
+  finalTotal: number;
+  servicePrice: number;
+  containerTotal: number;
+  isCalculating: boolean;
 }
 
 export default function OrderSummary({
@@ -21,21 +33,41 @@ export default function OrderSummary({
   deliveryType,
   deliveryCost,
   isFreeDelivery = false,
+  promotion,
+  promotionDiscount,
+  bonusAvailable,
+  bonusApplied,
+  bonusEarned,
+  bonusAccrualPercent,
+  finalTotal,
+  servicePrice,
+  containerTotal,
+  isCalculating,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations('Cart.summary');
 
-  const {
-    availableBonuses,
-    maxDeductible,
-    effectiveAmount,
-    isBonusUsed,
-    setBonusAmount,
-    handleBonusToggle,
-    applied,
-    promoDiscount,
-    finalDisplayTotal,
-  } = useOrderSummary({ subtotal, deliveryType, deliveryCost });
+  const isBonusUsed = useBonusStore((s) => s.isBonusUsed);
+  const bonusAmount = useBonusStore((s) => s.bonusAmount);
+  const setBonusUsed = useBonusStore((s) => s.setBonusUsed);
+  const setBonusAmount = useBonusStore((s) => s.setBonusAmount);
+
+  // Слайдер: верхняя граница — то, что реально может списать бек (bonusAvailable).
+  // Текущее значение — то, что юзер запросил, но не больше доступного.
+  const sliderMax = Math.floor(bonusAvailable);
+  const sliderValue = isBonusUsed
+    ? Math.min(Math.max(0, Math.floor(bonusAmount)), sliderMax)
+    : 0;
+
+  const handleBonusToggle = () => {
+    if (isBonusUsed) {
+      setBonusUsed(false);
+      setBonusAmount(0);
+    } else {
+      setBonusUsed(true);
+      setBonusAmount(sliderMax);
+    }
+  };
 
   return (
     <div className='bg-[#FAFAFA] p-3 rounded-xl mt-3'>
@@ -64,6 +96,20 @@ export default function OrderSummary({
               <span>{subtotal} c.</span>
             </div>
 
+            {containerTotal > 0 && (
+              <div className='flex justify-between text-[#80868B]'>
+                <span>{t('containers')}</span>
+                <span>{Math.round(containerTotal)} c.</span>
+              </div>
+            )}
+
+            {servicePrice > 0 && (
+              <div className='flex justify-between text-[#80868B]'>
+                <span>{t('service')}</span>
+                <span>{Math.round(servicePrice)} c.</span>
+              </div>
+            )}
+
             {deliveryType === 'delivery' && (
               <div className='flex justify-between text-[#80868B]'>
                 <span>{t('delivery')}</span>
@@ -72,19 +118,21 @@ export default function OrderSummary({
                     {t('freeDelivery')}
                   </span>
                 ) : (
-                  <span>{deliveryCost} c.</span>
+                  <span>{Math.round(deliveryCost)} c.</span>
                 )}
               </div>
             )}
 
-            {applied && promoDiscount > 0 && (
+            {promotion && promotionDiscount > 0 && (
               <div className='flex justify-between text-brand'>
-                <span className='truncate pr-2'>{applied.promotion.name}</span>
-                <span className='whitespace-nowrap'>- {promoDiscount} c.</span>
+                <span className='truncate pr-2'>{promotion.name}</span>
+                <span className='whitespace-nowrap'>
+                  - {Math.round(promotionDiscount)} c.
+                </span>
               </div>
             )}
 
-            {availableBonuses > 0 && (
+            {bonusAvailable > 0 && (
               <div className='mt-2 bg-white rounded-lg p-3 border border-brand/20'>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-2'>
@@ -100,7 +148,7 @@ export default function OrderSummary({
                         {t('spendBonus')}
                       </span>
                       <span className='text-[10px] text-gray-500'>
-                        {t('available', { amount: availableBonuses })}
+                        {t('available', { amount: bonusAvailable })}
                       </span>
                     </div>
                   </div>
@@ -121,20 +169,20 @@ export default function OrderSummary({
                   </button>
                 </div>
 
-                {isBonusUsed && maxDeductible > 0 && (
+                {isBonusUsed && sliderMax > 0 && (
                   <div className='mt-3 border-t border-dashed border-gray-200 pt-2'>
                     <input
                       type='range'
                       min={0}
-                      max={maxDeductible}
+                      max={sliderMax}
                       step={1}
-                      value={effectiveAmount}
+                      value={sliderValue}
                       onChange={(e) => setBonusAmount(Number(e.target.value))}
                       className='w-full accent-brand cursor-pointer'
                     />
                     <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
                       <span>{t('discount')}</span>
-                      <span>- {effectiveAmount} c.</span>
+                      <span>- {bonusApplied} c.</span>
                     </div>
                   </div>
                 )}
@@ -142,15 +190,23 @@ export default function OrderSummary({
             )}
           </div>
 
-          <div className='border-t border-[#E7E7E7] mt-3 pt-2 flex justify-between font-bold text-[#21201F] text-lg'>
+          <div
+            className={`border-t border-[#E7E7E7] mt-3 pt-2 flex justify-between font-bold text-[#21201F] text-lg ${
+              isCalculating ? 'opacity-60' : ''
+            }`}
+          >
             <span>{t('total')}</span>
-            <span>{Math.round(finalDisplayTotal)} c.</span>
+            <span>{Math.round(finalTotal)} c.</span>
           </div>
-
         </div>
       </div>
 
-      <BonusAccrualBadge total={finalDisplayTotal} className='mt-3' />
+      <BonusAccrualBadge
+        total={finalTotal}
+        bonusEarned={bonusEarned}
+        bonusAccrualPercent={bonusAccrualPercent}
+        className='mt-3'
+      />
     </div>
   );
 }
