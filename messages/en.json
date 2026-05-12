@@ -180,7 +180,9 @@
     "errorMax": "No more than {n}",
     "ariaAdd": "Add {name}",
     "ariaOpen": "Open {name}",
-    "ariaDecrement": "Decrease"
+    "ariaDecrement": "Decrease",
+    "showMore": "Show {n} more",
+    "showLess": "Show less"
   },
   "Categories": {
     "other": "Other",

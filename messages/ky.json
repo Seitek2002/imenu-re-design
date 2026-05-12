@@ -180,7 +180,9 @@
     "errorMax": "{n} көп эмес",
     "ariaAdd": "{name} кошуу",
     "ariaOpen": "{name} ачуу",
-    "ariaDecrement": "Азайтуу"
+    "ariaDecrement": "Азайтуу",
+    "showMore": "Дагы {n} көрсөтүү",
+    "showLess": "Жыйнаштыруу"
   },
   "Categories": {
     "other": "Башкалар",

@@ -76,6 +76,22 @@ const GroupSection = ({
   const sum = sumGroupCount(group, counts);
   const showAbsolute = absolutePricing && type === 'single' && min > 0;
 
+  const COLLAPSE_THRESHOLD = 3;
+  const collapsible =
+    type === 'multiple' && group.items.length > COLLAPSE_THRESHOLD;
+  const hiddenSelectedCount = collapsible
+    ? group.items
+        .slice(COLLAPSE_THRESHOLD)
+        .reduce((s, i) => s + (counts[i.id] ?? 0), 0)
+    : 0;
+  const [expanded, setExpanded] = useState(false);
+  const isExpanded = expanded || hiddenSelectedCount > 0;
+  const visibleItems =
+    collapsible && !isExpanded
+      ? group.items.slice(0, COLLAPSE_THRESHOLD)
+      : group.items;
+  const hiddenCount = group.items.length - COLLAPSE_THRESHOLD;
+
   const badge =
     min === max
       ? t('exactly', { n: min })
@@ -124,7 +140,7 @@ const GroupSection = ({
       </div>
 
       <div className='flex flex-col gap-2'>
-        {group.items.map((item) => {
+        {visibleItems.map((item) => {
           const count = counts[item.id] ?? 0;
           const selected = count > 0;
           const priceNum = Number(item.price);
@@ -216,6 +232,34 @@ const GroupSection = ({
           );
         })}
       </div>
+
+      {collapsible && hiddenSelectedCount === 0 && (
+        <div className='flex justify-center mt-3'>
+          <button
+            type='button'
+            onClick={() => setExpanded((v) => !v)}
+            className='inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-50 border border-gray-100 text-sm font-medium text-gray-700 active:scale-95 transition-transform hover:bg-gray-100'
+          >
+            <span>
+              {expanded ? t('showLess') : t('showMore', { n: hiddenCount })}
+            </span>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='14'
+              height='14'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
+            >
+              <polyline points='6 9 12 15 18 9' />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {error && (
         <p className='text-xs text-red-500 mt-2'>{error}</p>
@@ -327,23 +371,23 @@ const ProductContent = ({
 
   return (
     <>
-      <div className='flex-1 overflow-y-auto overscroll-contain pb-20 md:pb-0'>
-        <div className='md:flex items-start md:p-6'>
-          <div className='relative w-full aspect-4/3 md:w-1/2 md:rounded-2xl overflow-hidden shrink-0'>
-            <Image
-              src={product.productPhoto || '/placeholder-dish.svg'}
-              alt={product.productName}
-              fill
-              className={`object-cover transition-opacity duration-500 ${
-                imgLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              sizes='(max-width: 768px) 100vw, 500px'
-              onLoad={() => setImgLoaded(true)}
-            />
-          </div>
+      <div className='flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-20 md:pb-0'>
+        <div className='md:p-6'>
+          <div className='md:grid md:grid-cols-2 md:gap-6 md:items-start'>
+            <div className='relative w-full aspect-4/3 md:aspect-square md:rounded-2xl overflow-hidden shrink-0'>
+              <Image
+                src={product.productPhoto || '/placeholder-dish.svg'}
+                alt={product.productName}
+                fill
+                className={`object-cover transition-opacity duration-500 ${
+                  imgLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                sizes='(max-width: 768px) 100vw, 500px'
+                onLoad={() => setImgLoaded(true)}
+              />
+            </div>
 
-          <div className='p-5 md:py-0 md:px-6 flex flex-col gap-5 w-full'>
-            <div>
+            <div className='p-5 md:p-0 min-w-0'>
               <h2 className='text-2xl font-bold leading-tight mb-1'>
                 {product.productName}
               </h2>
@@ -361,7 +405,9 @@ const ProductContent = ({
                 <p className='text-xs text-gray-400 mt-1'>{t('weight', { value: weightLabel })}</p>
               )}
             </div>
+          </div>
 
+          <div className='px-5 pb-5 md:px-0 md:pb-0 md:mt-6 flex flex-col gap-5 min-w-0'>
             {flatMods.length > 0 && (
               <div>
                 <div className='flex justify-between items-center mb-2'>
@@ -370,18 +416,18 @@ const ProductContent = ({
                     {t('required')}
                   </span>
                 </div>
-                <div className='grid grid-cols-3 gap-2'>
+                <div className='grid grid-cols-3 md:grid-cols-4 gap-2'>
                   {flatMods.map((mod) => (
                     <button
                       key={mod.id}
                       onClick={() => setSelectedFlatId(mod.id)}
-                      className={`p-2.5 rounded-xl border text-sm transition-all ${
+                      className={`p-2.5 rounded-xl border text-sm transition-all min-w-0 ${
                         selectedFlatId === mod.id
                           ? 'border-[#21201F] bg-[#21201F] text-white shadow-md'
                           : 'border-gray-100 bg-gray-50 text-gray-700'
                       }`}
                     >
-                      <div className='font-medium'>{mod.name}</div>
+                      <div className='font-medium truncate'>{mod.name}</div>
                       <div
                         className={`text-xs ${
                           selectedFlatId === mod.id
@@ -431,7 +477,7 @@ const ProductContent = ({
 
           <button
             disabled={!isValid}
-            className='flex-1 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:active:scale-100'
+            className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:active:scale-100'
             onClick={handleAdd}
           >
             <span>{t('add')}</span>
