@@ -530,19 +530,6 @@ const DrawerCheckout: FC<IProps> = ({
                   </div>
                 )}
 
-                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
-                  <span className='text-[#A4A4A4] text-xs mb-1'>
-                    {t('commentLabel')}
-                  </span>
-                  <input
-                    type='text'
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                    placeholder={t('commentPlaceholder')}
-                  />
-                </label>
-
                 {orderType === 'delivery' && (
                   <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
                     <span className='text-[#A4A4A4] text-xs mb-1'>
@@ -671,19 +658,6 @@ const DrawerCheckout: FC<IProps> = ({
                     />
                   </div>
                 )}
-
-                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-3 px-4'>
-                  <span className='text-[#A4A4A4] text-xs mb-1'>
-                    {t('commentLabel')}
-                  </span>
-                  <input
-                    type='text'
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                    placeholder={t('commentPlaceholder')}
-                  />
-                </label>
 
                 {orderType === 'delivery' && (
                   <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>

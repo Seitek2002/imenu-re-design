@@ -117,7 +117,10 @@
       "asap": "ASAP",
       "asapWithEmoji": "🚀 ASAP",
       "asapDesc": "We'll prepare it as soon as possible",
-      "exact": "Pick exact time"
+      "exact": "Pick exact time",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "confirm": "Confirm"
     },
     "payment": {
       "title": "Payment method",
