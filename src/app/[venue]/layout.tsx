@@ -15,6 +15,12 @@ import type { Locale } from '@/lib/locale';
 const ProductSheet = dynamic(
   () => import('./products/[slug]/components/ProductSheet'),
 );
+// Новая full-screen-витрина с видео-фоном (этап вёрстки на моках).
+// Триггерится `?demo=<slug>`; работает параллельно со старым ProductSheet,
+// не пересекаясь по триггеру. Удалим/переключим, когда дизайн примут.
+const VideoProductSheet = dynamic(
+  () => import('./products/[slug]/components/VideoProductSheet'),
+);
 
 async function getVenueData(slug: string, locale: Locale) {
   try {
@@ -91,6 +97,10 @@ export default async function VenueLayout({
 
       <Suspense fallback={null}>
         <ProductSheet />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <VideoProductSheet />
       </Suspense>
 
       <VenueInitializer venue={venueData} />
