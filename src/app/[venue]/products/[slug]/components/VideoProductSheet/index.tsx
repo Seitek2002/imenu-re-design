@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 
@@ -162,7 +161,7 @@ export default function VideoProductSheet() {
       aria-modal='true'
       aria-label={product.productName}
     >
-      <VideoBackground src={videoUrl} poster={posterUrl} />
+      <VideoBackground src={videoUrl} poster={product.productPhoto || posterUrl} />
 
       {/* Тёмный градиент сверху и снизу — для читаемости текста поверх видео */}
       <div
@@ -223,25 +222,14 @@ export default function VideoProductSheet() {
         )}
       </div>
 
-      {/* Floating product image OR expanded group grid */}
+      {/* Expanded group grid — пока группа закрыта, пространство занято видео/постером */}
       <div className='relative z-10 flex-1 min-h-0 px-4 py-1'>
-        {expandedGroup ? (
+        {expandedGroup && (
           <GroupGrid
             group={expandedGroup}
             counts={counts}
             onChange={setCounts}
           />
-        ) : (
-          <div className='relative w-full h-full pointer-events-none'>
-            <Image
-              src={product.productPhoto || '/placeholder.svg'}
-              alt={product.productName}
-              fill
-              className='object-contain drop-shadow-2xl'
-              priority
-              sizes='100vw'
-            />
-          </div>
         )}
       </div>
 

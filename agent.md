@@ -2,6 +2,66 @@
 
 QR-меню для заведений Кыргызстана (рестораны, кафе, кофейни). Гость сканирует QR на столе/витрине, открывает меню заведения, оформляет заказ (на месте / самовывоз / доставка), оплачивает онлайн. Прод — `https://imenu.kg`.
 
+---
+
+## 🚧 Текущая задача: видео-витрина товара (drinkit-style)
+
+**Цель.** Для отдельных «премиум»-товаров (пока — «Мокка» как мок) показывать full-screen карточку с зацикленным видео-фоном и floating-фото товара. На странице категорий такие товары будут иметь короткое 5-сек видео-превью; на детальной — 10–15-сек видео-фон. Без звука.
+
+### Что уже сделано (этап вёрстки на моках)
+
+- **Мок-данные:** [src/data/mock-video-products.ts](src/data/mock-video-products.ts) — товар «Мокка» с 4-мя `groupModifications` (Молоко, Сахар, Добавки, Дополнительные), 2-мя `flatModificators`-размерами (Большой 450 г / Стандарт 350 г). Цены, веса, картинки опций — внутри.
+- **Компонент:** [src/app/[venue]/products/[slug]/components/VideoProductSheet/](src/app/[venue]/products/[slug]/components/VideoProductSheet/) — 7 файлов:
+  - `index.tsx` — full-screen портал на `z-[110]`, триггер `?demo=<slug>`.
+  - `VideoBackground.tsx` — `<video muted loop playsInline autoPlay preload="auto">` + постер. Уважает `prefers-reduced-motion`, Data Saver, `2g/slow-2g` — fallback на постер.
+  - `SizePill.tsx` — top-level пилл «Большой / Стандарт» из `product.modificators`. Парсит вес из имени (`parseSizeModName`).
+  - `GroupChip.tsx` — чип нижнего ряда. Если у группы есть иконка-картинка (`chipIcons[group.name]`) — большая картинка сверху, иначе кружок с «+». Бейдж количества справа.
+  - `GroupGrid.tsx` + `GroupGridItem.tsx` — 3-колоночная сетка опций, +/− счётчик с уважением `selection.min/max/type`.
+  - `BottomBar.tsx` — счётчик количества + оранжевая acent-кнопка с ценой.
+- **Интеграция:** в [src/app/[venue]/layout.tsx](src/app/[venue]/layout.tsx) рядом со старым `ProductSheet` через `next/dynamic` + `<Suspense>`. **Старый `ProductSheet` НЕ ТРОНУТ** — работает параллельно для обычных товаров.
+- **Ассеты:** `public/test/mokka.mp4` (4.7 MB, горизонтальное видео), `public/test/mokka-vertical.png` (750×1624 product-фото с подставкой), `public/test/mokka-horizontal.png` (2752×1536 wide-кадр для постера), `public/test/details/{1,2,3,4,milk}.png` для опций молока.
+- **Fallback:** [public/splash-placeholder.svg](public/splash-placeholder.svg) — для опций без своей картинки (овсяное, соевое и т.д.).
+
+### Как открыть
+
+```
+http://localhost:3000/<любой-venue-slug>?demo=mokka
+```
+
+Например `/ustukan?demo=mokka`. Закрытие — крестик, `ESC` или просто убрать `?demo=` из URL.
+
+### Что НЕ подключено
+
+- **Добавление в корзину** — `handleAdd` сейчас просто закрывает overlay. Когда дизайн утвердят, подключим через `useBasketStore.addToBasket` (как в старом `ProductSheet`, см. `buildGroupSelections` там же).
+- **Реальный API** — все данные мок. Под продакшен бэк должен будет вернуть в `Product` поля `productVideo` (URL короткого 5-сек), `productVideoLarge` (URL 15-сек), `productVideoPoster` (URL постера первого кадра).
+- **Триггер с FoodItem** — клик по обычной карточке товара пока открывает старую шторку. После согласования дизайна вкрутим логику «если у товара есть `productVideo` → открыть `VideoProductSheet` вместо `ProductSheet`».
+
+### Известные проблемы / открытые вопросы
+
+1. **Фото товара — не прозрачный cutout.** Сейчас `mokka-vertical.png` — это сцена с подставкой и тканью. На видео-фоне выглядит как «двойник» фона. Нужен **прозрачный PNG только со стаканом** от дизайнера. Когда придёт — просто заменим файл по пути `/public/test/mokka-vertical.png`, код не трогаем.
+2. **Видео горизонтальное.** На вертикальном экране `object-cover` обрезает по краям. Когда дадут вертикальное — `cp new-vertical.mp4 public/test/mokka.mp4`.
+3. **Чип «Молоко» иногда не виден на скриншоте.** Не подтверждено: либо horizontal-scroll увёл его за левый край, либо реальный баг рендера. Проверить при следующем заходе сразу после reload (без скроллов).
+4. **Z-index и FloatingCartButton.** Старая нижняя кнопка корзины (`z-30`) и MainAction (`z-40`) перекрыты моим `z-[110]`. Если что-то всплыло сверху — это либо браузерное расширение, либо что-то новое, что нужно проверить отдельно.
+
+### Архитектурные решения (на потом — рефакторинг)
+
+- Старый и новый sheet пока **дублируют** часть логики (расчёт цены, селект группы, qty). Это сознательно — на этапе ревью дизайна не хочется ломать рабочий поток. **После принятия дизайна** план таков:
+  - Вынести `GroupGrid` / `GroupGridItem` в shared `src/components/product/` для переиспользования.
+  - `buildGroupSelections` / `sumGroupCount` тоже вынести в утилиту `src/lib/product-modifications.ts`.
+  - Триггер открытия унифицировать: одна функция «openProductDetail(productId)» решает, какой sheet показать.
+- Денежные суммы пока считаются локально. Когда подключим к корзине — на чек-аут пойдёт через `/orders/calculate/` (см. `useCheckoutCalculate`), это уже стоит на бэке.
+- Мок-файлы (`mock-video-products.ts`, splash-placeholder) **удалить**, когда переключимся на API.
+
+### Производительность — что заложено, что отложено
+
+- Видео `preload="auto"` + `poster` — постер показывается мгновенно, видео догружается.
+- Уважение Data Saver / `prefers-reduced-motion` / 2g — в этих случаях видео не запускается, остаётся постер.
+- `disablePictureInPicture` — чтобы iOS не показывал PiP-кнопку.
+- **Не заложено** (на стадии каталога, не детальной): IntersectionObserver + concurrent-cap (играет только самое видимое видео). На странице категории, когда там появятся видео-превью карточек, это критично. Сейчас — full-screen, одно видео, проблемы нет.
+- **Не заложено**: byte-range CDN, AVIF-постер, multi-bitrate. Решается на этапе деплоя бэк-эндом / DevOps.
+
+---
+
 ## Стек
 
 - **Next.js 16 (App Router)** + React 19 + React Compiler (`babel-plugin-react-compiler`).
