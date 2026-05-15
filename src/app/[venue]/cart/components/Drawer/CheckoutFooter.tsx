@@ -55,10 +55,7 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
         `}
       >
         {isSubmitting ? (
-          <div className='flex items-center gap-2'>
-            <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin' />
-            <span>{t('processing')}</span>
-          </div>
+          <span>{t('processing')}</span>
         ) : confirming ? (
           <span>{t('confirm')}</span>
         ) : (

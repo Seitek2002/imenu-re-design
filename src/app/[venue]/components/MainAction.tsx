@@ -176,11 +176,7 @@ export default function MainAction({ venueSlug }: Props) {
                 onClick={handleConfirmCall}
                 className='flex-1 h-12 rounded-xl bg-brand text-white font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2'
               >
-                {isLoading ? (
-                  <Loader2 size={18} className='animate-spin' />
-                ) : (
-                  t('yesCall')
-                )}
+                {t('yesCall')}
               </button>
             </div>
           </div>

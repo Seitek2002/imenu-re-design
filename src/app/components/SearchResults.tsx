@@ -132,11 +132,7 @@ export default function SearchResults() {
     <div className='px-2 py-4 min-h-[60vh] animate-fadeIn'>
       <h3 className='text-lg font-bold mb-4 px-2'>{t('results')}</h3>
 
-      {loading ? (
-        <div className='flex justify-center py-10'>
-          <div className='w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin'></div>
-        </div>
-      ) : products.length > 0 ? (
+      {loading ? null : products.length > 0 ? (
         <div className='columns-2 gap-2 space-y-2'>
           {products.map((product) => (
             <div key={product.id} className='break-inside-avoid'>
