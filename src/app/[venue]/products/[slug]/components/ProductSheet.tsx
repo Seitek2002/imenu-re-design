@@ -24,7 +24,8 @@ import {
 } from '@/store/basket';
 import { useVenueStore } from '@/store/venue';
 import { useMounted } from '@/hooks/useMounted';
-import { useVenueProducts } from '@/lib/api/queries';
+import { useVenueProducts, usePromotionsV2 } from '@/lib/api/queries';
+import { findActivePromotionForProduct } from '@/lib/promotions';
 
 import plusIcon from '@/assets/Goods/plus.svg';
 import minusIcon from '@/assets/Goods/minus.svg';
@@ -279,6 +280,11 @@ const ProductContent = ({
   const t = useTranslations('Product');
   const tc = useTranslations('Common');
 
+  const venueSlug = useVenueStore((s) => s.data?.slug ?? null);
+  const spotId = useVenueStore((s) => s.spotId);
+  const { data: promotions } = usePromotionsV2(venueSlug, spotId);
+  const promo = findActivePromotionForProduct(product, promotions);
+
   const groups = useMemo(() => {
     const list = product.groupModifications ?? [];
     const isSize = (name: string) => /разм|size|өлч/i.test(name);
@@ -394,6 +400,17 @@ const ProductContent = ({
               {unitPrice > 0 && (
                 <div className='text-xl font-bold text-[#21201F] mb-2'>
                   {unitPrice} {tc('currency')}
+                </div>
+              )}
+              {promo && (
+                <div className='flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5 mb-3'>
+                  <span className='text-orange-500 text-base leading-none mt-0.5'>🏷</span>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-semibold text-orange-700 leading-tight'>{promo.name}</p>
+                    {promo.description && (
+                      <p className='text-xs text-orange-600 mt-0.5 leading-snug'>{promo.description}</p>
+                    )}
+                  </div>
                 </div>
               )}
               {product.productDescription && (
