@@ -102,13 +102,6 @@ export default function SearchBar({ placeholder, className = '', autoFocus = fal
           placeholder={phText}
           className="bg-transparent outline-none flex-1"
         />
-        {isPending && (
-          <span
-            aria-label={tc('ariaLoading')}
-            className="inline-block h-4 w-4 animate-spin rounded-full border-2"
-            style={{ borderColor: 'rgba(0,0,0,0.2)', borderTopColor: 'var(--brand)' }}
-          />
-        )}
         {showClear && (
           <button
             type="button"

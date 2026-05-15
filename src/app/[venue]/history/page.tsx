@@ -149,9 +149,7 @@ export default function HistoryPage() {
 
       <div className='px-4 mt-4 flex flex-col gap-3'>
         {isLoading && (
-          <div className='py-16 flex items-center justify-center text-[#9E9E9E]'>
-            <Loader2 size={20} className='animate-spin' />
-          </div>
+          <div className='py-16' />
         )}
 
         {isError && (

@@ -36,7 +36,7 @@ export default function WifiModal({ isOpen, onClose, text, url }: Props) {
       />
 
       {/* Content */}
-      <div className='relative bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl transform transition-all scale-100 animate-fadeIn'>
+      <div className='relative bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 fade-in duration-300'>
         {/* Иконка Wi-Fi сверху */}
         <div className='w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4'>
           <svg

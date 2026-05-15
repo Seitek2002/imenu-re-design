@@ -1,7 +1,7 @@
 'use client';
 
 import { FC, memo } from 'react';
-import FoodItem from './FoodItem';
+import VirtualFoodItem from './VirtualFoodItem';
 import { Product } from '@/types/api';
 
 interface Props {
@@ -14,10 +14,9 @@ const Goods: FC<Props> = ({ products }) => {
   return (
     <div className='grid grid-cols-2 gap-x-3 gap-y-6 px-2.5'>
       {products.map((product, index) => (
-        <FoodItem
+        <VirtualFoodItem
           key={product.id}
           product={product}
-          // 🔥 ПЕРЕДАЕМ ИНДЕКС, чтобы знать, кто первый
           index={index}
         />
       ))}

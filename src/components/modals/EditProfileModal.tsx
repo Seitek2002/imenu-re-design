@@ -65,7 +65,7 @@ export default function EditProfileModal({ isOpen, onClose, phone, client }: Pro
         className='absolute inset-0 bg-black/50 backdrop-blur-sm'
         onClick={() => !update.isPending && onClose()}
       />
-      <div className='relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-fadeIn'>
+      <div className='relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300'>
         <div className='flex items-center justify-between mb-4'>
           <h3 className='text-[18px] font-bold text-[#21201F]'>Профиль</h3>
           <button
@@ -99,7 +99,6 @@ export default function EditProfileModal({ isOpen, onClose, phone, client }: Pro
           disabled={update.isPending}
           className='mt-5 w-full h-12 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.99] transition-transform disabled:opacity-60'
         >
-          {update.isPending && <Loader2 size={16} className='animate-spin' />}
           Сохранить
         </button>
       </div>
