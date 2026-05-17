@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState, useEffect, useRef } from 'react';
+import { FC } from 'react';
 import { useTranslations } from 'next-intl';
 import { useVenueStore } from '@/store/venue';
 
@@ -17,27 +17,6 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
   const accrualPercent = venue?.isBonusSystemEnabled ? (venue?.bonusAccrualPercent ?? 0) : 0;
   const earnedBonus = accrualPercent > 0 ? Math.floor((total * accrualPercent) / 100) : 0;
 
-  const [confirming, setConfirming] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  const handleClick = () => {
-    if (isSubmitting) return;
-    if (!confirming) {
-      setConfirming(true);
-      timerRef.current = setTimeout(() => setConfirming(false), 3000);
-      return;
-    }
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setConfirming(false);
-    onPay();
-  };
-
   return (
     <div className='flex items-center gap-4'>
       <div className='flex flex-col'>
@@ -46,18 +25,16 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
       </div>
 
       <button
-        onClick={handleClick}
+        onClick={onPay}
         disabled={isSubmitting}
         className={`
           flex-1 h-14 rounded-2xl font-bold text-white text-lg shadow-lg
           transition-all active:scale-95 flex flex-row items-center justify-center gap-2 leading-tight
-          ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : confirming ? 'bg-green-600 animate-pulse' : 'bg-brand'}
+          ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-brand'}
         `}
       >
         {isSubmitting ? (
           <span>{t('processing')}</span>
-        ) : confirming ? (
-          <span>{t('confirm')}</span>
         ) : (
           <>
             <span>{t('pay')}</span>
