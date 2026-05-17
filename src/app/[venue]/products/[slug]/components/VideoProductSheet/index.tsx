@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -24,7 +18,8 @@ import ProductDetailSheet from './ProductDetailSheet';
 const DEMO_PARAM = 'demo';
 
 const haptic = (ms = 30) => {
-  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(ms);
+  if (typeof navigator !== 'undefined' && navigator.vibrate)
+    navigator.vibrate(ms);
 };
 
 /**
@@ -37,7 +32,7 @@ export default function VideoProductSheet() {
   const pathname = usePathname();
 
   const demoSlug = searchParams.get(DEMO_PARAM);
-  const mock = demoSlug ? MOCK_VIDEO_PRODUCTS[demoSlug] ?? null : null;
+  const mock = demoSlug ? (MOCK_VIDEO_PRODUCTS[demoSlug] ?? null) : null;
   const isOpen = !!mock;
 
   const [sizeId, setSizeId] = useState<number | null>(null);
@@ -49,7 +44,10 @@ export default function VideoProductSheet() {
   // Реинициализация при смене мока
   const lastSlugRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!mock) { lastSlugRef.current = null; return; }
+    if (!mock) {
+      lastSlugRef.current = null;
+      return;
+    }
     if (lastSlugRef.current === demoSlug) return;
     lastSlugRef.current = demoSlug;
 
@@ -94,7 +92,10 @@ export default function VideoProductSheet() {
   const groups = useMemo(() => mock?.product.groupModifications ?? [], [mock]);
 
   const expandedGroup = useMemo(
-    () => (expandedGroupId == null ? null : groups.find((g) => g.id === expandedGroupId) ?? null),
+    () =>
+      expandedGroupId == null
+        ? null
+        : (groups.find((g) => g.id === expandedGroupId) ?? null),
     [expandedGroupId, groups],
   );
 
@@ -104,7 +105,9 @@ export default function VideoProductSheet() {
     const mod = mock.product.modificators.find((m) => m.id === sizeId);
     const base = mod?.price ?? mock.product.productPrice;
     const adds = groups.reduce(
-      (acc, g) => acc + g.items.reduce((s, i) => s + Number(i.price) * (counts[i.id] ?? 0), 0),
+      (acc, g) =>
+        acc +
+        g.items.reduce((s, i) => s + Number(i.price) * (counts[i.id] ?? 0), 0),
       0,
     );
     return base + adds;
@@ -129,13 +132,10 @@ export default function VideoProductSheet() {
     return out;
   }, [groups, counts]);
 
-  const handleToggleGroup = useCallback(
-    (id: number) => {
-      haptic(25);
-      setExpandedGroupId((prev) => (prev === id ? null : id));
-    },
-    [],
-  );
+  const handleToggleGroup = useCallback((id: number) => {
+    haptic(25);
+    setExpandedGroupId((prev) => (prev === id ? null : id));
+  }, []);
 
   const handleSelectSize = useCallback((id: number) => {
     haptic(25);
@@ -154,16 +154,27 @@ export default function VideoProductSheet() {
   }, []);
 
   if (!mounted || !mock) return null;
-  const { product, videoUrl, posterUrl, chipIcons, variantChip, productDetails, groupMeta } = mock;
+  const {
+    product,
+    videoUrl,
+    posterUrl,
+    chipIcons,
+    variantChip,
+    productDetails,
+    groupMeta,
+  } = mock;
 
   return createPortal(
     <div
-      className='fixed inset-0 z-110 flex flex-col text-white overflow-hidden'
+      className='fixed inset-0 z-110 flex flex-col text-white overflow-hidden pb-6'
       role='dialog'
       aria-modal='true'
       aria-label={product.productName}
     >
-      <VideoBackground src={videoUrl} poster={product.productPhoto || posterUrl} />
+      <VideoBackground
+        src={videoUrl}
+        poster={product.productPhoto || posterUrl}
+      />
 
       {/* Градиент сверху и снизу для читаемости текста */}
       <div
@@ -175,7 +186,9 @@ export default function VideoProductSheet() {
       <button
         type='button'
         onClick={handleClose}
-        style={{ top: 'max(1rem, calc(env(safe-area-inset-top, 0px) + 0.5rem))' }}
+        style={{
+          top: 'max(1rem, calc(env(safe-area-inset-top, 0px) + 0.5rem))',
+        }}
         className='absolute right-4 z-20 w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform ring-1 ring-white/20'
         aria-label='Закрыть'
       >
@@ -184,7 +197,9 @@ export default function VideoProductSheet() {
 
       {/* Заголовок + описание + размер + «Подробнее» */}
       <div
-        style={{ paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top, 0px) + 1rem))' }}
+        style={{
+          paddingTop: 'max(3.5rem, calc(env(safe-area-inset-top, 0px) + 1rem))',
+        }}
         className='relative z-10 px-5 pb-2 flex flex-col gap-3 shrink-0'
       >
         <div className='pr-12'>
@@ -216,57 +231,66 @@ export default function VideoProductSheet() {
       </div>
 
       {/* Сетка группы (пока группа закрыта — пространство занято видео) */}
-      <div className='relative z-10 flex-1 min-h-0 px-4 py-2'>
-        {expandedGroup && (
-          <GroupGrid
-            group={expandedGroup}
-            counts={counts}
-            onChange={setCounts}
-            columns={groupMeta?.[expandedGroup.id]?.columns}
-            darkSelected={groupMeta?.[expandedGroup.id]?.darkSelected}
-            segmentPairs={groupMeta?.[expandedGroup.id]?.segmentPairs}
-          />
-        )}
-      </div>
-
-      {/* Нижний ряд чипов */}
-      {groups.length > 0 && (
-        <div className='relative z-10 shrink-0'>
-          <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
-
-            {/* Специальный чип «Айс версия» */}
-            {variantChip && (
-              <>
-                <VariantChipButton
-                  label={variantChip.label}
-                  photo={variantChip.photo}
-                />
-                <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
-              </>
-            )}
-
-            {/* Группы */}
-            {groups.map((g) => (
-              <GroupChip
-                key={g.id}
-                group={g}
-                icon={chipIcons[g.name]}
-                active={expandedGroupId === g.id}
-                selectedCount={groupCounts[g.id] ?? 0}
-                selectedItem={groupSelectedItems[g.id]}
-                onClick={() => handleToggleGroup(g.id)}
-              />
-            ))}
-          </div>
+      <div className='flex-1 flex flex-col'>
+        <div className='relative z-10 px-4 py-2'>
+          {expandedGroup && (
+            <GroupGrid
+              group={expandedGroup}
+              counts={counts}
+              onChange={setCounts}
+              columns={groupMeta?.[expandedGroup.id]?.columns}
+              darkSelected={groupMeta?.[expandedGroup.id]?.darkSelected}
+              segmentPairs={groupMeta?.[expandedGroup.id]?.segmentPairs}
+            />
+          )}
         </div>
-      )}
 
-      <BottomBar
-        qnty={qnty}
-        onQntyChange={(n) => { haptic(25); setQnty(n); }}
-        totalPrice={totalPrice}
-        onAdd={handleAdd}
-      />
+        {/* Нижний ряд чипов */}
+        <div className='flex-1 flex flex-col justify-end'>
+          {groups.length > 0 && (
+            <div className='relative z-10 shrink-0'>
+              <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
+                {/* Специальный чип «Айс версия» */}
+                {variantChip && (
+                  <>
+                    <VariantChipButton
+                      label={variantChip.label}
+                      photo={variantChip.photo}
+                    />
+                    <div
+                      className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5'
+                      aria-hidden='true'
+                    />
+                  </>
+                )}
+
+                {/* Группы */}
+                {groups.map((g) => (
+                  <GroupChip
+                    key={g.id}
+                    group={g}
+                    icon={chipIcons[g.name]}
+                    active={expandedGroupId === g.id}
+                    selectedCount={groupCounts[g.id] ?? 0}
+                    selectedItem={groupSelectedItems[g.id]}
+                    onClick={() => handleToggleGroup(g.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <BottomBar
+            qnty={qnty}
+            onQntyChange={(n) => {
+              haptic(25);
+              setQnty(n);
+            }}
+            totalPrice={totalPrice}
+            onAdd={handleAdd}
+          />
+        </div>
+      </div>
 
       {/* Листок «Подробнее» */}
       {productDetails && (
@@ -294,7 +318,9 @@ function VariantChipButton({ label, photo }: { label: string; photo: string }) {
       className='relative shrink-0 w-21 h-22 rounded-[20px] flex flex-col items-start justify-between p-2.5 active:scale-95 transition-all duration-150 bg-white/25 backdrop-blur-md ring-1 ring-white/30'
       aria-label={label}
     >
-      <span className='text-[11px] font-semibold text-[#21201F] leading-tight'>{label}</span>
+      <span className='text-[11px] font-semibold text-[#21201F] leading-tight'>
+        {label}
+      </span>
       <div className='w-full flex justify-center'>
         {!imgError ? (
           // eslint-disable-next-line @next/next/no-img-element
