@@ -25,6 +25,11 @@ export interface GroupMeta {
   columns?: number;
   /** Если true — выбранные элементы отображаются с тёмным фоном (стиль cup-toggle) */
   darkSelected?: boolean;
+  /**
+   * Пары взаимоисключающих вариантов [id1, id2] для сегментного рендера.
+   * Рендерится как стопка пилл-переключателей (как выбор размера).
+   */
+  segmentPairs?: [number, number][];
 }
 
 export interface VideoProductMock {
@@ -230,7 +235,14 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
     },
 
     groupMeta: {
-      [DOP_GROUP.id]: { columns: 4, darkSelected: true },
+      [DOP_GROUP.id]: {
+        segmentPairs: [
+          [ID.dopSleeve,   ID.dopNoSleeve],
+          [ID.dopLid,      ID.dopNoLid],
+          [ID.dopCup,      ID.dopOwnCup],
+          [ID.dopStandard, ID.dopHot],
+        ],
+      },
     },
   },
 };

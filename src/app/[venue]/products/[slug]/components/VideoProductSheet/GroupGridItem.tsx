@@ -111,23 +111,23 @@ export default function GroupGridItem({
           <>
             <button
               type='button'
-              onClick={() => { haptic(); onInc(); }}
-              disabled={!canIncrement}
-              className='w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-90 transition-transform disabled:opacity-40'
-              aria-label='Увеличить'
+              onClick={() => { haptic(); onDec(); }}
+              className='w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-90 transition-transform'
+              aria-label='Уменьшить'
             >
-              <Plus size={14} strokeWidth={2.5} className='text-[#21201F]' />
+              <Minus size={14} strokeWidth={2.5} className='text-[#21201F]' />
             </button>
             <span className={`font-bold text-sm w-4 text-center select-none ${darkBg ? 'text-white' : 'text-[#21201F]'}`}>
               {count}
             </span>
             <button
               type='button'
-              onClick={() => { haptic(); onDec(); }}
-              className='w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-90 transition-transform'
-              aria-label='Уменьшить'
+              onClick={() => { haptic(); onInc(); }}
+              disabled={!canIncrement}
+              className='w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-90 transition-transform disabled:opacity-40'
+              aria-label='Увеличить'
             >
-              <Minus size={14} strokeWidth={2.5} className='text-[#21201F]' />
+              <Plus size={14} strokeWidth={2.5} className='text-[#21201F]' />
             </button>
           </>
         ) : (

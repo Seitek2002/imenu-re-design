@@ -6,13 +6,11 @@ import type { GroupItem, GroupModification } from '@/types/api';
 
 interface Props {
   group: GroupModification;
-  /** Иконка группы (показывается когда группа активна и ничего не выбрано) */
+  /** Иконка группы — показывается ТОЛЬКО когда выбрано >1 элемента */
   icon?: string;
-  /** Активна ли группа (сетка открыта) */
   active: boolean;
-  /** Сколько элементов выбрано в группе */
   selectedCount: number;
-  /** Первый выбранный элемент (для single или когда 1 выбранный в multiple) */
+  /** Единственный выбранный элемент (для single-select или когда 1 из multiple) */
   selectedItem?: GroupItem;
   onClick: () => void;
 }
@@ -20,10 +18,10 @@ interface Props {
 /**
  * Чип группы в нижнем горизонтальном ряду.
  *
- * Три состояния отображения:
- * 1. Default (ничего не выбрано, группа закрыта): круглый «+» + название группы
- * 2. Active (группа открыта, ничего не выбрано): иконка группы + название
- * 3. Selected (выбран хотя бы один элемент): фото элемента + его название
+ * Три состояния:
+ * 1. Ничего не выбрано — «+» кружок плавает ВЫШЕ карточки, имя группы внутри
+ * 2. Выбран 1 элемент — фото выбранного элемента + его название
+ * 3. Выбрано >1 элементов — иконка группы + бейдж числа
  */
 export default function GroupChip({
   group,
@@ -35,60 +33,73 @@ export default function GroupChip({
 }: Props) {
   const [imgError, setImgError] = useState(false);
 
-  // Определяем что показывать
-  const showSelectedItem = selectedCount === 1 && selectedItem?.photo;
-  const showGroupIcon = (active || selectedCount > 1) && icon && !imgError;
-  const showPlus = !showSelectedItem && !showGroupIcon;
+  const showSelectedPhoto = selectedCount === 1 && !!selectedItem?.photo && !imgError;
+  const showGroupIcon    = selectedCount > 1 && !!icon && !imgError;
+  const showPlus         = !showSelectedPhoto && !showGroupIcon;
 
-  const imageUrl = showSelectedItem
-    ? selectedItem!.photo!
-    : icon ?? '';
-
-  const label = selectedCount === 1 && selectedItem
-    ? selectedItem.name
-    : group.name;
+  const imageUrl = showSelectedPhoto ? selectedItem!.photo! : (icon ?? '');
+  const label    = selectedCount === 1 && selectedItem ? selectedItem.name : group.name;
 
   return (
     <button
       type='button'
       onClick={onClick}
-      className={`
-        relative shrink-0 w-21 h-22 rounded-[20px] flex flex-col items-center
-        justify-between py-2.5 px-1.5 active:scale-95 transition-all duration-150
-        bg-white/25 backdrop-blur-md
-        ${active ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-white/30'}
-      `}
+      className='relative shrink-0 w-21 active:scale-95 transition-all duration-150 outline-none'
       aria-pressed={active}
       aria-label={selectedCount > 0 ? `${label}, выбрано: ${selectedCount}` : label}
     >
-      {/* Бейдж для multiple > 1 */}
-      {selectedCount > 1 && (
-        <span className='absolute top-1.5 right-1.5 bg-[#21201F] text-white text-[9px] font-bold leading-none px-1.5 py-0.5 rounded-full min-w-[16px] text-center'>
-          {selectedCount}
-        </span>
+      {/* «+» кружок — плавает НАД карточкой, перекрывает её верхний край */}
+      {showPlus && (
+        <div className='flex justify-center pb-2'>
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 transition-colors duration-150 ${
+              active
+                ? 'border-white bg-white/60 backdrop-blur-sm'
+                : 'border-[#21201F]/50 bg-white/65 backdrop-blur-sm'
+            }`}
+          >
+            <Plus size={19} strokeWidth={2.5} className='text-[#21201F]' />
+          </div>
+        </div>
       )}
 
-      {/* Изображение или «+» */}
-      <div className='flex-1 w-full flex items-center justify-center min-h-0'>
-        {showPlus ? (
-          <div className='w-9 h-9 rounded-full border-2 border-[#21201F]/60 flex items-center justify-center'>
-            <Plus size={18} strokeWidth={2.5} className='text-[#21201F]' />
-          </div>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt=''
-            onError={() => setImgError(true)}
-            className='w-16 h-16 object-contain'
-          />
+      {/* Карточка чипа */}
+      <div
+        className={`
+          w-full rounded-[20px] bg-white/25 backdrop-blur-md flex flex-col items-center pb-2.5
+          transition-all duration-150
+          ${active ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-white/30'}
+          ${showPlus ? '-mt-5 pt-0' : 'pt-2.5'}
+        `}
+      >
+        {/* Бейдж для >1 выбранных */}
+        {selectedCount > 1 && (
+          <span className='absolute top-1.5 right-1.5 z-10 bg-[#21201F] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center'>
+            {selectedCount}
+          </span>
         )}
-      </div>
 
-      {/* Название */}
-      <span className='text-[11px] font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-0.5'>
-        {label}
-      </span>
+        {/* Фото (только в image-режиме) */}
+        {!showPlus && (
+          <div className='w-full flex items-center justify-center pt-1 pb-1'>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt=''
+              onError={() => setImgError(true)}
+              className='w-14 h-14 object-contain'
+            />
+          </div>
+        )}
+
+        {/* Пространство под «+» кружком внутри карточки */}
+        {showPlus && <div className='h-3' />}
+
+        {/* Название */}
+        <span className='text-[11px] font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-1.5'>
+          {label}
+        </span>
+      </div>
     </button>
   );
 }

@@ -224,6 +224,7 @@ export default function VideoProductSheet() {
             onChange={setCounts}
             columns={groupMeta?.[expandedGroup.id]?.columns}
             darkSelected={groupMeta?.[expandedGroup.id]?.darkSelected}
+            segmentPairs={groupMeta?.[expandedGroup.id]?.segmentPairs}
           />
         )}
       </div>
