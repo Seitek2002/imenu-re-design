@@ -85,10 +85,22 @@ export function useCartLogic() {
 
   const finalTotal = totalPrice + deliveryPrice;
 
+  const setOrderType = (type: 'takeout' | 'delivery') => {
+    if (type === 'delivery') {
+      // Удаляем товары недоступные для доставки при переключении в этот режим
+      for (const item of items) {
+        if (item.available_for_delivery === false) {
+          removeFromBasket(item.key);
+        }
+      }
+    }
+    setUserSelectedType(type);
+  };
+
   return {
     items: mounted ? items : [],
-    orderType, // <-- Теперь сюда уходит правильный тип ('dinein' если есть стол)
-    setOrderType: setUserSelectedType, // Сеттер меняет только локальный выбор
+    orderType,
+    setOrderType,
     handleIncrement: incrementItem,
     handleDecrement: decrementItem,
     handleRemove: removeFromBasket,
