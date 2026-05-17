@@ -69,6 +69,7 @@ export default function PosPaymentModal({
 
   const paymentMutation = useCreatePosPaymentLink();
   const [error, setError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [pendingArgs, setPendingArgs] = useState<{
@@ -83,6 +84,7 @@ export default function PosPaymentModal({
       setOtpError(null);
       setPendingArgs(null);
       setError(null);
+      setPhoneError(false);
     }
   }, [open]);
 
@@ -117,13 +119,16 @@ export default function PosPaymentModal({
   const onPay = async () => {
     setError(null);
     if (!phone) {
+      setPhoneError(true);
       setError(t('payment.phoneRequired'));
       return;
     }
     if (phone.length !== country.length) {
+      setPhoneError(true);
       setError(t('payment.phoneInvalid'));
       return;
     }
+    setPhoneError(false);
 
     let savedHash: string | null = null;
     try {
@@ -190,10 +195,10 @@ export default function PosPaymentModal({
         <div className='flex flex-col gap-3'>
           {/* Phone */}
           <div>
-            <label className='text-xs text-[#A4A4A4] font-medium mb-1 block'>
+            <label className={`text-xs font-medium mb-1 block ${phoneError ? 'text-red-400' : 'text-[#A4A4A4]'}`}>
               {t('payment.phoneLabel')}
             </label>
-            <div className='bg-[#F5F5F5] flex items-center rounded-xl py-2.5 px-3 gap-2'>
+            <div className={`flex items-center rounded-xl py-2.5 px-3 gap-2 transition-colors ${phoneError ? 'bg-red-50 ring-1 ring-red-400' : 'bg-[#F5F5F5]'}`}>
               <CountryCodeSelect
                 value={countryId}
                 onChange={(id) => {
@@ -211,6 +216,7 @@ export default function PosPaymentModal({
                     .replace(/\D/g, '')
                     .slice(0, country.length);
                   setPhone(digits);
+                  if (digits) setPhoneError(false);
                 }}
                 placeholder={country.placeholder}
                 className='bg-transparent outline-none text-[#111111] text-sm font-medium flex-1 min-w-0'
