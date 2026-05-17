@@ -85,7 +85,7 @@ export default function GroupGrid({
   if (segmentPairs && segmentPairs.length > 0) {
     const itemById = Object.fromEntries(group.items.map((i) => [i.id, i]));
     return (
-      <div className='w-full h-full overflow-y-auto overscroll-contain'>
+      <div className='overflow-y-auto overscroll-contain'>
         <div className='bg-white/15 backdrop-blur-2xl rounded-3xl p-3 space-y-2'>
           {segmentPairs.map(([id1, id2], rowIdx) => {
             const a = itemById[id1];
@@ -124,7 +124,7 @@ export default function GroupGrid({
   // 1–2 элемента — флекс с центровкой; 3+ — сетка
   if (itemCount <= 2) {
     return (
-      <div className='w-full h-full overflow-y-auto overscroll-contain'>
+      <div className='overflow-y-auto overscroll-contain'>
         <div className='bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 flex justify-center gap-2'>
           {group.items.map((it) => {
             const count = counts[it.id] ?? 0;
@@ -150,7 +150,7 @@ export default function GroupGrid({
   const cols = columns === 4 ? 'grid-cols-4' : columns === 2 ? 'grid-cols-2' : 'grid-cols-3';
 
   return (
-    <div className='w-full h-full overflow-y-auto overscroll-contain'>
+    <div className='overflow-y-auto overscroll-contain'>
       <div className={`bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 grid ${cols} gap-2`}>
         {group.items.map((it) => {
           const count = counts[it.id] ?? 0;

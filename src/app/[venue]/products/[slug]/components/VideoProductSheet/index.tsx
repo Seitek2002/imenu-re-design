@@ -232,7 +232,7 @@ export default function VideoProductSheet() {
 
       {/* Сетка группы (пока группа закрыта — пространство занято видео) */}
       <div className='flex-1 flex flex-col'>
-        <div className='relative z-10 px-4 py-2'>
+        <div className='relative flex-1 flex flex-col justify-end z-10 px-4 py-2'>
           {expandedGroup && (
             <GroupGrid
               group={expandedGroup}
@@ -246,7 +246,7 @@ export default function VideoProductSheet() {
         </div>
 
         {/* Нижний ряд чипов */}
-        <div className='flex-1 flex flex-col justify-end'>
+        <div className=' justify-end'>
           {groups.length > 0 && (
             <div className='relative z-10 shrink-0'>
               <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
