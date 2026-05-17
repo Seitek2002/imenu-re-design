@@ -164,6 +164,7 @@ const DrawerCheckout: FC<IProps> = ({
   const isLoading = createOrderMutation.isPending;
   const [apiError, setApiError] = useState(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState(false);
   const [pendingOrderBody, setPendingOrderBody] = useState<OrderCreateBody | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
 
@@ -191,6 +192,7 @@ const DrawerCheckout: FC<IProps> = ({
 
       setPhone(cleanVal);
       setStoredPhone(cleanVal);
+      if (cleanVal) setPhoneError(false);
     },
     [setStoredPhone, country.length],
   );
@@ -229,13 +231,16 @@ const DrawerCheckout: FC<IProps> = ({
     if (createOrderMutation.isPending) return;
 
     if (!phone) {
+      setPhoneError(true);
       setToastMessage(t('phoneAlertEmpty'));
       return;
     }
     if (phone.length !== country.length) {
+      setPhoneError(true);
       setToastMessage(t('phoneAlertLength'));
       return;
     }
+    setPhoneError(false);
     if (orderType === 'delivery' && !address) {
       setToastMessage(t('addressAlert'));
       return;
@@ -560,8 +565,8 @@ const DrawerCheckout: FC<IProps> = ({
                   </label>
                 )}
 
-                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>
-                  <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
+                <label className={`flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text transition-colors ${phoneError ? 'bg-red-50 ring-1 ring-red-400' : 'bg-[#F5F5F5] hover:bg-gray-200'}`}>
+                  <span className={`text-xs mb-0.5 font-medium ${phoneError ? 'text-red-400' : 'text-[#A4A4A4]'}`}>
                     {t('phoneLabel')}
                   </span>
                   <div className='flex items-center gap-2'>
@@ -689,8 +694,8 @@ const DrawerCheckout: FC<IProps> = ({
                   </label>
                 )}
 
-                <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text hover:bg-gray-200 transition-colors'>
-                  <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
+                <label className={`flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text transition-colors ${phoneError ? 'bg-red-50 ring-1 ring-red-400' : 'bg-[#F5F5F5] hover:bg-gray-200'}`}>
+                  <span className={`text-xs mb-0.5 font-medium ${phoneError ? 'text-red-400' : 'text-[#A4A4A4]'}`}>
                     {t('phoneLabel')}
                   </span>
                   <div className='flex items-center gap-2'>

@@ -19,7 +19,7 @@ export default function Toast({ message, onDismiss, duration = 3000 }: Props) {
 
   return (
     <div
-      className='fixed bottom-28 left-1/2 -translate-x-1/2 z-200 bg-[#111111] text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-lg max-w-xs text-center animate-fade-in'
+      className='fixed bottom-28 left-0 right-0 mx-auto w-fit z-200 bg-[#111111] text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-lg max-w-xs text-center animate-fade-in'
       onClick={onDismiss}
     >
       {message}
