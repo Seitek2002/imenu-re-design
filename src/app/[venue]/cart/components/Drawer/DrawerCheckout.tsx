@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useEffect, useState, useCallback, useRef } from 'react';
+import { FC, useEffect, useState, useCallback } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -22,6 +22,7 @@ import { parseApiError } from '@/lib/apiErrors';
 
 import { useClientStore } from '@/store/client';
 import { savePendingPayment } from '@/lib/payment-link-store';
+import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import DeliveryInputs from '../DeliveryInputs';
 import CheckoutForm from '../CheckoutForm';
 import PaymentMethodRow from './PaymentMethodRow';
@@ -64,27 +65,8 @@ const DrawerCheckout: FC<IProps> = ({
   const tErr = useTranslations('Cart.errors');
   const [sheetAnim, setSheetAnim] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const [dragY, setDragY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartY = useRef<number | null>(null);
-
-  const handleDragStart = (e: React.TouchEvent) => {
-    dragStartY.current = e.touches[0].clientY;
-    setIsDragging(true);
-  };
-  const handleDragMove = (e: React.TouchEvent) => {
-    if (dragStartY.current == null) return;
-    const dy = e.touches[0].clientY - dragStartY.current;
-    setDragY(Math.max(0, dy));
-  };
-  const handleDragEnd = () => {
-    if (dragY > 120) {
-      closeSheet();
-    }
-    setDragY(0);
-    setIsDragging(false);
-    dragStartY.current = null;
-  };
+  const { dragY, onTouchStart: handleDragStart, onTouchMove: handleDragMove, onTouchEnd: handleDragEnd, onTouchCancel: handleDragCancel, backdropOpacity, sheetStyle } =
+    useSwipeToDismiss(closeSheet);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -479,9 +461,10 @@ const DrawerCheckout: FC<IProps> = ({
       }`}
     >
       <div
-        className={`absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity duration-300 ${
-          sheetAnim ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 bg-black backdrop-blur-[2px] transition-opacity duration-300 ${
+          sheetAnim ? 'pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
+        style={sheetAnim ? { opacity: backdropOpacity(0.6) } : undefined}
         onClick={closeSheet}
       />
 
@@ -490,13 +473,12 @@ const DrawerCheckout: FC<IProps> = ({
         <div
           className={`
             w-full bg-[#F5F5F5] overflow-hidden rounded-t-4xl shadow-2xl
-            transform pointer-events-auto
-            ${isDragging ? '' : 'transition-transform duration-300 ease-cubic'}
-            ${sheetAnim ? '' : 'translate-y-full'}
+            pointer-events-auto
+            ${sheetAnim ? '' : 'translate-y-full transition-transform duration-300 ease-cubic'}
           `}
           style={{
             height: '95dvh',
-            transform: sheetAnim ? `translateY(${dragY}px)` : undefined,
+            ...(sheetAnim ? sheetStyle(dragY !== 0) : {}),
           }}
         >
           <div className='h-full flex flex-col'>
@@ -506,6 +488,7 @@ const DrawerCheckout: FC<IProps> = ({
               onTouchStart={handleDragStart}
               onTouchMove={handleDragMove}
               onTouchEnd={handleDragEnd}
+              onTouchCancel={handleDragCancel}
             >
               <div className='w-12 h-1.5 bg-gray-300 rounded-full' />
             </div>
