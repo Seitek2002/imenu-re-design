@@ -51,8 +51,30 @@ interface Product {
   /** Расширенный контент для листка «Подробнее» */
   productDetails?: ProductDetails | null;
 
-  /** Ссылки на chip-варианты товара (например: «Айс версия» → другой product_id) */
-  productVariants?: ProductVariant[] | null;
+  /**
+   * ID товара-альтернативы для кнопки «Айс версия» / «Горячая версия».
+   * Если задан — в витрине показывается чип со ссылкой на альтернативную версию.
+   * Чип называется «Айс версия» если текущий товар — горячий, и «Горячая версия» наоборот.
+   * Фронт определяет название из поля `iceVersionChip.label` (см. ниже).
+   * Если поле отсутствует — чип не показывается.
+   */
+  iceVersionId?: number | null;
+
+  /**
+   * Визуальные данные чипа «Айс/Горячая версия».
+   * Не генерировать автоматически — задаётся в админке.
+   */
+  iceVersionChip?: {
+    label: string;        // «Айс версия» или «Горячая версия»
+    photo?: string | null; // фото для чипа
+  } | null;
+
+  /**
+   * Полные данные альтернативного товара — встраиваются в ответ,
+   * чтобы фронт не делал второй запрос при открытии bottom sheet.
+   * Заполняется автоматически бэком на основе iceVersionId.
+   */
+  iceVersion?: Product | null;
 }
 ```
 
@@ -70,16 +92,6 @@ interface ProductDetailSection {
   heading: string;
   body: string;
 }
-
-/**
- * Вариант товара — чип в нижнем ряду (напр. «Айс версия»).
- * Ссылается на другой Product и показывается перед разделителем.
- */
-interface ProductVariant {
-  label: string;
-  productId: number;   // id связанного Product
-  photo?: string | null; // отдельное фото для чипа (если нужно отличить от productPhoto)
-}
 ```
 
 ---
@@ -94,7 +106,9 @@ interface ProductVariant {
 | `productVideoPoster` | `<img poster>` — мгновенный показ пока видео грузится |
 | `productPhoto` | Уже есть — используется как запасной постер (если `productVideoPoster` null) |
 | `productDetails` | Наполнение листка «Подробнее» |
-| `productVariants` | Специальный первый чип в нижнем ряду + разделитель перед группами |
+| `iceVersionId` | Есть ли альтернативная версия; фронт показывает чип если поле задано |
+| `iceVersionChip` | Текст и фото чипа «Айс версия» / «Горячая версия» |
+| `iceVersion` | Полные данные альтернативного товара — встроены в ответ, не нужен второй запрос |
 
 ---
 
@@ -170,13 +184,40 @@ GET /v2/products/?venueSlug=&spotId=&categories=...
     ]
   },
 
-  "productVariants": [
-    {
-      "label": "Айс версия",
-      "productId": 43,
-      "photo": "https://cdn.imenu.kg/products/mokka-ice-chip.png"
-    }
-  ]
+  "iceVersionId": 43,
+  "iceVersionChip": {
+    "label": "Айс версия",
+    "photo": "https://cdn.imenu.kg/products/mokka-ice-chip.png"
+  },
+  "iceVersion": {
+    "id": 43,
+    "productName": "Мокка Айс",
+    "productDescription": "Освежающий холодный мокка со льдом",
+    "productPrice": 210,
+    "productPhoto": "https://cdn.imenu.kg/products/mokka-ice.png",
+    "isVideoProduct": true,
+    "productVideoLarge": "https://cdn.imenu.kg/videos/mokka-ice-15s.mp4",
+    "iceVersionId": 42,
+    "iceVersionChip": {
+      "label": "Горячая версия",
+      "photo": "https://cdn.imenu.kg/products/mokka-hot-chip.png"
+    },
+    "modificators": [
+      { "id": 4, "name": "Макси 480 мл",    "price": 260 },
+      { "id": 5, "name": "Стандарт 380 мл", "price": 210 },
+      { "id": 6, "name": "Мини 280 мл",     "price": 170 }
+    ],
+    "groupModifications": [
+      {
+        "id": 20,
+        "name": "Молоко",
+        "selection": { "type": "multiple", "min": 0, "max": 1, "title": "Молоко", "description": "" },
+        "items": [
+          { "id": 201, "name": "Кокосовое", "price": "15", "brutto": "30", "photo": "https://cdn.imenu.kg/items/coconut.png" }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -190,9 +231,24 @@ productVideoPoster  →  productPhoto  →  productPhotoLarge
 
 ---
 
+## Айс версия — как работает на фронте
+
+1. Основной товар (Мокка горячий) приходит с `iceVersionId: 43` и `iceVersion: { ... }`.
+2. Фронт видит `iceVersionId` → показывает чип «Айс версия» в нижнем ряду.
+3. Пользователь нажимает чип → открывается bottom sheet поверх основной витрины.
+4. В bottom sheet отображается `iceVersion` — полностью другой товар со своими группами, размерами, ценами и видео.
+5. Внутри bottom sheet есть чип «Горячая версия» (из `iceVersion.iceVersionChip`) — нажатие закрывает sheet и возвращает к основному товару.
+6. Если у товара нет `iceVersionId` — чип не показывается вообще.
+
+**Ключевое решение**: `iceVersion` встраивается прямо в ответ основного товара.  
+Это позволяет открыть ice sheet мгновенно без второго сетевого запроса.
+
+---
+
 ## Вопросы к бэку
 
 1. Где хранить видео-файлы? CDN или тот же сервер что и фото?
 2. Нужна ли валидация формата видео (mp4/webm) или просто URL?
-3. `productVariants` — это отдельная таблица с FK на Product, или JSON-поле?
-4. Нужна ли отдельная пагинация/фильтрация для видео-товаров (`?isVideoProduct=true`)?
+3. `iceVersionId` — FK на Product в той же таблице?
+4. `iceVersion` встраивать всегда или только если `isVideoProduct: true`?
+5. Нужна ли отдельная пагинация/фильтрация для видео-товаров (`?isVideoProduct=true`)?

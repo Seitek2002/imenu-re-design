@@ -14,6 +14,7 @@ import GroupChip from './GroupChip';
 import GroupGrid from './GroupGrid';
 import BottomBar from './BottomBar';
 import ProductDetailSheet from './ProductDetailSheet';
+import IceVersionSheet from './IceVersionSheet';
 
 const DEMO_PARAM = 'demo';
 
@@ -40,6 +41,13 @@ export default function VideoProductSheet() {
   const [qnty, setQnty] = useState(1);
   const [expandedGroupId, setExpandedGroupId] = useState<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [iceOpen, setIceOpen] = useState(false);
+
+  // Мок альтернативной версии (Айс/Горячая) — null если у товара нет альтернативы
+  const iceMock = useMemo(
+    () => (mock?.variantSlug ? (MOCK_VIDEO_PRODUCTS[mock.variantSlug] ?? null) : null),
+    [mock],
+  );
 
   // Реинициализация при смене мока
   const lastSlugRef = useRef<string | null>(null);
@@ -56,6 +64,7 @@ export default function VideoProductSheet() {
     setQnty(1);
     setExpandedGroupId(null);
     setDetailOpen(false);
+    setIceOpen(false);
   }, [demoSlug, mock]);
 
   // Scroll lock
@@ -250,12 +259,13 @@ export default function VideoProductSheet() {
           {groups.length > 0 && (
             <div className='relative z-10 shrink-0'>
               <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
-                {/* Специальный чип «Айс версия» */}
-                {variantChip && (
+                {/* Чип «Айс версия» — показывается только если у товара есть альтернатива */}
+                {variantChip && iceMock && (
                   <>
                     <VariantChipButton
                       label={variantChip.label}
                       photo={variantChip.photo}
+                      onOpen={() => { haptic(25); setIceOpen(true); }}
                     />
                     <div
                       className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5'
@@ -300,6 +310,13 @@ export default function VideoProductSheet() {
           onClose={() => setDetailOpen(false)}
         />
       )}
+
+      {/* Bottom sheet альтернативной версии (Айс / Горячая) */}
+      <IceVersionSheet
+        open={iceOpen}
+        mock={iceMock}
+        onClose={() => setIceOpen(false)}
+      />
     </div>,
     document.body,
   );
@@ -308,13 +325,21 @@ export default function VideoProductSheet() {
 // ---------------------------------------------------------------------------
 // Variant chip (Айс версия и т.п.) — локальный компонент, не экспортируется
 // ---------------------------------------------------------------------------
-function VariantChipButton({ label, photo }: { label: string; photo: string }) {
+function VariantChipButton({
+  label,
+  photo,
+  onOpen,
+}: {
+  label: string;
+  photo: string;
+  onOpen: () => void;
+}) {
   const [imgError, setImgError] = useState(false);
 
   return (
     <button
       type='button'
-      onClick={() => haptic(25)}
+      onClick={onOpen}
       className='relative shrink-0 w-21 h-22 rounded-[20px] flex flex-col items-start justify-between p-2.5 active:scale-95 transition-all duration-150 bg-white/25 backdrop-blur-md ring-1 ring-white/30'
       aria-label={label}
     >
