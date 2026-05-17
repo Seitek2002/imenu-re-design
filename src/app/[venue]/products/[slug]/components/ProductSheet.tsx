@@ -24,6 +24,7 @@ import {
 } from '@/store/basket';
 import { useVenueStore } from '@/store/venue';
 import { useMounted } from '@/hooks/useMounted';
+import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import { useVenueProducts, usePromotionsV2 } from '@/lib/api/queries';
 import { findActivePromotionForProduct } from '@/lib/promotions';
 
@@ -598,19 +599,8 @@ export default function ProductSheet() {
     };
   }, [isOpen, mounted]);
 
-  const startY = useRef<number | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (e.currentTarget.scrollTop === 0) {
-      startY.current = e.touches?.[0]?.clientY ?? null;
-    }
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (startY.current == null) return;
-    const endY = e.changedTouches?.[0]?.clientY ?? 0;
-    const delta = endY - startY.current;
-    if (delta > 100) handleClose();
-    startY.current = null;
-  };
+  const { dragY, onTouchStart, onTouchMove, onTouchEnd, onTouchCancel, backdropOpacity, sheetStyle } =
+    useSwipeToDismiss(handleClose);
 
   if (!mounted) return null;
 
@@ -619,11 +609,12 @@ export default function ProductSheet() {
       className={`fixed inset-0 z-100 flex justify-center items-end md:items-center pointer-events-none ${isOpen ? 'active-modal' : ''}`}
     >
       <div
-        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ease-out ${
+        className={`absolute inset-0 bg-black transition-opacity duration-300 ease-out ${
           isOpen
-            ? 'opacity-100 pointer-events-auto'
+            ? 'pointer-events-auto'
             : 'opacity-0 pointer-events-none'
         }`}
+        style={isOpen ? { opacity: backdropOpacity(0.5) } : undefined}
         onClick={handleClose}
       />
 
@@ -633,15 +624,14 @@ export default function ProductSheet() {
           rounded-t-4xl md:rounded-4xl
           h-[85vh] md:h-auto md:max-h-[85vh]
           shadow-2xl overflow-hidden flex flex-col
-          transition-transform duration-300 cubic-bezier(0.32, 0.72, 0, 1) pointer-events-auto
-          ${
-            isOpen
-              ? 'translate-y-0'
-              : 'translate-y-full md:translate-y-5 md:opacity-0'
-          }
+          pointer-events-auto
+          ${isOpen ? '' : 'translate-y-full md:translate-y-5 md:opacity-0 transition-transform duration-300'}
         `}
+        style={isOpen ? sheetStyle(dragY !== 0) : undefined}
         onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchCancel}
       >
         <div
           className='w-full flex justify-center pt-3 pb-1 md:hidden shrink-0 cursor-grab active:cursor-grabbing'

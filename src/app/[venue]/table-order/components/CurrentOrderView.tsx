@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import { Bell, Plus, ReceiptText, UtensilsCrossed } from 'lucide-react';
+import { Bell, MessageSquare, Plus, ReceiptText, UtensilsCrossed } from 'lucide-react';
 
 import { useVenueStore } from '@/store/venue';
 import { useCheckout } from '@/store/checkout';
@@ -56,6 +56,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const tableId = useVenueStore((s) => s.tableId);
   const tableNumberFromStore = useVenueStore((s) => s.tableNumber);
   const { phone, comment, setComment } = useCheckout();
+  const [showComment, setShowComment] = useState(false);
 
   const {
     data: restOrder,
@@ -428,18 +429,30 @@ export default function CurrentOrderView({ venueSlug }: Props) {
               })}
             </ul>
 
-            <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-2.5 px-3 cursor-text'>
-              <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
+            {showComment || comment ? (
+              <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-2.5 px-3 cursor-text'>
+                <span className='text-[#A4A4A4] text-xs mb-0.5 font-medium'>
+                  {t('draftCommentLabel')}
+                </span>
+                <input
+                  type='text'
+                  autoFocus
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                  placeholder={t('draftCommentPlaceholder')}
+                />
+              </label>
+            ) : (
+              <button
+                type='button'
+                onClick={() => setShowComment(true)}
+                className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-2.5 px-3 text-sm font-medium text-[#A4A4A4]'
+              >
+                <MessageSquare size={16} />
                 {t('draftCommentLabel')}
-              </span>
-              <input
-                type='text'
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                placeholder={t('draftCommentPlaceholder')}
-              />
-            </label>
+              </button>
+            )}
 
             {(discount > 0 || promoDiscount > 0) && (
               <div className='mt-2 text-xs flex justify-between text-[#6B6B6B]'>
