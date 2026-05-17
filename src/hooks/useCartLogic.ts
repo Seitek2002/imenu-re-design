@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useBasketStore } from '@/store/basket';
 import { useVenueStore } from '@/store/venue';
 import { useCheckout } from '@/store/checkout';
@@ -23,8 +23,9 @@ export function useCartLogic() {
   const deliveryLat = useCheckout((s) => s.deliveryLat);
   const deliveryLng = useCheckout((s) => s.deliveryLng);
 
-  // 2. Локальный стейт для переключателя (Доставка/С собой)
-  const [userSelectedType, setUserSelectedType] = useState<'takeout' | 'delivery'>('takeout');
+  // 2. Стейт для переключателя (Доставка/С собой) — в store для доступа с меню-страницы
+  const userSelectedType = useCheckout((s) => s.userSelectedType);
+  const setUserSelectedType = useCheckout((s) => s.setUserSelectedType);
 
   // Гейтинг сервис-режимов по venue-флагам (контракт Kuma 2026-05-12).
   // Если backend сказал, что режим недоступен — UI не даёт его выбрать.

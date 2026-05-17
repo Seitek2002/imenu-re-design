@@ -1,12 +1,15 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { useMounted } from '@/hooks/useMounted';
 import { useTranslations } from 'next-intl';
 
 import Goods from './Goods';
 import Category from './Category';
 import { Product, Category as CategoryType } from '@/types/api';
 import { useUIStore } from '@/store/ui';
+import { useVenueStore } from '@/store/venue';
+import { useCheckout } from '@/store/checkout';
 
 // Виртуальные группы — синтетические "категории" с отрицательным id, чтобы
 // не пересекаться с реальными. Слаги никогда не попадают в URL.
@@ -47,6 +50,20 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
   const setHeaderCollapsed = useUIStore((s) => s.setHeaderCollapsed);
   const isHeaderCollapsed = useUIStore((s) => s.isHeaderCollapsed);
+
+  const mounted = useMounted();
+  const tableNumber = useVenueStore((s) => s.tableNumber);
+  const userSelectedType = useCheckout((s) => s.userSelectedType);
+  const isDelivery = mounted && !tableNumber && userSelectedType === 'delivery';
+
+  const visibleProducts = useMemo(
+    () =>
+      isDelivery
+        ? products.filter((p) => p.available_for_delivery !== false)
+        : products,
+    [products, isDelivery],
+  );
+
   const sentinelRef = useRef<HTMLDivElement>(null);
   const tCat = useTranslations('Categories');
   const isProgrammaticScrollRef = useRef(false);
@@ -60,14 +77,14 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
       const childIdSet = new Set(children.map((c) => c.id));
       const sections: ParentGroup['sections'] = [];
 
-      const parentOnlyProducts = products.filter((p) => {
+      const parentOnlyProducts = visibleProducts.filter((p) => {
         const inParent = p.categories?.some((c) => c.id === parent.id);
         if (!inParent) return false;
         return !p.categories?.some((c) => childIdSet.has(c.id));
       });
 
       if (children.length === 0) {
-        const all = products.filter((p) =>
+        const all = visibleProducts.filter((p) =>
           p.categories?.some((c) => c.id === parent.id),
         );
         if (all.length > 0) sections.push({ category: parent, products: all });
@@ -76,7 +93,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
           sections.push({ category: parent, products: parentOnlyProducts });
         }
         for (const child of children) {
-          const childProducts = products.filter((p) =>
+          const childProducts = visibleProducts.filter((p) =>
             p.categories?.some((c) => c.id === child.id),
           );
           if (childProducts.length > 0) {
@@ -107,14 +124,14 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     }
 
     return { parentGroups: groups, initialChildSlug: childSlug };
-  }, [products, categories, initialSlug]);
+  }, [visibleProducts, categories, initialSlug]);
 
   // Виртуальная группа «Хиты» (isRecommended). Появляется автоматически,
   // если есть подходящие товары.
   const virtualGroups = useMemo(() => {
     const groups: ParentGroup[] = [];
 
-    const popularProducts = products.filter((p) => p.isRecommended);
+    const popularProducts = visibleProducts.filter((p) => p.isRecommended);
     if (popularProducts.length > 0) {
       const parent = makeVirtualParent(
         VIRTUAL_POPULAR_ID,
@@ -129,7 +146,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     }
 
     return groups;
-  }, [products, tCat]);
+  }, [visibleProducts, tCat]);
 
   const allParentGroups = useMemo(
     () => [...virtualGroups, ...parentGroups],
