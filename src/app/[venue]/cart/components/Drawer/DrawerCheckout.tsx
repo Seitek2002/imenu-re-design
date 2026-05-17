@@ -65,7 +65,7 @@ const DrawerCheckout: FC<IProps> = ({
   const tErr = useTranslations('Cart.errors');
   const [sheetAnim, setSheetAnim] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const { dragY, onTouchStart: handleDragStart, onTouchMove: handleDragMove, onTouchEnd: handleDragEnd, onTouchCancel: handleDragCancel, backdropOpacity, sheetStyle } =
+  const { dragY, handleProps: dragHandleProps, backdropOpacity, sheetStyle } =
     useSwipeToDismiss(closeSheet);
 
   useEffect(() => {
@@ -478,17 +478,14 @@ const DrawerCheckout: FC<IProps> = ({
           `}
           style={{
             height: '95dvh',
-            ...(sheetAnim ? sheetStyle(dragY !== 0) : {}),
+            ...(sheetAnim ? sheetStyle() : {}),
           }}
         >
           <div className='h-full flex flex-col'>
             <div
               className='w-full flex justify-center pt-3 pb-2 shrink-0 touch-none cursor-grab active:cursor-grabbing'
               onClick={closeSheet}
-              onTouchStart={handleDragStart}
-              onTouchMove={handleDragMove}
-              onTouchEnd={handleDragEnd}
-              onTouchCancel={handleDragCancel}
+              {...dragHandleProps}
             >
               <div className='w-12 h-1.5 bg-gray-300 rounded-full' />
             </div>

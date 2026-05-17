@@ -273,9 +273,11 @@ const GroupSection = ({
 const ProductContent = ({
   product,
   onClose,
+  scrollProps,
 }: {
   product: Product;
   onClose: () => void;
+  scrollProps?: React.HTMLAttributes<HTMLDivElement>;
 }) => {
   const addToBasket = useBasketStore((s) => s.addToBasket);
   const t = useTranslations('Product');
@@ -378,7 +380,7 @@ const ProductContent = ({
 
   return (
     <>
-      <div className='flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-20 md:pb-0'>
+      <div className='flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-20 md:pb-0' {...scrollProps}>
         <div className='md:p-6'>
           <div className='md:grid md:grid-cols-2 md:gap-6 md:items-start'>
             <div className='relative w-full aspect-4/3 md:aspect-square md:rounded-2xl overflow-hidden shrink-0'>
@@ -599,7 +601,7 @@ export default function ProductSheet() {
     };
   }, [isOpen, mounted]);
 
-  const { dragY, onTouchStart, onTouchMove, onTouchEnd, onTouchCancel, backdropOpacity, sheetStyle } =
+  const { dragY, handleProps, contentProps, backdropOpacity, sheetStyle } =
     useSwipeToDismiss(handleClose);
 
   if (!mounted) return null;
@@ -627,15 +629,12 @@ export default function ProductSheet() {
           pointer-events-auto
           ${isOpen ? '' : 'translate-y-full md:translate-y-5 md:opacity-0 transition-transform duration-300'}
         `}
-        style={isOpen ? sheetStyle(dragY !== 0) : undefined}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onTouchCancel={onTouchCancel}
+        style={isOpen ? sheetStyle() : undefined}
       >
         <div
-          className='w-full flex justify-center pt-3 pb-1 md:hidden shrink-0 cursor-grab active:cursor-grabbing'
+          className='w-full flex justify-center pt-3 pb-1 md:hidden shrink-0 touch-none cursor-grab active:cursor-grabbing'
           onClick={handleClose}
+          {...handleProps}
         >
           <div className='w-12 h-1.5 bg-gray-300 rounded-full' />
         </div>
@@ -668,6 +667,7 @@ export default function ProductSheet() {
             key={activeProduct.id}
             product={activeProduct}
             onClose={handleClose}
+            scrollProps={contentProps}
           />
         )}
       </div>
