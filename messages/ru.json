@@ -213,7 +213,8 @@
     "paymentSuccess": "Оплата прошла успешно!",
     "paymentSuccessDesc": "Спасибо за заказ! Мы уже начинаем его готовить.",
     "resumePayment": "Продолжить оплату",
-    "cancelResume": "Отменить",
+    "cancelResume": "Отменить заказ",
+    "cancelError": "Не удалось отменить заказ",
     "steps": {
       "takeout": {
         "0_title": "Заказ принят!",

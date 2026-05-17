@@ -213,7 +213,8 @@
     "paymentSuccess": "Payment successful!",
     "paymentSuccessDesc": "Thank you for your order! We're already starting to prepare it.",
     "resumePayment": "Resume payment",
-    "cancelResume": "Cancel",
+    "cancelResume": "Cancel order",
+    "cancelError": "Failed to cancel order",
     "steps": {
       "takeout": {
         "0_title": "Order received!",
