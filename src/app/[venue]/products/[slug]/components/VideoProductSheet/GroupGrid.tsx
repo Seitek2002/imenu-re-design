@@ -8,19 +8,17 @@ interface Props {
   group: GroupModification;
   counts: Record<number, number>;
   onChange: (next: Record<number, number>) => void;
+  columns?: number;
+  darkSelected?: boolean;
 }
 
-/**
- * Развёрнутая сетка опций для одной группы модификаций.
- *
- * Логика количеств:
- *  - `selection.type === 'single'` → выбор одной опции (snap-семантика):
- *    тап по чужой — сбрасывает текущую, выбирает новую. Тап по выбранной при
- *    min=0 — снимает выбор.
- *  - `selection.type === 'multiple'` → счётчик +/− с ограничением по max
- *    суммарно по группе.
- */
-export default function GroupGrid({ group, counts, onChange }: Props) {
+export default function GroupGrid({
+  group,
+  counts,
+  onChange,
+  columns = 3,
+  darkSelected = false,
+}: Props) {
   const { type, max, min } = useMemo(
     () => ({
       type: group.selection.type,
@@ -57,7 +55,6 @@ export default function GroupGrid({ group, counts, onChange }: Props) {
       const current = counts[itemId] ?? 0;
       if (current <= 0) return;
       if (type === 'single' && min === 0) {
-        // Снять одиночный выбор полностью
         onChange({ ...counts, [itemId]: 0 });
         return;
       }
@@ -66,23 +63,28 @@ export default function GroupGrid({ group, counts, onChange }: Props) {
     [counts, type, min, onChange],
   );
 
+  const gridCols =
+    columns === 4
+      ? 'grid-cols-4'
+      : columns === 2
+        ? 'grid-cols-2'
+        : 'grid-cols-3';
+
   return (
     <div className='w-full h-full overflow-y-auto overscroll-contain'>
-      <div className='bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 grid grid-cols-3 gap-2'>
-        {group.items.map((item) => {
-          const count = counts[item.id] ?? 0;
-          // Для single-select: «можно увеличить» = item ещё не выбран.
-          // Для multiple: глобальное ограничение по группе.
-          const canIncrement =
-            type === 'single' ? count === 0 : canIncrementGlobal;
+      <div className={`bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 grid ${gridCols} gap-2`}>
+        {group.items.map((it) => {
+          const count = counts[it.id] ?? 0;
+          const canIncrement = type === 'single' ? count === 0 : canIncrementGlobal;
           return (
             <GroupGridItem
-              key={item.id}
-              item={item}
+              key={it.id}
+              item={it}
               count={count}
               canIncrement={canIncrement}
-              onInc={() => handleInc(item.id)}
-              onDec={() => handleDec(item.id)}
+              darkSelected={darkSelected}
+              onInc={() => handleInc(it.id)}
+              onDec={() => handleDec(it.id)}
             />
           );
         })}

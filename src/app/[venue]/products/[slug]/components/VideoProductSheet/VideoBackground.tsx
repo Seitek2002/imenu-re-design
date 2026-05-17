@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   src: string;
@@ -17,53 +17,64 @@ type NavigatorWithConnection = Navigator & {
 };
 
 /**
- * Фоновое видео: muted + loop + playsInline, autoplay через JS.
+ * Фоновое видео с бесшовным переходом постер → видео.
  *
- * Уважает `prefers-reduced-motion`, Data Saver и slow-2g/2g — в этих случаях
- * остаётся показ постера. У постера те же object-cover-пропорции, поэтому
- * fallback визуально не отличается от первого кадра видео.
+ * Постер рендерится отдельным <img>, чтобы перекрывать видео пока оно грузится.
+ * Когда видео готово к воспроизведению (canplay), постер плавно исчезает.
+ * Это убирает артефакт «мигания» нативного poster-атрибута.
  */
 export default function VideoBackground({ src, poster }: Props) {
-  const ref = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
-    const v = ref.current;
+    const v = videoRef.current;
     if (!v) return;
 
-    // Уважаем accessibility / экономию трафика — если видео нельзя показывать,
-    // оставляем постер.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
+    setVideoReady(false);
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const conn = (navigator as NavigatorWithConnection).connection;
     if (conn?.saveData) return;
-    if (conn?.effectiveType === '2g' || conn?.effectiveType === 'slow-2g') {
-      return;
-    }
+    if (conn?.effectiveType === '2g' || conn?.effectiveType === 'slow-2g') return;
 
-    // Попытка автоплея. Muted video может играть без жеста пользователя, но
-    // iOS Low Power Mode всё равно может заблокировать — тогда виден постер.
     v.play().catch(() => {});
-
     return () => {
       v.pause();
     };
   }, [src]);
 
   return (
-    <video
-      ref={ref}
-      src={src}
-      poster={poster}
-      muted
-      loop
-      playsInline
-      autoPlay
-      preload='auto'
-      // disablePictureInPicture, чтобы iOS не показывал PiP-кнопку поверх видео
-      disablePictureInPicture
-      className='absolute inset-0 w-full h-full object-cover'
-      aria-hidden='true'
-    />
+    <div className='absolute inset-0'>
+      {/* Видео: начинает прозрачным, появляется когда готово */}
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        loop
+        playsInline
+        autoPlay
+        preload='auto'
+        disablePictureInPicture
+        aria-hidden='true'
+        onCanPlay={() => setVideoReady(true)}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+          videoReady ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+
+      {/* Постер: перекрывает видео, плавно исчезает когда видео готово */}
+      {poster && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={poster}
+          alt=''
+          aria-hidden='true'
+          className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-700 ${
+            videoReady ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
+      )}
+    </div>
   );
 }
