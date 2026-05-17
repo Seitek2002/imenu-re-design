@@ -14,6 +14,7 @@ import { useVenueStore } from '@/store/venue';
 import { useCheckoutCalculate } from '@/hooks/useCheckoutCalculate';
 import { useMounted } from '@/hooks/useMounted';
 import { parseApiError } from '@/lib/apiErrors';
+import { MessageSquare } from 'lucide-react';
 import UtensilsSelector from './components/UtensilsSelector';
 import EmptyBasket from './components/EmptyBasket';
 
@@ -42,6 +43,7 @@ export default function BasketPage() {
   } = useCartLogic();
 
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
+  const [showComment, setShowComment] = useState(false);
 
   const { comment, setComment } = useCheckout();
   const tableNumber = useVenueStore((state) => state.tableNumber);
@@ -182,18 +184,30 @@ export default function BasketPage() {
               <UtensilsSelector className='mt-3' />
             )}
 
-            <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4 cursor-text'>
-              <span className='text-[#A4A4A4] text-xs mb-1 font-medium'>
+            {showComment || comment ? (
+              <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4 cursor-text'>
+                <span className='text-[#A4A4A4] text-xs mb-1 font-medium'>
+                  {t('drawer.commentLabel')}
+                </span>
+                <input
+                  type='text'
+                  autoFocus
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                  placeholder={t('drawer.commentPlaceholder')}
+                />
+              </label>
+            ) : (
+              <button
+                type='button'
+                onClick={() => setShowComment(true)}
+                className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+              >
+                <MessageSquare size={16} />
                 {t('drawer.commentLabel')}
-              </span>
-              <input
-                type='text'
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                placeholder={t('drawer.commentPlaceholder')}
-              />
-            </label>
+              </button>
+            )}
 
             <OrderSummary
               deliveryCost={serverDeliveryPrice}

@@ -1,6 +1,7 @@
 'use client';
 
 import { FC, useEffect, useState, useCallback, useRef } from 'react';
+import { MessageSquare } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -138,6 +139,8 @@ const DrawerCheckout: FC<IProps> = ({
   } = useCheckout();
 
   // --- FORM STATE ---
+  const [showDeliveryComment, setShowDeliveryComment] = useState(false);
+  const [showPickupComment, setShowPickupComment] = useState(false);
   const [phone, setPhone] = useState(storedPhone || '');
   const [countryId, setCountryId] = useState(storedCountryId || 'KG');
   const country = getCountryById(countryId);
@@ -536,33 +539,57 @@ const DrawerCheckout: FC<IProps> = ({
                 )}
 
                 {orderType === 'delivery' && (
-                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                  showDeliveryComment || deliveryComment ? (
+                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                      <span className='text-[#A4A4A4] text-xs mb-1'>
+                        {t('deliveryCommentLabel')}
+                      </span>
+                      <input
+                        type='text'
+                        autoFocus
+                        value={deliveryComment}
+                        onChange={(e) => setDeliveryComment(e.target.value)}
+                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                        placeholder={t('deliveryCommentPlaceholder')}
+                      />
+                    </label>
+                  ) : (
+                    <button
+                      type='button'
+                      onClick={() => setShowDeliveryComment(true)}
+                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                    >
+                      <MessageSquare size={16} />
                       {t('deliveryCommentLabel')}
-                    </span>
-                    <input
-                      type='text'
-                      value={deliveryComment}
-                      onChange={(e) => setDeliveryComment(e.target.value)}
-                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                      placeholder={t('deliveryCommentPlaceholder')}
-                    />
-                  </label>
+                    </button>
+                  )
                 )}
 
                 {orderType === 'takeout' && (
-                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                  showPickupComment || pickupComment ? (
+                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                      <span className='text-[#A4A4A4] text-xs mb-1'>
+                        {t('pickupCommentLabel')}
+                      </span>
+                      <input
+                        type='text'
+                        autoFocus
+                        value={pickupComment}
+                        onChange={(e) => setPickupComment(e.target.value)}
+                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                        placeholder={t('pickupCommentPlaceholder')}
+                      />
+                    </label>
+                  ) : (
+                    <button
+                      type='button'
+                      onClick={() => setShowPickupComment(true)}
+                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                    >
+                      <MessageSquare size={16} />
                       {t('pickupCommentLabel')}
-                    </span>
-                    <input
-                      type='text'
-                      value={pickupComment}
-                      onChange={(e) => setPickupComment(e.target.value)}
-                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                      placeholder={t('pickupCommentPlaceholder')}
-                    />
-                  </label>
+                    </button>
+                  )
                 )}
 
                 <label className={`flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text transition-colors ${phoneError ? 'bg-red-50 ring-1 ring-red-400' : 'bg-[#F5F5F5] hover:bg-gray-200'}`}>
@@ -665,33 +692,57 @@ const DrawerCheckout: FC<IProps> = ({
                 )}
 
                 {orderType === 'delivery' && (
-                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                  showDeliveryComment || deliveryComment ? (
+                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                      <span className='text-[#A4A4A4] text-xs mb-1'>
+                        {t('deliveryCommentLabel')}
+                      </span>
+                      <input
+                        type='text'
+                        autoFocus
+                        value={deliveryComment}
+                        onChange={(e) => setDeliveryComment(e.target.value)}
+                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                        placeholder={t('deliveryCommentPlaceholder')}
+                      />
+                    </label>
+                  ) : (
+                    <button
+                      type='button'
+                      onClick={() => setShowDeliveryComment(true)}
+                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                    >
+                      <MessageSquare size={16} />
                       {t('deliveryCommentLabel')}
-                    </span>
-                    <input
-                      type='text'
-                      value={deliveryComment}
-                      onChange={(e) => setDeliveryComment(e.target.value)}
-                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                      placeholder={t('deliveryCommentPlaceholder')}
-                    />
-                  </label>
+                    </button>
+                  )
                 )}
 
                 {orderType === 'takeout' && (
-                  <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
-                    <span className='text-[#A4A4A4] text-xs mb-1'>
+                  showPickupComment || pickupComment ? (
+                    <label className='bg-[#F5F5F5] flex flex-col rounded-xl mt-3 py-3 px-4'>
+                      <span className='text-[#A4A4A4] text-xs mb-1'>
+                        {t('pickupCommentLabel')}
+                      </span>
+                      <input
+                        type='text'
+                        autoFocus
+                        value={pickupComment}
+                        onChange={(e) => setPickupComment(e.target.value)}
+                        className='bg-transparent outline-none text-[#111111] text-sm font-medium'
+                        placeholder={t('pickupCommentPlaceholder')}
+                      />
+                    </label>
+                  ) : (
+                    <button
+                      type='button'
+                      onClick={() => setShowPickupComment(true)}
+                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                    >
+                      <MessageSquare size={16} />
                       {t('pickupCommentLabel')}
-                    </span>
-                    <input
-                      type='text'
-                      value={pickupComment}
-                      onChange={(e) => setPickupComment(e.target.value)}
-                      className='bg-transparent outline-none text-[#111111] text-sm font-medium'
-                      placeholder={t('pickupCommentPlaceholder')}
-                    />
-                  </label>
+                    </button>
+                  )
                 )}
 
                 <label className={`flex flex-col rounded-xl mt-4 py-2 px-4 cursor-text transition-colors ${phoneError ? 'bg-red-50 ring-1 ring-red-400' : 'bg-[#F5F5F5] hover:bg-gray-200'}`}>
