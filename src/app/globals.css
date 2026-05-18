@@ -23,6 +23,12 @@
   bottom: 6.5rem;
 }
 
+@media (min-width: 1024px) {
+  .main-action-floating {
+    bottom: 12rem;
+  }
+}
+
 /* Блокируем landscape на телефонах. iPad не трогаем (его короткая сторона ≥ 768px). */
 @media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
   body > *:not(#__landscape-block) {
@@ -56,6 +62,34 @@ input,
 textarea,
 select {
   font-size: max(16px, 1em);
+}
+
+/* A11y: respect user's "reduce motion" OS setting */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Page fade-in on route change (subtle polish) */
+.page-fade-in {
+  animation: pageFadeIn 180ms ease-out;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Базовые стили */

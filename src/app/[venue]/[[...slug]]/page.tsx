@@ -57,7 +57,7 @@ export default async function VenuePage({ params }: Props) {
   }
 
   return (
-    <main className='home px-2.5 bg-[#F8F6F7] min-h-svh pb-32'>
+    <main className='home px-2.5 bg-[#F8F6F7] min-h-svh pb-36'>
       <VenueInitializer
         venue={venueData}
         tableId={tableId}

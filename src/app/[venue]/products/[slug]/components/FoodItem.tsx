@@ -78,7 +78,7 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
   const isPriority = index < 4;
 
   return (
-    <div className='w-full flex flex-col h-full group relative'>
+    <div className='w-full flex flex-col h-full group relative hover:opacity-90 transition-opacity'>
       <ProductLink product={product} className='absolute inset-0 z-0' />
 
       <div className='relative w-full aspect-square pointer-events-none'>
@@ -115,7 +115,7 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
             </>
           )}
         </h2>
-        <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-active:text-brand transition-colors mt-1 flex-1'>
+        <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-hover:text-brand group-active:text-brand transition-colors mt-1 flex-1'>
           {product.productName}
         </h3>
         {product.weight > 0 ? (

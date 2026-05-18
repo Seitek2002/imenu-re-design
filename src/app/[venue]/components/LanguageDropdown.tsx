@@ -117,7 +117,7 @@ export default function LanguageDropdown() {
     <button
       onClick={cycleNext}
       disabled={disabled}
-      className='flex items-center gap-1.5 h-10 px-3 rounded-[14px] bg-[#FAFAFA] text-sm font-bold cursor-pointer active:bg-gray-100 transition-all disabled:opacity-60'
+      className='flex items-center gap-1.5 h-10 px-3 rounded-[14px] bg-[#FAFAFA] text-sm font-bold cursor-pointer active:bg-gray-100 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all disabled:opacity-60'
       aria-label='Change language'
     >
       <Globe size={15} className='text-gray-400 shrink-0' />

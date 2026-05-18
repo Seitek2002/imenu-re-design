@@ -19,7 +19,7 @@ const HomeLink: FC<IProps> = ({
   return (
     <Link
       href={href}
-      className='text-center block active:scale-95 transition-transform group'
+      className='text-center block active:scale-95 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded-2xl transition-all group'
     >
       <div className='relative aspect-square rounded-2xl overflow-hidden bg-gray-50'>
         <div className='absolute inset-0 z-0'>

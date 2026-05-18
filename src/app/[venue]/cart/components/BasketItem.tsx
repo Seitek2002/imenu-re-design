@@ -116,7 +116,7 @@ function BasketItem({
           <div className='flex items-center gap-3 bg-[#EFEEEC] rounded-full px-1 py-1 shrink-0'>
             <button
               type='button'
-              className='w-8 h-8 flex items-center justify-center active:scale-90 transition-transform'
+              className='w-8 h-8 flex items-center justify-center rounded-full active:scale-90 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all cursor-pointer'
               onClick={() => {
                 if (item.quantity <= 1) {
                   revealDelete();
@@ -134,7 +134,7 @@ function BasketItem({
 
             <button
               type='button'
-              className='w-8 h-8 flex items-center justify-center active:scale-90 transition-transform'
+              className='w-8 h-8 flex items-center justify-center rounded-full active:scale-90 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all cursor-pointer'
               onClick={() => {
                 closeDelete();
                 onIncrement();
@@ -149,7 +149,7 @@ function BasketItem({
         <div className='shrink-0 flex items-center justify-center w-20 snap-end bg-white pr-2'>
           <button
             onClick={onRemove}
-            className='bg-[#EA635C] w-15 h-15 rounded-xl flex items-center justify-center active:scale-90 transition-transform shadow-sm'
+            className='bg-[#EA635C] w-15 h-15 rounded-xl flex items-center justify-center active:scale-90 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all shadow-sm cursor-pointer'
           >
             <Image src={trashRed} alt='delete' width={24} height={24} />
           </button>

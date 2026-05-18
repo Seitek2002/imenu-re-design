@@ -40,14 +40,14 @@ export default function Nav({ venueSlug }: { venueSlug: string }) {
   const hasOpenBill = useUiFloatingStore((s) => s.hasOpenBill);
 
   return (
-    <nav className='flex justify-around items-center w-full py-3 h-16'>
+    <nav className='flex justify-around items-center w-full py-3 h-16 lg:w-auto lg:justify-start lg:gap-1 lg:px-2 lg:py-2 lg:h-auto'>
       {items.map((item) => {
         const label = t(item.key);
         return (
           <ActiveLink
             key={item.key}
             href={item.href}
-            className='flex flex-col items-center flex-1'
+            className='flex flex-col items-center flex-1 lg:flex-none lg:px-4 lg:py-2 lg:rounded-2xl lg:hover:bg-gray-100 lg:focus-visible:bg-gray-100 lg:focus-visible:outline-none lg:transition-colors'
           >
             <div className='relative'>
               <Image

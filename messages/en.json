@@ -28,6 +28,13 @@
   },
   "Cart": {
     "title": "Cart",
+    "added": "Added to cart",
+    "preview": {
+      "inCart": "In cart",
+      "andMore": "and {count} more",
+      "goToCart": "Go to cart",
+      "qty": "× {count}"
+    },
     "takeout": "Pickup",
     "delivery": "Delivery",
     "totalDue": "Total to pay",

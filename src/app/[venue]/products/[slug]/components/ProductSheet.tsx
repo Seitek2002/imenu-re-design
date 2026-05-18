@@ -24,6 +24,7 @@ import {
 } from '@/store/basket';
 import { useVenueStore } from '@/store/venue';
 import { useMounted } from '@/hooks/useMounted';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import { useVenueProducts, usePromotionsV2 } from '@/lib/api/queries';
 import { findActivePromotionForProduct } from '@/lib/promotions';
@@ -745,6 +746,8 @@ export default function ProductSheet() {
 
   const { dragY, handleProps, contentProps, backdropOpacity, sheetStyle } =
     useSwipeToDismiss(handleClose);
+
+  useEscapeKey(isOpen, handleClose);
 
   if (!mounted) return null;
 

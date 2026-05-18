@@ -49,7 +49,7 @@ const ContentItem: FC<Props> = ({
         <Link
           href={href}
           className='relative col-span-6 h-32 rounded-2xl overflow-hidden flex items-end p-4
-            active:scale-[0.98] transition-transform isolate bg-[#F6F6F6]'
+            active:scale-[0.98] hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all isolate bg-[#F6F6F6]'
         >
           <Image
             src={img}
@@ -78,7 +78,7 @@ const ContentItem: FC<Props> = ({
       <Link
         href={href}
         className='relative col-span-6 h-14 rounded-2xl overflow-hidden flex items-center justify-between pl-5 pr-4
-          active:scale-[0.98] transition-transform
+          active:scale-[0.98] hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all
           bg-gradient-to-r from-brand/15 via-brand/5 to-transparent'
       >
         <span className='absolute left-0 top-0 bottom-0 w-1 bg-brand rounded-l-2xl' />
@@ -110,7 +110,7 @@ const ContentItem: FC<Props> = ({
         <Link
           href={href}
           className='md:hidden relative col-span-2 h-28 rounded-2xl bg-[#F6F6F6] overflow-hidden flex items-center justify-center p-3
-            active:scale-95 transition-transform isolate'
+            active:scale-95 hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all isolate'
         >
           {hasImg && (
             <>
@@ -154,7 +154,7 @@ const ContentItem: FC<Props> = ({
         <Link
           href={href}
           className='hidden md:flex relative col-span-2 h-28 rounded-2xl bg-[#F6F6F6] overflow-hidden p-3 flex-col justify-between
-            active:scale-95 transition-transform isolate'
+            active:scale-95 hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all isolate'
         >
           <div className='z-10 flex flex-col gap-0.5'>
             <span className='text-[#21201F] font-bold text-base leading-tight break-words line-clamp-2'>
@@ -200,7 +200,7 @@ const ContentItem: FC<Props> = ({
       <Link
         href={href}
         className='md:hidden relative col-span-3 h-36 rounded-2xl bg-[#F6F6F6] overflow-hidden flex items-center justify-center p-4
-          active:scale-95 transition-transform isolate'
+          active:scale-95 hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all isolate'
       >
         {hasImg && (
           <>
@@ -244,7 +244,7 @@ const ContentItem: FC<Props> = ({
       <Link
         href={href}
         className='hidden md:flex relative col-span-3 h-36 rounded-2xl bg-[#F6F6F6] overflow-hidden p-3 flex-col justify-between
-          active:scale-95 transition-transform isolate'
+          active:scale-95 hover:shadow-md hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all isolate'
       >
         <div className='z-10 flex flex-col gap-0.5 w-3/4'>
           <span className='text-[#21201F] font-bold text-lg leading-tight break-words line-clamp-2'>

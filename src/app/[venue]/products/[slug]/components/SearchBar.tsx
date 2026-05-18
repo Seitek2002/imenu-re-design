@@ -95,6 +95,7 @@ export default function SearchBar({ placeholder, className = '', autoFocus = fal
         <Image src={searchIcon} alt="search" />
         <input
           ref={inputRef}
+          data-search-input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
