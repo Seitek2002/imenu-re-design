@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useBasketStore } from '@/store/basket';
 import { useVenueStore } from '@/store/venue';
 import { useCheckout } from '@/store/checkout';
@@ -23,8 +23,9 @@ export function useCartLogic() {
   const deliveryLat = useCheckout((s) => s.deliveryLat);
   const deliveryLng = useCheckout((s) => s.deliveryLng);
 
-  // 2. Локальный стейт для переключателя (Доставка/С собой)
-  const [userSelectedType, setUserSelectedType] = useState<'takeout' | 'delivery'>('takeout');
+  // 2. Стейт для переключателя (Доставка/С собой) — в store для доступа с меню-страницы
+  const userSelectedType = useCheckout((s) => s.userSelectedType);
+  const setUserSelectedType = useCheckout((s) => s.setUserSelectedType);
 
   // Гейтинг сервис-режимов по venue-флагам (контракт Kuma 2026-05-12).
   // Если backend сказал, что режим недоступен — UI не даёт его выбрать.
@@ -84,10 +85,22 @@ export function useCartLogic() {
 
   const finalTotal = totalPrice + deliveryPrice;
 
+  const setOrderType = (type: 'takeout' | 'delivery') => {
+    if (type === 'delivery') {
+      // Удаляем товары недоступные для доставки при переключении в этот режим
+      for (const item of items) {
+        if (item.available_for_delivery === false) {
+          removeFromBasket(item.key);
+        }
+      }
+    }
+    setUserSelectedType(type);
+  };
+
   return {
     items: mounted ? items : [],
-    orderType, // <-- Теперь сюда уходит правильный тип ('dinein' если есть стол)
-    setOrderType: setUserSelectedType, // Сеттер меняет только локальный выбор
+    orderType,
+    setOrderType,
     handleIncrement: incrementItem,
     handleDecrement: decrementItem,
     handleRemove: removeFromBasket,

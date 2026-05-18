@@ -98,7 +98,7 @@
       "pickupCommentPlaceholder": "Алууда эмне маанилүү — биз эстеп калабыз",
       "pickupCommentPrefix": "[Өзү алып кетүү: {text}]",
       "phoneAlertEmpty": "Сураныч, телефон номерин көрсөтүңүз",
-      "phoneAlertLength": "Телефон номери 9 цифрадан турушу керек",
+      "phoneAlertLength": "Толук телефон номерин жазыңыз",
       "addressAlert": "Жеткирүү дарегин жазыңыз",
       "orderCreated": "Буйрутма #{id} ийгиликтүү түзүлдү!",
       "preparePrefix": "[Алып кетүү убактысы: {time}]",
@@ -213,7 +213,8 @@
     "paymentSuccess": "Төлөм ийгиликтүү өттү!",
     "paymentSuccessDesc": "Буйрутмаңыз үчүн рахмат! Биз аны даярдай баштадык.",
     "resumePayment": "Төлөмдү улантуу",
-    "cancelResume": "Жокко чыгаруу",
+    "cancelResume": "Буйрутманы жокко чыгаруу",
+    "cancelError": "Буйрутманы жокко чыгаруу мүмкүн болгон жок",
     "steps": {
       "takeout": {
         "0_title": "Буйрутма кабыл алынды!",
@@ -338,6 +339,8 @@
     "draftCommentLabel": "Эскертүү",
     "draftCommentPlaceholder": "Мисалы: пиязсыз",
     "draftSubtotal": "Арзандатуусуз",
+    "draftSavings": "Арзандатуу",
+    "posOrderEmpty": "Официант буйрутманы кабыл алды — тамактарды күтөбүз",
     "submitDraft": "Буйрутма берүү · {amount} c.",
     "summary": {
       "tickets": "{count, plural, =0 {Чек жок} one {# чек} other {# чек}}",
@@ -353,7 +356,8 @@
       "pendingPayment": "Төлөм күтүлүүдө",
       "inDelivery": "Жеткирүүдө",
       "completed": "Берилди",
-      "cancelled": "Жокко чыгарылды"
+      "cancelled": "Жокко чыгарылды",
+      "viewLink": "Статусту көрүү"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -372,7 +376,7 @@
       "phoneLabel": "Чек үчүн телефон номери",
       "phonePlaceholder": "700 123 456",
       "phoneRequired": "Телефон номерин жазыңыз",
-      "phoneInvalid": "+996 кийин 9 сан жазыңыз",
+      "phoneInvalid": "Толук телефон номерин жазыңыз",
       "modalTitle": "Эсепти төлөө",
       "bonusLabel": "Бонустарды колдонуу",
       "bonusAvailableShort": "{amount} бар",

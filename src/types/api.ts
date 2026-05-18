@@ -298,6 +298,7 @@ export interface Product {
   productType?: ProductType;
 
   isRecommended?: boolean;
+  available_for_delivery?: boolean;
 }
 
 // --- PROMOTIONS (v2) ---

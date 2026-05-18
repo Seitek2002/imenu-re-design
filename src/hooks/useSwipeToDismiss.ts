@@ -1,80 +1,109 @@
 import { useState, useRef } from 'react';
 
 interface Options {
-  /** px — закрыть если утащил дальше этого */
-  threshold?: number;
-  /** px/ms — закрыть при быстром флике даже на малом расстоянии */
+  /** px — закрыть если утащил ручку дальше этого */
+  handleThreshold?: number;
+  /** px/ms — закрыть при быстром флике за ручку */
   velocityThreshold?: number;
-  /** минимальный px для velocity-dismiss */
+  /** минимальный px для velocity-dismiss по ручке */
   minVelocityDistance?: number;
+  /** px — закрыть тихим свайпом по контенту (только при scrollTop=0) */
+  contentThreshold?: number;
 }
 
 export function useSwipeToDismiss(
   onDismiss: () => void,
   {
-    threshold = 120,
+    handleThreshold = 120,
     velocityThreshold = 0.4,
     minVelocityDistance = 40,
+    contentThreshold = 80,
   }: Options = {},
 ) {
   const [dragY, setDragY] = useState(0);
-  const startY = useRef<number | null>(null);
-  const startTime = useRef<number>(0);
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    // начинаем drag только если контент не прокручен
-    const el = e.currentTarget as HTMLElement;
-    if (el.scrollTop > 0) return;
-    startY.current = e.touches[0].clientY;
-    startTime.current = Date.now();
+  // --- ручка: полный drag с визуальным смещением ---
+  const handleStartY = useRef<number | null>(null);
+  const handleStartTime = useRef<number>(0);
+
+  const onHandleTouchStart = (e: React.TouchEvent) => {
+    handleStartY.current = e.touches[0].clientY;
+    handleStartTime.current = Date.now();
   };
 
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (startY.current == null) return;
-    const dy = e.touches[0].clientY - startY.current;
-    // rubber-band при свайпе вверх
+  const onHandleTouchMove = (e: React.TouchEvent) => {
+    if (handleStartY.current == null) return;
+    const dy = e.touches[0].clientY - handleStartY.current;
     setDragY(dy > 0 ? dy : dy * 0.15);
   };
 
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (startY.current == null) return;
-    const dy = e.changedTouches[0].clientY - startY.current;
-    const elapsed = Date.now() - startTime.current;
+  const onHandleTouchEnd = (e: React.TouchEvent) => {
+    if (handleStartY.current == null) return;
+    const dy = e.changedTouches[0].clientY - handleStartY.current;
+    const elapsed = Date.now() - handleStartTime.current;
     const velocity = elapsed > 0 ? dy / elapsed : 0;
 
     const shouldDismiss =
-      dy > threshold ||
+      dy > handleThreshold ||
       (dy > minVelocityDistance && velocity > velocityThreshold);
 
-    if (shouldDismiss) {
-      onDismiss();
-    }
+    if (shouldDismiss) onDismiss();
     setDragY(0);
-    startY.current = null;
+    handleStartY.current = null;
   };
 
-  const onTouchCancel = () => {
+  const onHandleTouchCancel = () => {
     setDragY(0);
-    startY.current = null;
+    handleStartY.current = null;
   };
 
-  /** opacity для backdrop: 1 → 0 по мере drag */
+  // --- контент: тихое закрытие только если в самом верху ---
+  const contentStartY = useRef<number | null>(null);
+
+  const onContentTouchStart = (e: React.TouchEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    if (el.scrollTop > 0) return;
+    contentStartY.current = e.touches[0].clientY;
+  };
+
+  const onContentTouchEnd = (e: React.TouchEvent) => {
+    if (contentStartY.current == null) return;
+    const dy = e.changedTouches[0].clientY - contentStartY.current;
+    if (dy > contentThreshold) onDismiss();
+    contentStartY.current = null;
+  };
+
+  const onContentTouchCancel = () => {
+    contentStartY.current = null;
+  };
+
+  /** opacity для backdrop: плавно уходит вместе с drag по ручке */
   const backdropOpacity = (baseOpacity: number, fadeOverPx = 300) =>
     Math.max(0, baseOpacity * (1 - dragY / fadeOverPx));
 
-  /** inline style для шита */
-  const sheetStyle = (isDragging: boolean): React.CSSProperties => ({
+  /** style для шита — transition только при snap-back */
+  const sheetStyle = (): React.CSSProperties => ({
     transform: `translateY(${dragY}px)`,
-    transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+    transition: dragY === 0
+      ? 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+      : 'none',
   });
 
   return {
     dragY,
-    isDragging: startY.current !== null,
-    onTouchStart,
-    onTouchMove,
-    onTouchEnd,
-    onTouchCancel,
+    /** вешать на ручку (pill) */
+    handleProps: {
+      onTouchStart: onHandleTouchStart,
+      onTouchMove: onHandleTouchMove,
+      onTouchEnd: onHandleTouchEnd,
+      onTouchCancel: onHandleTouchCancel,
+    },
+    /** вешать на скролл-контейнер контента */
+    contentProps: {
+      onTouchStart: onContentTouchStart,
+      onTouchEnd: onContentTouchEnd,
+      onTouchCancel: onContentTouchCancel,
+    },
     backdropOpacity,
     sheetStyle,
   };

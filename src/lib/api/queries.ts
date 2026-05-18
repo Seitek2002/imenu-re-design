@@ -259,6 +259,31 @@ export const useCreateOrderV2 = () => {
   });
 };
 
+// --- /api/v2/orders/{id}/cancel/ (Kuma 2026-05-17) ---
+// Работает только при status=4 (PendingPayment).
+// 200 → заказ отменён; 400 → нельзя отменить в текущем статусе; 404 → не найден.
+async function cancelOrderApi(orderId: number, locale: Locale): Promise<void> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/cancel/`, {
+    method: 'POST',
+    headers: buildHeaders(locale),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.detail ?? `Error ${res.status}`);
+  }
+}
+
+export const useCancelOrderV2 = () => {
+  const locale = useLocale() as Locale;
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: number) => cancelOrderApi(orderId, locale),
+    onSuccess: (_data, orderId) => {
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+    },
+  });
+};
+
 // --- /api/v2/orders/calculate/ (Kuma 2026-05-12) ---
 // Серверный расчёт корзины. Ничего не создаёт; не требует авторизации.
 // Бэк сам ограничивает bonusApplied доступным балансом и суммой заказа,

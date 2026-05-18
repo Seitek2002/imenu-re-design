@@ -4,6 +4,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 interface CheckoutState {
   phone: string;
   countryId: string;
+  userSelectedType: 'takeout' | 'delivery';
+  setUserSelectedType: (type: 'takeout' | 'delivery') => void;
   address: string;
   deliveryLat: number | null;
   deliveryLng: number | null;
@@ -29,6 +31,8 @@ export const useCheckout = create<CheckoutState>()(
       phone: '',
       setPhone: (phone) => set({ phone }),
       countryId: 'KG',
+      userSelectedType: 'takeout',
+      setUserSelectedType: (userSelectedType) => set({ userSelectedType }),
       setCountryId: (countryId) => set({ countryId }),
       address: '',
       setAddress: (address) => set({ address }),

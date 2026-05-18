@@ -98,7 +98,7 @@
       "pickupCommentPlaceholder": "Скажите, что важно при получении — мы запомним",
       "pickupCommentPrefix": "[Самовывоз: {text}]",
       "phoneAlertEmpty": "Пожалуйста, укажите номер телефона",
-      "phoneAlertLength": "Номер телефона должен состоять из 9 цифр",
+      "phoneAlertLength": "Введите полный номер телефона",
       "addressAlert": "Введите адрес доставки",
       "orderCreated": "Заказ #{id} успешно создан!",
       "preparePrefix": "[Время выдачи: {time}]",
@@ -213,7 +213,8 @@
     "paymentSuccess": "Оплата прошла успешно!",
     "paymentSuccessDesc": "Спасибо за заказ! Мы уже начинаем его готовить.",
     "resumePayment": "Продолжить оплату",
-    "cancelResume": "Отменить",
+    "cancelResume": "Отменить заказ",
+    "cancelError": "Не удалось отменить заказ",
     "steps": {
       "takeout": {
         "0_title": "Заказ принят!",
@@ -338,6 +339,8 @@
     "draftCommentLabel": "Комментарий",
     "draftCommentPlaceholder": "Например: без лука",
     "draftSubtotal": "Без скидки",
+    "draftSavings": "Скидка",
+    "posOrderEmpty": "Официант принял заказ — ждём блюда",
     "submitDraft": "Отправить дозаказ · {amount} с.",
     "summary": {
       "tickets": "{count, plural, =0 {Чеков нет} one {# чек} few {# чека} other {# чеков}}",
@@ -353,7 +356,8 @@
       "pendingPayment": "Ожидает оплаты",
       "inDelivery": "В доставке",
       "completed": "Выдан",
-      "cancelled": "Отменён"
+      "cancelled": "Отменён",
+      "viewLink": "Смотреть статус"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -372,7 +376,7 @@
       "phoneLabel": "Номер телефона для чека",
       "phonePlaceholder": "700 123 456",
       "phoneRequired": "Укажите номер телефона",
-      "phoneInvalid": "Введите 9 цифр после +996",
+      "phoneInvalid": "Введите полный номер телефона",
       "modalTitle": "Оплата счёта",
       "bonusLabel": "Списать бонусы",
       "bonusAvailableShort": "доступно {amount}",

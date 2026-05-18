@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
 import {
   clearPendingPayment,
   getPendingPayment,
 } from '@/lib/payment-link-store';
+import { useCancelOrderV2 } from '@/lib/api/queries';
 
 interface Props {
   orderId: number;
   /** ISO-8601 from order.paymentExpiresAt; if null, treated as still valid. */
   expiresAt?: string | null;
-  /** Payment URL coming from the backend (order.paymentUrl). Used as a fallback when no link is cached locally — e.g. opened from /history on another device. */
+  /** Payment URL coming from the backend (order.paymentUrl). Used as a fallback when no link is cached locally. */
   paymentUrl?: string | null;
 }
 
@@ -27,6 +28,9 @@ export default function PaymentResumeAction({ orderId, expiresAt, paymentUrl: pa
   const t = useTranslations('OrderStatus');
   const [paymentUrl, setPaymentUrl] = useState<string | null>(paymentUrlProp ?? null);
   const [, setNow] = useState(() => Date.now());
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  const cancelMutation = useCancelOrderV2();
 
   useEffect(() => {
     const saved = getPendingPayment(orderId);
@@ -46,9 +50,15 @@ export default function PaymentResumeAction({ orderId, expiresAt, paymentUrl: pa
     window.location.href = paymentUrl;
   };
 
-  const handleDismiss = () => {
-    clearPendingPayment(orderId);
-    setPaymentUrl(null);
+  const handleCancel = async () => {
+    setCancelError(null);
+    try {
+      await cancelMutation.mutateAsync(orderId);
+      clearPendingPayment(orderId);
+      setPaymentUrl(null);
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : t('cancelError'));
+    }
   };
 
   return (
@@ -63,11 +73,16 @@ export default function PaymentResumeAction({ orderId, expiresAt, paymentUrl: pa
       </button>
       <button
         type='button'
-        onClick={handleDismiss}
-        className='w-full h-10 rounded-xl text-[#6B6B6B] text-sm font-medium active:bg-gray-100 transition-colors'
+        onClick={handleCancel}
+        disabled={cancelMutation.isPending}
+        className='w-full h-10 rounded-xl text-[#6B6B6B] text-sm font-medium active:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5'
       >
+        {cancelMutation.isPending && <Loader2 size={14} className='animate-spin' />}
         {t('cancelResume')}
       </button>
+      {cancelError && (
+        <p className='text-center text-xs text-red-500'>{cancelError}</p>
+      )}
     </div>
   );
 }

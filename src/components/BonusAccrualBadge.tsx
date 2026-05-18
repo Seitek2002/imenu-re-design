@@ -42,24 +42,25 @@ export default function BonusAccrualBadge({
 
   return (
     <div
-      className={`flex items-center justify-between bg-gradient-to-r from-brand/10 to-brand/5 border border-brand/20 rounded-xl px-4 py-3 ${className}`}
+      className={`flex items-center justify-between bg-gradient-to-r from-emerald-50 to-emerald-50/60 border border-emerald-500 rounded-xl px-4 py-2.5 ${className}`}
     >
-      <div className='flex items-center gap-3'>
+      <div className='flex items-center gap-2'>
         <Image
           src={coinIcon}
           alt='bonus'
-          width={28}
-          height={28}
+          width={22}
+          height={22}
           className='object-contain'
         />
-        <div className='flex flex-col'>
-          <span className='text-sm font-bold text-[#111] leading-tight'>
-            {t('earnBonus')}
-          </span>
-          <span className='text-[11px] text-gray-500'>{accrualPercent}%</span>
-        </div>
+        <span className='text-sm font-semibold text-[#111]'>
+          {t('earnBonus')}
+        </span>
       </div>
-      <span className='text-lg font-extrabold text-brand'>+{earnedBonus}</span>
+      <div className='flex items-center gap-1.5'>
+        <span className='text-sm text-gray-400'>{accrualPercent}%</span>
+        <span className='text-gray-300 text-sm'>→</span>
+        <span className='text-base font-extrabold text-brand'>+{earnedBonus}</span>
+      </div>
     </div>
   );
 }

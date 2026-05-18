@@ -98,7 +98,7 @@
       "pickupCommentPlaceholder": "Tell us what matters at pickup — we'll remember",
       "pickupCommentPrefix": "[Pickup: {text}]",
       "phoneAlertEmpty": "Please enter your phone number",
-      "phoneAlertLength": "Phone number must be 9 digits",
+      "phoneAlertLength": "Please enter a complete phone number",
       "addressAlert": "Please enter your delivery address",
       "orderCreated": "Order #{id} created successfully!",
       "preparePrefix": "[Pickup time: {time}]",
@@ -213,7 +213,8 @@
     "paymentSuccess": "Payment successful!",
     "paymentSuccessDesc": "Thank you for your order! We're already starting to prepare it.",
     "resumePayment": "Resume payment",
-    "cancelResume": "Cancel",
+    "cancelResume": "Cancel order",
+    "cancelError": "Failed to cancel order",
     "steps": {
       "takeout": {
         "0_title": "Order received!",
@@ -338,6 +339,8 @@
     "draftCommentLabel": "Comment",
     "draftCommentPlaceholder": "E.g.: no onions",
     "draftSubtotal": "Before discount",
+    "draftSavings": "Discount",
+    "posOrderEmpty": "Waiter accepted the order — waiting for dishes",
     "submitDraft": "Send order · {amount} c.",
     "summary": {
       "tickets": "{count, plural, =0 {No tickets} one {# ticket} other {# tickets}}",
@@ -353,7 +356,8 @@
       "pendingPayment": "Awaiting payment",
       "inDelivery": "On the way",
       "completed": "Served",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "viewLink": "Track order"
     },
     "promo": {
       "itemBadge": "−{percent}%",
@@ -372,7 +376,7 @@
       "phoneLabel": "Phone number for receipt",
       "phonePlaceholder": "700 123 456",
       "phoneRequired": "Please enter your phone number",
-      "phoneInvalid": "Enter 9 digits after +996",
+      "phoneInvalid": "Please enter a complete phone number",
       "modalTitle": "Pay the check",
       "bonusLabel": "Use bonuses",
       "bonusAvailableShort": "available {amount}",

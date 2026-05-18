@@ -21,6 +21,7 @@ import {
 import { useClientStore } from '@/store/client';
 import { useClient, useClientBonus } from '@/lib/api/queries';
 import { getCountryById } from '@/lib/helpers/countryCodes';
+import { formatPhoneDisplay } from '@/lib/helpers/phone';
 import EditProfileModal from '@/components/modals/EditProfileModal';
 
 const TASTES = ['Без лука', 'Без кинзы', 'Без острого', 'Без чеснока'];
@@ -41,8 +42,9 @@ export default function ProfilePage() {
   const clear = useClientStore((s) => s.clear);
   const [editOpen, setEditOpen] = useState(false);
 
+  const country = getCountryById(countryId);
   const fullPhone = phone
-    ? `+${getCountryById(countryId).dial}${phone}`
+    ? formatPhoneDisplay(phone, country.dial, countryId)
     : '';
 
   const { data: client, isLoading: clientLoading } = useClient(phone);

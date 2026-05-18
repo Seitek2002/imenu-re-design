@@ -1,12 +1,16 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
+import { useMounted } from '@/hooks/useMounted';
 import { useTranslations } from 'next-intl';
 
 import Goods from './Goods';
 import Category from './Category';
 import { Product, Category as CategoryType } from '@/types/api';
 import { useUIStore } from '@/store/ui';
+import { useVenueStore } from '@/store/venue';
+import { useCheckout } from '@/store/checkout';
 
 // Виртуальные группы — синтетические "категории" с отрицательным id, чтобы
 // не пересекаться с реальными. Слаги никогда не попадают в URL.
@@ -47,10 +51,43 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const setHeaderTitleOverride = useUIStore((s) => s.setHeaderTitleOverride);
   const setHeaderCollapsed = useUIStore((s) => s.setHeaderCollapsed);
   const isHeaderCollapsed = useUIStore((s) => s.isHeaderCollapsed);
+
+  const mounted = useMounted();
+  const tableNumber = useVenueStore((s) => s.tableNumber);
+  const userSelectedType = useCheckout((s) => s.userSelectedType);
+  const isDelivery = mounted && !tableNumber && userSelectedType === 'delivery';
+
+  const visibleProducts = useMemo(
+    () =>
+      isDelivery
+        ? products.filter((p) => p.available_for_delivery !== false)
+        : products,
+    [products, isDelivery],
+  );
+
   const sentinelRef = useRef<HTMLDivElement>(null);
   const tCat = useTranslations('Categories');
   const isProgrammaticScrollRef = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const stickyBarRef = useRef<HTMLDivElement>(null);
+
+  // Программный скролл всегда уезжает вниз, sentinel уходит из viewport →
+  // Header коллапсит на min-h-12 (48px), sticky-таббар садится на top-12 (48px).
+  // Считаем offset от collapsed-состояния: 48 (top-12) + реальная высота бара
+  // (меняется когда у активной группы появляются sub-tabs) + 4px воздуха.
+  // scrollIntoView со статическим scroll-mt-44 (176px) промахивался на 60+px,
+  // оставляя сверху карточки предыдущей секции.
+  const scrollToElement = useCallback(
+    (el: HTMLElement, behavior: ScrollBehavior) => {
+      const barH = stickyBarRef.current
+        ? stickyBarRef.current.getBoundingClientRect().height
+        : 0;
+      const offset = 48 + barH + 4;
+      const y = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: Math.max(0, y), behavior });
+    },
+    [],
+  );
 
   const { parentGroups, initialChildSlug } = useMemo(() => {
     const groups: ParentGroup[] = [];
@@ -60,14 +97,14 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
       const childIdSet = new Set(children.map((c) => c.id));
       const sections: ParentGroup['sections'] = [];
 
-      const parentOnlyProducts = products.filter((p) => {
+      const parentOnlyProducts = visibleProducts.filter((p) => {
         const inParent = p.categories?.some((c) => c.id === parent.id);
         if (!inParent) return false;
         return !p.categories?.some((c) => childIdSet.has(c.id));
       });
 
       if (children.length === 0) {
-        const all = products.filter((p) =>
+        const all = visibleProducts.filter((p) =>
           p.categories?.some((c) => c.id === parent.id),
         );
         if (all.length > 0) sections.push({ category: parent, products: all });
@@ -76,7 +113,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
           sections.push({ category: parent, products: parentOnlyProducts });
         }
         for (const child of children) {
-          const childProducts = products.filter((p) =>
+          const childProducts = visibleProducts.filter((p) =>
             p.categories?.some((c) => c.id === child.id),
           );
           if (childProducts.length > 0) {
@@ -107,14 +144,14 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     }
 
     return { parentGroups: groups, initialChildSlug: childSlug };
-  }, [products, categories, initialSlug]);
+  }, [visibleProducts, categories, initialSlug]);
 
   // Виртуальная группа «Хиты» (isRecommended). Появляется автоматически,
   // если есть подходящие товары.
   const virtualGroups = useMemo(() => {
     const groups: ParentGroup[] = [];
 
-    const popularProducts = products.filter((p) => p.isRecommended);
+    const popularProducts = visibleProducts.filter((p) => p.isRecommended);
     if (popularProducts.length > 0) {
       const parent = makeVirtualParent(
         VIRTUAL_POPULAR_ID,
@@ -129,7 +166,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     }
 
     return groups;
-  }, [products, tCat]);
+  }, [visibleProducts, tCat]);
 
   const allParentGroups = useMemo(
     () => [...virtualGroups, ...parentGroups],
@@ -187,25 +224,59 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
 
   // Initial scroll: к подкатегории либо из path-slug (legacy ссылки),
   // либо из hash вида #subcat-{slug} (новые ссылки с страницы категорий).
+  // VirtualFoodItem отдаёт 0-высоту для незамеренных карточек ниже первого
+  // экрана, поэтому первый scrollIntoView попадает в «короткую» вёрстку — а
+  // потом группы выше цели догоняют реальную высоту и таргет уплывает вниз.
+  // Лечится перескроллом, пока ResizeObserver видит рост контейнера.
   useEffect(() => {
     const hash = window.location.hash;
     const fromHash = hash.startsWith('#subcat-')
       ? decodeURIComponent(hash.slice('#subcat-'.length))
       : null;
-    const target = initialChildSlug ?? fromHash;
-    const el = target
-      ? document.getElementById(`subcat-${target}`)
-      : initialSlug
-        ? document.getElementById(`${PARENT_ID_PREFIX}${initialSlug}`)
-        : null;
-    if (!el) return;
+    const subcat = initialChildSlug ?? fromHash;
+    const parentSlug = !subcat && initialSlug ? initialSlug : null;
+    if (!subcat && !parentSlug) return;
+
+    const getTarget = () =>
+      subcat
+        ? document.getElementById(`subcat-${subcat}`)
+        : document.getElementById(`${PARENT_ID_PREFIX}${parentSlug}`);
+
+    if (!getTarget()) return;
+
     isProgrammaticScrollRef.current = true;
-    requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: 'instant', block: 'start' });
-      window.setTimeout(() => {
-        isProgrammaticScrollRef.current = false;
-      }, 300);
-    });
+
+    const scrollToTarget = () => {
+      const el = getTarget();
+      if (el) scrollToElement(el, 'instant');
+    };
+
+    requestAnimationFrame(scrollToTarget);
+
+    const root = contentRef.current;
+    let pending = false;
+    const ro = root
+      ? new ResizeObserver(() => {
+          if (pending) return;
+          pending = true;
+          requestAnimationFrame(() => {
+            pending = false;
+            scrollToTarget();
+          });
+        })
+      : null;
+    if (root && ro) ro.observe(root);
+
+    const release = window.setTimeout(() => {
+      ro?.disconnect();
+      isProgrammaticScrollRef.current = false;
+    }, 1500);
+
+    return () => {
+      window.clearTimeout(release);
+      ro?.disconnect();
+      isProgrammaticScrollRef.current = false;
+    };
     // run once after first paint
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -293,29 +364,36 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     };
   }, [allParentGroups]);
 
-  const handleSubClick = useCallback((slug: string) => {
-    const el = document.getElementById(`subcat-${slug}`);
-    if (!el) return;
-    isProgrammaticScrollRef.current = true;
-    setActiveSubSlug(slug);
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.setTimeout(() => {
-      isProgrammaticScrollRef.current = false;
-    }, 700);
-  }, []);
+  const handleSubClick = useCallback(
+    (slug: string) => {
+      const el = document.getElementById(`subcat-${slug}`);
+      if (!el) return;
+      isProgrammaticScrollRef.current = true;
+      setActiveSubSlug(slug);
+      scrollToElement(el, 'smooth');
+      window.setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, 700);
+    },
+    [scrollToElement],
+  );
 
   const handleTabClick = useCallback(
     (idx: number) => {
       const group = allParentGroups[idx];
       if (!group) return;
+
+      isProgrammaticScrollRef.current = true;
+      // flushSync: sub-tabs (видимость зависит от activeSlug) должны
+      // закоммититься ДО измерения высоты sticky-бара в scrollToElement,
+      // иначе offset считается под старую группу и таргет уезжает.
+      flushSync(() => setActiveSlug(group.parent.slug));
+
       const el = document.getElementById(
         `${PARENT_ID_PREFIX}${group.parent.slug}`,
       );
-      if (!el) return;
+      if (el) scrollToElement(el, 'smooth');
 
-      isProgrammaticScrollRef.current = true;
-      setActiveSlug(group.parent.slug);
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       // Виртуальные группы (id < 0) не должны попадать в URL — их слаги
       // синтетические и не резолвятся бэкендом/маршрутом.
       if (group.parent.id >= 0) {
@@ -329,7 +407,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
         isProgrammaticScrollRef.current = false;
       }, 700);
     },
-    [allParentGroups, venueSlug],
+    [allParentGroups, venueSlug, scrollToElement],
   );
 
   if (allParentGroups.length === 0) return null;
@@ -344,6 +422,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
     <div className='bg-white rounded-t-4xl mt-1.5 pb-40 border-t border-gray-100'>
       <div ref={sentinelRef} className='h-1 -mt-1' aria-hidden />
       <div
+        ref={stickyBarRef}
         className={`
           sticky z-30 bg-white/95 backdrop-blur-sm shadow-sm transition-[top] duration-300
           ${isHeaderCollapsed ? 'top-12' : 'top-18'}

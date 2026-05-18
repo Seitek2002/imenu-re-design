@@ -1,7 +1,7 @@
 'use client';
 
 import { FC, useEffect, useState, useCallback } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { PenLine } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -16,7 +16,7 @@ import Toast from '@/components/ui/Toast';
 import OtpModal from '@/components/ui/OtpModal';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import { getCountryById } from '@/lib/helpers/countryCodes';
-import { normalizePhoneForApi } from '@/lib/helpers/phone';
+import { normalizePhoneForApi, formatPhoneInput, parsePhoneInput } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
 import { parseApiError } from '@/lib/apiErrors';
 
@@ -65,7 +65,7 @@ const DrawerCheckout: FC<IProps> = ({
   const tErr = useTranslations('Cart.errors');
   const [sheetAnim, setSheetAnim] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const { dragY, onTouchStart: handleDragStart, onTouchMove: handleDragMove, onTouchEnd: handleDragEnd, onTouchCancel: handleDragCancel, backdropOpacity, sheetStyle } =
+  const { dragY, handleProps: dragHandleProps, backdropOpacity, sheetStyle } =
     useSwipeToDismiss(closeSheet);
 
   useEffect(() => {
@@ -165,21 +165,16 @@ const DrawerCheckout: FC<IProps> = ({
 
   const handlePhoneChange = useCallback(
     (val: string) => {
-      let cleanVal = val.replace(/\D/g, '');
-
-      if (cleanVal.startsWith('0')) {
-        cleanVal = cleanVal.substring(1);
+      const { digits, countryId: newId } = parsePhoneInput(val, countryId);
+      if (newId !== countryId) {
+        setCountryId(newId);
+        setStoredCountryId(newId);
       }
-
-      if (cleanVal.length > country.length) {
-        cleanVal = cleanVal.slice(0, country.length);
-      }
-
-      setPhone(cleanVal);
-      setStoredPhone(cleanVal);
-      if (cleanVal) setPhoneError(false);
+      setPhone(digits);
+      setStoredPhone(digits);
+      if (digits) setPhoneError(false);
     },
-    [setStoredPhone, country.length],
+    [setStoredPhone, setStoredCountryId, countryId],
   );
 
   const handleCountryChange = useCallback(
@@ -478,17 +473,14 @@ const DrawerCheckout: FC<IProps> = ({
           `}
           style={{
             height: '95dvh',
-            ...(sheetAnim ? sheetStyle(dragY !== 0) : {}),
+            ...(sheetAnim ? sheetStyle() : {}),
           }}
         >
           <div className='h-full flex flex-col'>
             <div
               className='w-full flex justify-center pt-3 pb-2 shrink-0 touch-none cursor-grab active:cursor-grabbing'
               onClick={closeSheet}
-              onTouchStart={handleDragStart}
-              onTouchMove={handleDragMove}
-              onTouchEnd={handleDragEnd}
-              onTouchCancel={handleDragCancel}
+              {...dragHandleProps}
             >
               <div className='w-12 h-1.5 bg-gray-300 rounded-full' />
             </div>
@@ -540,9 +532,9 @@ const DrawerCheckout: FC<IProps> = ({
                     <button
                       type='button'
                       onClick={() => setShowDeliveryComment(true)}
-                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                      className='mt-3 w-full flex items-center gap-2 border border-dashed border-[#D0D0D0] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4] hover:border-[#A4A4A4] hover:text-[#777] transition-colors'
                     >
-                      <MessageSquare size={16} />
+                      <PenLine size={16} />
                       {t('deliveryCommentLabel')}
                     </button>
                   )
@@ -567,9 +559,9 @@ const DrawerCheckout: FC<IProps> = ({
                     <button
                       type='button'
                       onClick={() => setShowPickupComment(true)}
-                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                      className='mt-3 w-full flex items-center gap-2 border border-dashed border-[#D0D0D0] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4] hover:border-[#A4A4A4] hover:text-[#777] transition-colors'
                     >
-                      <MessageSquare size={16} />
+                      <PenLine size={16} />
                       {t('pickupCommentLabel')}
                     </button>
                   )
@@ -585,9 +577,7 @@ const DrawerCheckout: FC<IProps> = ({
                       type='tel'
                       inputMode='numeric'
                       placeholder={country.placeholder}
-                      maxLength={country.length}
-                      minLength={country.length}
-                      value={phone}
+                      value={formatPhoneInput(phone, countryId)}
                       onChange={(e) => {
                         handlePhoneChange(e.target.value);
                         if (e.target.value.replace(/\D/g, '').length >= country.length) {
@@ -693,9 +683,9 @@ const DrawerCheckout: FC<IProps> = ({
                     <button
                       type='button'
                       onClick={() => setShowDeliveryComment(true)}
-                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                      className='mt-3 w-full flex items-center gap-2 border border-dashed border-[#D0D0D0] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4] hover:border-[#A4A4A4] hover:text-[#777] transition-colors'
                     >
-                      <MessageSquare size={16} />
+                      <PenLine size={16} />
                       {t('deliveryCommentLabel')}
                     </button>
                   )
@@ -720,9 +710,9 @@ const DrawerCheckout: FC<IProps> = ({
                     <button
                       type='button'
                       onClick={() => setShowPickupComment(true)}
-                      className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                      className='mt-3 w-full flex items-center gap-2 border border-dashed border-[#D0D0D0] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4] hover:border-[#A4A4A4] hover:text-[#777] transition-colors'
                     >
-                      <MessageSquare size={16} />
+                      <PenLine size={16} />
                       {t('pickupCommentLabel')}
                     </button>
                   )
@@ -738,9 +728,7 @@ const DrawerCheckout: FC<IProps> = ({
                       type='tel'
                       inputMode='numeric'
                       placeholder={country.placeholder}
-                      maxLength={country.length}
-                      minLength={country.length}
-                      value={phone}
+                      value={formatPhoneInput(phone, countryId)}
                       onChange={(e) => {
                         handlePhoneChange(e.target.value);
                         if (e.target.value.replace(/\D/g, '').length >= country.length) {
@@ -792,7 +780,7 @@ const DrawerCheckout: FC<IProps> = ({
 
       <OtpModal
         open={pendingOrderBody !== null}
-        phone={phone}
+        phone={normalizePhoneForApi(phone, country.dial)}
         isLoading={createOrderMutation.isPending}
         error={otpError}
         onConfirm={handleOtpConfirm}
