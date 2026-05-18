@@ -39,9 +39,20 @@ interface Props {
   initialSlug: string;
 }
 
+// Подсекция верхнего уровня (под h2). Может содержать собственные узлы 3-го
+// уровня (h3) — для SIERRA «Холодные напитки → Вино → Красное/Белое/Розе».
+type SubSection = {
+  category: CategoryType;
+  products: Product[];
+  // Внуки рендерятся как h3 inline. Если есть — products содержит товары,
+  // привязанные напрямую к самому child (редкий случай), внуковые товары —
+  // в subSubSections.
+  subSubSections?: { category: CategoryType; products: Product[] }[];
+};
+
 type ParentGroup = {
   parent: CategoryType;
-  sections: { category: CategoryType; products: Product[] }[];
+  sections: SubSection[];
   totalCount: number;
 };
 
@@ -90,18 +101,58 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   );
 
   const { parentGroups, initialChildSlug } = useMemo(() => {
+    // Товары узла, не попавшие ни в один из его потомков. Для листа — все
+    // товары узла. Используется и для прямых детей (parentOnly), и для
+    // grand-узлов (внуки сами могут иметь правнуков, но мы их сейчас не
+    // отдельно показываем, складываем в продукты узла-уровня-3).
+    const directProducts = (node: CategoryType): Product[] => {
+      const childIds = new Set((node.children ?? []).map((c) => c.id));
+      return visibleProducts.filter((p) => {
+        const inNode = p.categories?.some((c) => c.id === node.id);
+        if (!inNode) return false;
+        if (childIds.size === 0) return true;
+        return !p.categories?.some((c) => childIds.has(c.id));
+      });
+    };
+
+    // Все товары поддерева (включая узел и потомков любой глубины) — нужно
+    // для подсчёта totalCount у родителя.
+    const subtreeProductCount = (node: CategoryType): number => {
+      let count = directProducts(node).length;
+      for (const ch of node.children ?? []) count += subtreeProductCount(ch);
+      return count;
+    };
+
+    const buildSubSection = (child: CategoryType): SubSection | null => {
+      const grandKids = child.children ?? [];
+      const ownProducts = directProducts(child);
+
+      if (grandKids.length === 0) {
+        return ownProducts.length > 0
+          ? { category: child, products: ownProducts }
+          : null;
+      }
+
+      const subSubSections: NonNullable<SubSection['subSubSections']> = [];
+      for (const gk of grandKids) {
+        // Правнуки складываем в продукты внука — глубже h3 в UI не идём.
+        let products = directProducts(gk);
+        for (const ggk of gk.children ?? []) {
+          products = products.concat(directProducts(ggk));
+        }
+        if (products.length > 0) subSubSections.push({ category: gk, products });
+      }
+
+      if (ownProducts.length === 0 && subSubSections.length === 0) return null;
+
+      return { category: child, products: ownProducts, subSubSections };
+    };
+
     const groups: ParentGroup[] = [];
 
     for (const parent of categories) {
       const children = parent.children ?? [];
-      const childIdSet = new Set(children.map((c) => c.id));
-      const sections: ParentGroup['sections'] = [];
-
-      const parentOnlyProducts = visibleProducts.filter((p) => {
-        const inParent = p.categories?.some((c) => c.id === parent.id);
-        if (!inParent) return false;
-        return !p.categories?.some((c) => childIdSet.has(c.id));
-      });
+      const sections: SubSection[] = [];
 
       if (children.length === 0) {
         const all = visibleProducts.filter((p) =>
@@ -109,37 +160,38 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
         );
         if (all.length > 0) sections.push({ category: parent, products: all });
       } else {
-        if (parentOnlyProducts.length > 0) {
-          sections.push({ category: parent, products: parentOnlyProducts });
+        const parentOnly = directProducts(parent);
+        if (parentOnly.length > 0) {
+          sections.push({ category: parent, products: parentOnly });
         }
         for (const child of children) {
-          const childProducts = visibleProducts.filter((p) =>
-            p.categories?.some((c) => c.id === child.id),
-          );
-          if (childProducts.length > 0) {
-            sections.push({ category: child, products: childProducts });
-          }
+          const sub = buildSubSection(child);
+          if (sub) sections.push(sub);
         }
       }
 
       if (sections.length > 0) {
-        const totalCount = sections.reduce(
-          (s, sec) => s + sec.products.length,
-          0,
-        );
-        groups.push({ parent, sections, totalCount });
+        groups.push({
+          parent,
+          sections,
+          totalCount: subtreeProductCount(parent),
+        });
       }
     }
 
     let childSlug: string | null = null;
-    for (const g of groups) {
-      const hit = g.sections.find(
-        (s) =>
-          s.category.slug === initialSlug && s.category.id !== g.parent.id,
-      );
-      if (hit) {
-        childSlug = initialSlug;
-        break;
+    outer: for (const g of groups) {
+      for (const s of g.sections) {
+        if (s.category.slug === initialSlug && s.category.id !== g.parent.id) {
+          childSlug = initialSlug;
+          break outer;
+        }
+        for (const ss of s.subSubSections ?? []) {
+          if (ss.category.slug === initialSlug) {
+            childSlug = initialSlug;
+            break outer;
+          }
+        }
       }
     }
 
@@ -517,6 +569,7 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
                   isVirtual ||
                   group.sections.length > 1 ||
                   section.category.id !== group.parent.id;
+                const hasSubSub = (section.subSubSections?.length ?? 0) > 0;
 
                 return (
                   <section
@@ -530,7 +583,26 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
                         {section.category.categoryName}
                       </h2>
                     )}
-                    <Goods products={section.products} />
+                    {section.products.length > 0 && (
+                      <Goods products={section.products} />
+                    )}
+                    {hasSubSub && (
+                      <div className='flex flex-col gap-6 mt-2'>
+                        {section.subSubSections!.map((ss) => (
+                          <section
+                            key={ss.category.id}
+                            id={`subcat-${ss.category.slug}`}
+                            data-subcat-slug={ss.category.slug}
+                            className='scroll-mt-44'
+                          >
+                            <h3 className='text-base font-semibold text-[#5C5C5C] mb-2 px-2.5'>
+                              {ss.category.categoryName}
+                            </h3>
+                            <Goods products={ss.products} />
+                          </section>
+                        ))}
+                      </div>
+                    )}
                   </section>
                 );
               })}

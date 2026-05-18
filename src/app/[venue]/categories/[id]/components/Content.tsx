@@ -27,13 +27,9 @@ function renderGrid(
   parent: Category | null,
   isFirstGroup: boolean,
 ) {
-  // Родитель сам обычно не имеет товаров — суммируем по детям группы.
-  const parentCount = parent
-    ? items.reduce(
-        (acc, c) => acc + (productCountByCatId?.[c.id] ?? 0),
-        productCountByCatId?.[parent.id] ?? 0,
-      )
-    : 0;
+  // productCountByCatId — subtree-счётчик (см. CategoryFetcher.fillSubtree),
+  // включает все товары поддерева, включая внуков через промежуточные узлы.
+  const parentCount = parent ? productCountByCatId?.[parent.id] ?? 0 : 0;
 
   return (
     <div className='grid grid-cols-6 gap-3'>
