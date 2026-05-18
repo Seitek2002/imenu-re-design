@@ -501,6 +501,9 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   const activeGroup = allParentGroups.find((g) => g.parent.slug === activeSlug);
   const subSections =
     activeGroup && activeGroup.sections.length > 1 ? activeGroup.sections : [];
+  // Кейс «зашли на промежуточный узел» (/products/vino): top-tab был бы один
+  // и потому бесполезный — sub-chips детей и так покрывают навигацию.
+  const showTopTabs = allParentGroups.length > 1;
 
   return (
     <div className='bg-white rounded-t-4xl mt-1.5 pb-40 border-t border-gray-100'>
@@ -512,17 +515,23 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
           ${isHeaderCollapsed ? 'top-12' : 'top-18'}
         `}
       >
-        <div className='pt-2'>
-          <Category
-            categories={tabCategories}
-            counts={tabCounts}
-            activeSlug={activeSlug}
-            onSelect={handleTabClick}
-          />
-        </div>
+        {showTopTabs && (
+          <div className='pt-2'>
+            <Category
+              categories={tabCategories}
+              counts={tabCounts}
+              activeSlug={activeSlug}
+              onSelect={handleTabClick}
+            />
+          </div>
+        )}
 
         {subSections.length > 0 && (
-          <div className='flex gap-1.5 px-4 pb-2 overflow-x-auto no-scrollbar'>
+          <div
+            className={`flex gap-1.5 px-4 pb-2 overflow-x-auto no-scrollbar ${
+              showTopTabs ? '' : 'pt-2'
+            }`}
+          >
             {subSections.map((s) => {
               const isActive = activeSubSlug === s.category.slug;
               return (

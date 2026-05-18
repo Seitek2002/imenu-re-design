@@ -56,7 +56,7 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
   const hit = findCategory(sourceCats, slug);
 
   // Child-кейс: кликнули подкатегорию (любой глубины). Показываем только её
-  // ветку плоским списком, без соседних узлов и табов.
+  // ветку — без соседних узлов и табов одного уровня выше.
   if (hit?.isChild) {
     const ids = collectDescendantIds([hit.category]);
     const products = await VenueService.getAllProducts(
@@ -65,6 +65,22 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
       locale,
       ids,
     );
+
+    // Промежуточный узел (Вино → Красное/Белое/Розе): отдаём в Content как
+    // одну top-level категорию — рендер сам построит h2/h3 для внуков.
+    // SingleCategoryContent оставляем только для настоящих листьев, где
+    // нечего разделять по подзаголовкам.
+    if ((hit.category.children?.length ?? 0) > 0) {
+      return (
+        <Content
+          products={products}
+          categories={[hit.category]}
+          venueSlug={venue}
+          initialSlug={slug}
+        />
+      );
+    }
+
     return <SingleCategoryContent category={hit.category} products={products} />;
   }
 
