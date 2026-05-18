@@ -173,32 +173,34 @@ const ContentItem: FC<Props> = ({
             )}
           </div>
 
-          <div className='relative w-full h-12 self-center'>
-            {!isPriority && !isLoaded && (
-              <div className='absolute inset-0 z-[-1] rounded-full overflow-hidden'>
-                <ImageSkeleton />
-              </div>
-            )}
-            <Image
-              src={img}
-              alt={name}
-              fill
-              className={`object-contain ${
-                isPriority
-                  ? ''
-                  : `transition-opacity duration-500 ${
-                      isLoaded ? 'opacity-100' : 'opacity-0'
-                    }`
-              }`}
-              sizes='(max-width: 768px) 33vw, 200px'
-              priority={isPriority}
-              onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
-              onError={() => {
-                setHasError(true);
-                setIsLoaded(true);
-              }}
-            />
-          </div>
+          {hasImg && (
+            <div className='relative w-full h-12 self-center'>
+              {!isPriority && !isLoaded && (
+                <div className='absolute inset-0 z-[-1] rounded-full overflow-hidden'>
+                  <ImageSkeleton />
+                </div>
+              )}
+              <Image
+                src={img}
+                alt={name}
+                fill
+                className={`object-contain ${
+                  isPriority
+                    ? ''
+                    : `transition-opacity duration-500 ${
+                        isLoaded ? 'opacity-100' : 'opacity-0'
+                      }`
+                }`}
+                sizes='(max-width: 768px) 33vw, 200px'
+                priority={isPriority}
+                onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
+                onError={() => {
+                  setHasError(true);
+                  setIsLoaded(true);
+                }}
+              />
+            </div>
+          )}
         </Link>
       </>
     );
@@ -271,32 +273,34 @@ const ContentItem: FC<Props> = ({
           )}
         </div>
 
-        <div className='relative w-24 h-24 self-end -mb-4 -mr-2'>
-          {!isPriority && !isLoaded && (
-            <div className='absolute inset-0 z-[-1] rounded-full overflow-hidden'>
-              <ImageSkeleton />
-            </div>
-          )}
-          <Image
-            src={img}
-            alt={name}
-            fill
-            className={`object-contain ${
-              isPriority
-                ? ''
-                : `transition-opacity duration-500 ${
-                    isLoaded ? 'opacity-100' : 'opacity-0'
-                  }`
-            }`}
-            sizes='(max-width: 768px) 50vw, 300px'
-            priority={isPriority}
-            onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
-            onError={() => {
-              setHasError(true);
-              setIsLoaded(true);
-            }}
-          />
-        </div>
+        {hasImg && (
+          <div className='relative w-24 h-24 self-end -mb-4 -mr-2'>
+            {!isPriority && !isLoaded && (
+              <div className='absolute inset-0 z-[-1] rounded-full overflow-hidden'>
+                <ImageSkeleton />
+              </div>
+            )}
+            <Image
+              src={img}
+              alt={name}
+              fill
+              className={`object-contain ${
+                isPriority
+                  ? ''
+                  : `transition-opacity duration-500 ${
+                      isLoaded ? 'opacity-100' : 'opacity-0'
+                    }`
+              }`}
+              sizes='(max-width: 768px) 50vw, 300px'
+              priority={isPriority}
+              onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
+              onError={() => {
+                setHasError(true);
+                setIsLoaded(true);
+              }}
+            />
+          </div>
+        )}
       </Link>
     </>
   );
