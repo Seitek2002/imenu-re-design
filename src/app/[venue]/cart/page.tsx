@@ -77,7 +77,9 @@ export default function BasketPage() {
       ? calc.deliveryPrice === 0
       : isFreeDelivery;
   const availableBonuses = calc.bonusAvailable;
-  const maxDeductible = calc.bonusAvailable;
+  const orderBaseTotal =
+    (calc.raw ? calc.totalPrice + bonusToApply : subtotal + serverDeliveryPrice) - promoDiscount;
+  const maxDeductible = Math.floor(Math.min(availableBonuses, orderBaseTotal * 0.5));
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
@@ -180,7 +182,7 @@ export default function BasketPage() {
               </div>
             )}
 
-            {orderType === 'delivery' && (
+            {orderType !== 'dinein' && (
               <UtensilsSelector className='mt-3' />
             )}
 

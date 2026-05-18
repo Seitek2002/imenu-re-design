@@ -52,9 +52,14 @@ export default function OrderSummary({
   const setBonusUsed = useBonusStore((s) => s.setBonusUsed);
   const setBonusAmount = useBonusStore((s) => s.setBonusAmount);
 
-  // Слайдер: верхняя граница — то, что реально может списать бек (bonusAvailable).
-  // Текущее значение — то, что юзер запросил, но не больше доступного.
-  const sliderMax = Math.floor(bonusAvailable);
+  // Слайдер: верхняя граница — 50% от суммы заказа (правило Postera), но не больше баланса.
+  const orderBaseTotal =
+    subtotal +
+    containerTotal +
+    servicePrice +
+    (deliveryType === 'delivery' && !isFreeDelivery ? deliveryCost : 0) -
+    promotionDiscount;
+  const sliderMax = Math.floor(Math.min(bonusAvailable, orderBaseTotal * 0.5));
   const sliderValue = isBonusUsed
     ? Math.min(Math.max(0, Math.floor(bonusAmount)), sliderMax)
     : 0;
