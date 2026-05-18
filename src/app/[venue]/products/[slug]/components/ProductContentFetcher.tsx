@@ -11,20 +11,31 @@ interface Props {
   slug: string;
 }
 
-// Ищет категорию по slug в дереве ownerButton. Возвращает саму категорию и
-// флаг isChild — чтобы решить, показывать ли её как single-list или как
-// parent со свайпом/сабхедерами.
+// Рекурсивно ищет категорию любой глубины. Возвращает саму категорию и флаг
+// isChild — true для всех потомков (child/grandchild/…). Top-level рендерим
+// как parent с сабхедерами, потомков — как single-list.
 function findCategory(
   sourceCats: Category[],
   slug: string,
+  depth = 0,
 ): { category: Category; isChild: boolean } | null {
   for (const c of sourceCats) {
-    if (c.slug === slug) return { category: c, isChild: false };
-    for (const child of c.children ?? []) {
-      if (child.slug === slug) return { category: child, isChild: true };
-    }
+    if (c.slug === slug) return { category: c, isChild: depth > 0 };
+    const hit = findCategory(c.children ?? [], slug, depth + 1);
+    if (hit) return hit;
   }
   return null;
+}
+
+// Собирает id всех потомков (включая саму категорию) рекурсивно. Нужно,
+// чтобы /v2/products/?categories=... вернул товары всего поддерева, а не
+// только товары прямых детей top-level узла.
+function collectDescendantIds(cats: Category[], out: number[] = []): number[] {
+  for (const c of cats) {
+    out.push(c.id);
+    if (c.children?.length) collectDescendantIds(c.children, out);
+  }
+  return out;
 }
 
 export default async function ProductContentFetcher({ venue, slug }: Props) {
@@ -34,40 +45,39 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
 
   const flatButtons = buttons.flat();
 
-  // Находим секцию, которой принадлежит slug (прямо или через children).
-  const ownerButton = flatButtons.find((b) =>
-    b.categories?.some(
-      (c) => c.slug === slug || c.children?.some((ch) => ch.slug === slug),
-    ),
+  // Находим секцию, которой принадлежит slug. Рекурсивно — slug может быть
+  // внуком (SIERRA: Холодные напитки → Вино → Красное/Белое/Розе).
+  const ownerButton = flatButtons.find(
+    (b) => b.categories && findCategory(b.categories, slug),
   );
 
   const sourceCats = ownerButton?.categories ?? [];
 
   const hit = findCategory(sourceCats, slug);
 
-  // Child-кейс: кликнули подкатегорию. Показываем только её продукты плоским
-  // списком, без соседних child’ов и без Swiper’а между top-level.
+  // Child-кейс: кликнули подкатегорию (любой глубины). Показываем только её
+  // ветку плоским списком, без соседних узлов и табов.
   if (hit?.isChild) {
+    const ids = collectDescendantIds([hit.category]);
     const products = await VenueService.getAllProducts(
       venue,
       spotId,
       locale,
-      [hit.category.id],
+      ids,
     );
     return <SingleCategoryContent category={hit.category} products={products} />;
   }
 
-  // Parent-кейс: top-level или slug не найден — текущее поведение со Swiper’ом.
+  // Parent-кейс: top-level или slug не найден. Top-level — те, у кого parent
+  // не входит в текущий набор (т.е. корни поддерева в этой секции).
   const catMap = new Map<number, Category>();
   for (const c of sourceCats) {
     if (!catMap.has(c.id)) catMap.set(c.id, c);
   }
 
-  // Берём только top-level в рамках секции (children раскрываются внутри Content).
-  // Исключение: если перешли по slug категории, у которой parent тоже есть
-  // в catMap (категория одновременно top-level и child) — оставляем её как
-  // отдельный parent-таб, иначе она бы потерялась и активным становился
-  // первый таб секции.
+  // Категория может быть одновременно top-level и продублирована как child
+  // другого узла — оставляем такие как top-level если перешли по их slug,
+  // иначе активным становится первый таб секции.
   const categories = Array.from(catMap.values()).filter(
     (c) =>
       !c.parentCategory ||
@@ -75,9 +85,11 @@ export default async function ProductContentFetcher({ venue, slug }: Props) {
       c.slug === slug,
   );
 
-  // Бэк фильтрует ветку (включая дочерние) по ids — тащим только товары
-  // секции вместо всего меню.
-  const categoryIds = categories.length > 0 ? categories.map((c) => c.id) : null;
+  // Бэк фильтрует по точным id — тащим id всего поддерева каждой top-level
+  // категории, иначе товары внуков (id 96 Красное) не придут когда фильтр
+  // содержит только id корня (86 Холодные напитки).
+  const categoryIds =
+    categories.length > 0 ? collectDescendantIds(categories) : null;
   const allProducts = await VenueService.getAllProducts(
     venue,
     spotId,

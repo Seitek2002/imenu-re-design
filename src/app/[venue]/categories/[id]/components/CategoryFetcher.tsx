@@ -16,13 +16,17 @@ interface Props {
 // Размер списка не учитываем — иначе одна и та же секция в разных заведениях
 // рендерится по-разному, и пользователь не может выработать ментальную модель.
 function buildLayout(sectionCats: Category[]): CategoryLayout {
+  // Рекурсивно собираем все узлы поддерева секции, чтобы поддержать
+  // произвольную глубину (SIERRA: Холодные напитки → Вино → Красное/Белое/Розе).
+  // Без рекурсии 3-й уровень терялся и не появлялся ни в одной группе.
   const all = new Map<number, Category>();
-  for (const c of sectionCats) {
-    all.set(c.id, c);
-    for (const child of c.children ?? []) {
-      if (!all.has(child.id)) all.set(child.id, child);
+  const walk = (nodes: Category[]) => {
+    for (const c of nodes) {
+      if (!all.has(c.id)) all.set(c.id, c);
+      if (c.children?.length) walk(c.children);
     }
-  }
+  };
+  walk(sectionCats);
 
   const parentIds = new Set<number>();
   for (const c of all.values()) {
@@ -33,7 +37,9 @@ function buildLayout(sectionCats: Category[]): CategoryLayout {
 
   const leaves = [...all.values()].filter((c) => !parentIds.has(c.id));
 
-  // Группируем по родителю. Орфаны (родитель не в наборе) идут в безымянную группу.
+  // Группируем листья по их непосредственному родителю — даже если глубина
+  // больше двух, листья 3-го уровня попадают в группу своего прямого
+  // родителя (например, Красное/Белое/Розе → группа «Вино»).
   const groupMap = new Map<number, Category[]>();
   const orphans: Category[] = [];
 
@@ -77,18 +83,35 @@ export default async function CategoryFetcher({ venue, id }: Props) {
 
   const layout = buildLayout(sectionCats);
 
-  const productCountByCatId: Record<number, number> = {};
+  // Прямые товары — линкованные напрямую к id категории.
+  const directCount: Record<number, number> = {};
   for (const product of allProducts) {
     for (const c of product.categories ?? []) {
-      productCountByCatId[c.id] = (productCountByCatId[c.id] ?? 0) + 1;
+      directCount[c.id] = (directCount[c.id] ?? 0) + 1;
     }
   }
+
+  // Cover-плитки родителей (Холодные напитки, Вино) показывают сумму по
+  // всему поддереву. Без этого «Холодные напитки» теряли счёт винных
+  // внуков, потому что Вино — промежуточный узел без собственных товаров.
+  const productCountBySubtree: Record<number, number> = {};
+  const fillSubtree = (nodes: typeof sectionCats) => {
+    for (const c of nodes) {
+      let sum = directCount[c.id] ?? 0;
+      if (c.children?.length) {
+        fillSubtree(c.children);
+        for (const ch of c.children) sum += productCountBySubtree[ch.id] ?? 0;
+      }
+      productCountBySubtree[c.id] = sum;
+    }
+  };
+  fillSubtree(sectionCats);
 
   return (
     <Content
       venueSlug={venue}
       layout={layout}
-      productCountByCatId={productCountByCatId}
+      productCountByCatId={productCountBySubtree}
     />
   );
 }
