@@ -16,7 +16,7 @@ import Toast from '@/components/ui/Toast';
 import OtpModal from '@/components/ui/OtpModal';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import { getCountryById } from '@/lib/helpers/countryCodes';
-import { normalizePhoneForApi } from '@/lib/helpers/phone';
+import { normalizePhoneForApi, formatPhoneInput, parsePhoneInput } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
 import { parseApiError } from '@/lib/apiErrors';
 
@@ -165,21 +165,16 @@ const DrawerCheckout: FC<IProps> = ({
 
   const handlePhoneChange = useCallback(
     (val: string) => {
-      let cleanVal = val.replace(/\D/g, '');
-
-      if (cleanVal.startsWith('0')) {
-        cleanVal = cleanVal.substring(1);
+      const { digits, countryId: newId } = parsePhoneInput(val, countryId);
+      if (newId !== countryId) {
+        setCountryId(newId);
+        setStoredCountryId(newId);
       }
-
-      if (cleanVal.length > country.length) {
-        cleanVal = cleanVal.slice(0, country.length);
-      }
-
-      setPhone(cleanVal);
-      setStoredPhone(cleanVal);
-      if (cleanVal) setPhoneError(false);
+      setPhone(digits);
+      setStoredPhone(digits);
+      if (digits) setPhoneError(false);
     },
-    [setStoredPhone, country.length],
+    [setStoredPhone, setStoredCountryId, countryId],
   );
 
   const handleCountryChange = useCallback(
@@ -582,9 +577,7 @@ const DrawerCheckout: FC<IProps> = ({
                       type='tel'
                       inputMode='numeric'
                       placeholder={country.placeholder}
-                      maxLength={country.length}
-                      minLength={country.length}
-                      value={phone}
+                      value={formatPhoneInput(phone, countryId)}
                       onChange={(e) => {
                         handlePhoneChange(e.target.value);
                         if (e.target.value.replace(/\D/g, '').length >= country.length) {
@@ -735,9 +728,7 @@ const DrawerCheckout: FC<IProps> = ({
                       type='tel'
                       inputMode='numeric'
                       placeholder={country.placeholder}
-                      maxLength={country.length}
-                      minLength={country.length}
-                      value={phone}
+                      value={formatPhoneInput(phone, countryId)}
                       onChange={(e) => {
                         handlePhoneChange(e.target.value);
                         if (e.target.value.replace(/\D/g, '').length >= country.length) {
@@ -789,7 +780,7 @@ const DrawerCheckout: FC<IProps> = ({
 
       <OtpModal
         open={pendingOrderBody !== null}
-        phone={phone}
+        phone={normalizePhoneForApi(phone, country.dial)}
         isLoading={createOrderMutation.isPending}
         error={otpError}
         onConfirm={handleOtpConfirm}

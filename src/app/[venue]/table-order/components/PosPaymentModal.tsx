@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 import { useCheckout } from '@/store/checkout';
 import { useClientBonus } from '@/lib/api/queries';
 import { useCreatePosPaymentLink } from '@/lib/api/pos-orders';
-import { normalizePhoneForApi } from '@/lib/helpers/phone';
+import { normalizePhoneForApi, formatPhoneInput, parsePhoneInput } from '@/lib/helpers/phone';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
@@ -210,11 +210,14 @@ export default function PosPaymentModal({
               <input
                 type='tel'
                 inputMode='numeric'
-                value={phone}
+                value={formatPhoneInput(phone, countryId)}
                 onChange={(e) => {
-                  const digits = e.target.value
-                    .replace(/\D/g, '')
-                    .slice(0, country.length);
+                  const { digits, countryId: newId } = parsePhoneInput(e.target.value, countryId);
+                  if (newId !== countryId) {
+                    setCountryId(newId);
+                    const newLen = getCountryById(newId).length;
+                    if (phone.length > newLen) setPhone(phone.slice(0, newLen));
+                  }
                   setPhone(digits);
                   if (digits) setPhoneError(false);
                 }}

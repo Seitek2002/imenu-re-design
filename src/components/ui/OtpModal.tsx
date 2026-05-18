@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, KeyboardEvent, ClipboardEvent } from 'react';
+import { formatPhoneMasked } from '@/lib/helpers/phone';
 
 interface Props {
   open: boolean;
@@ -50,9 +51,7 @@ export default function OtpModal({ open, phone, isLoading, error, onConfirm, onC
     }
   };
 
-  const maskedPhone = phone
-    ? `+${phone.slice(0, -3).replace(/\d/g, '*')}${phone.slice(-3)}`
-    : '';
+  const maskedPhone = formatPhoneMasked(phone);
 
   return (
     <div className='fixed inset-0 z-200 flex items-end lg:items-center justify-center'>
