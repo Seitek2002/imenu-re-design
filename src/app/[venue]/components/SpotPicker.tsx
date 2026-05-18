@@ -54,7 +54,7 @@ export default function SpotPicker() {
       <button
         type='button'
         onClick={() => setOpen((v) => !v)}
-        className='w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3 shadow-sm active:scale-[0.99] transition-transform'
+        className='w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3 shadow-sm active:scale-[0.99] hover:shadow-md focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all cursor-pointer'
       >
         <div className='flex flex-col items-start text-left'>
           <span className='text-[#A4A4A4] text-xs'>{t('pickupFrom')}</span>
@@ -81,7 +81,7 @@ export default function SpotPicker() {
                 key={spot.id}
                 type='button'
                 onClick={() => handlePick(spot.id)}
-                className={`w-full flex flex-col items-start text-left px-4 py-3 border-b border-gray-100 last:border-b-0 active:bg-gray-50 ${
+                className={`w-full flex flex-col items-start text-left px-4 py-3 border-b border-gray-100 last:border-b-0 active:bg-gray-50 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none transition-colors cursor-pointer ${
                   isActive ? 'bg-[#F5F5F5]' : ''
                 }`}
               >

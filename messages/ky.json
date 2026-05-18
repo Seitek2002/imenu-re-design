@@ -28,6 +28,13 @@
   },
   "Cart": {
     "title": "Себет",
+    "added": "Себетке кошулду",
+    "preview": {
+      "inCart": "Себетте",
+      "andMore": "жана дагы {count}",
+      "goToCart": "Себетке өтүү",
+      "qty": "× {count}"
+    },
     "takeout": "Ала кетүү",
     "delivery": "Жеткирүү",
     "totalDue": "Төлөө үчүн жалпы",

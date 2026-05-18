@@ -25,7 +25,8 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
         className={`
           flex-1 h-14 rounded-2xl font-bold text-white text-lg shadow-lg
           transition-all active:scale-95 flex flex-row items-center justify-center gap-2 leading-tight
-          ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-brand'}
+          focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none
+          ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-brand hover:brightness-110 hover:shadow-xl cursor-pointer'}
         `}
       >
         {isSubmitting ? t('processing') : t('pay')}

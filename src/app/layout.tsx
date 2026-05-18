@@ -81,7 +81,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${cruinn.variable} ${geistInter.variable} max-w-175 mx-auto antialiased`}
+        className={`${cruinn.variable} ${geistInter.variable} antialiased`}
       >
         {/* Блокируем pinch-zoom на iOS Safari — touch-action и viewport user-scalable=no там игнорируются */}
         <script

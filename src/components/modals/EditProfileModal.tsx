@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Loader2, X } from 'lucide-react';
 import { useMounted } from '@/hooks/useMounted';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useUpdateClient } from '@/lib/api/queries';
 import type { Client } from '@/types/api';
 
@@ -22,6 +23,8 @@ export default function EditProfileModal({ isOpen, onClose, phone, client }: Pro
   const [error, setError] = useState<string | null>(null);
 
   const update = useUpdateClient(phone);
+
+  useEscapeKey(isOpen, onClose);
 
   useEffect(() => {
     if (isOpen) {

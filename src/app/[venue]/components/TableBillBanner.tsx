@@ -74,7 +74,7 @@ export default function TableBillBanner({ venueSlug }: Props) {
   const tableLabel = order.tableName || tableNumberStore || '';
 
   return (
-    <div className='fixed bottom-20 left-0 right-0 z-40 px-3 pointer-events-none max-w-175 mx-auto'>
+    <div className='fixed bottom-20 lg:bottom-28 left-0 right-0 z-40 px-3 pointer-events-none max-w-175 mx-auto'>
       <div className='pointer-events-auto bg-white rounded-2xl shadow-2xl border border-[#E7E7E7] overflow-hidden animate-fadeIn'>
         <div className='h-1 bg-brand' />
         <div className='flex items-center gap-3 px-3 py-3'>
@@ -101,7 +101,7 @@ export default function TableBillBanner({ venueSlug }: Props) {
           <button
             onClick={onDismiss}
             aria-label={t('dismiss')}
-            className='w-8 h-8 rounded-lg text-[#A4A4A4] flex items-center justify-center shrink-0 active:scale-95 transition-transform'
+            className='w-8 h-8 rounded-lg text-[#A4A4A4] flex items-center justify-center shrink-0 active:scale-95 hover:bg-black/5 hover:text-[#6B6B6B] focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:outline-none transition-all cursor-pointer'
           >
             <X size={18} />
           </button>
@@ -109,7 +109,7 @@ export default function TableBillBanner({ venueSlug }: Props) {
 
         <Link
           href={`/${venueSlug}/table-order`}
-          className='flex items-center justify-between gap-2 mx-3 mb-3 h-12 rounded-xl bg-brand text-white font-bold text-sm px-4 active:scale-[0.98] transition-transform shadow-md'
+          className='flex items-center justify-between gap-2 mx-3 mb-3 h-12 rounded-xl bg-brand text-white font-bold text-sm px-4 active:scale-[0.98] hover:brightness-110 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none transition-all shadow-md'
         >
           <span>{t('cta', { amount: remainingStr })}</span>
           <ChevronRight size={18} />

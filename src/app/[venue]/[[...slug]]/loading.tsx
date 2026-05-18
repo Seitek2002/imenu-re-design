@@ -1,6 +1,6 @@
 export default function VenueLoading() {
   return (
-    <main className='home px-2.5 bg-[#F8F6F7] min-h-svh pb-32'>
+    <main className='home px-2.5 bg-[#F8F6F7] min-h-svh pb-36'>
       {/* 1. Скелетон MainHeader */}
       <header className='header-main sticky top-0 z-30 flex justify-between items-center px-4 py-4 rounded-b-4xl bg-white shadow-sm'>
         <div className='header-left flex items-center shrink-0 w-[65%]'>

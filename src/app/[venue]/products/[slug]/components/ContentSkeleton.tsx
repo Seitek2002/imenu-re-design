@@ -14,8 +14,8 @@ export default function ContentSkeleton() {
       </div>
 
       {/* 2. Скелетон Сетки Товаров */}
-      <div className='grid grid-cols-2 gap-x-3 gap-y-6 px-2.5 mt-2'>
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+      <div className='grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-6 px-2.5 mt-2'>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
           <div key={i} className='w-full flex flex-col'>
             {/* Квадрат картинки */}
             <div className='aspect-square rounded-2xl overflow-hidden mb-2 relative'>

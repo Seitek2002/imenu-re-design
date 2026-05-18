@@ -3,6 +3,7 @@
 import { X, Clock, Calendar } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useVenueStore } from '@/store/venue';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 const DAY_NAMES_KY: Record<string, string> = {
   'Понедельник': 'Дүйшөмбү',
@@ -33,6 +34,8 @@ export default function ScheduleModal({ isOpen, onClose }: Props) {
 
   const jsDay = new Date().getDay();
   const currentDayIndex = jsDay === 0 ? 7 : jsDay;
+
+  useEscapeKey(isOpen, onClose);
 
   if (!isOpen || !venue) return null;
 

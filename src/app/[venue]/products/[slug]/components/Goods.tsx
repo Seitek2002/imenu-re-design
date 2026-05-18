@@ -12,7 +12,7 @@ const Goods: FC<Props> = ({ products }) => {
   if (!products || products.length === 0) return null;
 
   return (
-    <div className='grid grid-cols-2 gap-x-3 gap-y-6 px-2.5'>
+    <div className='grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-6 px-2.5'>
       {products.map((product, index) => (
         <VirtualFoodItem
           key={product.id}

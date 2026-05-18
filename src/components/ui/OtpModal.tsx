@@ -2,6 +2,7 @@
 
 import { useRef, useState, KeyboardEvent, ClipboardEvent } from 'react';
 import { formatPhoneMasked } from '@/lib/helpers/phone';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface Props {
   open: boolean;
@@ -20,6 +21,8 @@ export default function OtpModal({ open, phone, isLoading, error, onConfirm, onC
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
   ];
+
+  useEscapeKey(open, onClose);
 
   if (!open) return null;
 

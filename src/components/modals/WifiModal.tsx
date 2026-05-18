@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { useMounted } from '@/hooks/useMounted';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface Props {
   isOpen: boolean;
@@ -24,6 +25,8 @@ export default function WifiModal({ isOpen, onClose, text, url }: Props) {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  useEscapeKey(isOpen, onClose);
 
   if (!mounted || !isOpen) return null;
 

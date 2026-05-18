@@ -63,13 +63,18 @@ const MainHeader = () => {
 
           {/* ПОКАЗЫВАЕМ КНОПКУ ТОЛЬКО ЕСЛИ ЕСТЬ WI-FI */}
           {hasWifiInfo && (
-            <button
-              onClick={() => setWifiOpen(true)}
-              className='p-2.5 rounded-[14px] bg-[#FAFAFA] cursor-pointer active:scale-95 transition-transform'
-              aria-label={t('aria')}
-            >
-              <Image src={wifiIcon} alt='wifi' width={20} height={20} />
-            </button>
+            <div className='group relative'>
+              <button
+                onClick={() => setWifiOpen(true)}
+                className='p-2.5 rounded-[14px] bg-[#FAFAFA] cursor-pointer active:scale-95 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all'
+                aria-label={t('aria')}
+              >
+                <Image src={wifiIcon} alt='wifi' width={20} height={20} />
+              </button>
+              <span className='hidden lg:block absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap bg-black/85 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50'>
+                {t('aria')}
+              </span>
+            </div>
           )}
 
           <LanguageDropdown />

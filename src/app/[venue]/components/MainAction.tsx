@@ -110,14 +110,16 @@ export default function MainAction({ venueSlug }: Props) {
   return (
     <>
       <div
-        className='main-action-floating fixed px-4 left-0 right-0 z-40 pointer-events-none max-w-175 mx-auto w-full flex items-center justify-end gap-2'
-        style={
-          billBannerOpen
-            ? { bottom: '15rem' }
-            : hasBottomCta
-              ? { bottom: '10rem' }
-              : undefined
-        }
+        className={`main-action-floating fixed z-40 pointer-events-none flex items-center gap-2
+          px-4 left-0 right-0 max-w-175 mx-auto w-full justify-end
+          lg:px-0 lg:left-auto lg:right-8 lg:max-w-none lg:mx-0 lg:w-auto lg:justify-start
+          ${
+            billBannerOpen
+              ? '!bottom-60 lg:!bottom-[16.5rem]'
+              : hasBottomCta
+                ? '!bottom-40 lg:!bottom-[13.5rem]'
+                : ''
+          }`}
       >
         {isMainPage && showHint && (
           <div className='pointer-events-none rounded-full bg-white px-3 py-2 text-xs font-bold text-[#111111] shadow-lg animate-fade-in'>
@@ -125,19 +127,26 @@ export default function MainAction({ venueSlug }: Props) {
           </div>
         )}
 
-        <button
-          onClick={handleInitialClick}
-          className={`
-            pointer-events-auto bg-brand text-white shadow-xl 
-            active:scale-95 transition-all duration-500 ease-in-out 
-            flex items-center justify-center overflow-hidden will-change-transform
-            h-14 rounded-full
-            w-14 px-0 gap-0
-          `}
-          aria-label={t('callBtn')}
-        >
-          <BellRing size={20} className='shrink-0' />
-        </button>
+        <div className='pointer-events-auto group relative'>
+          <button
+            onClick={handleInitialClick}
+            className={`
+              bg-brand text-white shadow-xl
+              active:scale-95 hover:brightness-110 hover:shadow-2xl
+              focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:outline-none
+              transition-all duration-500 ease-in-out
+              flex items-center justify-center overflow-hidden will-change-transform
+              h-14 rounded-full cursor-pointer
+              w-14 px-0 gap-0
+            `}
+            aria-label={t('callBtn')}
+          >
+            <BellRing size={20} className='shrink-0' />
+          </button>
+          <span className='hidden lg:block absolute right-full top-1/2 -translate-y-1/2 mr-3 whitespace-nowrap bg-black/85 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity'>
+            {t('callBtn')}
+          </span>
+        </div>
       </div>
 
       {showConfirm && (
@@ -167,14 +176,14 @@ export default function MainAction({ venueSlug }: Props) {
               <button
                 disabled={isLoading}
                 onClick={() => setShowConfirm(false)}
-                className='flex-1 h-12 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm active:scale-95 transition-transform'
+                className='flex-1 h-12 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm active:scale-95 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:outline-none transition-all cursor-pointer'
               >
                 {tc('cancel')}
               </button>
               <button
                 disabled={isLoading}
                 onClick={handleConfirmCall}
-                className='flex-1 h-12 rounded-xl bg-brand text-white font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-2'
+                className='flex-1 h-12 rounded-xl bg-brand text-white font-bold text-sm active:scale-95 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none transition-all flex items-center justify-center gap-2 cursor-pointer'
               >
                 {t('yesCall')}
               </button>
@@ -202,7 +211,7 @@ export default function MainAction({ venueSlug }: Props) {
 
             <button
               onClick={() => setShowSuccess(false)}
-              className='w-full h-12 rounded-xl bg-brand text-white font-bold text-sm active:scale-95 transition-transform'
+              className='w-full h-12 rounded-xl bg-brand text-white font-bold text-sm active:scale-95 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none transition-all cursor-pointer'
             >
               {tc('ok')}
             </button>

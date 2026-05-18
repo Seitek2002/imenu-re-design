@@ -28,6 +28,13 @@
   },
   "Cart": {
     "title": "Корзина",
+    "added": "Добавлено в корзину",
+    "preview": {
+      "inCart": "В корзине",
+      "andMore": "и ещё {count}",
+      "goToCart": "Перейти в корзину",
+      "qty": "× {count}"
+    },
     "takeout": "С собой",
     "delivery": "Доставка",
     "totalDue": "Итого к оплате",

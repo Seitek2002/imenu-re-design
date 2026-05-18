@@ -102,7 +102,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
       {/* ПЛЮС */}
       <button
         aria-label={t('ariaAdd', { name: product.productName })}
-        className='absolute z-10 bottom-0 right-0 cursor-pointer bg-white p-3.5 rounded-full shadow-sm active:scale-90 transition-transform'
+        className='absolute z-10 bottom-0 right-0 cursor-pointer bg-white p-3.5 rounded-full shadow-sm active:scale-90 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all'
         onClick={handlePlus}
       >
         <Image
@@ -122,7 +122,7 @@ const FoodItemCounter: FC<Props> = ({ product }) => {
       >
         <button
           aria-label={t('ariaDecrement')}
-          className='h-full p-3.5 flex items-center justify-center cursor-pointer active:scale-90 transition-transform'
+          className='h-full p-3.5 flex items-center justify-center cursor-pointer active:scale-90 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all'
           onClick={handleMinus}
         >
           <Image src={minus} alt='' />
