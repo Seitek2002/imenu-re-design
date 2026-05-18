@@ -34,6 +34,7 @@ const ContentItem: FC<Props> = ({
   isPriority,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const t = useTranslations('Categories');
   const countLabel = productCount > 0 ? t('itemsCount', { count: productCount }) : null;
 
@@ -42,7 +43,7 @@ const ContentItem: FC<Props> = ({
     : `/${venueSlug}/products/${slug}`;
 
   if (isCover) {
-    const hasImg = !!img && img !== '/placeholder.png';
+    const hasImg = !!img && img !== '/placeholder.png' && !hasError;
 
     if (hasImg) {
       return (
@@ -58,6 +59,7 @@ const ContentItem: FC<Props> = ({
             className='object-cover'
             sizes='(max-width: 768px) 100vw, 600px'
             priority={isPriority}
+            onError={() => setHasError(true)}
           />
           <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent' />
           <div className='relative z-10 flex flex-col gap-0.5'>
@@ -101,7 +103,7 @@ const ContentItem: FC<Props> = ({
     );
   }
 
-  const hasImg = !!img && img !== '/placeholder.png';
+  const hasImg = !!img && img !== '/placeholder.png' && !hasError;
 
   if (!isLarge) {
     return (
@@ -133,6 +135,10 @@ const ContentItem: FC<Props> = ({
                 sizes='(max-width: 768px) 33vw, 200px'
                 priority={isPriority}
                 onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
+                onError={() => {
+                  setHasError(true);
+                  setIsLoaded(true);
+                }}
               />
               <div className='absolute inset-0 bg-gradient-to-t from-white/80 via-white/40 to-white/20' />
             </>
@@ -187,6 +193,10 @@ const ContentItem: FC<Props> = ({
               sizes='(max-width: 768px) 33vw, 200px'
               priority={isPriority}
               onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
+              onError={() => {
+                setHasError(true);
+                setIsLoaded(true);
+              }}
             />
           </div>
         </Link>
@@ -223,6 +233,10 @@ const ContentItem: FC<Props> = ({
               sizes='(max-width: 768px) 50vw, 300px'
               priority={isPriority}
               onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
+              onError={() => {
+                setHasError(true);
+                setIsLoaded(true);
+              }}
             />
             <div className='absolute inset-0 bg-gradient-to-t from-white/80 via-white/40 to-white/20' />
           </>
@@ -277,6 +291,10 @@ const ContentItem: FC<Props> = ({
             sizes='(max-width: 768px) 50vw, 300px'
             priority={isPriority}
             onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
+            onError={() => {
+              setHasError(true);
+              setIsLoaded(true);
+            }}
           />
         </div>
       </Link>

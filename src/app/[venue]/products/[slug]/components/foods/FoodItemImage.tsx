@@ -3,6 +3,7 @@
 import { FC, useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import ImageSkeleton from '@/components/ui/ImageSkeleton';
+import placeholder from '@/assets/Foods/placeholder.webp';
 
 interface Props {
   src: string | StaticImageData;
@@ -12,6 +13,9 @@ interface Props {
 
 const FoodItemImage: FC<Props> = ({ src, alt, isPriority }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const finalSrc = hasError ? placeholder : src;
 
   return (
     <div className='relative flex items-end w-full aspect-square rounded-2xl overflow-hidden p-1.5 bg-gray-50 isolate'>
@@ -22,7 +26,7 @@ const FoodItemImage: FC<Props> = ({ src, alt, isPriority }) => {
       )}
 
       <Image
-        src={src}
+        src={finalSrc}
         alt={alt}
         className={`object-cover ${
           isPriority
@@ -36,6 +40,10 @@ const FoodItemImage: FC<Props> = ({ src, alt, isPriority }) => {
         sizes='(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 250px'
         priority={isPriority}
         onLoad={!isPriority ? () => setIsLoaded(true) : undefined}
+        onError={() => {
+          setHasError(true);
+          setIsLoaded(true);
+        }}
       />
     </div>
   );
