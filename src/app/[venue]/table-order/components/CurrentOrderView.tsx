@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import { Bell, CheckCircle, ChevronRight, MessageSquare, Plus, ReceiptText, UtensilsCrossed } from 'lucide-react';
+import { Bell, CheckCircle, ChevronRight, PenLine, Plus, ReceiptText, UtensilsCrossed } from 'lucide-react';
 import coinIcon from '@/assets/Widgets/widget-2.png';
 
 import { useVenueStore } from '@/store/venue';
@@ -532,9 +532,9 @@ export default function CurrentOrderView({ venueSlug }: Props) {
               <button
                 type='button'
                 onClick={() => setShowComment(true)}
-                className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-2.5 px-3 text-sm font-medium text-[#A4A4A4]'
+                className='mt-3 w-full flex items-center gap-2 border border-dashed border-[#D0D0D0] rounded-xl py-2.5 px-3 text-sm font-medium text-[#A4A4A4] hover:border-[#A4A4A4] hover:text-[#777] transition-colors'
               >
-                <MessageSquare size={16} />
+                <PenLine size={16} />
                 {t('draftCommentLabel')}
               </button>
             )}

@@ -14,7 +14,7 @@ import { useVenueStore } from '@/store/venue';
 import { useCheckoutCalculate } from '@/hooks/useCheckoutCalculate';
 import { useMounted } from '@/hooks/useMounted';
 import { parseApiError } from '@/lib/apiErrors';
-import { MessageSquare } from 'lucide-react';
+import { PenLine } from 'lucide-react';
 import UtensilsSelector from './components/UtensilsSelector';
 import EmptyBasket from './components/EmptyBasket';
 
@@ -204,9 +204,9 @@ export default function BasketPage() {
               <button
                 type='button'
                 onClick={() => setShowComment(true)}
-                className='mt-3 w-full flex items-center gap-2 bg-[#F5F5F5] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4]'
+                className='mt-3 w-full flex items-center gap-2 border border-dashed border-[#D0D0D0] rounded-xl py-3 px-4 text-sm font-medium text-[#A4A4A4] hover:border-[#A4A4A4] hover:text-[#777] transition-colors'
               >
-                <MessageSquare size={16} />
+                <PenLine size={16} />
                 {t('drawer.commentLabel')}
               </button>
             )}
