@@ -387,12 +387,43 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
       // flushSync: sub-tabs (видимость зависит от activeSlug) должны
       // закоммититься ДО измерения высоты sticky-бара в scrollToElement,
       // иначе offset считается под старую группу и таргет уезжает.
-      flushSync(() => setActiveSlug(group.parent.slug));
+      flushSync(() => {
+        setActiveSlug(group.parent.slug);
+        // Bug 4 fix: подкатегория для прошлой вкладки больше не валидна —
+        // подсвечиваем первую подкатегорию новой группы (или null если
+        // у группы нет подсекций).
+        const firstSub = group.sections.find(
+          (s) => s.category.id !== group.parent.id,
+        );
+        setActiveSubSlug(firstSub ? firstSub.category.slug : null);
+      });
 
-      const el = document.getElementById(
-        `${PARENT_ID_PREFIX}${group.parent.slug}`,
-      );
-      if (el) scrollToElement(el, 'smooth');
+      const getTarget = () =>
+        document.getElementById(`${PARENT_ID_PREFIX}${group.parent.slug}`);
+      const scrollToTarget = () => {
+        const el = getTarget();
+        if (el) scrollToElement(el, 'smooth');
+      };
+
+      scrollToTarget();
+
+      // Bug 1 fix: VirtualFoodItem стабилизирует высоты только после первого
+      // прохода скролла — таргет уплывает. Пока контейнер выше растёт,
+      // переcкроливаем (instant, чтобы не было «прыжков» в анимации smooth).
+      const root = contentRef.current;
+      let pending = false;
+      const ro = root
+        ? new ResizeObserver(() => {
+            if (pending) return;
+            pending = true;
+            requestAnimationFrame(() => {
+              pending = false;
+              const el = getTarget();
+              if (el) scrollToElement(el, 'instant');
+            });
+          })
+        : null;
+      if (root && ro) ro.observe(root);
 
       // Виртуальные группы (id < 0) не должны попадать в URL — их слаги
       // синтетические и не резолвятся бэкендом/маршрутом.
@@ -404,8 +435,9 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
         );
       }
       window.setTimeout(() => {
+        ro?.disconnect();
         isProgrammaticScrollRef.current = false;
-      }, 700);
+      }, 1200);
     },
     [allParentGroups, venueSlug, scrollToElement],
   );

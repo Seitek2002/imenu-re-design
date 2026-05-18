@@ -22,8 +22,13 @@ export default function PageTransition({ children }: { children: React.ReactNode
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // Не ремаунтим на смену slug внутри /products/* — Content.tsx сам делает
+  // replaceState при клике по табу, и full remount сбрасывал его state +
+  // повторно дёргал initial-scroll к старому serverside slug → промах скролла.
+  const stableKey = pathname.replace(/^(\/[^/]+\/products)\/.+$/, '$1');
+
   return (
-    <div key={pathname} className='page-fade-in'>
+    <div key={stableKey} className='page-fade-in'>
       {children}
     </div>
   );
