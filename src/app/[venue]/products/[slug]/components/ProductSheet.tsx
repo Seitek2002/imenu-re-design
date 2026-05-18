@@ -58,6 +58,146 @@ function buildGroupSelections(
     .filter((g) => g.items.length > 0);
 }
 
+function emojiForGroup(name: string): string {
+  const n = name.toLowerCase();
+  if (/молок|milk|сүт/.test(n)) return '🥛';
+  if (/сахар|sugar|шекер/.test(n)) return '🍬';
+  if (/сироп|syrup/.test(n)) return '🍯';
+  if (/лёд|лед|ice|муз/.test(n)) return '🧊';
+  if (/сливк|cream|каймак/.test(n)) return '🫧';
+  if (/соус|sauce/.test(n)) return '🫙';
+  if (/топпинг|topping/.test(n)) return '✨';
+  if (/темп|temperature/.test(n)) return '🌡️';
+  if (/размер|size|өлч/.test(n)) return '📐';
+  if (/хлеб|bread|нан/.test(n)) return '🍞';
+  if (/сыр|cheese|быш/.test(n)) return '🧀';
+  if (/мясо|meat|эт/.test(n)) return '🥩';
+  if (/специ|spice/.test(n)) return '🌶️';
+  if (/добавк|extra|кошумча/.test(n)) return '➕';
+  if (/напит|drink/.test(n)) return '🥤';
+  if (/десерт|dessert/.test(n)) return '🍮';
+  return '🍽️';
+}
+
+const CARD_COLORS = [
+  { bg: 'bg-orange-50', shadow: 'shadow-orange-100', iconBg: 'bg-orange-100' },
+  { bg: 'bg-sky-50',    shadow: 'shadow-sky-100',    iconBg: 'bg-sky-100' },
+  { bg: 'bg-violet-50', shadow: 'shadow-violet-100', iconBg: 'bg-violet-100' },
+  { bg: 'bg-emerald-50',shadow: 'shadow-emerald-100',iconBg: 'bg-emerald-100' },
+  { bg: 'bg-rose-50',   shadow: 'shadow-rose-100',   iconBg: 'bg-rose-100' },
+  { bg: 'bg-amber-50',  shadow: 'shadow-amber-100',  iconBg: 'bg-amber-100' },
+];
+
+const GroupsGrid = ({
+  groups,
+  counts,
+  onChange,
+  errors,
+  absolutePricing,
+}: {
+  groups: GroupModification[];
+  counts: CountsState;
+  onChange: (next: CountsState) => void;
+  errors: Record<number, string>;
+  absolutePricing: boolean;
+}) => {
+  const required = groups.filter((g) => g.selection.min > 0);
+  const optional = groups.filter((g) => g.selection.min === 0);
+
+  const [expandedId, setExpandedId] = useState<number | null>(
+    () => optional[0]?.id ?? null,
+  );
+
+  const expandedGroup = optional.find((g) => g.id === expandedId) ?? null;
+
+  return (
+    <div className='flex flex-col gap-5'>
+      {required.map((g) => (
+        <GroupSection
+          key={g.id}
+          group={g}
+          counts={counts}
+          onChange={onChange}
+          error={errors[g.id] ?? null}
+          absolutePricing={absolutePricing}
+        />
+      ))}
+
+      {optional.length > 0 && (
+        <div className='flex flex-col gap-3'>
+          <div className='flex gap-2.5 overflow-x-auto -mx-5 px-5 pb-1 scrollbar-none'>
+            {optional.map((g, idx) => {
+              const sum = sumGroupCount(g, counts);
+              const hasSelection = sum > 0;
+              const isExpanded = expandedId === g.id;
+              const hasError = !!errors[g.id];
+              const color = CARD_COLORS[idx % CARD_COLORS.length];
+              const emoji = emojiForGroup(g.name);
+
+              const chipLabel = (() => {
+                if (!hasSelection) return g.name;
+                if (g.selection.type === 'single') {
+                  const selected = g.items.find((i) => (counts[i.id] ?? 0) > 0);
+                  return selected?.name ?? g.name;
+                }
+                return `${g.name} ×${sum}`;
+              })();
+
+              return (
+                <button
+                  key={g.id}
+                  type='button'
+                  onClick={() => setExpandedId((prev) => (prev === g.id ? null : g.id))}
+                  className={`flex flex-col items-center justify-between pt-3 pb-2.5 px-2 w-[84px] h-[84px] rounded-2xl shrink-0 active:scale-95 transition-all shadow-sm ${
+                    isExpanded
+                      ? 'bg-[#21201F] shadow-[#21201F]/20'
+                      : hasError
+                        ? 'bg-red-50 shadow-red-100'
+                        : `${color.bg} ${color.shadow}`
+                  }`}
+                >
+                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-xl ${
+                    isExpanded ? 'bg-white/15' : hasError ? 'bg-red-100' : color.iconBg
+                  }`}>
+                    {hasSelection && !isExpanded ? (
+                      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#21201F' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                        <polyline points='20 6 9 17 4 12' />
+                      </svg>
+                    ) : isExpanded ? (
+                      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                        <line x1='5' y1='12' x2='19' y2='12' />
+                      </svg>
+                    ) : (
+                      <span className='leading-none'>{emoji}</span>
+                    )}
+                  </span>
+                  <span className={`text-[10px] font-semibold text-center leading-tight w-full line-clamp-2 ${
+                    isExpanded ? 'text-white' : hasError ? 'text-red-500' : 'text-[#21201F]/75'
+                  }`}>
+                    {chipLabel}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {expandedGroup && (
+            <div className='rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4'>
+              <GroupSection
+                group={expandedGroup}
+                counts={counts}
+                onChange={onChange}
+                error={errors[expandedGroup.id] ?? null}
+                absolutePricing={absolutePricing}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const GroupSection = ({
   group,
   counts,
@@ -294,7 +434,10 @@ const ProductContent = ({
     return [...list].sort((a, b) => {
       const aSize = isSize(a.name) ? 0 : 1;
       const bSize = isSize(b.name) ? 0 : 1;
-      return aSize - bSize;
+      if (aSize !== bSize) return aSize - bSize;
+      const aReq = a.selection.min > 0 ? 0 : 1;
+      const bReq = b.selection.min > 0 ? 0 : 1;
+      return aReq - bReq;
     });
   }, [product.groupModifications]);
   const hasGroups = groups.length > 0;
@@ -463,16 +606,15 @@ const ProductContent = ({
               </div>
             )}
 
-            {groups.map((g) => (
-              <GroupSection
-                key={g.id}
-                group={g}
+            {hasGroups && (
+              <GroupsGrid
+                groups={groups}
                 counts={counts}
                 onChange={setCounts}
-                error={errors[g.id] ?? null}
+                errors={errors}
                 absolutePricing={product.productPrice === 0}
               />
-            ))}
+            )}
           </div>
         </div>
       </div>
