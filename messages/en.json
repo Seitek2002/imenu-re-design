@@ -339,6 +339,8 @@
     "draftCommentLabel": "Comment",
     "draftCommentPlaceholder": "E.g.: no onions",
     "draftSubtotal": "Before discount",
+    "draftSavings": "Discount",
+    "posOrderEmpty": "Waiter accepted the order — waiting for dishes",
     "submitDraft": "Send order · {amount} c.",
     "summary": {
       "tickets": "{count, plural, =0 {No tickets} one {# ticket} other {# tickets}}",
@@ -354,7 +356,8 @@
       "pendingPayment": "Awaiting payment",
       "inDelivery": "On the way",
       "completed": "Served",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "viewLink": "Track order"
     },
     "promo": {
       "itemBadge": "−{percent}%",

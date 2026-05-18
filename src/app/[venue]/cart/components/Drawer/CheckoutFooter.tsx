@@ -2,7 +2,6 @@
 
 import { FC } from 'react';
 import { useTranslations } from 'next-intl';
-import { useVenueStore } from '@/store/venue';
 
 interface Props {
   total: number;
@@ -12,10 +11,6 @@ interface Props {
 
 const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
   const t = useTranslations('Cart.footer');
-  const tCart = useTranslations('Cart');
-  const venue = useVenueStore((s) => s.data);
-  const accrualPercent = venue?.isBonusSystemEnabled ? (venue?.bonusAccrualPercent ?? 0) : 0;
-  const earnedBonus = accrualPercent > 0 ? Math.floor((total * accrualPercent) / 100) : 0;
 
   return (
     <div className='flex items-center gap-4'>
@@ -33,18 +28,7 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
           ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-brand'}
         `}
       >
-        {isSubmitting ? (
-          <span>{t('processing')}</span>
-        ) : (
-          <>
-            <span>{t('pay')}</span>
-            {earnedBonus > 0 && (
-              <span className='text-xs font-semibold opacity-90 px-2 py-0.5 rounded-full bg-white/20'>
-                +{earnedBonus} {tCart('bonusShort')}
-              </span>
-            )}
-          </>
-        )}
+        {isSubmitting ? t('processing') : t('pay')}
       </button>
     </div>
   );

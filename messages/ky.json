@@ -339,6 +339,8 @@
     "draftCommentLabel": "Эскертүү",
     "draftCommentPlaceholder": "Мисалы: пиязсыз",
     "draftSubtotal": "Арзандатуусуз",
+    "draftSavings": "Арзандатуу",
+    "posOrderEmpty": "Официант буйрутманы кабыл алды — тамактарды күтөбүз",
     "submitDraft": "Буйрутма берүү · {amount} c.",
     "summary": {
       "tickets": "{count, plural, =0 {Чек жок} one {# чек} other {# чек}}",
@@ -354,7 +356,8 @@
       "pendingPayment": "Төлөм күтүлүүдө",
       "inDelivery": "Жеткирүүдө",
       "completed": "Берилди",
-      "cancelled": "Жокко чыгарылды"
+      "cancelled": "Жокко чыгарылды",
+      "viewLink": "Статусту көрүү"
     },
     "promo": {
       "itemBadge": "−{percent}%",

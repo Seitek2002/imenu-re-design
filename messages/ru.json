@@ -339,6 +339,8 @@
     "draftCommentLabel": "Комментарий",
     "draftCommentPlaceholder": "Например: без лука",
     "draftSubtotal": "Без скидки",
+    "draftSavings": "Скидка",
+    "posOrderEmpty": "Официант принял заказ — ждём блюда",
     "submitDraft": "Отправить дозаказ · {amount} с.",
     "summary": {
       "tickets": "{count, plural, =0 {Чеков нет} one {# чек} few {# чека} other {# чеков}}",
@@ -354,7 +356,8 @@
       "pendingPayment": "Ожидает оплаты",
       "inDelivery": "В доставке",
       "completed": "Выдан",
-      "cancelled": "Отменён"
+      "cancelled": "Отменён",
+      "viewLink": "Смотреть статус"
     },
     "promo": {
       "itemBadge": "−{percent}%",
