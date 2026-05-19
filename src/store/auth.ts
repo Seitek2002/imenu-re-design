@@ -20,6 +20,15 @@ interface AuthState {
    * экран логина, хотя пользователь на самом деле залогинен.
    */
   bootstrapped: boolean;
+  /**
+   * true когда refresh упал 401 (cookie истёк/не дошёл), но в useClientStore
+   * остался телефон от прошлой сессии. UI на /profile использует это, чтобы
+   * автоматически предложить OTP с префиллом — без полного re-login flow.
+   *
+   * Сбрасывается при успешном setSession (новая сессия живая) или
+   * acknowledgeRelogin (юзер дёрнул modal закрытие).
+   */
+  softLoggedOut: boolean;
   setSession: (data: {
     accessToken: string;
     expiresIn: number;
@@ -27,6 +36,8 @@ interface AuthState {
   }) => void;
   updateClient: (client: AuthClient) => void;
   setBootstrapped: () => void;
+  setSoftLoggedOut: () => void;
+  acknowledgeRelogin: () => void;
   clear: () => void;
 }
 
@@ -35,14 +46,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   expiresAt: null,
   client: null,
   bootstrapped: false,
+  softLoggedOut: false,
   setSession: ({ accessToken, expiresIn, client }) =>
     set((prev) => ({
       accessToken,
       expiresAt: Date.now() + expiresIn * 1000,
       client: client ?? prev.client,
+      softLoggedOut: false,
     })),
   updateClient: (client) => set({ client }),
   setBootstrapped: () => set({ bootstrapped: true }),
+  setSoftLoggedOut: () => set({ softLoggedOut: true }),
+  acknowledgeRelogin: () => set({ softLoggedOut: false }),
   clear: () =>
     set({
       accessToken: null,

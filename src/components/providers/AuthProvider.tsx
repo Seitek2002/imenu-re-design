@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/store/auth';
+import { useClientStore } from '@/store/client';
 import { AuthApiError, refreshAuth } from '@/lib/api/auth';
 import { fetchMyProfile } from '@/lib/api/me';
 
@@ -22,6 +23,7 @@ export default function AuthProvider({
   const setBootstrapped = useAuthStore((s) => s.setBootstrapped);
   const updateClient = useAuthStore((s) => s.updateClient);
   const clear = useAuthStore((s) => s.clear);
+  const setSoftLoggedOut = useAuthStore((s) => s.setSoftLoggedOut);
   const expiresAt = useAuthStore((s) => s.expiresAt);
   const accessToken = useAuthStore((s) => s.accessToken);
 
@@ -51,7 +53,12 @@ export default function AuthProvider({
         }
       } catch (err) {
         if (err instanceof AuthApiError && err.status === 401) {
-          // нормально для гостей — cookie нет или истёк
+          // 401 — cookie нет или истёк. Если в clientStore остался телефон от
+          // прошлой сессии — это «soft logout»: фронт пометит флаг, чтобы
+          // /profile предложил OTP с префиллом вместо чистого guest UX.
+          if (useClientStore.getState().phone) {
+            setSoftLoggedOut();
+          }
         } else {
           console.error('Auth bootstrap failed:', err);
         }
@@ -59,7 +66,7 @@ export default function AuthProvider({
         setBootstrapped();
       }
     })();
-  }, [setSession, setBootstrapped, updateClient]);
+  }, [setSession, setBootstrapped, updateClient, setSoftLoggedOut]);
 
   // Авто-refresh за 60 сек до истечения access токена.
   useEffect(() => {
@@ -82,11 +89,14 @@ export default function AuthProvider({
         });
       } catch (err) {
         if (err instanceof AuthApiError && err.status === 401) {
+          if (useClientStore.getState().phone) {
+            setSoftLoggedOut();
+          }
           clear();
         }
       }
     }
-  }, [accessToken, expiresAt, setSession, clear]);
+  }, [accessToken, expiresAt, setSession, clear, setSoftLoggedOut]);
 
   return <>{children}</>;
 }

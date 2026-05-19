@@ -50,8 +50,17 @@ export default function ProfilePage() {
   const clearAuth = useAuthStore((s) => s.clear);
   const client = useAuthStore((s) => s.client);
   const hasToken = useAuthStore((s) => !!s.accessToken);
+  const bootstrapped = useAuthStore((s) => s.bootstrapped);
+  const softLoggedOut = useAuthStore((s) => s.softLoggedOut);
+  const acknowledgeRelogin = useAuthStore((s) => s.acknowledgeRelogin);
   const [editOpen, setEditOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+
+  // Soft-logout: refresh упал 401, но телефон в clientStore остался —
+  // модалка открывается автоматически. Закрытие → acknowledgeRelogin
+  // обнулит флаг и derived `autoOpen` станет false.
+  const autoOpenLogin = bootstrapped && softLoggedOut && !!phone && !hasToken;
+  const isLoginModalOpen = loginOpen || autoOpenLogin;
 
   const country = getCountryById(countryId);
   const fullPhone = phone
@@ -232,11 +241,19 @@ export default function ProfilePage() {
       />
 
       <OtpLoginModal
-        open={loginOpen}
+        open={isLoginModalOpen}
         venueSlug={venue}
-        onClose={() => setLoginOpen(false)}
+        initialPhone={phone || undefined}
+        initialCountryId={countryId}
+        onClose={() => {
+          setLoginOpen(false);
+          // Если открылись из-за soft-logout — гасим флаг, чтобы модалка
+          // не вылезала повторно при каждой навигации/refresh пока сессия мертва.
+          if (softLoggedOut) acknowledgeRelogin();
+        }}
         onSuccess={() => {
-          // store.client уже обновлён OtpLoginModal'ом — больше ничего не нужно
+          // store.client уже обновлён OtpLoginModal'ом — больше ничего не нужно.
+          // setSession внутри OtpLoginModal'а сам обнулит softLoggedOut.
         }}
       />
     </div>

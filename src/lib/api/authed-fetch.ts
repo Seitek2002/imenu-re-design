@@ -1,4 +1,5 @@
 import { useAuthStore, getAccessTokenSnapshot } from '@/store/auth';
+import { useClientStore } from '@/store/client';
 import { refreshAuth, AuthApiError } from './auth';
 
 /**
@@ -28,6 +29,9 @@ async function refreshOnce(): Promise<string | null> {
         return result.accessToken;
       } catch (err) {
         if (err instanceof AuthApiError && err.status === 401) {
+          if (useClientStore.getState().phone) {
+            useAuthStore.getState().setSoftLoggedOut();
+          }
           useAuthStore.getState().clear();
         }
         return null;
