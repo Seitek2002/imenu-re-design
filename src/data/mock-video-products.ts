@@ -4,17 +4,9 @@
  * Триггер: `?demo=<slug>` в любом venue-URL.
  */
 
-import type { GroupItem, GroupModification, Product } from '@/types/api';
+import type { GroupItem, GroupModification, Product, ProductDetails } from '@/types/api';
 
-// ---------------------------------------------------------------------------
-// Public interfaces
-// ---------------------------------------------------------------------------
-
-export interface ProductDetails {
-  fullTitle: string;
-  description: string;
-  sections: Array<{ heading: string; body: string }>;
-}
+export type { ProductDetails };
 
 export interface VariantChip {
   label: string;

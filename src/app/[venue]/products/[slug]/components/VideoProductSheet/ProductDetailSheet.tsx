@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
-import type { ProductDetails } from '@/data/mock-video-products';
+import type { ProductDetails } from '@/types/api';
 
 interface Props {
   open: boolean;

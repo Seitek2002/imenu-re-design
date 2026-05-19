@@ -276,6 +276,24 @@ export interface ProductType {
   isBatchticket: boolean;
 }
 
+// ── Видео-витрина ─────────────────────────────────────────────────────────
+
+export interface ProductDetailSection {
+  heading: string;
+  body: string;
+}
+
+export interface ProductDetails {
+  fullTitle: string;
+  description: string;
+  sections: ProductDetailSection[];
+}
+
+export interface IceVersionChip {
+  label: string;        // «Айс версия» или «Горячая версия»
+  photo: string | null;
+}
+
 export interface Product {
   id: number;
   productName: string;
@@ -299,6 +317,24 @@ export interface Product {
 
   isRecommended?: boolean;
   available_for_delivery?: boolean;
+
+  // ── Видео-витрина ──────────────────────────────────────────────────────
+  /** Открывать VideoProductSheet вместо обычного ProductSheet */
+  isVideoProduct?: boolean;
+  /** Короткое видео (~5 сек) — превью в карточке каталога */
+  productVideo?: string | null;
+  /** Длинное видео (~15 сек) — фон full-screen витрины */
+  productVideoLarge?: string | null;
+  /** Постер первого кадра — показывается пока видео грузится */
+  productVideoPoster?: string | null;
+  /** Контент листка «Подробнее» */
+  productDetails?: ProductDetails | null;
+  /** ID товара-альтернативы (Айс/Горячая версия). null — чип не показывается */
+  iceVersionId?: number | null;
+  /** Данные чипа «Айс версия» / «Горячая версия» */
+  iceVersionChip?: IceVersionChip | null;
+  /** Полный объект альтернативного товара — встроен в ответ, второй запрос не нужен */
+  iceVersion?: Product | null;
 }
 
 // --- PROMOTIONS (v2) ---
