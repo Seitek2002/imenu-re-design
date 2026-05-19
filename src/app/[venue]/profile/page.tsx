@@ -23,16 +23,14 @@ import { useClientStore } from '@/store/client';
 import { useAuthStore } from '@/store/auth';
 import { useClientBonus } from '@/lib/api/queries';
 import { useUpdateMe } from '@/lib/api/me';
+import { useMyAddresses, type MyAddress } from '@/lib/api/addresses';
 import { logoutAuth } from '@/lib/api/auth';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import { formatPhoneDisplay } from '@/lib/helpers/phone';
 import EditProfileModal from '@/components/modals/EditProfileModal';
+import AddressEditModal from '@/components/modals/AddressEditModal';
 import OtpLoginModal from '@/components/modals/OtpLoginModal';
 
-const ADDRESSES = [
-  { id: 'home', label: 'Дом', address: 'ул. Киевская 95, кв. 12' },
-  { id: 'work', label: 'Работа', address: 'пр. Чуй 219' },
-];
 const PAYMENTS = [
   { id: 'visa', brand: 'VISA', last: '4242' },
   { id: 'mc', brand: 'MC', last: '8810' },
@@ -173,28 +171,10 @@ export default function ProfilePage() {
           onLoginRequired={() => setLoginOpen(true)}
         />
 
-        <SoonSection title='Мои адреса' count={ADDRESSES.length}>
-          <div className='mt-3 grid grid-cols-3 gap-2'>
-            {ADDRESSES.map((a) => (
-              <div
-                key={a.id}
-                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2'
-              >
-                <div className='flex items-center gap-1.5'>
-                  <MapPin size={14} className='text-brand' />
-                  <span className='text-[12px] font-semibold'>{a.label}</span>
-                </div>
-                <div className='text-[11px] text-[#9E9E9E] leading-snug line-clamp-2'>
-                  {a.address}
-                </div>
-              </div>
-            ))}
-            <button className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'>
-              <Plus size={16} />
-              <span className='text-[11px]'>Добавить</span>
-            </button>
-          </div>
-        </SoonSection>
+        <AddressesSection
+          authed={hasToken}
+          onLoginRequired={() => setLoginOpen(true)}
+        />
 
         <SoonSection title='Способы оплаты' count={PAYMENTS.length}>
           <div className='mt-3 grid grid-cols-3 gap-2'>
@@ -258,6 +238,99 @@ export default function ProfilePage() {
         }}
       />
     </div>
+  );
+}
+
+function AddressesSection({
+  authed,
+  onLoginRequired,
+}: {
+  authed: boolean;
+  onLoginRequired: () => void;
+}) {
+  const { data, isLoading } = useMyAddresses();
+  const addresses = data ?? [];
+  const [editing, setEditing] = useState<MyAddress | null | undefined>(
+    undefined,
+  );
+  const isModalOpen = editing !== undefined;
+
+  const open = (addr: MyAddress | null) => {
+    if (!authed) {
+      onLoginRequired();
+      return;
+    }
+    if (addr === null && addresses.length >= 10) return;
+    setEditing(addr);
+  };
+
+  return (
+    <section className='bg-white rounded-2xl p-4 relative'>
+      <div className='flex items-center justify-between'>
+        <div className='text-[13px] font-semibold text-[#21201F]'>
+          Мои адреса
+          {addresses.length > 0 && (
+            <span className='text-[#9E9E9E] font-normal ml-1'>
+              ({addresses.length})
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className='mt-3 grid grid-cols-3 gap-2'>
+        {authed &&
+          addresses.map((a) => (
+            <button
+              key={a.id}
+              type='button'
+              onClick={() => open(a)}
+              className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2 text-left active:scale-[0.98] transition-transform'
+            >
+              <div className='flex items-center gap-1.5'>
+                <MapPin size={14} className='text-brand shrink-0' />
+                <span className='text-[12px] font-semibold truncate'>
+                  {a.label}
+                </span>
+                {a.isDefault && (
+                  <span className='ml-auto text-[9px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-1.5 py-0.5 rounded-full'>
+                    осн
+                  </span>
+                )}
+              </div>
+              <div className='text-[11px] text-[#9E9E9E] leading-snug line-clamp-2'>
+                {a.address}
+              </div>
+            </button>
+          ))}
+
+        {(!authed || addresses.length < 10) && (
+          <button
+            type='button'
+            onClick={() => open(null)}
+            className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'
+          >
+            <Plus size={16} />
+            <span className='text-[11px]'>Добавить</span>
+          </button>
+        )}
+      </div>
+
+      {authed && isLoading && addresses.length === 0 && (
+        <div className='mt-2 text-[11px] text-[#9E9E9E]'>Загружаем…</div>
+      )}
+
+      {!authed && (
+        <div className='mt-2 text-[11px] text-[#9E9E9E]'>
+          Войдите по SMS, чтобы сохранять адреса.
+        </div>
+      )}
+
+      <AddressEditModal
+        isOpen={isModalOpen}
+        onClose={() => setEditing(undefined)}
+        address={editing ?? null}
+      />
+    </section>
   );
 }
 
