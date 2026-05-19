@@ -1,8 +1,26 @@
+/**
+ * Выбранный group-модификатор в исторической позиции заказа.
+ * Контракт Kuma 2026-05-20: OrderProductSerializer.group_modifications
+ * (вложено в OrderListSerializer). Используется для отрисовки «Кола · 1л»
+ * в истории и для корректного rebuild basket'а в Repeat Order.
+ */
+export interface OrderProductGroupModSelection {
+  /** GroupItem.id */
+  id: number;
+  name: string;
+  count: number;
+  /** decimal-string, доплата за единицу варианта */
+  price: string;
+}
+
 export interface OrderProduct {
   id: number;
   price: string;
   count: number;
   modificator: number | null;
+  /** Имя плоского модификатора (если выбран). Может отсутствовать у старых заказов. */
+  modificatorName?: string | null;
+  groupModifications?: OrderProductGroupModSelection[];
   product: {
     id: number;
     productName: string;
@@ -32,6 +50,11 @@ export interface OrderV2 {
     id: number;
     tableNum: string;
   };
+  /** Филиал заказа (Kuma 2026-05-20 §G.2). Полезно когда у клиента заказы из разных мест. */
+  venue?: {
+    slug: string;
+    name: string;
+  };
   address?: string | null;
   deliveryLatitude?: string | null;
   deliveryLongitude?: string | null;
@@ -44,7 +67,29 @@ export interface OrderV2 {
   created_at?: string;
   paymentExpiresAt?: string | null;
   paymentUrl?: string | null;
+  /**
+   * Разложение суммы (Kuma 2026-05-20 §1.2). Все decimal-строки, не округлять.
+   * `bonus` — сколько бонусов списано с клиента (НЕ путать с `bonusEarned`).
+   *
+   * Бэк зовёт поля snake_case (items_total и т.п.) — фронт читает оба варианта
+   * через accessor на случай миграции на camelCase в будущем.
+   */
+  itemsTotal?: string;
+  items_total?: string;
+  containerTotal?: string;
+  container_total?: string;
+  deliveryPrice?: string;
+  delivery_price?: string;
+  bonus?: number;
+  bonusEarned?: number;
+  bonus_earned?: number;
 }
+
+/** Аксессоры для смешанной snake/camel сериализации /v2/orders/. */
+export const orderItemsTotal = (o: OrderV2) => o.itemsTotal ?? o.items_total;
+export const orderContainerTotal = (o: OrderV2) => o.containerTotal ?? o.container_total;
+export const orderDeliveryPrice = (o: OrderV2) => o.deliveryPrice ?? o.delivery_price;
+export const orderBonusEarned = (o: OrderV2) => o.bonusEarned ?? o.bonus_earned;
 
 export interface OrdersResponse {
   count: number;

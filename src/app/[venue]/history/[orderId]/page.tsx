@@ -5,7 +5,13 @@ import { notFound } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { API_V2_URL } from '@/lib/config';
 import type { Locale } from '@/lib/locale';
-import type { OrderV2 } from '@/lib/order';
+import {
+  orderItemsTotal,
+  orderContainerTotal,
+  orderDeliveryPrice,
+  orderBonusEarned,
+  type OrderV2,
+} from '@/lib/order';
 import { ServiceMode } from '@/types/api';
 import RepeatOrderButton from './RepeatOrderButton';
 import PayNowButton from './PayNowButton';
@@ -131,6 +137,18 @@ export default async function OrderDetailPage({ params }: Props) {
                     <div className='text-[13px] font-medium text-[#21201F] truncate'>
                       {it.product.productName}
                     </div>
+                    {(it.modificatorName || (it.groupModifications?.length ?? 0) > 0) && (
+                      <div className='text-[12px] text-[#9E9E9E] mt-0.5 truncate'>
+                        {[
+                          it.modificatorName,
+                          ...(it.groupModifications ?? []).map((g) =>
+                            g.count > 1 ? `${g.name} ×${g.count}` : g.name,
+                          ),
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </div>
+                    )}
                     <div className='text-[12px] text-[#9E9E9E] mt-0.5'>
                       {fmtMoney(Number(it.price), locale)} {currency}
                     </div>
@@ -147,14 +165,7 @@ export default async function OrderDetailPage({ params }: Props) {
           </ul>
         </section>
 
-        <section className='bg-white rounded-2xl px-4 py-4'>
-          <div className='flex items-center justify-between'>
-            <span className='text-[14px] text-[#21201F]'>{t('total')}</span>
-            <span className='text-[16px] font-bold text-[#21201F]'>
-              {fmtMoney(totalNum, locale)} {currency}
-            </span>
-          </div>
-        </section>
+        <BreakdownBlock order={order} locale={locale} currency={currency} totalNum={totalNum} />
 
         <DetailsBlock order={order} />
 
@@ -168,6 +179,90 @@ export default async function OrderDetailPage({ params }: Props) {
         <RepeatOrderButton order={order} />
       </div>
     </div>
+  );
+}
+
+async function BreakdownBlock({
+  order,
+  locale,
+  currency,
+  totalNum,
+}: {
+  order: OrderV2;
+  locale: Locale;
+  currency: string;
+  totalNum: number;
+}) {
+  const t = await getTranslations('OrderDetail');
+  const itemsTotal = orderItemsTotal(order);
+  const containerTotal = orderContainerTotal(order);
+  const deliveryPrice = orderDeliveryPrice(order);
+  const bonusEarned = orderBonusEarned(order);
+  const bonus = order.bonus;
+
+  const rows: { label: string; value: string; tone?: 'free' | 'minus' | 'plus' }[] = [];
+  if (itemsTotal && Number(itemsTotal) > 0) {
+    rows.push({
+      label: t('breakdown.itemsTotal'),
+      value: `${fmtMoney(Number(itemsTotal), locale)} ${currency}`,
+    });
+  }
+  if (containerTotal && Number(containerTotal) > 0) {
+    rows.push({
+      label: t('breakdown.containerTotal'),
+      value: `${fmtMoney(Number(containerTotal), locale)} ${currency}`,
+    });
+  }
+  if (deliveryPrice != null) {
+    const n = Number(deliveryPrice);
+    rows.push({
+      label: t('breakdown.deliveryPrice'),
+      value: n > 0 ? `${fmtMoney(n, locale)} ${currency}` : t('breakdown.free'),
+      tone: n > 0 ? undefined : 'free',
+    });
+  }
+  if (bonus != null && bonus > 0) {
+    rows.push({
+      label: t('breakdown.bonus'),
+      value: `−${fmtMoney(bonus, locale)}`,
+      tone: 'minus',
+    });
+  }
+
+  return (
+    <section className='bg-white rounded-2xl px-4 py-4 flex flex-col gap-2'>
+      {rows.map((r) => (
+        <div key={r.label} className='flex items-center justify-between text-[13px]'>
+          <span className='text-[#9E9E9E]'>{r.label}</span>
+          <span
+            className={
+              r.tone === 'minus'
+                ? 'text-[#E0533A] font-medium'
+                : r.tone === 'free'
+                  ? 'text-[#22A05A] font-medium'
+                  : 'text-[#21201F] font-medium'
+            }
+          >
+            {r.value}
+          </span>
+        </div>
+      ))}
+      {rows.length > 0 && <div className='h-px bg-[#EDEAE7] my-1' />}
+      <div className='flex items-center justify-between'>
+        <span className='text-[14px] text-[#21201F]'>{t('total')}</span>
+        <span className='text-[16px] font-bold text-[#21201F]'>
+          {fmtMoney(totalNum, locale)} {currency}
+        </span>
+      </div>
+      {bonusEarned != null && bonusEarned > 0 && (
+        <div className='flex items-center justify-between text-[12px]'>
+          <span className='text-[#9E9E9E]'>{t('breakdown.bonusEarned')}</span>
+          <span className='text-[#22A05A] font-medium'>
+            +{fmtMoney(bonusEarned, locale)}
+          </span>
+        </div>
+      )}
+    </section>
   );
 }
 

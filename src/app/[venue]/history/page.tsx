@@ -276,6 +276,11 @@ export default function HistoryPage() {
                           {statusLabel}
                         </span>
                       )}
+                      {o.venue && o.venue.slug !== venue && (
+                        <span className='h-[26px] px-3 rounded-full text-[11px] font-medium inline-flex items-center bg-[#F4F1EE] text-[#6B6B6B]'>
+                          {o.venue.name}
+                        </span>
+                      )}
                       <span className='flex items-center gap-1 text-[13px] text-[#21201F]'>
                         <ShoppingBasket size={16} strokeWidth={2} className='text-[#9E9E9E]' />
                         {itemsCount(o)}
