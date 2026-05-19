@@ -40,14 +40,21 @@ type Stage = 'phone' | 'code';
 
 const OTP_LENGTH = 4;
 
-export default function OtpLoginModal({
-  open,
+export default function OtpLoginModal(props: Props) {
+  useEscapeKey(props.open, props.onClose);
+  if (!props.open) return null;
+  // Inner-форма монтируется на каждое открытие — сброс state автоматический,
+  // без useEffect(setState) которое триггерит react-hooks/set-state-in-effect.
+  return <Form {...props} />;
+}
+
+function Form({
   venueSlug,
   initialPhone,
   initialCountryId,
   onClose,
   onSuccess,
-}: Props) {
+}: Omit<Props, 'open'>) {
   const t = useTranslations('OtpLogin');
   const setSession = useAuthStore((s) => s.setSession);
 
@@ -110,30 +117,11 @@ export default function OtpLoginModal({
 
   const codeRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  useEscapeKey(open, onClose);
-
-  // Сброс при закрытии — иначе следующий вход покажется с заполненным кодом.
-  useEffect(() => {
-    if (!open) {
-      setStage('phone');
-      setRequesting(false);
-      setRequestError(null);
-      setOtpRequest(null);
-      setCodeDigits(Array(OTP_LENGTH).fill(''));
-      setVerifying(false);
-      setOtpError(null);
-      setAttemptsLeft(null);
-      setResendIn(0);
-    }
-  }, [open]);
-
   useEffect(() => {
     if (resendIn <= 0) return;
-    const t = window.setTimeout(() => setResendIn((v) => v - 1), 1000);
-    return () => window.clearTimeout(t);
+    const tid = window.setTimeout(() => setResendIn((v) => v - 1), 1000);
+    return () => window.clearTimeout(tid);
   }, [resendIn]);
-
-  if (!open) return null;
 
   const country = getCountryById(countryId);
   const isPhoneValid = phoneDigits.length === country.length;

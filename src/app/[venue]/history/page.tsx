@@ -228,11 +228,13 @@ export default function HistoryPage() {
           const subtitle = subtitleFor(o);
           const statusLabel = o.statusText || STATUS_LABEL[o.status];
           const statusTone = STATUS_TONE[o.status];
+          // Маршрутизация: pending → /order-status (там есть оплата и countdown).
+          // Не проверяем здесь paymentExpiresAt vs Date.now() — Date.now() в
+          // render нарушает react-hooks/purity, и сама /order-status корректно
+          // показывает expired-state когда время вышло.
           const isPending =
             o.status === OrderStatus.PendingPayment ||
-            (o.paymentStatus === 'pending' &&
-              !!o.paymentExpiresAt &&
-              new Date(o.paymentExpiresAt).getTime() > Date.now());
+            o.paymentStatus === 'pending';
           const href = isPending
             ? `/${venue}/order-status/${o.id}`
             : `/${venue}/history/${o.id}`;
@@ -320,7 +322,8 @@ function ResumePaymentRow({ expiresAt }: { expiresAt?: string | null }) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     if (Number.isNaN(target)) return;
-    setNow(Date.now());
+    // первый тик через секунду — countdown стартует чуть позже, зато не
+    // дёргаем setState синхронно в effect (react-hooks/set-state-in-effect).
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [target]);

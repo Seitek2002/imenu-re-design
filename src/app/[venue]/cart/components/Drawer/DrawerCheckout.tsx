@@ -67,7 +67,7 @@ const DrawerCheckout: FC<IProps> = ({
   const tErr = useTranslations('Cart.errors');
   const [sheetAnim, setSheetAnim] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const { dragY, handleProps: dragHandleProps, backdropOpacity, sheetStyle } =
+  const { handleProps: dragHandleProps, backdropOpacity, sheetStyle } =
     useSwipeToDismiss(closeSheet);
 
   useEffect(() => {
@@ -114,7 +114,6 @@ const DrawerCheckout: FC<IProps> = ({
     setDeliveryCoords,
     needUtensils,
     comment,
-    setComment,
     deliveryComment,
     setDeliveryComment,
     pickupComment,
