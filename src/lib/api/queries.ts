@@ -13,6 +13,7 @@ import { API_URL, API_V2_URL } from '../config';
 import { OrderStatus, Product, Promotion } from '@/types/api';
 import { normalizePhoneForApi } from '../helpers/phone';
 import type { Locale } from '../locale';
+import { getAccessTokenSnapshot } from '@/store/auth';
 
 const API_BASE = API_V2_URL;
 
@@ -20,6 +21,21 @@ function buildHeaders(locale: Locale): HeadersInit {
   return {
     'Content-Type': 'application/json',
     'Accept-Language': locale,
+  };
+}
+
+/**
+ * То же, что buildHeaders, но добавляет `Authorization: Bearer ...` если
+ * клиент авторизован через OTP. Используется для ручек, которые поддерживают
+ * SMS-bypass (POST /orders/, POST /pos-orders/{id}/payment-link/) и для
+ * приватных эндпоинтов клиента (PATCH /clients/{phone}/ и т.п.).
+ */
+function buildAuthedHeaders(locale: Locale): HeadersInit {
+  const token = getAccessTokenSnapshot();
+  return {
+    'Content-Type': 'application/json',
+    'Accept-Language': locale,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
@@ -171,7 +187,7 @@ async function patchClient(
   const normalized = normalizePhoneForApi(phone);
   const res = await fetch(`${API_BASE}/clients/${normalized}/`, {
     method: 'PATCH',
-    headers: buildHeaders(locale),
+    headers: buildAuthedHeaders(locale),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -232,9 +248,10 @@ async function createOrderApi({
     venueSlug,
   };
 
+  // SMS-bypass (Kuma 2026-05-19): с валидным Bearer бэк не требует phone_code.
   const res = await fetch(`${API_BASE}/orders/`, {
     method: 'POST',
-    headers: buildHeaders(locale),
+    headers: buildAuthedHeaders(locale),
     body: JSON.stringify(payload),
   });
 

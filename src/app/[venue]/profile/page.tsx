@@ -19,10 +19,13 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
+import { useAuthStore } from '@/store/auth';
 import { useClient, useClientBonus } from '@/lib/api/queries';
+import { logoutAuth } from '@/lib/api/auth';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import { formatPhoneDisplay } from '@/lib/helpers/phone';
 import EditProfileModal from '@/components/modals/EditProfileModal';
+import OtpLoginModal from '@/components/modals/OtpLoginModal';
 
 const TASTES = ['Без лука', 'Без кинзы', 'Без острого', 'Без чеснока'];
 const ADDRESSES = [
@@ -40,7 +43,9 @@ export default function ProfilePage() {
   const phone = useClientStore((s) => s.phone);
   const countryId = useClientStore((s) => s.countryId);
   const clear = useClientStore((s) => s.clear);
+  const clearAuth = useAuthStore((s) => s.clear);
   const [editOpen, setEditOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   const country = getCountryById(countryId);
   const fullPhone = phone
@@ -53,13 +58,40 @@ export default function ProfilePage() {
     venueSlug: venue,
   });
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutAuth();
+    clearAuth();
     clear();
     router.push(`/${venue}`);
   };
 
   if (!phone) {
-    return <EmptyState venueSlug={venue} />;
+    return (
+      <>
+        <EmptyState
+          venueSlug={venue}
+          onLoginClick={() => setLoginOpen(true)}
+        />
+        <OtpLoginModal
+          open={loginOpen}
+          venueSlug={venue}
+          onClose={() => setLoginOpen(false)}
+          onSuccess={(result) => {
+            // OTP-флоу заодно подтягивает phone — сохраняем его в гостевой стор,
+            // чтобы существующие хуки (useClient/useClientBonus/useOrdersV2) работали.
+            const digitsOnly = result.client.phone.replace(/\D/g, '');
+            // нормализованный формат бэка: "996700001001" → берём локальные цифры
+            const local = digitsOnly.startsWith('996')
+              ? digitsOnly.slice(3)
+              : digitsOnly;
+            useClientStore.getState().saveClient({
+              phone: local,
+              countryId: 'KG',
+            });
+          }}
+        />
+      </>
+    );
   }
 
   const displayName =
@@ -223,7 +255,13 @@ export default function ProfilePage() {
   );
 }
 
-function EmptyState({ venueSlug }: { venueSlug: string }) {
+function EmptyState({
+  venueSlug,
+  onLoginClick,
+}: {
+  venueSlug: string;
+  onLoginClick: () => void;
+}) {
   return (
     <div className='min-h-svh pb-24 flex flex-col'>
       <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
@@ -243,11 +281,17 @@ function EmptyState({ venueSlug }: { venueSlug: string }) {
         </div>
         <h2 className='text-[18px] font-bold text-[#21201F]'>Войдите в аккаунт</h2>
         <p className='mt-2 text-[13px] text-[#9E9E9E] max-w-xs'>
-          Оформите первый заказ — мы запомним ваш номер, чтобы показать историю, баллы и любимые блюда.
+          Подтвердите номер телефона по SMS — увидите историю заказов, баллы и сможете быстрее оформлять доставку.
         </p>
+        <button
+          onClick={onLoginClick}
+          className='mt-6 inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium active:scale-[0.99] transition-transform'
+        >
+          Войти по SMS
+        </button>
         <Link
           href={`/${venueSlug}`}
-          className='mt-6 inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium active:scale-[0.99] transition-transform'
+          className='mt-3 text-[13px] text-[#9E9E9E] underline-offset-2 hover:underline'
         >
           Перейти в меню
         </Link>
