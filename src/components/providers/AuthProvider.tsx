@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { AuthApiError, refreshAuth } from '@/lib/api/auth';
+import { fetchMyProfile } from '@/lib/api/me';
 
 /**
  * При маунте тихо дёргает /auth/refresh/ — если HttpOnly cookie
@@ -19,6 +20,7 @@ export default function AuthProvider({
 }) {
   const setSession = useAuthStore((s) => s.setSession);
   const setBootstrapped = useAuthStore((s) => s.setBootstrapped);
+  const updateClient = useAuthStore((s) => s.updateClient);
   const clear = useAuthStore((s) => s.clear);
   const expiresAt = useAuthStore((s) => s.expiresAt);
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -37,8 +39,16 @@ export default function AuthProvider({
           accessToken: result.accessToken,
           expiresIn: result.expiresIn,
         });
-        // client object не отдаётся в /refresh/ — подтянется при первом
-        // запросе /auth/me/ или /clients/me/, см. AuthProvider-потребителей.
+        // /refresh/ не отдаёт client object — подтягиваем его сразу,
+        // чтобы потребители стора (профиль, чекаут) увидели данные сразу.
+        try {
+          const client = await fetchMyProfile();
+          updateClient(client);
+        } catch (err) {
+          if (!(err instanceof AuthApiError && err.status === 401)) {
+            console.error('fetchMyProfile after refresh failed:', err);
+          }
+        }
       } catch (err) {
         if (err instanceof AuthApiError && err.status === 401) {
           // нормально для гостей — cookie нет или истёк
@@ -49,7 +59,7 @@ export default function AuthProvider({
         setBootstrapped();
       }
     })();
-  }, [setSession, setBootstrapped]);
+  }, [setSession, setBootstrapped, updateClient]);
 
   // Авто-refresh за 60 сек до истечения access токена.
   useEffect(() => {

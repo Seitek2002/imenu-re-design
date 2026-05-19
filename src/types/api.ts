@@ -110,16 +110,6 @@ export interface Venue {
   bonusAccrualPercent?: number;
 }
 
-// --- CLIENT ---
-
-export interface Client {
-  id: number;
-  firstname?: string | null;
-  lastname?: string | null;
-  patronymic?: string | null;
-  email?: string | null;
-}
-
 // --- ORDERS ---
 
 /** Продукт внутри заказа (для отображения) */

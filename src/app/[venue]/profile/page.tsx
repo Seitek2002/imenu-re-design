@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -17,17 +17,18 @@ import {
   CreditCard,
   LogOut,
   User as UserIcon,
+  Loader2,
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
 import { useAuthStore } from '@/store/auth';
-import { useClient, useClientBonus } from '@/lib/api/queries';
+import { useClientBonus } from '@/lib/api/queries';
+import { useUpdateMe } from '@/lib/api/me';
 import { logoutAuth } from '@/lib/api/auth';
 import { getCountryById } from '@/lib/helpers/countryCodes';
 import { formatPhoneDisplay } from '@/lib/helpers/phone';
 import EditProfileModal from '@/components/modals/EditProfileModal';
 import OtpLoginModal from '@/components/modals/OtpLoginModal';
 
-const TASTES = ['Без лука', 'Без кинзы', 'Без острого', 'Без чеснока'];
 const ADDRESSES = [
   { id: 'home', label: 'Дом', address: 'ул. Киевская 95, кв. 12' },
   { id: 'work', label: 'Работа', address: 'пр. Чуй 219' },
@@ -37,6 +38,9 @@ const PAYMENTS = [
   { id: 'mc', brand: 'MC', last: '8810' },
 ];
 
+const MAX_TASTES = 20;
+const MAX_TASTE_LEN = 32;
+
 export default function ProfilePage() {
   const { venue } = useParams<{ venue: string }>();
   const router = useRouter();
@@ -44,6 +48,8 @@ export default function ProfilePage() {
   const countryId = useClientStore((s) => s.countryId);
   const clear = useClientStore((s) => s.clear);
   const clearAuth = useAuthStore((s) => s.clear);
+  const client = useAuthStore((s) => s.client);
+  const hasToken = useAuthStore((s) => !!s.accessToken);
   const [editOpen, setEditOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
@@ -52,7 +58,6 @@ export default function ProfilePage() {
     ? formatPhoneDisplay(phone, country.dial, countryId)
     : '';
 
-  const { data: client, isLoading: clientLoading } = useClient(phone);
   const { data: bonus, isLoading: bonusLoading } = useClientBonus({
     phone,
     venueSlug: venue,
@@ -63,6 +68,14 @@ export default function ProfilePage() {
     clearAuth();
     clear();
     router.push(`/${venue}`);
+  };
+
+  const requireAuth = () => {
+    if (!hasToken) {
+      setLoginOpen(true);
+      return false;
+    }
+    return true;
   };
 
   if (!phone) {
@@ -77,10 +90,7 @@ export default function ProfilePage() {
           venueSlug={venue}
           onClose={() => setLoginOpen(false)}
           onSuccess={(result) => {
-            // OTP-флоу заодно подтягивает phone — сохраняем его в гостевой стор,
-            // чтобы существующие хуки (useClient/useClientBonus/useOrdersV2) работали.
             const digitsOnly = result.client.phone.replace(/\D/g, '');
-            // нормализованный формат бэка: "996700001001" → берём локальные цифры
             const local = digitsOnly.startsWith('996')
               ? digitsOnly.slice(3)
               : digitsOnly;
@@ -110,7 +120,7 @@ export default function ProfilePage() {
         </Link>
         <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>Аккаунт</h1>
         <button
-          onClick={() => setEditOpen(true)}
+          onClick={() => requireAuth() && setEditOpen(true)}
           className='ml-auto w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
           aria-label='Редактировать'
         >
@@ -122,13 +132,13 @@ export default function ProfilePage() {
         <section className='grid grid-cols-[1.45fr_1fr] gap-3'>
           <button
             type='button'
-            onClick={() => setEditOpen(true)}
+            onClick={() => requireAuth() && setEditOpen(true)}
             className='bg-white rounded-2xl p-4 text-left active:scale-[0.99] transition-transform'
           >
             <div className='text-[13px] text-[#9E9E9E]'>Имя</div>
             <div className='mt-1 flex items-center justify-between'>
               <span className='text-[15px] font-bold text-[#21201F] truncate'>
-                {clientLoading ? '…' : displayName}
+                {displayName}
               </span>
               <Pencil size={14} className='text-[#9E9E9E] shrink-0' />
             </div>
@@ -157,23 +167,11 @@ export default function ProfilePage() {
           </Link>
         </section>
 
-        <SoonSection title='Вкусовые предпочтения' subtitle='Учтём при формировании заказа'>
-          <div className='mt-3 flex flex-wrap gap-2'>
-            {TASTES.map((t) => (
-              <span
-                key={t}
-                className='inline-flex items-center gap-1.5 h-[30px] px-3 rounded-full bg-[#F4F1EE] text-[12px] text-[#21201F]'
-              >
-                {t}
-                <X size={12} className='text-[#9E9E9E]' />
-              </span>
-            ))}
-            <button className='inline-flex items-center gap-1.5 h-[30px] px-3 rounded-full border border-dashed border-[#D7D2CC] text-[12px] text-[#9E9E9E]'>
-              <Plus size={12} />
-              Добавить
-            </button>
-          </div>
-        </SoonSection>
+        <TastesSection
+          tastes={client?.tastes ?? []}
+          authed={hasToken}
+          onLoginRequired={() => setLoginOpen(true)}
+        />
 
         <SoonSection title='Мои адреса' count={ADDRESSES.length}>
           <div className='mt-3 grid grid-cols-3 gap-2'>
@@ -248,10 +246,157 @@ export default function ProfilePage() {
       <EditProfileModal
         isOpen={editOpen}
         onClose={() => setEditOpen(false)}
-        phone={phone}
         client={client}
       />
+
+      <OtpLoginModal
+        open={loginOpen}
+        venueSlug={venue}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={() => {
+          // store.client уже обновлён OtpLoginModal'ом — больше ничего не нужно
+        }}
+      />
     </div>
+  );
+}
+
+function TastesSection({
+  tastes,
+  authed,
+  onLoginRequired,
+}: {
+  tastes: string[];
+  authed: boolean;
+  onLoginRequired: () => void;
+}) {
+  const update = useUpdateMe();
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const canAddMore = tastes.length < MAX_TASTES;
+
+  const startAdd = () => {
+    if (!authed) {
+      onLoginRequired();
+      return;
+    }
+    if (!canAddMore) return;
+    setDraft('');
+    setAdding(true);
+    queueMicrotask(() => inputRef.current?.focus());
+  };
+
+  const commitAdd = async () => {
+    const value = draft.trim().slice(0, MAX_TASTE_LEN);
+    if (!value) {
+      setAdding(false);
+      return;
+    }
+    if (tastes.includes(value)) {
+      setAdding(false);
+      setDraft('');
+      return;
+    }
+    try {
+      await update.mutateAsync({ tastes: [...tastes, value] });
+    } catch {
+      // ошибка не критична — оставим инпут открытым
+      return;
+    }
+    setAdding(false);
+    setDraft('');
+  };
+
+  const remove = async (t: string) => {
+    if (!authed) {
+      onLoginRequired();
+      return;
+    }
+    try {
+      await update.mutateAsync({ tastes: tastes.filter((x) => x !== t) });
+    } catch {
+      // silent — пользователь увидит, что чип не пропал
+    }
+  };
+
+  return (
+    <section className='bg-white rounded-2xl p-4 relative'>
+      <div>
+        <div className='text-[13px] font-semibold text-[#21201F]'>
+          Вкусовые предпочтения
+        </div>
+        <div className='mt-1 text-[12px] text-[#9E9E9E]'>
+          Учтём при формировании заказа
+        </div>
+      </div>
+
+      <div className='mt-3 flex flex-wrap gap-2 items-center'>
+        {tastes.map((t) => (
+          <span
+            key={t}
+            className='inline-flex items-center gap-1.5 h-[30px] pl-3 pr-1.5 rounded-full bg-[#F4F1EE] text-[12px] text-[#21201F]'
+          >
+            {t}
+            <button
+              type='button'
+              onClick={() => remove(t)}
+              disabled={update.isPending}
+              className='w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-[#EDEAE7] disabled:opacity-50'
+              aria-label={`Удалить ${t}`}
+            >
+              <X size={12} className='text-[#9E9E9E]' />
+            </button>
+          </span>
+        ))}
+
+        {adding ? (
+          <span className='inline-flex items-center h-[30px] pl-3 pr-1 rounded-full bg-[#F4F1EE]'>
+            <input
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.slice(0, MAX_TASTE_LEN))}
+              onBlur={commitAdd}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void commitAdd();
+                } else if (e.key === 'Escape') {
+                  setAdding(false);
+                  setDraft('');
+                }
+              }}
+              placeholder='Без лука'
+              maxLength={MAX_TASTE_LEN}
+              className='bg-transparent outline-none text-[12px] text-[#21201F] w-24'
+            />
+            {update.isPending && (
+              <Loader2 size={12} className='animate-spin text-[#9E9E9E] mr-1.5' />
+            )}
+          </span>
+        ) : (
+          canAddMore && (
+            <button
+              type='button'
+              onClick={startAdd}
+              className='inline-flex items-center gap-1.5 h-[30px] px-3 rounded-full border border-dashed border-[#D7D2CC] text-[12px] text-[#9E9E9E]'
+            >
+              <Plus size={12} />
+              Добавить
+            </button>
+          )
+        )}
+      </div>
+
+      {tastes.length === 0 && !adding && (
+        <div className='mt-2 text-[11px] text-[#9E9E9E]'>
+          {authed
+            ? 'Пока пусто — добавьте, что вам не подходит.'
+            : 'Войдите по SMS, чтобы сохранить предпочтения.'}
+        </div>
+      )}
+    </section>
   );
 }
 
