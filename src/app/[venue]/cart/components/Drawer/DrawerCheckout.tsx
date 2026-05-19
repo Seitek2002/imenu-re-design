@@ -23,7 +23,9 @@ import { parseApiError } from '@/lib/apiErrors';
 import { useClientStore } from '@/store/client';
 import { savePendingPayment } from '@/lib/payment-link-store';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
-import DeliveryInputs from '../DeliveryInputs';
+import DeliveryInputs, { type SaveAddressIntent } from '../DeliveryInputs';
+import { createMyAddress } from '@/lib/api/addresses';
+import { useAuthStore } from '@/store/auth';
 import CheckoutForm from '../CheckoutForm';
 import PaymentMethodRow from './PaymentMethodRow';
 import PaymentModal from './PaymentModal';
@@ -65,7 +67,7 @@ const DrawerCheckout: FC<IProps> = ({
   const tErr = useTranslations('Cart.errors');
   const [sheetAnim, setSheetAnim] = useState(false);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const { dragY, handleProps: dragHandleProps, backdropOpacity, sheetStyle } =
+  const { handleProps: dragHandleProps, backdropOpacity, sheetStyle } =
     useSwipeToDismiss(closeSheet);
 
   useEffect(() => {
@@ -112,7 +114,6 @@ const DrawerCheckout: FC<IProps> = ({
     setDeliveryCoords,
     needUtensils,
     comment,
-    setComment,
     deliveryComment,
     setDeliveryComment,
     pickupComment,
@@ -132,6 +133,9 @@ const DrawerCheckout: FC<IProps> = ({
       ? { lat: storedLat, lng: storedLng }
       : null,
   );
+  const [saveAddressIntent, setSaveAddressIntent] = useState<SaveAddressIntent | null>(null);
+  const [pickedAddressId, setPickedAddressId] = useState<number | null>(null);
+  const hasToken = useAuthStore((s) => !!s.accessToken);
 
   // Достаем нужные ID для бекенда из стора
   const tableNumber = useVenueStore((state) => state.tableNumber);
@@ -269,6 +273,9 @@ const DrawerCheckout: FC<IProps> = ({
               deliveryLongitude: coords.lng.toFixed(6),
             }
           : {}),
+        ...(orderType === 'delivery' && pickedAddressId !== null
+          ? { clientAddressId: pickedAddressId }
+          : {}),
         comment: finalComment,
         needsCutlery: needUtensils,
         spot: spotId || venueData?.spots?.[0]?.id,
@@ -323,6 +330,14 @@ const DrawerCheckout: FC<IProps> = ({
 
       saveClient({ phone, countryId });
 
+      // Сохраняем адрес в /clients/me/addresses/ — fire-and-forget,
+      // ошибка не должна ломать редирект на оплату.
+      if (hasToken && saveAddressIntent && orderType === 'delivery') {
+        createMyAddress(saveAddressIntent)
+          .then(() => queryClient.invalidateQueries({ queryKey: ['addresses', 'me'] }))
+          .catch(() => {});
+      }
+
       if (response.paymentUrl) {
         savePendingPayment({
           orderId: response.id,
@@ -367,6 +382,12 @@ const DrawerCheckout: FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: ['bonus'] });
 
       saveClient({ phone, countryId });
+
+      if (hasToken && saveAddressIntent && orderType === 'delivery') {
+        createMyAddress(saveAddressIntent)
+          .then(() => queryClient.invalidateQueries({ queryKey: ['addresses', 'me'] }))
+          .catch(() => {});
+      }
 
       if (response.paymentUrl) {
         savePendingPayment({
@@ -509,6 +530,8 @@ const DrawerCheckout: FC<IProps> = ({
                       onAddressChange={handleAddressChange}
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
+                      onSaveIntentChange={setSaveAddressIntent}
+                      onPickedAddressIdChange={setPickedAddressId}
                     />
                   </div>
                 )}
@@ -660,6 +683,8 @@ const DrawerCheckout: FC<IProps> = ({
                       onAddressChange={handleAddressChange}
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
+                      onSaveIntentChange={setSaveAddressIntent}
+                      onPickedAddressIdChange={setPickedAddressId}
                     />
                   </div>
                 )}

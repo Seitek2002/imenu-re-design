@@ -13,6 +13,7 @@ import { API_URL, API_V2_URL } from '../config';
 import { OrderStatus, Product, Promotion } from '@/types/api';
 import { normalizePhoneForApi } from '../helpers/phone';
 import type { Locale } from '../locale';
+import { getAccessTokenSnapshot } from '@/store/auth';
 
 const API_BASE = API_V2_URL;
 
@@ -20,6 +21,20 @@ function buildHeaders(locale: Locale): HeadersInit {
   return {
     'Content-Type': 'application/json',
     'Accept-Language': locale,
+  };
+}
+
+/**
+ * То же, что buildHeaders, но добавляет `Authorization: Bearer ...` если
+ * клиент авторизован через OTP. Используется для ручек с SMS-bypass
+ * (POST /orders/, POST /pos-orders/{id}/payment-link/).
+ */
+function buildAuthedHeaders(locale: Locale): HeadersInit {
+  const token = getAccessTokenSnapshot();
+  return {
+    'Content-Type': 'application/json',
+    'Accept-Language': locale,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
@@ -140,59 +155,6 @@ async function fetchClientBonus(
   return res.json();
 }
 
-async function fetchClient(
-  phone: string,
-  locale: Locale,
-): Promise<import('@/types/api').Client> {
-  const normalized = normalizePhoneForApi(phone);
-  const res = await fetch(`${API_BASE}/clients/${normalized}/`, {
-    method: 'GET',
-    headers: buildHeaders(locale),
-  });
-  if (!res.ok) throw new Error('Failed to fetch client');
-  return res.json();
-}
-
-export const useClient = (phone: string) => {
-  const locale = useLocale() as Locale;
-  return useQuery({
-    queryKey: ['client', phone, locale],
-    queryFn: () => fetchClient(phone, locale),
-    enabled: !!phone && phone.length > 5,
-    staleTime: 1000 * 60,
-  });
-};
-
-async function patchClient(
-  phone: string,
-  body: Partial<Pick<import('@/types/api').Client, 'firstname' | 'lastname' | 'patronymic' | 'email'>>,
-  locale: Locale,
-): Promise<import('@/types/api').Client> {
-  const normalized = normalizePhoneForApi(phone);
-  const res = await fetch(`${API_BASE}/clients/${normalized}/`, {
-    method: 'PATCH',
-    headers: buildHeaders(locale),
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: 'Network error' }));
-    throw err;
-  }
-  return res.json();
-}
-
-export const useUpdateClient = (phone: string) => {
-  const locale = useLocale() as Locale;
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: Partial<Pick<import('@/types/api').Client, 'firstname' | 'lastname' | 'patronymic' | 'email'>>) =>
-      patchClient(phone, body, locale),
-    onSuccess: (data) => {
-      qc.setQueryData(['client', phone, locale], data);
-    },
-  });
-};
-
 export const useClientBonus = ({
   phone,
   venueSlug,
@@ -232,9 +194,10 @@ async function createOrderApi({
     venueSlug,
   };
 
+  // SMS-bypass (Kuma 2026-05-19): с валидным Bearer бэк не требует phone_code.
   const res = await fetch(`${API_BASE}/orders/`, {
     method: 'POST',
-    headers: buildHeaders(locale),
+    headers: buildAuthedHeaders(locale),
     body: JSON.stringify(payload),
   });
 
