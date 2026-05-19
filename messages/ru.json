@@ -324,6 +324,8 @@
       "add": "Добавить",
       "placeholder": "Без лука",
       "empty": "Пока пусто — добавьте, что вам не подходит.",
+      "presetsHint": "Часто выбирают:",
+      "presets": ["Без лука", "Без кинзы", "Без острого", "Без чеснока"],
       "loginRequired": "Войдите по SMS, чтобы сохранить предпочтения.",
       "remove": "Удалить {name}"
     },
@@ -333,11 +335,6 @@
       "default": "осн",
       "loading": "Загружаем…",
       "loginRequired": "Войдите по SMS, чтобы сохранять адреса."
-    },
-    "payments": {
-      "title": "Способы оплаты",
-      "add": "Добавить",
-      "soon": "скоро"
     }
   },
   "ProfileBonus": {
@@ -381,6 +378,71 @@
     "errorBirthdayFuture": "Дата рождения не может быть в будущем",
     "errorBirthdayEarly": "Год рождения слишком ранний",
     "errorSave": "Не удалось сохранить"
+  },
+  "OrderDetail": {
+    "back": "Назад",
+    "title": "Детали заказа",
+    "orderNumber": "Заказ № {id}",
+    "items": "Блюда",
+    "positions": "{count} позиций",
+    "qty": "{count} шт",
+    "total": "Итого",
+    "currency": "с",
+    "repeat": "Повторить заказ",
+    "repeatLoading": "Собираем…",
+    "repeatNothing": "Не удалось повторить — товары больше не доступны",
+    "repeatPartial": "Добавлено {added} из {total}. {review} требуют уточнения",
+    "repeatSuccess": "Заказ добавлен в корзину",
+    "repeatConfirmClear": "В корзине уже есть позиции из другого заведения. Очистить и повторить?",
+    "payNow": "Продолжить оплату",
+    "payNowWithTime": "Продолжить оплату · {time}",
+    "paymentExpired": "Время оплаты истекло",
+    "rowPaymentStatus": "Статус оплаты",
+    "rowOrderStatus": "Статус заказа",
+    "rowTable": "Стол",
+    "rowTableValue": "№ {num}",
+    "rowDeliveryAddress": "Адрес доставки",
+    "rowCutlery": "Приборы",
+    "rowCutleryYes": "Да",
+    "rowComment": "Комментарий",
+    "serviceMode": {
+      "delivery": "Доставка",
+      "dineIn": "На месте",
+      "takeaway": "Самовывоз"
+    },
+    "paymentStatus": {
+      "not_required": "Не требуется",
+      "pending": "Ожидает оплаты",
+      "paid": "Оплачен",
+      "failed": "Ошибка оплаты"
+    }
+  },
+  "OtpLogin": {
+    "titlePhone": "Вход в аккаунт",
+    "titleCode": "Подтверждение",
+    "close": "Закрыть",
+    "phonePrompt": "Введите номер телефона — отправим SMS с кодом подтверждения.",
+    "submitPhone": "Получить код",
+    "submitPhoneLoading": "Отправляем…",
+    "codePrompt": "Введите {length}-значный код, отправленный на {phone}",
+    "submitCode": "Подтвердить",
+    "submitCodeLoading": "Проверяем…",
+    "attemptsLeft": "Осталось попыток: {n}",
+    "changePhone": "Изменить номер",
+    "resend": "Отправить код снова",
+    "resendIn": "Отправить снова через {seconds} c",
+    "errors": {
+      "requestGeneric": "Не удалось отправить код. Попробуйте ещё раз.",
+      "requestInvalidPhone": "Проверьте номер телефона",
+      "requestRateLimited": "Слишком часто. Попробуйте позже.",
+      "requestRateLimitedRetry": "Слишком часто. Повторите через {seconds} c.",
+      "requestSmsUnavailable": "SMS-сервис временно недоступен",
+      "verifyGeneric": "Ошибка проверки кода",
+      "verifyInvalidCode": "Неверный код",
+      "verifyExpired": "Код истёк, запросите новый",
+      "verifyRequestNotFound": "Сессия истекла, начните заново",
+      "verifyTooManyAttempts": "Слишком много попыток. Запросите новый код."
+    }
   },
   "AddressEdit": {
     "titleEdit": "Адрес",

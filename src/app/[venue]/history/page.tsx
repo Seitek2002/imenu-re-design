@@ -180,7 +180,29 @@ export default function HistoryPage() {
 
       <div className='px-4 mt-4 flex flex-col gap-3'>
         {isLoading && (
-          <div className='py-16' />
+          <div className='flex flex-col gap-3'>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className='bg-white rounded-2xl px-4 py-4 animate-pulse'
+              >
+                <div className='flex items-start justify-between gap-2'>
+                  <div className='flex-1'>
+                    <div className='flex items-center justify-between'>
+                      <div className='h-4 w-20 bg-[#EDEAE7] rounded' />
+                      <div className='h-3 w-16 bg-[#F4F1EE] rounded' />
+                    </div>
+                    <div className='mt-2.5 flex items-center gap-2'>
+                      <div className='h-[26px] w-20 bg-[#F4F1EE] rounded-full' />
+                      <div className='h-[26px] w-24 bg-[#F4F1EE] rounded-full' />
+                      <div className='h-4 w-8 bg-[#F4F1EE] rounded ml-auto' />
+                    </div>
+                    <div className='mt-3 h-3 w-3/4 bg-[#F4F1EE] rounded' />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {isError && (

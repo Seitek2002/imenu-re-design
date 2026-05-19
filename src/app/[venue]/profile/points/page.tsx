@@ -207,7 +207,26 @@ export default function PointsHistoryPage() {
         )}
 
         {hasToken && isLoading && (
-          <div className='bg-white rounded-2xl px-4 py-12' />
+          <div className='bg-white rounded-2xl px-4 py-4 animate-pulse flex flex-col gap-3 divide-y divide-[#EDEAE7]'>
+            <div className='pb-3'>
+              <div className='h-3 w-16 bg-[#F4F1EE] rounded mb-3' />
+              <div className='flex flex-col gap-3'>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className='flex items-center gap-3'>
+                    <div className='w-[42px] h-[42px] rounded-full bg-[#F4F1EE]' />
+                    <div className='flex-1 flex flex-col gap-1.5'>
+                      <div className='h-3.5 w-2/3 bg-[#F4F1EE] rounded' />
+                      <div className='h-3 w-1/2 bg-[#F8F6F7] rounded' />
+                    </div>
+                    <div className='flex flex-col items-end gap-1.5'>
+                      <div className='h-4 w-12 bg-[#F4F1EE] rounded' />
+                      <div className='h-3 w-10 bg-[#F8F6F7] rounded' />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
 
         {hasToken && isError && (

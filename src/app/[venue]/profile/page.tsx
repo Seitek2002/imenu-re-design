@@ -8,14 +8,12 @@ import {
   ChevronLeft,
   Pencil,
   ArrowRight,
-  ChevronRight,
   Plus,
   X,
   Store,
   ShoppingBag,
   MessageSquareText,
   MapPin,
-  CreditCard,
   LogOut,
   User as UserIcon,
   Loader2,
@@ -31,11 +29,6 @@ import { formatPhoneDisplay } from '@/lib/helpers/phone';
 import EditProfileModal from '@/components/modals/EditProfileModal';
 import AddressEditModal from '@/components/modals/AddressEditModal';
 import OtpLoginModal from '@/components/modals/OtpLoginModal';
-
-const PAYMENTS = [
-  { id: 'visa', brand: 'VISA', last: '4242' },
-  { id: 'mc', brand: 'MC', last: '8810' },
-];
 
 const MAX_TASTES = 20;
 const MAX_TASTE_LEN = 32;
@@ -187,29 +180,6 @@ export default function ProfilePage() {
           onLoginRequired={() => setLoginOpen(true)}
         />
 
-        <SoonSection title={t('payments.title')} count={PAYMENTS.length}>
-          <div className='mt-3 grid grid-cols-3 gap-2'>
-            {PAYMENTS.map((p) => (
-              <div
-                key={p.id}
-                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-3'
-              >
-                <CreditCard size={18} className='text-[#21201F]' />
-                <div className='flex items-center gap-1 text-[12px] text-[#21201F]'>
-                  <span className='inline-flex gap-[2px]'>
-                    <Dot /><Dot /><Dot /><Dot />
-                  </span>
-                  <span>{p.last}</span>
-                </div>
-              </div>
-            ))}
-            <button className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'>
-              <Plus size={16} />
-              <span className='text-[11px]'>{t('payments.add')}</span>
-            </button>
-          </div>
-        </SoonSection>
-
         <section className='bg-white rounded-2xl p-4'>
           <div className='text-[13px] font-semibold text-[#21201F]'>{t('quickLinks.title')}</div>
           <div className='mt-3 grid grid-cols-3 gap-2'>
@@ -298,30 +268,44 @@ function AddressesSection({
       </div>
 
       <div className='mt-3 grid grid-cols-3 gap-2'>
-        {authed &&
-          addresses.map((a) => (
-            <button
-              key={a.id}
-              type='button'
-              onClick={() => open(a)}
-              className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2 text-left active:scale-[0.98] transition-transform'
-            >
-              <div className='flex items-center gap-1.5'>
-                <MapPin size={14} className='text-brand shrink-0' />
-                <span className='text-[12px] font-semibold truncate'>
-                  {a.label}
-                </span>
-                {a.isDefault && (
-                  <span className='ml-auto text-[9px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-1.5 py-0.5 rounded-full'>
-                    {t('default')}
+        {authed && isLoading && addresses.length === 0
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2 animate-pulse'
+              >
+                <div className='flex items-center gap-1.5'>
+                  <div className='w-3.5 h-3.5 rounded-full bg-[#F4F1EE]' />
+                  <div className='h-3 w-12 bg-[#F4F1EE] rounded' />
+                </div>
+                <div className='h-3 w-full bg-[#F8F6F7] rounded' />
+                <div className='h-3 w-3/4 bg-[#F8F6F7] rounded' />
+              </div>
+            ))
+          : authed &&
+            addresses.map((a) => (
+              <button
+                key={a.id}
+                type='button'
+                onClick={() => open(a)}
+                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2 text-left active:scale-[0.98] transition-transform'
+              >
+                <div className='flex items-center gap-1.5'>
+                  <MapPin size={14} className='text-brand shrink-0' />
+                  <span className='text-[12px] font-semibold truncate'>
+                    {a.label}
                   </span>
-                )}
-              </div>
-              <div className='text-[11px] text-[#9E9E9E] leading-snug line-clamp-2'>
-                {a.address}
-              </div>
-            </button>
-          ))}
+                  {a.isDefault && (
+                    <span className='ml-auto text-[9px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-1.5 py-0.5 rounded-full'>
+                      {t('default')}
+                    </span>
+                  )}
+                </div>
+                <div className='text-[11px] text-[#9E9E9E] leading-snug line-clamp-2'>
+                  {a.address}
+                </div>
+              </button>
+            ))}
 
         {(!authed || addresses.length < 10) && (
           <button
@@ -334,10 +318,6 @@ function AddressesSection({
           </button>
         )}
       </div>
-
-      {authed && isLoading && addresses.length === 0 && (
-        <div className='mt-2 text-[11px] text-[#9E9E9E]'>{t('loading')}</div>
-      )}
 
       {!authed && (
         <div className='mt-2 text-[11px] text-[#9E9E9E]'>
@@ -488,7 +468,53 @@ function TastesSection({
           {authed ? t('empty') : t('loginRequired')}
         </div>
       )}
+
+      {tastes.length === 0 && authed && !adding && (
+        <TastePresets
+          onPick={async (preset) => {
+            try {
+              await update.mutateAsync({ tastes: [preset] });
+            } catch {
+              // silent
+            }
+          }}
+          disabled={update.isPending}
+        />
+      )}
     </section>
+  );
+}
+
+function TastePresets({
+  onPick,
+  disabled,
+}: {
+  onPick: (preset: string) => void;
+  disabled: boolean;
+}) {
+  const t = useTranslations('Profile.tastes');
+  // t.raw() возвращает массив как есть; в типах next-intl это unknown.
+  const raw = t.raw('presets');
+  const presets = Array.isArray(raw) ? (raw as string[]) : [];
+  if (presets.length === 0) return null;
+  return (
+    <div className='mt-3'>
+      <div className='text-[11px] text-[#9E9E9E] mb-1.5'>{t('presetsHint')}</div>
+      <div className='flex flex-wrap gap-2'>
+        {presets.map((p) => (
+          <button
+            key={p}
+            type='button'
+            onClick={() => onPick(p)}
+            disabled={disabled}
+            className='inline-flex items-center gap-1 h-[28px] px-3 rounded-full bg-[#F8F6F7] border border-[#EDEAE7] text-[12px] text-[#21201F] active:scale-[0.97] transition-transform disabled:opacity-60'
+          >
+            <Plus size={12} className='text-[#9E9E9E]' />
+            {p}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -538,46 +564,6 @@ function EmptyState({
   );
 }
 
-function SoonSection({
-  title,
-  subtitle,
-  count,
-  children,
-}: {
-  title: string;
-  subtitle?: string;
-  count?: number;
-  children: React.ReactNode;
-}) {
-  const t = useTranslations('Profile.payments');
-  return (
-    <section className='bg-white rounded-2xl p-4 relative'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <div className='text-[13px] font-semibold text-[#21201F]'>
-            {title}
-            {count != null && (
-              <span className='text-[#9E9E9E] font-normal ml-1'>({count})</span>
-            )}
-          </div>
-          {subtitle && (
-            <div className='mt-1 text-[12px] text-[#9E9E9E]'>{subtitle}</div>
-          )}
-        </div>
-        <div className='flex items-center gap-2'>
-          <span className='text-[10px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-2 py-0.5 rounded-full'>
-            {t('soon')}
-          </span>
-          <button className='flex items-center gap-1 text-[12px] text-[#9E9E9E]'>
-            <ChevronRight size={14} />
-          </button>
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
-
 function QuickLink({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <button className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'>
@@ -585,8 +571,4 @@ function QuickLink({ icon, label }: { icon: React.ReactNode; label: string }) {
       <span className='text-[11px]'>{label}</span>
     </button>
   );
-}
-
-function Dot() {
-  return <span className='w-[3px] h-[3px] rounded-full bg-[#21201F]' />;
 }

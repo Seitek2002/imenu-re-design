@@ -7,6 +7,7 @@ import {
   KeyboardEvent,
   ClipboardEvent,
 } from 'react';
+import { useTranslations } from 'next-intl';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import {
   formatPhoneInput,
@@ -47,7 +48,50 @@ export default function OtpLoginModal({
   onClose,
   onSuccess,
 }: Props) {
+  const t = useTranslations('OtpLogin');
   const setSession = useAuthStore((s) => s.setSession);
+
+  const translateRequestError = (err: unknown): string => {
+    if (err instanceof AuthApiError) {
+      if (err.detail === 'invalid_phone') return t('errors.requestInvalidPhone');
+      if (err.detail === 'rate_limited') {
+        const retry = (err.data?.retryAfter ?? err.data?.retry_after) as
+          | number
+          | undefined;
+        return retry
+          ? t('errors.requestRateLimitedRetry', { seconds: retry })
+          : t('errors.requestRateLimited');
+      }
+      if (err.detail === 'sms_gateway_unavailable') {
+        return t('errors.requestSmsUnavailable');
+      }
+      return err.detail;
+    }
+    return t('errors.requestGeneric');
+  };
+
+  const translateVerifyError = (
+    err: unknown,
+  ): { message: string; attemptsLeft?: number; fatal?: boolean } => {
+    if (err instanceof AuthApiError) {
+      if (err.detail === 'invalid_code') {
+        const attemptsLeft = (err.data?.attemptsLeft ??
+          err.data?.attempts_left) as number | undefined;
+        return { message: t('errors.verifyInvalidCode'), attemptsLeft };
+      }
+      if (err.detail === 'expired') {
+        return { message: t('errors.verifyExpired'), fatal: true };
+      }
+      if (err.detail === 'request_not_found') {
+        return { message: t('errors.verifyRequestNotFound'), fatal: true };
+      }
+      if (err.detail === 'too_many_attempts') {
+        return { message: t('errors.verifyTooManyAttempts'), fatal: true };
+      }
+      return { message: err.detail };
+    }
+    return { message: t('errors.verifyGeneric') };
+  };
 
   const [stage, setStage] = useState<Stage>('phone');
   const [countryId, setCountryId] = useState(initialCountryId ?? 'KG');
@@ -205,12 +249,12 @@ export default function OtpLoginModal({
       <div className='relative w-full lg:max-w-sm bg-white rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl animate-in slide-in-from-bottom-4 lg:zoom-in-95 duration-300'>
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-[#111111] font-bold text-lg'>
-            {stage === 'phone' ? 'Вход в аккаунт' : 'Подтверждение'}
+            {stage === 'phone' ? t('titlePhone') : t('titleCode')}
           </h2>
           <button
             onClick={onClose}
             className='w-8 h-8 flex items-center justify-center rounded-full bg-[#F5F5F5] text-[#6B6B6B]'
-            aria-label='Закрыть'
+            aria-label={t('close')}
           >
             ✕
           </button>
@@ -219,7 +263,7 @@ export default function OtpLoginModal({
         {stage === 'phone' && (
           <>
             <p className='text-[#6B6B6B] text-sm mb-5'>
-              Введите номер телефона — отправим SMS с кодом подтверждения.
+              {t('phonePrompt')}
             </p>
 
             <div className='flex items-center gap-2 bg-[#F5F5F5] rounded-2xl px-3 h-14 mb-1'>
@@ -243,7 +287,7 @@ export default function OtpLoginModal({
               onClick={handleRequest}
               className='mt-5 w-full py-4 rounded-2xl bg-[#111111] text-white font-semibold text-base disabled:opacity-40 transition-opacity'
             >
-              {requesting ? 'Отправляем…' : 'Получить код'}
+              {requesting ? t('submitPhoneLoading') : t('submitPhone')}
             </button>
           </>
         )}
@@ -251,8 +295,10 @@ export default function OtpLoginModal({
         {stage === 'code' && otpRequest && (
           <>
             <p className='text-[#6B6B6B] text-sm mb-6'>
-              Введите {OTP_LENGTH}-значный код, отправленный на{' '}
-              {formatPhoneMasked(fullPhone)}
+              {t('codePrompt', {
+                length: OTP_LENGTH,
+                phone: formatPhoneMasked(fullPhone),
+              })}
             </p>
 
             <div className='flex gap-3 justify-center mb-4'>
@@ -279,7 +325,7 @@ export default function OtpLoginModal({
               <p className='text-red-500 text-sm text-center mb-3'>
                 {otpError}
                 {attemptsLeft != null && attemptsLeft > 0 && (
-                  <> · Осталось попыток: {attemptsLeft}</>
+                  <> · {t('attemptsLeft', { n: attemptsLeft })}</>
                 )}
               </p>
             )}
@@ -289,7 +335,7 @@ export default function OtpLoginModal({
               onClick={() => handleVerify(codeDigits.join(''))}
               className='w-full py-4 rounded-2xl bg-[#111111] text-white font-semibold text-base disabled:opacity-40 transition-opacity'
             >
-              {verifying ? 'Проверяем…' : 'Подтвердить'}
+              {verifying ? t('submitCodeLoading') : t('submitCode')}
             </button>
 
             <div className='mt-4 flex items-center justify-between text-[13px]'>
@@ -303,7 +349,7 @@ export default function OtpLoginModal({
                 }}
                 className='text-[#6B6B6B] underline-offset-2 hover:underline'
               >
-                Изменить номер
+                {t('changePhone')}
               </button>
               <button
                 type='button'
@@ -312,8 +358,8 @@ export default function OtpLoginModal({
                 className='text-[#111111] font-medium disabled:text-[#9E9E9E]'
               >
                 {resendIn > 0
-                  ? `Отправить снова через ${resendIn} c`
-                  : 'Отправить код снова'}
+                  ? t('resendIn', { seconds: resendIn })
+                  : t('resend')}
               </button>
             </div>
           </>
@@ -323,49 +369,3 @@ export default function OtpLoginModal({
   );
 }
 
-function translateRequestError(err: unknown): string {
-  if (err instanceof AuthApiError) {
-    if (err.detail === 'invalid_phone') return 'Проверьте номер телефона';
-    if (err.detail === 'rate_limited') {
-      const retry = (err.data?.retryAfter ?? err.data?.retry_after) as
-        | number
-        | undefined;
-      return retry
-        ? `Слишком часто. Повторите через ${retry} c.`
-        : 'Слишком часто. Попробуйте позже.';
-    }
-    if (err.detail === 'sms_gateway_unavailable') {
-      return 'SMS-сервис временно недоступен';
-    }
-    return err.detail;
-  }
-  return 'Не удалось отправить код. Попробуйте ещё раз.';
-}
-
-function translateVerifyError(err: unknown): {
-  message: string;
-  attemptsLeft?: number;
-  fatal?: boolean;
-} {
-  if (err instanceof AuthApiError) {
-    if (err.detail === 'invalid_code') {
-      const attemptsLeft = (err.data?.attemptsLeft ??
-        err.data?.attempts_left) as number | undefined;
-      return { message: 'Неверный код', attemptsLeft };
-    }
-    if (err.detail === 'expired') {
-      return { message: 'Код истёк, запросите новый', fatal: true };
-    }
-    if (err.detail === 'request_not_found') {
-      return { message: 'Сессия истекла, начните заново', fatal: true };
-    }
-    if (err.detail === 'too_many_attempts') {
-      return {
-        message: 'Слишком много попыток. Запросите новый код.',
-        fatal: true,
-      };
-    }
-    return { message: err.detail };
-  }
-  return { message: 'Ошибка проверки кода' };
-}

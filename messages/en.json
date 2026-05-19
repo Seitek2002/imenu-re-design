@@ -324,6 +324,8 @@
       "add": "Add",
       "placeholder": "No onions",
       "empty": "Empty for now — add what doesn't work for you.",
+      "presetsHint": "Popular choices:",
+      "presets": ["No onions", "No cilantro", "Not spicy", "No garlic"],
       "loginRequired": "Sign in via SMS to save your preferences.",
       "remove": "Remove {name}"
     },
@@ -333,11 +335,6 @@
       "default": "main",
       "loading": "Loading…",
       "loginRequired": "Sign in via SMS to save addresses."
-    },
-    "payments": {
-      "title": "Payment methods",
-      "add": "Add",
-      "soon": "soon"
     }
   },
   "ProfileBonus": {
@@ -381,6 +378,71 @@
     "errorBirthdayFuture": "Birthday cannot be in the future",
     "errorBirthdayEarly": "Birth year is too early",
     "errorSave": "Failed to save"
+  },
+  "OrderDetail": {
+    "back": "Back",
+    "title": "Order details",
+    "orderNumber": "Order № {id}",
+    "items": "Items",
+    "positions": "{count} items",
+    "qty": "× {count}",
+    "total": "Total",
+    "currency": "c.",
+    "repeat": "Repeat order",
+    "repeatLoading": "Building…",
+    "repeatNothing": "Can't repeat — items no longer available",
+    "repeatPartial": "Added {added} of {total}. {review} need review",
+    "repeatSuccess": "Order added to cart",
+    "repeatConfirmClear": "Cart has items from a different venue. Clear and repeat?",
+    "payNow": "Continue payment",
+    "payNowWithTime": "Continue payment · {time}",
+    "paymentExpired": "Payment time expired",
+    "rowPaymentStatus": "Payment status",
+    "rowOrderStatus": "Order status",
+    "rowTable": "Table",
+    "rowTableValue": "№ {num}",
+    "rowDeliveryAddress": "Delivery address",
+    "rowCutlery": "Cutlery",
+    "rowCutleryYes": "Yes",
+    "rowComment": "Comment",
+    "serviceMode": {
+      "delivery": "Delivery",
+      "dineIn": "Dine-in",
+      "takeaway": "Takeaway"
+    },
+    "paymentStatus": {
+      "not_required": "Not required",
+      "pending": "Awaiting payment",
+      "paid": "Paid",
+      "failed": "Payment failed"
+    }
+  },
+  "OtpLogin": {
+    "titlePhone": "Sign in",
+    "titleCode": "Confirmation",
+    "close": "Close",
+    "phonePrompt": "Enter your phone number — we'll send a confirmation code via SMS.",
+    "submitPhone": "Get code",
+    "submitPhoneLoading": "Sending…",
+    "codePrompt": "Enter the {length}-digit code sent to {phone}",
+    "submitCode": "Confirm",
+    "submitCodeLoading": "Checking…",
+    "attemptsLeft": "Attempts left: {n}",
+    "changePhone": "Change number",
+    "resend": "Resend code",
+    "resendIn": "Resend in {seconds}s",
+    "errors": {
+      "requestGeneric": "Couldn't send code. Try again.",
+      "requestInvalidPhone": "Check your phone number",
+      "requestRateLimited": "Too many requests. Try again later.",
+      "requestRateLimitedRetry": "Too many requests. Try again in {seconds}s.",
+      "requestSmsUnavailable": "SMS service is temporarily unavailable",
+      "verifyGeneric": "Code verification failed",
+      "verifyInvalidCode": "Invalid code",
+      "verifyExpired": "Code expired, request a new one",
+      "verifyRequestNotFound": "Session expired, start again",
+      "verifyTooManyAttempts": "Too many attempts. Request a new code."
+    }
   },
   "AddressEdit": {
     "titleEdit": "Address",

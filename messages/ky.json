@@ -324,6 +324,8 @@
       "add": "Кошуу",
       "placeholder": "Пиязсыз",
       "empty": "Азырынча бош — сизге туура келбегенди кошуңуз.",
+      "presetsHint": "Көп тандашат:",
+      "presets": ["Пиязсыз", "Кинзасыз", "Ачуу эмес", "Сарымсаксыз"],
       "loginRequired": "Артыкчылыктарды сактоо үчүн SMS аркылуу кириңиз.",
       "remove": "{name} өчүрүү"
     },
@@ -333,11 +335,6 @@
       "default": "негиз",
       "loading": "Жүктөлүүдө…",
       "loginRequired": "Даректерди сактоо үчүн SMS аркылуу кириңиз."
-    },
-    "payments": {
-      "title": "Төлөм ыкмалары",
-      "add": "Кошуу",
-      "soon": "жакында"
     }
   },
   "ProfileBonus": {
@@ -381,6 +378,71 @@
     "errorBirthdayFuture": "Туулган күн келечекте болбошу керек",
     "errorBirthdayEarly": "Туулган жылы өтө эрте",
     "errorSave": "Сактоо мүмкүн болгон жок"
+  },
+  "OrderDetail": {
+    "back": "Артка",
+    "title": "Буйрутма чоо-жайы",
+    "orderNumber": "Буйрутма № {id}",
+    "items": "Тамактар",
+    "positions": "{count} позиция",
+    "qty": "{count} д.",
+    "total": "Жыйынтыгы",
+    "currency": "с",
+    "repeat": "Буйрутманы кайталоо",
+    "repeatLoading": "Чогултулууда…",
+    "repeatNothing": "Кайталоо мүмкүн эмес — товарлар жок",
+    "repeatPartial": "{total} ичинен {added} кошулду. {review} тактоону талап кылат",
+    "repeatSuccess": "Буйрутма себетке кошулду",
+    "repeatConfirmClear": "Себетте башка филиалдын товарлары бар. Тазалап кайталайбызбы?",
+    "payNow": "Төлөмдү улантуу",
+    "payNowWithTime": "Төлөмдү улантуу · {time}",
+    "paymentExpired": "Төлөм убактысы өттү",
+    "rowPaymentStatus": "Төлөмдүн статусу",
+    "rowOrderStatus": "Буйрутманын статусу",
+    "rowTable": "Стол",
+    "rowTableValue": "№ {num}",
+    "rowDeliveryAddress": "Жеткирүү дареги",
+    "rowCutlery": "Аспаптар",
+    "rowCutleryYes": "Ооба",
+    "rowComment": "Комментарий",
+    "serviceMode": {
+      "delivery": "Жеткирүү",
+      "dineIn": "Залда",
+      "takeaway": "Алып кетүү"
+    },
+    "paymentStatus": {
+      "not_required": "Талап кылынбайт",
+      "pending": "Төлөмдү күтүүдө",
+      "paid": "Төлөнгөн",
+      "failed": "Төлөм катасы"
+    }
+  },
+  "OtpLogin": {
+    "titlePhone": "Аккаунтка кирүү",
+    "titleCode": "Ырастоо",
+    "close": "Жабуу",
+    "phonePrompt": "Телефон номериңизди киргизиңиз — биз SMS аркылуу ырастоо кодун жөнөтөбүз.",
+    "submitPhone": "Кодду алуу",
+    "submitPhoneLoading": "Жөнөтүлүүдө…",
+    "codePrompt": "{phone} номерине жөнөтүлгөн {length} белгилүү кодду киргизиңиз",
+    "submitCode": "Ырастоо",
+    "submitCodeLoading": "Текшерилүүдө…",
+    "attemptsLeft": "Калган аракеттер: {n}",
+    "changePhone": "Номерди өзгөртүү",
+    "resend": "Кодду кайра жөнөтүү",
+    "resendIn": "{seconds} с. кийин кайра жөнөтүү",
+    "errors": {
+      "requestGeneric": "Код жөнөтүлгөн жок. Кайталаңыз.",
+      "requestInvalidPhone": "Телефон номериңизди текшериңиз",
+      "requestRateLimited": "Өтө көп сурам. Кийинчерээк кайталаңыз.",
+      "requestRateLimitedRetry": "Өтө көп сурам. {seconds} с. кийин кайталаңыз.",
+      "requestSmsUnavailable": "SMS кызматы убактылуу жеткиликсиз",
+      "verifyGeneric": "Кодду текшерүү катасы",
+      "verifyInvalidCode": "Туура эмес код",
+      "verifyExpired": "Кодддун мөөнөтү бүтүп калды, жаңысын сураңыз",
+      "verifyRequestNotFound": "Сессиянын мөөнөтү бүтүп калды, кайра баштаңыз",
+      "verifyTooManyAttempts": "Өтө көп аракеттер. Жаңы код сураңыз."
+    }
   },
   "AddressEdit": {
     "titleEdit": "Дарек",

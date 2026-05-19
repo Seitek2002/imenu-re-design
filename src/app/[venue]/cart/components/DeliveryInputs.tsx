@@ -151,8 +151,23 @@ export default function DeliveryInputs({
       ? distanceKm(venueCoords, coords) <= freeDeliveryRadiusKm
       : null;
 
+  // Дедупликация: если текущие coords совпадают (~50m) с уже сохранённым
+  // адресом — autosave-чекбокс не показываем (адрес уже в /clients/me/addresses/).
+  const DEDUPE_KM = 0.05;
+  const matchesSaved =
+    !!coords &&
+    addresses.some((a) => {
+      const ac: Coords = { lat: Number(a.latitude), lng: Number(a.longitude) };
+      if (Number.isNaN(ac.lat) || Number.isNaN(ac.lng)) return false;
+      return distanceKm(ac, coords) <= DEDUPE_KM;
+    });
+
   const showSaveBlock =
-    hasToken && pickedId === null && !!coords && street.trim().length > 0;
+    hasToken &&
+    pickedId === null &&
+    !matchesSaved &&
+    !!coords &&
+    street.trim().length > 0;
 
   return (
     <div className='flex flex-col gap-2 animate-fadeIn'>
