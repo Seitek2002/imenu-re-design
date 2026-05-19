@@ -66,7 +66,7 @@ export default function DeliveryInputs({
 
   // Намерение сохранить новый адрес после заказа.
   const [saveOn, setSaveOn] = useState(false);
-  const [saveLabel, setSaveLabel] = useState('Мой адрес');
+  const [saveLabel, setSaveLabel] = useState(t('saveLabelDefault'));
 
   useEffect(() => {
     const parts = [];
@@ -91,7 +91,7 @@ export default function DeliveryInputs({
       return;
     }
     onSaveIntentChange({
-      label: saveLabel.trim() || 'Мой адрес',
+      label: saveLabel.trim() || t('saveLabelDefault'),
       address: street.trim(),
       latitude: coordStr(coords.lat),
       longitude: coordStr(coords.lng),
@@ -110,6 +110,7 @@ export default function DeliveryInputs({
     floor,
     pickedId,
     onSaveIntentChange,
+    t,
   ]);
 
   // Любая ручная правка после выбора сохранённого адреса сбрасывает «pickedId».
@@ -277,7 +278,7 @@ export default function DeliveryInputs({
           <label className='flex items-center justify-between gap-2'>
             <span className='flex items-center gap-2 text-[13px] text-[#111111]'>
               <BookmarkPlus size={16} className='text-brand' />
-              Сохранить адрес
+              {t('saveToggle')}
             </span>
             <input
               type='checkbox'
@@ -292,7 +293,7 @@ export default function DeliveryInputs({
               value={saveLabel}
               onChange={(e) => setSaveLabel(e.target.value)}
               maxLength={32}
-              placeholder='Дом / Работа / Мама…'
+              placeholder={t('saveLabelPlaceholder')}
               className='h-10 px-3 rounded-lg bg-white text-sm text-[#111111] outline-none focus:ring-2 focus:ring-brand/20'
             />
           )}

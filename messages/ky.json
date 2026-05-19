@@ -149,7 +149,10 @@
       "mapPickHintSelected": "Чекит тандалды",
       "zoneFree": "Дарек акысыз жеткирүү аймагында",
       "zonePaid": "Дарек акысыз жеткирүү аймагынан тышкары",
-      "zonePaidFee": "Акылуу жеткирүү: {amount} с."
+      "zonePaidFee": "Акылуу жеткирүү: {amount} с.",
+      "saveToggle": "Даректи сактоо",
+      "saveLabelPlaceholder": "Үй / Иш / Апамдын үйү…",
+      "saveLabelDefault": "Менин дарегим"
     },
     "deliveryMap": {
       "title": "Жеткирүү дарегин көрсөтүңүз",
@@ -296,9 +299,114 @@
     "defaultMessage": "Жакында кайра ачылабыз — күтөбүз!"
   },
   "Profile": {
-    "title": "Жеке кабинет",
-    "description": "Бул жерде сиздин буйрутмаларыңыз, бонустар жана сүйүктүү тамактар болот. Биз акыркы бурамаларды бурап жатабыз! ⚙️",
-    "loginSoon": "Кирүү (Жакында)"
+    "title": "Аккаунт",
+    "nameLabel": "Аты",
+    "guest": "Конок",
+    "bonusLabel": "Баллдар",
+    "edit": "Өзгөртүү",
+    "back": "Артка",
+    "logout": "Аккаунттан чыгуу",
+    "loginEmpty": {
+      "title": "Аккаунтка кириңиз",
+      "description": "Телефон номериңизди SMS аркылуу ырастаңыз — буйрутмалар тарыхын, баллдарды көрөсүз жана жеткирүүнү тезирээк жасайсыз.",
+      "loginButton": "SMS аркылуу кирүү",
+      "menuLink": "Менюга өтүү"
+    },
+    "quickLinks": {
+      "title": "Тез шилтемелер",
+      "orders": "Буйрутмалар",
+      "venues": "Филиалдар",
+      "chat": "Чат"
+    },
+    "tastes": {
+      "title": "Тамак артыкчылыктары",
+      "subtitle": "Буйрутма даярдоодо эске алабыз",
+      "add": "Кошуу",
+      "placeholder": "Пиязсыз",
+      "empty": "Азырынча бош — сизге туура келбегенди кошуңуз.",
+      "loginRequired": "Артыкчылыктарды сактоо үчүн SMS аркылуу кириңиз.",
+      "remove": "{name} өчүрүү"
+    },
+    "addresses": {
+      "title": "Менин даректерим",
+      "add": "Кошуу",
+      "default": "негиз",
+      "loading": "Жүктөлүүдө…",
+      "loginRequired": "Даректерди сактоо үчүн SMS аркылуу кириңиз."
+    },
+    "payments": {
+      "title": "Төлөм ыкмалары",
+      "add": "Кошуу",
+      "soon": "жакында"
+    }
+  },
+  "ProfileBonus": {
+    "title": "Бонус тарыхы",
+    "balance": "Баланс",
+    "balanceUnit": "{value} б.",
+    "earnedTotal": "Жалпы топтолгон",
+    "redeemedTotal": "Жалпы эсептен чыккан",
+    "period": {
+      "week": "Бир жума",
+      "month": "Бир ай",
+      "quarter": "3 ай",
+      "all": "Бардык убакыт"
+    },
+    "loginRequired": "Бонус тарыхын көрүү үчүн SMS аркылуу кириңиз",
+    "loginLink": "кирүүгө өтүү",
+    "loadError": "Жүктөлгөн жок.",
+    "retry": "Кайталоо",
+    "empty": "Азырынча бонус операциялары жок.",
+    "today": "Бүгүн",
+    "yesterday": "Кечээ"
+  },
+  "ProfileEdit": {
+    "title": "Профиль",
+    "close": "Жабуу",
+    "save": "Сактоо",
+    "firstname": "Аты",
+    "firstnamePlaceholder": "Иван",
+    "lastname": "Фамилия",
+    "lastnamePlaceholder": "Иванов",
+    "patronymic": "Атасынын аты",
+    "patronymicPlaceholder": "Ивановиç",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "birthday": "Туулган күн",
+    "gender": "Жынысы",
+    "genderMale": "Эркек",
+    "genderFemale": "Аял",
+    "genderOther": "Башка",
+    "errorEmail": "Туура эмес email",
+    "errorBirthdayFuture": "Туулган күн келечекте болбошу керек",
+    "errorBirthdayEarly": "Туулган жылы өтө эрте",
+    "errorSave": "Сактоо мүмкүн болгон жок"
+  },
+  "AddressEdit": {
+    "titleEdit": "Дарек",
+    "titleCreate": "Жаңы дарек",
+    "close": "Жабуу",
+    "save": "Сактоо",
+    "delete": "Өчүрүү",
+    "deleteConfirm": "«{label}» дареги өчүрүлсүнбү?",
+    "label": "Аталышы",
+    "labelPlaceholder": "Үй",
+    "pinOnMap": "Картадагы чекит",
+    "pinEmpty": "Картадан тандоо",
+    "address": "Дарек",
+    "addressPlaceholder": "Киев көч., 95",
+    "entrance": "Подъезд",
+    "floor": "Кабат",
+    "apartment": "Кв.",
+    "intercom": "Домофон",
+    "intercomPlaceholder": "K1234",
+    "comment": "Комментарий",
+    "commentPlaceholder": "Жашыл эшик, чакырбагыла",
+    "isDefault": "Негизги катары колдонуу",
+    "errorLabel": "Аталышын бериңиз (Үй, Иш…)",
+    "errorMap": "Картадан чекит тандаңыз жана даректи текшериңиз",
+    "errorSave": "Сактоо мүмкүн болгон жок",
+    "errorDelete": "Өчүрүү мүмкүн болгон жок"
   },
   "History": {
     "title": "Бөлүм иштелип жатат",

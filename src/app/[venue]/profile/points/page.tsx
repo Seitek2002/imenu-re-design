@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   ChevronLeft,
   ChevronDown,
@@ -20,6 +21,7 @@ import {
   type BonusTransactionKind,
 } from '@/lib/api/bonus-transactions';
 import { useAuthStore } from '@/store/auth';
+import type { Locale } from '@/lib/locale';
 
 const ICON: Record<BonusTransactionKind, React.ElementType> = {
   accrual: ShoppingBag,
@@ -32,34 +34,30 @@ const ICON: Record<BonusTransactionKind, React.ElementType> = {
   refund: RefreshCcw,
 };
 
-const fmtBalance = (n: number) =>
-  n.toLocaleString('ru-RU').replace(/,/g, ' ');
+const fmtBalance = (n: number, locale: Locale) =>
+  n.toLocaleString(locale === 'ky' ? 'ru-RU' : locale === 'en' ? 'en-US' : 'ru-RU').replace(/,/g, ' ');
 
-const fmtAmountStr = (s: string) => {
+const fmtAmountStr = (s: string, locale: Locale) => {
   const n = Math.round(Number(s));
-  return Number.isFinite(n) ? fmtBalance(n) : s;
+  return Number.isFinite(n) ? fmtBalance(n, locale) : s;
 };
-
-const MONTHS_FULL = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
-];
 
 function dayKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-function dayLabel(d: Date, now: Date): string {
-  const today = dayKey(now);
-  const yesterday = dayKey(new Date(now.getTime() - 24 * 60 * 60 * 1000));
-  const key = dayKey(d);
-  if (key === today) return 'Сегодня';
-  if (key === yesterday) return 'Вчера';
-  return `${d.getDate()} ${MONTHS_FULL[d.getMonth()]}`;
-}
-
 function timeLabel(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+type PeriodKey = 'week' | 'month' | 'quarter' | 'all';
+
+function periodFrom(p: PeriodKey): string | undefined {
+  if (p === 'all') return undefined;
+  const days = p === 'week' ? 7 : p === 'month' ? 30 : 90;
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
 }
 
 interface DayGroup {
@@ -67,8 +65,21 @@ interface DayGroup {
   entries: BonusTransaction[];
 }
 
-function groupByDay(list: BonusTransaction[]): DayGroup[] {
+function groupByDay(
+  list: BonusTransaction[],
+  locale: Locale,
+  todayLabel: string,
+  yesterdayLabel: string,
+): DayGroup[] {
   const now = new Date();
+  const todayK = dayKey(now);
+  const yesterdayK = dayKey(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+  // Intl сам подберёт правильное склонение месяцев для ru/ky/en.
+  const monthDayFmt = new Intl.DateTimeFormat(
+    locale === 'ky' ? 'ky-KG' : locale === 'en' ? 'en-US' : 'ru-RU',
+    { day: 'numeric', month: 'long' },
+  );
+
   const order: string[] = [];
   const map = new Map<string, DayGroup>();
   for (const tx of list) {
@@ -76,7 +87,13 @@ function groupByDay(list: BonusTransaction[]): DayGroup[] {
     const key = dayKey(d);
     let g = map.get(key);
     if (!g) {
-      g = { title: dayLabel(d, now), entries: [] };
+      const title =
+        key === todayK
+          ? todayLabel
+          : key === yesterdayK
+            ? yesterdayLabel
+            : monthDayFmt.format(d);
+      g = { title, entries: [] };
       map.set(key, g);
       order.push(key);
     }
@@ -86,18 +103,28 @@ function groupByDay(list: BonusTransaction[]): DayGroup[] {
 }
 
 export default function PointsHistoryPage() {
+  const t = useTranslations('ProfileBonus');
+  const tProfile = useTranslations('Profile');
+  const locale = useLocale() as Locale;
   const { venue } = useParams<{ venue: string }>();
   const bootstrapped = useAuthStore((s) => s.bootstrapped);
   const hasToken = useAuthStore((s) => !!s.accessToken);
 
+  const [period, setPeriod] = useState<PeriodKey>('month');
+  const [periodOpen, setPeriodOpen] = useState(false);
+
   const { data, isLoading, isError, refetch } = useBonusTransactions({
     venueSlug: venue,
-    limit: 50,
+    limit: 100,
+    from: periodFrom(period),
   });
 
   const groups = useMemo(
-    () => (data ? groupByDay(data.results) : []),
-    [data],
+    () =>
+      data
+        ? groupByDay(data.results, locale, t('today'), t('yesterday'))
+        : [],
+    [data, locale, t],
   );
 
   const summary = data?.summary;
@@ -108,39 +135,72 @@ export default function PointsHistoryPage() {
         <Link
           href={`/${venue}/profile`}
           className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
-          aria-label='Назад'
+          aria-label={tProfile('back')}
         >
           <ChevronLeft size={24} />
         </Link>
-        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>История бонусов</h1>
+        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>{t('title')}</h1>
       </header>
 
       <div className='px-4 mt-2 flex flex-col gap-3'>
         <section className='bg-white rounded-2xl px-4 py-4 flex items-stretch'>
           <div className='flex-1 pr-3'>
-            <div className='text-[13px] text-[#9E9E9E]'>Баланс</div>
+            <div className='text-[13px] text-[#9E9E9E]'>{t('balance')}</div>
             <div className='mt-1 text-[22px] font-extrabold text-[#21201F]'>
-              {summary ? `${fmtBalance(summary.balance)} б.` : '—'}
+              {summary ? t('balanceUnit', { value: fmtBalance(summary.balance, locale) }) : '—'}
             </div>
           </div>
           <div className='w-px bg-[#EDEAE7]' />
           <div className='flex-1 pl-4 flex flex-col gap-1.5 justify-center'>
-            <Stat label='Накоплено всего' value={summary ? fmtAmountStr(summary.earnedTotal) : '—'} />
-            <Stat label='Списано всего' value={summary ? fmtAmountStr(summary.redeemedTotal) : '—'} />
+            <Stat label={t('earnedTotal')} value={summary ? fmtAmountStr(summary.earnedTotal, locale) : '—'} />
+            <Stat label={t('redeemedTotal')} value={summary ? fmtAmountStr(summary.redeemedTotal, locale) : '—'} />
           </div>
         </section>
 
-        <button className='self-start inline-flex items-center gap-2 h-9 px-3 rounded-full bg-white border border-[#EDEAE7] text-[13px] text-[#21201F]'>
-          <Calendar size={16} className='text-[#9E9E9E]' />
-          За месяц
-          <ChevronDown size={16} className='text-[#9E9E9E]' />
-        </button>
+        <div className='relative self-start'>
+          <button
+            type='button'
+            onClick={() => setPeriodOpen((v) => !v)}
+            className='inline-flex items-center gap-2 h-9 px-3 rounded-full bg-white border border-[#EDEAE7] text-[13px] text-[#21201F]'
+          >
+            <Calendar size={16} className='text-[#9E9E9E]' />
+            {t(`period.${period}`)}
+            <ChevronDown size={16} className={`text-[#9E9E9E] transition-transform ${periodOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {periodOpen && (
+            <>
+              <div
+                className='fixed inset-0 z-10'
+                onClick={() => setPeriodOpen(false)}
+              />
+              <div className='absolute left-0 top-full mt-1 z-20 bg-white rounded-2xl shadow-lg border border-[#EDEAE7] py-1 min-w-[10rem] overflow-hidden'>
+                {(['week', 'month', 'quarter', 'all'] as PeriodKey[]).map((p) => (
+                  <button
+                    key={p}
+                    type='button'
+                    onClick={() => {
+                      setPeriod(p);
+                      setPeriodOpen(false);
+                    }}
+                    className={`w-full px-3 py-2 text-left text-[13px] transition-colors ${
+                      p === period
+                        ? 'bg-[#F4F1EE] text-[#21201F] font-medium'
+                        : 'text-[#21201F] hover:bg-[#F8F6F7]'
+                    }`}
+                  >
+                    {t(`period.${p}`)}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
         {bootstrapped && !hasToken && (
           <div className='bg-white rounded-2xl px-4 py-8 text-center text-[13px] text-[#9E9E9E]'>
-            Войдите по SMS, чтобы увидеть историю бонусов —{' '}
+            {t('loginRequired')} —{' '}
             <Link href={`/${venue}/profile`} className='text-[#21201F] underline'>
-              перейти к входу
+              {t('loginLink')}
             </Link>
             .
           </div>
@@ -152,16 +212,16 @@ export default function PointsHistoryPage() {
 
         {hasToken && isError && (
           <div className='bg-white rounded-2xl px-4 py-8 text-center text-[13px] text-[#9E9E9E]'>
-            Не удалось загрузить.{' '}
+            {t('loadError')}{' '}
             <button onClick={() => refetch()} className='text-[#21201F] underline'>
-              Повторить
+              {t('retry')}
             </button>
           </div>
         )}
 
         {hasToken && !isLoading && !isError && groups.length === 0 && (
           <div className='bg-white rounded-2xl px-4 py-8 text-center text-[13px] text-[#9E9E9E]'>
-            Операций с бонусами пока нет.
+            {t('empty')}
           </div>
         )}
 
@@ -191,7 +251,7 @@ export default function PointsHistoryPage() {
                             }`}
                           >
                             {e.isCredit ? '+' : '−'}
-                            {fmtAmountStr(e.amount)}
+                            {fmtAmountStr(e.amount, locale)}
                           </div>
                           <div className='text-[12px] text-[#9E9E9E]'>
                             {timeLabel(new Date(e.createdAt))}

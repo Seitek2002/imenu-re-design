@@ -149,7 +149,10 @@
       "mapPickHintSelected": "Point selected",
       "zoneFree": "Address is in the free delivery zone",
       "zonePaid": "Address is outside the free delivery zone",
-      "zonePaidFee": "Paid delivery: {amount} c."
+      "zonePaidFee": "Paid delivery: {amount} c.",
+      "saveToggle": "Save address",
+      "saveLabelPlaceholder": "Home / Work / Mom's…",
+      "saveLabelDefault": "My address"
     },
     "deliveryMap": {
       "title": "Pin the delivery address",
@@ -296,9 +299,114 @@
     "defaultMessage": "We'll be open again soon — see you then!"
   },
   "Profile": {
-    "title": "Personal account",
-    "description": "Your order history, bonuses and favorites will live here. We're tightening the last screws! ⚙️",
-    "loginSoon": "Sign in (Soon)"
+    "title": "Account",
+    "nameLabel": "Name",
+    "guest": "Guest",
+    "bonusLabel": "Points",
+    "edit": "Edit",
+    "back": "Back",
+    "logout": "Sign out",
+    "loginEmpty": {
+      "title": "Sign in to your account",
+      "description": "Confirm your phone number by SMS — you'll see order history, points and check out delivery faster.",
+      "loginButton": "Sign in via SMS",
+      "menuLink": "Go to menu"
+    },
+    "quickLinks": {
+      "title": "Shortcuts",
+      "orders": "Orders",
+      "venues": "Locations",
+      "chat": "Chat"
+    },
+    "tastes": {
+      "title": "Taste preferences",
+      "subtitle": "We'll keep them in mind when preparing your order",
+      "add": "Add",
+      "placeholder": "No onions",
+      "empty": "Empty for now — add what doesn't work for you.",
+      "loginRequired": "Sign in via SMS to save your preferences.",
+      "remove": "Remove {name}"
+    },
+    "addresses": {
+      "title": "My addresses",
+      "add": "Add",
+      "default": "main",
+      "loading": "Loading…",
+      "loginRequired": "Sign in via SMS to save addresses."
+    },
+    "payments": {
+      "title": "Payment methods",
+      "add": "Add",
+      "soon": "soon"
+    }
+  },
+  "ProfileBonus": {
+    "title": "Bonus history",
+    "balance": "Balance",
+    "balanceUnit": "{value} pts",
+    "earnedTotal": "Earned in total",
+    "redeemedTotal": "Spent in total",
+    "period": {
+      "week": "Last week",
+      "month": "Last month",
+      "quarter": "Last 3 months",
+      "all": "All time"
+    },
+    "loginRequired": "Sign in via SMS to see your bonus history",
+    "loginLink": "go to sign in",
+    "loadError": "Failed to load.",
+    "retry": "Retry",
+    "empty": "No bonus operations yet.",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "ProfileEdit": {
+    "title": "Profile",
+    "close": "Close",
+    "save": "Save",
+    "firstname": "First name",
+    "firstnamePlaceholder": "John",
+    "lastname": "Last name",
+    "lastnamePlaceholder": "Doe",
+    "patronymic": "Middle name",
+    "patronymicPlaceholder": "—",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "birthday": "Birthday",
+    "gender": "Gender",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "genderOther": "Other",
+    "errorEmail": "Invalid email",
+    "errorBirthdayFuture": "Birthday cannot be in the future",
+    "errorBirthdayEarly": "Birth year is too early",
+    "errorSave": "Failed to save"
+  },
+  "AddressEdit": {
+    "titleEdit": "Address",
+    "titleCreate": "New address",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "deleteConfirm": "Delete address \"{label}\"?",
+    "label": "Label",
+    "labelPlaceholder": "Home",
+    "pinOnMap": "Point on map",
+    "pinEmpty": "Pick on map",
+    "address": "Address",
+    "addressPlaceholder": "Kievskaya St. 95",
+    "entrance": "Entrance",
+    "floor": "Floor",
+    "apartment": "Apt.",
+    "intercom": "Intercom",
+    "intercomPlaceholder": "K1234",
+    "comment": "Comment",
+    "commentPlaceholder": "Green door, don't ring the bell",
+    "isDefault": "Use by default",
+    "errorLabel": "Add a label (Home, Work…)",
+    "errorMap": "Pick a point on the map and check the address",
+    "errorSave": "Failed to save",
+    "errorDelete": "Failed to delete"
   },
   "History": {
     "title": "Section under construction",

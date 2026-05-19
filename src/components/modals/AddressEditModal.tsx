@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { MapPin, Trash2, X } from 'lucide-react';
 import { useMounted } from '@/hooks/useMounted';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
@@ -53,6 +54,7 @@ function Form({
   address: MyAddress | null;
   onClose: () => void;
 }) {
+  const t = useTranslations('AddressEdit');
   const venueData = useVenueStore((s) => s.data);
   const spotId = useVenueStore((s) => s.spotId);
   const { venueCoords, freeRadiusKm } = getDeliveryGeo(venueData, spotId);
@@ -84,11 +86,11 @@ function Form({
   const handleSave = async () => {
     setError(null);
     if (!label.trim()) {
-      setError('Укажите название (Дом, Работа…)');
+      setError(t('errorLabel'));
       return;
     }
     if (!street.trim() || !coords) {
-      setError('Выберите точку на карте и проверьте адрес');
+      setError(t('errorMap'));
       return;
     }
     const body: MyAddressCreate = {
@@ -111,18 +113,18 @@ function Form({
       }
       onClose();
     } catch {
-      setError('Не удалось сохранить');
+      setError(t('errorSave'));
     }
   };
 
   const handleDelete = async () => {
     if (!address) return;
-    if (!window.confirm(`Удалить адрес «${address.label}»?`)) return;
+    if (!window.confirm(t('deleteConfirm', { label: address.label }))) return;
     try {
       await del.mutateAsync(address.id);
       onClose();
     } catch {
-      setError('Не удалось удалить');
+      setError(t('errorDelete'));
     }
   };
 
@@ -135,13 +137,13 @@ function Form({
       <div className='relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300 max-h-[92vh] overflow-y-auto'>
         <div className='flex items-center justify-between mb-4'>
           <h3 className='text-[18px] font-bold text-[#21201F]'>
-            {isEdit ? 'Адрес' : 'Новый адрес'}
+            {isEdit ? t('titleEdit') : t('titleCreate')}
           </h3>
           <button
             onClick={onClose}
             disabled={busy}
             className='w-8 h-8 flex items-center justify-center rounded-full bg-[#F4F1EE] text-[#9E9E9E]'
-            aria-label='Закрыть'
+            aria-label={t('close')}
           >
             <X size={16} />
           </button>
@@ -149,10 +151,10 @@ function Form({
 
         <div className='flex flex-col gap-3'>
           <Field
-            label='Название'
+            label={t('label')}
             value={label}
             onChange={setLabel}
-            placeholder='Дом'
+            placeholder={t('labelPlaceholder')}
           />
 
           <button
@@ -164,47 +166,47 @@ function Form({
               <MapPin size={18} className={coords ? 'text-brand' : 'text-[#A4A4A4]'} />
             </div>
             <div className='flex flex-col min-w-0 flex-1'>
-              <span className='text-[12px] text-[#9E9E9E]'>Точка на карте</span>
+              <span className='text-[12px] text-[#9E9E9E]'>{t('pinOnMap')}</span>
               <span className='text-[14px] font-medium text-[#21201F] truncate'>
-                {coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : 'Выбрать на карте'}
+                {coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : t('pinEmpty')}
               </span>
             </div>
           </button>
 
           <Field
-            label='Адрес'
+            label={t('address')}
             value={street}
             onChange={setStreet}
-            placeholder='ул. Киевская, 95'
+            placeholder={t('addressPlaceholder')}
           />
 
           <div className='grid grid-cols-3 gap-2'>
             <Field
-              label='Подъезд'
+              label={t('entrance')}
               value={entrance ?? ''}
               onChange={setEntrance}
               compact
             />
-            <Field label='Этаж' value={floor ?? ''} onChange={setFloor} compact />
-            <Field label='Кв.' value={apartment ?? ''} onChange={setApartment} compact />
+            <Field label={t('floor')} value={floor ?? ''} onChange={setFloor} compact />
+            <Field label={t('apartment')} value={apartment ?? ''} onChange={setApartment} compact />
           </div>
 
           <Field
-            label='Домофон'
+            label={t('intercom')}
             value={intercom ?? ''}
             onChange={setIntercom}
-            placeholder='K1234'
+            placeholder={t('intercomPlaceholder')}
           />
 
           <Field
-            label='Комментарий'
+            label={t('comment')}
             value={comment ?? ''}
             onChange={setComment}
-            placeholder='Зелёная дверь, не звонить'
+            placeholder={t('commentPlaceholder')}
           />
 
           <label className='flex items-center justify-between gap-3 bg-[#F4F1EE] rounded-2xl py-3 px-4'>
-            <span className='text-[14px] text-[#21201F]'>Использовать по умолчанию</span>
+            <span className='text-[14px] text-[#21201F]'>{t('isDefault')}</span>
             <input
               type='checkbox'
               checked={isDefault}
@@ -225,7 +227,7 @@ function Form({
               onClick={handleDelete}
               disabled={busy}
               className='h-12 px-4 rounded-2xl bg-[#FDECEC] text-[#DC2626] inline-flex items-center justify-center disabled:opacity-60'
-              aria-label='Удалить'
+              aria-label={t('delete')}
             >
               <Trash2 size={18} />
             </button>
@@ -236,7 +238,7 @@ function Form({
             disabled={busy}
             className='flex-1 h-12 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium active:scale-[0.99] transition-transform disabled:opacity-60'
           >
-            Сохранить
+            {t('save')}
           </button>
         </div>
       </div>

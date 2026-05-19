@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { useMounted } from '@/hooks/useMounted';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
@@ -14,11 +15,7 @@ interface Props {
   client?: AuthClient | null;
 }
 
-const GENDERS: { value: Gender; label: string }[] = [
-  { value: 'male', label: 'Мужской' },
-  { value: 'female', label: 'Женский' },
-  { value: 'other', label: 'Другое' },
-];
+const GENDERS: Gender[] = ['male', 'female', 'other'];
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -51,6 +48,7 @@ function Form({
   client: AuthClient | null;
   onClose: () => void;
 }) {
+  const t = useTranslations('ProfileEdit');
   const [firstname, setFirstname] = useState(client?.firstname ?? '');
   const [lastname, setLastname] = useState(client?.lastname ?? '');
   const [patronymic, setPatronymic] = useState(client?.patronymic ?? '');
@@ -60,21 +58,24 @@ function Form({
   const [error, setError] = useState<string | null>(null);
   const update = useUpdateMe();
 
+  const genderLabel = (g: Gender) =>
+    g === 'male' ? t('genderMale') : g === 'female' ? t('genderFemale') : t('genderOther');
+
   const handleSave = async () => {
     setError(null);
     const trimmedEmail = email.trim();
     if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError('Неверный email');
+      setError(t('errorEmail'));
       return;
     }
     if (birthday) {
       if (birthday > todayIso()) {
-        setError('Дата рождения не может быть в будущем');
+        setError(t('errorBirthdayFuture'));
         return;
       }
       const year = Number(birthday.slice(0, 4));
       if (year < 1900) {
-        setError('Год рождения слишком ранний');
+        setError(t('errorBirthdayEarly'));
         return;
       }
     }
@@ -89,7 +90,7 @@ function Form({
       });
       onClose();
     } catch {
-      setError('Не удалось сохранить');
+      setError(t('errorSave'));
     }
   };
 
@@ -101,30 +102,45 @@ function Form({
       />
       <div className='relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300 max-h-[92vh] overflow-y-auto'>
         <div className='flex items-center justify-between mb-4'>
-          <h3 className='text-[18px] font-bold text-[#21201F]'>Профиль</h3>
+          <h3 className='text-[18px] font-bold text-[#21201F]'>{t('title')}</h3>
           <button
             onClick={onClose}
             disabled={update.isPending}
             className='w-8 h-8 flex items-center justify-center rounded-full bg-[#F4F1EE] text-[#9E9E9E]'
-            aria-label='Закрыть'
+            aria-label={t('close')}
           >
             <X size={16} />
           </button>
         </div>
 
         <div className='flex flex-col gap-3'>
-          <Field label='Имя' value={firstname} onChange={setFirstname} placeholder='Иван' />
-          <Field label='Фамилия' value={lastname} onChange={setLastname} placeholder='Иванов' />
-          <Field label='Отчество' value={patronymic} onChange={setPatronymic} placeholder='Иванович' />
           <Field
-            label='Email'
+            label={t('firstname')}
+            value={firstname}
+            onChange={setFirstname}
+            placeholder={t('firstnamePlaceholder')}
+          />
+          <Field
+            label={t('lastname')}
+            value={lastname}
+            onChange={setLastname}
+            placeholder={t('lastnamePlaceholder')}
+          />
+          <Field
+            label={t('patronymic')}
+            value={patronymic}
+            onChange={setPatronymic}
+            placeholder={t('patronymicPlaceholder')}
+          />
+          <Field
+            label={t('email')}
             value={email}
             onChange={setEmail}
-            placeholder='you@example.com'
+            placeholder={t('emailPlaceholder')}
             type='email'
           />
           <Field
-            label='Дата рождения'
+            label={t('birthday')}
             value={birthday}
             onChange={setBirthday}
             type='date'
@@ -132,22 +148,22 @@ function Form({
           />
 
           <div className='flex flex-col gap-1'>
-            <span className='text-[12px] text-[#9E9E9E]'>Пол</span>
+            <span className='text-[12px] text-[#9E9E9E]'>{t('gender')}</span>
             <div className='flex gap-2'>
               {GENDERS.map((g) => {
-                const active = gender === g.value;
+                const active = gender === g;
                 return (
                   <button
-                    key={g.value}
+                    key={g}
                     type='button'
-                    onClick={() => setGender(active ? null : g.value)}
+                    onClick={() => setGender(active ? null : g)}
                     className={`flex-1 h-10 rounded-2xl text-[13px] font-medium transition ${
                       active
                         ? 'bg-[#21201F] text-white'
                         : 'bg-[#F4F1EE] text-[#21201F]'
                     }`}
                   >
-                    {g.label}
+                    {genderLabel(g)}
                   </button>
                 );
               })}
@@ -164,7 +180,7 @@ function Form({
           disabled={update.isPending}
           className='mt-5 w-full h-12 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.99] transition-transform disabled:opacity-60'
         >
-          Сохранить
+          {t('save')}
         </button>
       </div>
     </div>

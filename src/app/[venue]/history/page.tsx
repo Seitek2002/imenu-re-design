@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -91,15 +91,18 @@ const subtitleFor = (o: OrderV2): string => {
   return extra > 0 ? `${first} +${extra}` : first;
 };
 
+const PAGE_SIZE = 20;
+
 export default function HistoryPage() {
   const { venue } = useParams<{ venue: string }>();
   const phone = useClientStore((s) => s.phone);
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [limit, setLimit] = useState(PAGE_SIZE);
 
-  const { data, isLoading, isError, refetch } = useOrdersV2({
+  const { data, isLoading, isFetching, isError, refetch } = useOrdersV2({
     phone,
     venueSlug: venue,
-    limit: 50,
+    limit,
     includeUnpaid: true,
   });
 
@@ -107,6 +110,34 @@ export default function HistoryPage() {
     const list = data?.results ?? [];
     return filter === 'all' ? list : list.filter((o) => o.serviceMode === filter);
   }, [data, filter]);
+
+  const totalCount = data?.count ?? 0;
+  const hasMore = (data?.results.length ?? 0) < totalCount;
+
+  // IntersectionObserver на sentinel в конце списка — поднимаем limit когда виден.
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const onSentinel = useCallback(
+    (node: HTMLDivElement | null) => {
+      sentinelRef.current = node;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!hasMore) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !isFetching) {
+          setLimit((prev) => prev + PAGE_SIZE);
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [hasMore, isFetching, orders.length]);
 
   if (!phone) {
     return <EmptyState venueSlug={venue} />;
@@ -247,6 +278,16 @@ export default function HistoryPage() {
             </Link>
           );
         })}
+
+        {hasMore && (
+          <div ref={onSentinel} className='py-4 text-center'>
+            {isFetching ? (
+              <Loader2 size={18} className='inline-block animate-spin text-[#9E9E9E]' />
+            ) : (
+              <span className='text-[12px] text-[#9E9E9E]'>···</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   ChevronLeft,
   Pencil,
@@ -40,6 +41,7 @@ const MAX_TASTES = 20;
 const MAX_TASTE_LEN = 32;
 
 export default function ProfilePage() {
+  const t = useTranslations('Profile');
   const { venue } = useParams<{ venue: string }>();
   const router = useRouter();
   const phone = useClientStore((s) => s.phone);
@@ -104,7 +106,7 @@ export default function ProfilePage() {
 
   const displayName =
     [client?.firstname, client?.lastname].filter(Boolean).join(' ').trim() ||
-    'Гость';
+    t('guest');
 
   return (
     <div className='min-h-svh pb-24'>
@@ -112,15 +114,15 @@ export default function ProfilePage() {
         <Link
           href={`/${venue}`}
           className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
-          aria-label='Назад'
+          aria-label={t('back')}
         >
           <ChevronLeft size={24} />
         </Link>
-        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>Аккаунт</h1>
+        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>{t('title')}</h1>
         <button
           onClick={() => requireAuth() && setEditOpen(true)}
           className='ml-auto w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
-          aria-label='Редактировать'
+          aria-label={t('edit')}
         >
           <Pencil size={18} />
         </button>
@@ -133,7 +135,7 @@ export default function ProfilePage() {
             onClick={() => requireAuth() && setEditOpen(true)}
             className='bg-white rounded-2xl p-4 text-left active:scale-[0.99] transition-transform'
           >
-            <div className='text-[13px] text-[#9E9E9E]'>Имя</div>
+            <div className='text-[13px] text-[#9E9E9E]'>{t('nameLabel')}</div>
             <div className='mt-1 flex items-center justify-between'>
               <span className='text-[15px] font-bold text-[#21201F] truncate'>
                 {displayName}
@@ -147,7 +149,7 @@ export default function ProfilePage() {
             className='bg-[#21201F] text-white rounded-2xl p-4 flex flex-col justify-between active:scale-[0.99] transition-transform'
           >
             <div className='flex items-center justify-between text-[12px] opacity-70'>
-              <span>Баллы</span>
+              <span>{t('bonusLabel')}</span>
               <ArrowRight size={14} />
             </div>
             <div className='mt-2 text-[22px] font-extrabold'>
@@ -176,7 +178,7 @@ export default function ProfilePage() {
           onLoginRequired={() => setLoginOpen(true)}
         />
 
-        <SoonSection title='Способы оплаты' count={PAYMENTS.length}>
+        <SoonSection title={t('payments.title')} count={PAYMENTS.length}>
           <div className='mt-3 grid grid-cols-3 gap-2'>
             {PAYMENTS.map((p) => (
               <div
@@ -194,23 +196,23 @@ export default function ProfilePage() {
             ))}
             <button className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'>
               <Plus size={16} />
-              <span className='text-[11px]'>Добавить</span>
+              <span className='text-[11px]'>{t('payments.add')}</span>
             </button>
           </div>
         </SoonSection>
 
         <section className='bg-white rounded-2xl p-4'>
-          <div className='text-[13px] font-semibold text-[#21201F]'>Быстрые ссылки</div>
+          <div className='text-[13px] font-semibold text-[#21201F]'>{t('quickLinks.title')}</div>
           <div className='mt-3 grid grid-cols-3 gap-2'>
             <Link
               href={`/${venue}/history`}
               className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'
             >
               <ShoppingBag size={20} />
-              <span className='text-[11px]'>Заказы</span>
+              <span className='text-[11px]'>{t('quickLinks.orders')}</span>
             </Link>
-            <QuickLink icon={<Store size={20} />} label='Филиалы' />
-            <QuickLink icon={<MessageSquareText size={20} />} label='Чат' />
+            <QuickLink icon={<Store size={20} />} label={t('quickLinks.venues')} />
+            <QuickLink icon={<MessageSquareText size={20} />} label={t('quickLinks.chat')} />
           </div>
         </section>
 
@@ -219,7 +221,7 @@ export default function ProfilePage() {
           className='bg-white rounded-2xl p-4 flex items-center gap-3 text-[14px] text-[#E0533A] font-medium active:scale-[0.99] transition-transform'
         >
           <LogOut size={18} />
-          Выйти из аккаунта
+          {t('logout')}
         </button>
       </div>
 
@@ -248,6 +250,7 @@ function AddressesSection({
   authed: boolean;
   onLoginRequired: () => void;
 }) {
+  const t = useTranslations('Profile.addresses');
   const { data, isLoading } = useMyAddresses();
   const addresses = data ?? [];
   const [editing, setEditing] = useState<MyAddress | null | undefined>(
@@ -268,7 +271,7 @@ function AddressesSection({
     <section className='bg-white rounded-2xl p-4 relative'>
       <div className='flex items-center justify-between'>
         <div className='text-[13px] font-semibold text-[#21201F]'>
-          Мои адреса
+          {t('title')}
           {addresses.length > 0 && (
             <span className='text-[#9E9E9E] font-normal ml-1'>
               ({addresses.length})
@@ -293,7 +296,7 @@ function AddressesSection({
                 </span>
                 {a.isDefault && (
                   <span className='ml-auto text-[9px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-1.5 py-0.5 rounded-full'>
-                    осн
+                    {t('default')}
                   </span>
                 )}
               </div>
@@ -310,18 +313,18 @@ function AddressesSection({
             className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'
           >
             <Plus size={16} />
-            <span className='text-[11px]'>Добавить</span>
+            <span className='text-[11px]'>{t('add')}</span>
           </button>
         )}
       </div>
 
       {authed && isLoading && addresses.length === 0 && (
-        <div className='mt-2 text-[11px] text-[#9E9E9E]'>Загружаем…</div>
+        <div className='mt-2 text-[11px] text-[#9E9E9E]'>{t('loading')}</div>
       )}
 
       {!authed && (
         <div className='mt-2 text-[11px] text-[#9E9E9E]'>
-          Войдите по SMS, чтобы сохранять адреса.
+          {t('loginRequired')}
         </div>
       )}
 
@@ -343,6 +346,7 @@ function TastesSection({
   authed: boolean;
   onLoginRequired: () => void;
 }) {
+  const t = useTranslations('Profile.tastes');
   const update = useUpdateMe();
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
@@ -398,26 +402,26 @@ function TastesSection({
     <section className='bg-white rounded-2xl p-4 relative'>
       <div>
         <div className='text-[13px] font-semibold text-[#21201F]'>
-          Вкусовые предпочтения
+          {t('title')}
         </div>
         <div className='mt-1 text-[12px] text-[#9E9E9E]'>
-          Учтём при формировании заказа
+          {t('subtitle')}
         </div>
       </div>
 
       <div className='mt-3 flex flex-wrap gap-2 items-center'>
-        {tastes.map((t) => (
+        {tastes.map((taste) => (
           <span
-            key={t}
+            key={taste}
             className='inline-flex items-center gap-1.5 h-[30px] pl-3 pr-1.5 rounded-full bg-[#F4F1EE] text-[12px] text-[#21201F]'
           >
-            {t}
+            {taste}
             <button
               type='button'
-              onClick={() => remove(t)}
+              onClick={() => remove(taste)}
               disabled={update.isPending}
               className='w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-[#EDEAE7] disabled:opacity-50'
-              aria-label={`Удалить ${t}`}
+              aria-label={t('remove', { name: taste })}
             >
               <X size={12} className='text-[#9E9E9E]' />
             </button>
@@ -440,7 +444,7 @@ function TastesSection({
                   setDraft('');
                 }
               }}
-              placeholder='Без лука'
+              placeholder={t('placeholder')}
               maxLength={MAX_TASTE_LEN}
               className='bg-transparent outline-none text-[12px] text-[#21201F] w-24'
             />
@@ -456,7 +460,7 @@ function TastesSection({
               className='inline-flex items-center gap-1.5 h-[30px] px-3 rounded-full border border-dashed border-[#D7D2CC] text-[12px] text-[#9E9E9E]'
             >
               <Plus size={12} />
-              Добавить
+              {t('add')}
             </button>
           )
         )}
@@ -464,9 +468,7 @@ function TastesSection({
 
       {tastes.length === 0 && !adding && (
         <div className='mt-2 text-[11px] text-[#9E9E9E]'>
-          {authed
-            ? 'Пока пусто — добавьте, что вам не подходит.'
-            : 'Войдите по SMS, чтобы сохранить предпочтения.'}
+          {authed ? t('empty') : t('loginRequired')}
         </div>
       )}
     </section>
@@ -480,38 +482,39 @@ function EmptyState({
   venueSlug: string;
   onLoginClick: () => void;
 }) {
+  const t = useTranslations('Profile');
   return (
     <div className='min-h-svh pb-24 flex flex-col'>
       <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
         <Link
           href={`/${venueSlug}`}
           className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
-          aria-label='Назад'
+          aria-label={t('back')}
         >
           <ChevronLeft size={24} />
         </Link>
-        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>Аккаунт</h1>
+        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>{t('title')}</h1>
       </header>
 
       <div className='flex-1 flex flex-col items-center justify-center px-6 text-center'>
         <div className='w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-5'>
           <UserIcon size={36} className='text-[#C4B59C]' strokeWidth={1.5} />
         </div>
-        <h2 className='text-[18px] font-bold text-[#21201F]'>Войдите в аккаунт</h2>
+        <h2 className='text-[18px] font-bold text-[#21201F]'>{t('loginEmpty.title')}</h2>
         <p className='mt-2 text-[13px] text-[#9E9E9E] max-w-xs'>
-          Подтвердите номер телефона по SMS — увидите историю заказов, баллы и сможете быстрее оформлять доставку.
+          {t('loginEmpty.description')}
         </p>
         <button
           onClick={onLoginClick}
           className='mt-6 inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium active:scale-[0.99] transition-transform'
         >
-          Войти по SMS
+          {t('loginEmpty.loginButton')}
         </button>
         <Link
           href={`/${venueSlug}`}
           className='mt-3 text-[13px] text-[#9E9E9E] underline-offset-2 hover:underline'
         >
-          Перейти в меню
+          {t('loginEmpty.menuLink')}
         </Link>
       </div>
     </div>
@@ -529,6 +532,7 @@ function SoonSection({
   count?: number;
   children: React.ReactNode;
 }) {
+  const t = useTranslations('Profile.payments');
   return (
     <section className='bg-white rounded-2xl p-4 relative'>
       <div className='flex items-center justify-between'>
@@ -545,7 +549,7 @@ function SoonSection({
         </div>
         <div className='flex items-center gap-2'>
           <span className='text-[10px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-2 py-0.5 rounded-full'>
-            скоро
+            {t('soon')}
           </span>
           <button className='flex items-center gap-1 text-[12px] text-[#9E9E9E]'>
             <ChevronRight size={14} />
