@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -91,15 +91,18 @@ const subtitleFor = (o: OrderV2): string => {
   return extra > 0 ? `${first} +${extra}` : first;
 };
 
+const PAGE_SIZE = 20;
+
 export default function HistoryPage() {
   const { venue } = useParams<{ venue: string }>();
   const phone = useClientStore((s) => s.phone);
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [limit, setLimit] = useState(PAGE_SIZE);
 
-  const { data, isLoading, isError, refetch } = useOrdersV2({
+  const { data, isLoading, isFetching, isError, refetch } = useOrdersV2({
     phone,
     venueSlug: venue,
-    limit: 50,
+    limit,
     includeUnpaid: true,
   });
 
@@ -107,6 +110,34 @@ export default function HistoryPage() {
     const list = data?.results ?? [];
     return filter === 'all' ? list : list.filter((o) => o.serviceMode === filter);
   }, [data, filter]);
+
+  const totalCount = data?.count ?? 0;
+  const hasMore = (data?.results.length ?? 0) < totalCount;
+
+  // IntersectionObserver на sentinel в конце списка — поднимаем limit когда виден.
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const onSentinel = useCallback(
+    (node: HTMLDivElement | null) => {
+      sentinelRef.current = node;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!hasMore) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !isFetching) {
+          setLimit((prev) => prev + PAGE_SIZE);
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [hasMore, isFetching, orders.length]);
 
   if (!phone) {
     return <EmptyState venueSlug={venue} />;
@@ -149,7 +180,29 @@ export default function HistoryPage() {
 
       <div className='px-4 mt-4 flex flex-col gap-3'>
         {isLoading && (
-          <div className='py-16' />
+          <div className='flex flex-col gap-3'>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className='bg-white rounded-2xl px-4 py-4 animate-pulse'
+              >
+                <div className='flex items-start justify-between gap-2'>
+                  <div className='flex-1'>
+                    <div className='flex items-center justify-between'>
+                      <div className='h-4 w-20 bg-[#EDEAE7] rounded' />
+                      <div className='h-3 w-16 bg-[#F4F1EE] rounded' />
+                    </div>
+                    <div className='mt-2.5 flex items-center gap-2'>
+                      <div className='h-[26px] w-20 bg-[#F4F1EE] rounded-full' />
+                      <div className='h-[26px] w-24 bg-[#F4F1EE] rounded-full' />
+                      <div className='h-4 w-8 bg-[#F4F1EE] rounded ml-auto' />
+                    </div>
+                    <div className='mt-3 h-3 w-3/4 bg-[#F4F1EE] rounded' />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {isError && (
@@ -175,11 +228,13 @@ export default function HistoryPage() {
           const subtitle = subtitleFor(o);
           const statusLabel = o.statusText || STATUS_LABEL[o.status];
           const statusTone = STATUS_TONE[o.status];
+          // Маршрутизация: pending → /order-status (там есть оплата и countdown).
+          // Не проверяем здесь paymentExpiresAt vs Date.now() — Date.now() в
+          // render нарушает react-hooks/purity, и сама /order-status корректно
+          // показывает expired-state когда время вышло.
           const isPending =
             o.status === OrderStatus.PendingPayment ||
-            (o.paymentStatus === 'pending' &&
-              !!o.paymentExpiresAt &&
-              new Date(o.paymentExpiresAt).getTime() > Date.now());
+            o.paymentStatus === 'pending';
           const href = isPending
             ? `/${venue}/order-status/${o.id}`
             : `/${venue}/history/${o.id}`;
@@ -247,6 +302,16 @@ export default function HistoryPage() {
             </Link>
           );
         })}
+
+        {hasMore && (
+          <div ref={onSentinel} className='py-4 text-center'>
+            {isFetching ? (
+              <Loader2 size={18} className='inline-block animate-spin text-[#9E9E9E]' />
+            ) : (
+              <span className='text-[12px] text-[#9E9E9E]'>···</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -257,7 +322,8 @@ function ResumePaymentRow({ expiresAt }: { expiresAt?: string | null }) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     if (Number.isNaN(target)) return;
-    setNow(Date.now());
+    // первый тик через секунду — countdown стартует чуть позже, зато не
+    // дёргаем setState синхронно в effect (react-hooks/set-state-in-effect).
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [target]);

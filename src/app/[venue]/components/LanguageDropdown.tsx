@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { LOCALE_COOKIE, LOCALES, type Locale } from '@/lib/locale';
+import { useAuthStore } from '@/store/auth';
+import { updateMyProfile } from '@/lib/api/me';
 import { Globe } from 'lucide-react';
 import GB from 'country-flag-icons/react/3x2/GB';
 import RU from 'country-flag-icons/react/3x2/RU';
@@ -99,6 +101,17 @@ export default function LanguageDropdown() {
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${maxAge}; SameSite=Lax`;
     queuedAtPathRef.current = pathname;
     setIsQueued(true);
+
+    // Если пользователь авторизован — синхронизируем выбор с бэком,
+    // чтобы SMS/уведомления приходили на нужном языке. Fire-and-forget.
+    const { accessToken, updateClient, client } = useAuthStore.getState();
+    if (accessToken && client?.locale !== next) {
+      updateMyProfile({ locale: next })
+        .then((c) => updateClient(c))
+        .catch(() => {
+          // тихая ошибка — UI-локаль уже переключилась
+        });
+    }
   };
 
   const CYCLE: Locale[] = ['ru', 'ky', 'en'];

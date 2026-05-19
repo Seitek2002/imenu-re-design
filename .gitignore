@@ -49,3 +49,5 @@ next-env.d.ts
 skills-lock.json
 /tmp/
 /*.png
+KUMA_REQUEST_FOLLOWUP.md
+KUMA_REQUEST.md

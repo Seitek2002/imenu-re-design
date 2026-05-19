@@ -3,6 +3,7 @@ import { useLocale } from 'next-intl';
 import { API_V2_URL } from '../config';
 import type { Locale } from '../locale';
 import type { PosOrder } from '@/types/pos-order';
+import { getAccessTokenSnapshot } from '@/store/auth';
 
 interface CurrentOrderResponse {
   order: PosOrder | null;
@@ -68,11 +69,15 @@ async function createPaymentLink(
   if (code) body.code = code;
   if (hash) body.hash = hash;
 
+  // SMS-bypass (Kuma 2026-05-19): если есть валидный Bearer — phone_code не нужен.
+  // Без токена работает прежний гостевой flow с code/hash из SMS.
+  const token = getAccessTokenSnapshot();
   const res = await fetch(`${API_V2_URL}/pos-orders/${orderId}/payment-link/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept-Language': locale,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
   });
