@@ -112,8 +112,6 @@ export interface OrderCreateBody {
   code?: string;
   hash?: string;
 
-  /** ID сохранённого адреса клиента — для телеметрии, не влияет на адрес доставки */
-  client_address_id?: number | null;
 }
 
 export interface PhoneVerificationHash {
@@ -147,15 +145,15 @@ export interface BonusTransaction {
   kind: BonusTransactionKind;
   /** Целое число в виде строки: "50", "150". Дробных бонусов нет. */
   amount: string;
-  is_credit: boolean;
-  created_at: string; // ISO 8601
-  order_id: number | null;
+  isCredit: boolean;
+  createdAt: string; // ISO 8601
+  orderId: number | null;
   title: string;
   subtitle: string;
-  venue_slug: string | null;
-  venue_name: string | null;
+  venueSlug: string | null;
+  venueName: string | null;
   /** Баланс клиента после операции. null у старых записей (до 2026-05-19). */
-  balance_after: number | null;
+  balanceAfter: number | null;
 }
 
 export interface BonusTransactionsResponse {
