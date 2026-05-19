@@ -405,6 +405,15 @@
     "rowCutlery": "Приборы",
     "rowCutleryYes": "Да",
     "rowComment": "Комментарий",
+    "breakdown": {
+      "title": "Разложение",
+      "itemsTotal": "Сумма товаров",
+      "containerTotal": "Упаковка",
+      "deliveryPrice": "Доставка",
+      "bonus": "Списано бонусов",
+      "bonusEarned": "Начислено бонусов",
+      "free": "Бесплатно"
+    },
     "serviceMode": {
       "delivery": "Доставка",
       "dineIn": "На месте",

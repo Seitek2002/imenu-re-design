@@ -405,6 +405,15 @@
     "rowCutlery": "Cutlery",
     "rowCutleryYes": "Yes",
     "rowComment": "Comment",
+    "breakdown": {
+      "title": "Breakdown",
+      "itemsTotal": "Items total",
+      "containerTotal": "Packaging",
+      "deliveryPrice": "Delivery",
+      "bonus": "Bonuses spent",
+      "bonusEarned": "Bonuses earned",
+      "free": "Free"
+    },
     "serviceMode": {
       "delivery": "Delivery",
       "dineIn": "Dine-in",

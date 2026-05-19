@@ -405,6 +405,15 @@
     "rowCutlery": "Аспаптар",
     "rowCutleryYes": "Ооба",
     "rowComment": "Комментарий",
+    "breakdown": {
+      "title": "Бөлүштүрүү",
+      "itemsTotal": "Товарлардын суммасы",
+      "containerTotal": "Таңгак",
+      "deliveryPrice": "Жеткирүү",
+      "bonus": "Эсептен чыкты",
+      "bonusEarned": "Топтолду",
+      "free": "Бекер"
+    },
     "serviceMode": {
       "delivery": "Жеткирүү",
       "dineIn": "Залда",

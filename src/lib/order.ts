@@ -1,11 +1,40 @@
-export interface OrderProduct {
+/**
+ * Выбранный group-модификатор в исторической позиции заказа.
+ * Снимок из OrderProductSerializer.group_modifications — сверено по реальному
+ * прод-ответу 2026-05-20. Содержит всё нужное для рендера и rebuild basket'а
+ * без обращения к каталогу.
+ */
+export interface OrderProductGroupModSelection {
+  /** GroupItem.id */
   id: number;
+  name: string;
+  count: number;
+  /** decimal-string, цена варианта (абсолютная, не доплата) */
+  price: string;
+  /** Group.id — к какой группе относится вариант. */
+  groupId: number;
+  /** Название группы для отображения (например, «Размер»). */
+  groupName: string;
+  /** Внешний ID из Poster — фронту не нужен, оставлен для отладки. */
+  externalId?: string;
+}
+
+export interface OrderProduct {
+  id?: number;
   price: string;
   count: number;
+  /** Общая цена строки = price * count (до скидки). */
+  totalPrice?: string;
+  promotionDiscountAmount?: string;
+  discountedPrice?: string;
+  discountedTotalPrice?: string;
   modificator: number | null;
+  modificatorName?: string | null;
+  groupModifications?: OrderProductGroupModSelection[];
   product: {
     id: number;
     productName: string;
+    weight?: number;
     productPhoto?: string;
     productPhotoSmall?: string;
     productPhotoLarge?: string;
@@ -19,6 +48,13 @@ export interface OrderProduct {
  */
 export type PaymentStatus = 'not_required' | 'pending' | 'paid' | 'failed';
 
+/**
+ * OrderV2 = OrderList с проводов. Сверено вживую на проде 2026-05-20:
+ * всё camelCase, snake-варианты не приходят (был миф от старого Kuma-примера).
+ *
+ * Свагер врёт по двум полям — `venue` и `spot` объявлены `string`, реально
+ * возвращаются объектами; здесь типизированы по живому ответу.
+ */
 export interface OrderV2 {
   id: number;
   status: number;
@@ -26,11 +62,15 @@ export interface OrderV2 {
   serviceMode: number; // 1=DineIn, 2=Takeout, 3=Delivery
   totalPrice: string;
   orderProducts: OrderProduct[];
-  /** Поле плоское в свагере (OrderList.tableNum). Старый код может смотреть в `table.tableNum` — оставлено для совместимости. */
   tableNum?: string;
-  table?: {
+  venue?: {
+    slug: string;
+    name: string;
+  };
+  spot?: {
     id: number;
-    tableNum: string;
+    name: string;
+    address: string;
   };
   address?: string | null;
   deliveryLatitude?: string | null;
@@ -39,15 +79,31 @@ export interface OrderV2 {
   needsCutlery?: boolean;
   phone?: string;
   paymentStatus?: PaymentStatus;
-  promotion?: string;
+  paymentMethod?: 1 | 2;
+  promotion?: string | null;
   source?: string;
-  created_at?: string;
+  createdAt?: string;
   paymentExpiresAt?: string | null;
   paymentUrl?: string | null;
+  /** Разложение суммы (Kuma 2026-05-20 §1.2). Все decimal-строки, не округлять. */
+  itemsTotal?: string;
+  containerTotal?: string;
+  discountedProductsTotal?: string;
+  promotionDiscountAmount?: string;
+  servicePrice?: string;
+  deliveryPrice?: string;
+  tipsPrice?: number;
+  /** Сколько бонусов списано с клиента (НЕ путать с bonusEarned). */
+  bonus?: number;
+  bonusEarned?: number;
+  bonusAccrualPercent?: number;
 }
 
 export interface OrdersResponse {
   count: number;
+  /** Полная URL следующей страницы (offset-based DRF pagination). null = больше нет. */
+  next: string | null;
+  previous: string | null;
   results: OrderV2[];
 }
 

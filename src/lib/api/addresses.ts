@@ -2,14 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_V2_URL } from '../config';
 import { authedFetch } from './authed-fetch';
 import { AuthApiError } from './auth';
-import { readSnakeJson, snakeJsonBody } from './case';
 import { useAuthStore } from '@/store/auth';
 
 /**
  * CRUD /api/v2/clients/me/addresses/ — Bearer.
  *
- * Контракт Kuma 2026-05-19 (project_auth_profile_contract §3).
- * Поля бэка snake_case; конвертируем через case.ts.
+ * Контракт Kuma 2026-05-19, поля сверены со свагером 2026-05-20: всё camelCase
+ * на проводе (бэк-middleware конвертирует snake↔camel прозрачно).
  *
  * Лимит 10 адресов на клиента (400 при превышении). При `isDefault=true`
  * бэк сам снимает default у остальных — никакой клиентской синхронизации.
@@ -69,7 +68,7 @@ export async function listMyAddresses(): Promise<MyAddress[]> {
     requireAuth: true,
   });
   if (!res.ok) throw await parseError(res);
-  const data = await readSnakeJson<MyAddress[] | { results: MyAddress[] }>(res);
+  const data = (await res.json()) as MyAddress[] | { results: MyAddress[] };
   return Array.isArray(data) ? data : data.results;
 }
 
@@ -79,10 +78,10 @@ export async function createMyAddress(
   const res = await authedFetch(`${API_V2_URL}/clients/me/addresses/`, {
     method: 'POST',
     requireAuth: true,
-    body: snakeJsonBody(body),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw await parseError(res);
-  return readSnakeJson<MyAddress>(res);
+  return (await res.json()) as MyAddress;
 }
 
 export async function updateMyAddress(
@@ -92,10 +91,10 @@ export async function updateMyAddress(
   const res = await authedFetch(`${API_V2_URL}/clients/me/addresses/${id}/`, {
     method: 'PATCH',
     requireAuth: true,
-    body: snakeJsonBody(body),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw await parseError(res);
-  return readSnakeJson<MyAddress>(res);
+  return (await res.json()) as MyAddress;
 }
 
 export async function deleteMyAddress(id: number): Promise<void> {

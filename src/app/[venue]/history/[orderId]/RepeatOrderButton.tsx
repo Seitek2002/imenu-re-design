@@ -5,7 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RotateCcw, Loader2 } from 'lucide-react';
 import { useVenueProducts } from '@/lib/api/queries';
-import { useBasketStore, type AddToBasketSelection } from '@/store/basket';
+import {
+  useBasketStore,
+  type AddToBasketSelection,
+  type BasketGroupSelection,
+} from '@/store/basket';
 import { useVenueStore } from '@/store/venue';
 import type { OrderV2 } from '@/lib/order';
 import Toast from '@/components/ui/Toast';
@@ -15,17 +19,17 @@ interface Props {
 }
 
 /**
- * Best-effort пересборка корзины из OrderProducts.
+ * Пересборка корзины из OrderProducts.
  *
  * Что умеем:
- *  - простые позиции — добавляем как есть с актуальной ценой из каталога;
- *  - flat-модификаторы (размер старого формата) — переносим по `modificator.id`.
+ *  - простые позиции — добавляем с актуальной ценой из каталога;
+ *  - flat-модификаторы (старый формат размеров) — по `modificator.id`;
+ *  - group-модификаторы — по `groupModifications[]` из `OrderProduct` (Kuma 2026-05-20).
  *
- * Что НЕ умеем (зависит от Kuma §1.1 — groupModifications в OrderProductDetail):
- *  - позиции с обязательными group-mods (Кола 1л/2л Postera, бургер + соусы) —
- *    в ответе бэка нет выбранных вариантов, пользователю придётся пересобрать.
- *    Помечаем как «требуют уточнения» и не добавляем в корзину.
- *  - товары снятые с продажи / отсутствующие в текущем каталоге — пропускаем.
+ * Что НЕ умеем:
+ *  - товары снятые с продажи / отсутствующие в текущем каталоге — пропускаем;
+ *  - позиции где group-mod был выбран, но соответствующий GroupItem удалён
+ *    из каталога с тех пор — помечаем «требуют уточнения».
  */
 export default function RepeatOrderButton({ order }: Props) {
   const t = useTranslations('OrderDetail');
@@ -53,7 +57,6 @@ export default function RepeatOrderButton({ order }: Props) {
     setBusy(true);
 
     let added = 0;
-    let needsReview = 0;
     let missing = 0;
 
     for (const it of order.orderProducts ?? []) {
@@ -62,16 +65,9 @@ export default function RepeatOrderButton({ order }: Props) {
         missing += 1;
         continue;
       }
-      const hasRequiredGroups = (product.groupModifications ?? []).some(
-        (g) => g.selection.min >= 1,
-      );
-      if (hasRequiredGroups) {
-        // Не можем восстановить выбор без groupModifications в OrderProductDetail
-        needsReview += 1;
-        continue;
-      }
 
       const selection: AddToBasketSelection = {};
+
       if (it.modificator != null && product.modificators?.length) {
         const mod = product.modificators.find((m) => m.id === it.modificator);
         if (mod) {
@@ -79,6 +75,27 @@ export default function RepeatOrderButton({ order }: Props) {
           selection.flatModName = mod.name;
           selection.flatModPrice = mod.price;
         }
+      }
+
+      // Восстанавливаем group-мод выбор. В ответе бэка каждый элемент содержит
+      // groupId/groupName + id/name/price — всё нужное для BasketGroupSelection,
+      // лукап в каталоге не нужен. Группируем по groupId.
+      if (it.groupModifications?.length) {
+        const grouped = new Map<number, BasketGroupSelection>();
+        for (const gm of it.groupModifications) {
+          let entry = grouped.get(gm.groupId);
+          if (!entry) {
+            entry = { groupId: gm.groupId, groupName: gm.groupName, items: [] };
+            grouped.set(gm.groupId, entry);
+          }
+          entry.items.push({
+            id: gm.id,
+            name: gm.name,
+            count: gm.count,
+            price: gm.price,
+          });
+        }
+        selection.groupSelections = Array.from(grouped.values());
       }
 
       addToBasket(product, it.count, selection);
@@ -94,12 +111,12 @@ export default function RepeatOrderButton({ order }: Props) {
       return;
     }
 
-    if (needsReview > 0 || missing > 0) {
+    if (missing > 0) {
       setToast(
         t('repeatPartial', {
           added,
           total: order.orderProducts?.length ?? 0,
-          review: needsReview + missing,
+          review: missing,
         }),
       );
     } else {

@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useLocale } from 'next-intl';
 import {
   BonusResponse,
@@ -92,6 +97,59 @@ export const useOrdersV2 = (params: OrdersParams) => {
     // Не грузим, если телефона нет
     enabled: !!phone && phone.length > 5,
     refetchInterval: 15000, // Обновляем каждые 15 сек
+  });
+};
+
+/**
+ * Infinite-scroll вариант — следует `next` URL из ответа DRF.
+ * Используется на /history. Polling 15s обновляет все загруженные страницы
+ * (для countdown'а оплаты на первой странице — оправдано).
+ */
+async function fetchOrdersByUrl(
+  url: string,
+  locale: Locale,
+): Promise<OrdersResponse> {
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: buildHeaders(locale),
+  });
+  if (!res.ok) throw new Error('Failed to fetch orders');
+  return res.json();
+}
+
+function buildOrdersUrl(params: OrdersParams): string {
+  const sp = new URLSearchParams();
+  if (params.phone) sp.append('phone', normalizePhoneForApi(params.phone));
+  if (params.venueSlug) sp.append('venueSlug', params.venueSlug);
+  if (params.limit != null) sp.append('limit', String(params.limit));
+  if (params.startDate) sp.append('startDate', params.startDate);
+  if (params.endDate) sp.append('endDate', params.endDate);
+  if (params.includeUnpaid != null)
+    sp.append('includeUnpaid', String(params.includeUnpaid));
+  return `${API_BASE}/orders/?${sp.toString()}`;
+}
+
+export const useOrdersInfiniteV2 = (params: OrdersParams) => {
+  const locale = useLocale() as Locale;
+  const { phone } = params;
+  const firstUrl = buildOrdersUrl(params);
+
+  return useInfiniteQuery({
+    queryKey: [
+      'orders-infinite',
+      phone,
+      params.venueSlug,
+      params.limit,
+      params.startDate,
+      params.endDate,
+      params.includeUnpaid,
+      locale,
+    ],
+    queryFn: ({ pageParam }) => fetchOrdersByUrl(pageParam, locale),
+    initialPageParam: firstUrl,
+    getNextPageParam: (last) => last.next ?? undefined,
+    enabled: !!phone && phone.length > 5,
+    refetchInterval: 15000,
   });
 };
 
