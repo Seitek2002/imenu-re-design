@@ -5,14 +5,8 @@ import { notFound } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { API_V2_URL } from '@/lib/config';
 import type { Locale } from '@/lib/locale';
-import {
-  orderItemsTotal,
-  orderContainerTotal,
-  orderDeliveryPrice,
-  orderBonusEarned,
-  type OrderV2,
-} from '@/lib/order';
-import { ServiceMode } from '@/types/api';
+import { type OrderV2 } from '@/lib/order';
+import { OrderStatus, ServiceMode } from '@/types/api';
 import RepeatOrderButton from './RepeatOrderButton';
 import PayNowButton from './PayNowButton';
 
@@ -73,7 +67,7 @@ export default async function OrderDetailPage({ params }: Props) {
 
   const tone = SERVICE_MODE_TONE[order.serviceMode];
   const modeKey = SERVICE_MODE_KEY[order.serviceMode];
-  const { date, time } = fmtDateParts(order.created_at, locale);
+  const { date, time } = fmtDateParts(order.createdAt, locale);
   const totalNum = Number(order.totalPrice);
   const itemsCount = order.orderProducts?.length ?? 0;
   const currency = t('currency');
@@ -169,12 +163,15 @@ export default async function OrderDetailPage({ params }: Props) {
 
         <DetailsBlock order={order} />
 
-        {order.paymentStatus === 'pending' && order.paymentUrl && (
-          <PayNowButton
-            paymentUrl={order.paymentUrl}
-            expiresAt={order.paymentExpiresAt}
-          />
-        )}
+        {order.paymentStatus === 'pending' &&
+          order.paymentUrl &&
+          order.status !== OrderStatus.Cancelled &&
+          order.status !== OrderStatus.Completed && (
+            <PayNowButton
+              paymentUrl={order.paymentUrl}
+              expiresAt={order.paymentExpiresAt}
+            />
+          )}
 
         <RepeatOrderButton order={order} />
       </div>
@@ -194,11 +191,7 @@ async function BreakdownBlock({
   totalNum: number;
 }) {
   const t = await getTranslations('OrderDetail');
-  const itemsTotal = orderItemsTotal(order);
-  const containerTotal = orderContainerTotal(order);
-  const deliveryPrice = orderDeliveryPrice(order);
-  const bonusEarned = orderBonusEarned(order);
-  const bonus = order.bonus;
+  const { itemsTotal, containerTotal, deliveryPrice, bonusEarned, bonus } = order;
 
   const rows: { label: string; value: string; tone?: 'free' | 'minus' | 'plus' }[] = [];
   if (itemsTotal && Number(itemsTotal) > 0) {
@@ -268,7 +261,7 @@ async function BreakdownBlock({
 
 async function DetailsBlock({ order }: { order: OrderV2 }) {
   const t = await getTranslations('OrderDetail');
-  const tableNum = order.tableNum ?? order.table?.tableNum;
+  const tableNum = order.tableNum;
   const rows: { label: string; value: string }[] = [];
   if (order.paymentStatus && order.paymentStatus !== 'not_required') {
     const label = t(`paymentStatus.${order.paymentStatus}`);

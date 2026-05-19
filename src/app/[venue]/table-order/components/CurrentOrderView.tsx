@@ -73,16 +73,17 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     includeUnpaid: true,
   });
   const guestOrders = useMemo<OrderV2[]>(() => {
-    if (!guestOrdersData?.results || !tableId) return [];
+    if (!guestOrdersData?.results || !tableNumberFromStore) return [];
+    const tableNumStr = String(tableNumberFromStore);
     return guestOrdersData.results
       .filter(
         (o) =>
-          o.table?.id === tableId &&
+          o.tableNum === tableNumStr &&
           o.status !== OrderStatus.Completed &&
           o.status !== OrderStatus.Cancelled,
       )
       .sort((a, b) => a.id - b.id);
-  }, [guestOrdersData, tableId]);
+  }, [guestOrdersData, tableNumberFromStore]);
 
   const {
     order: wsOrder,

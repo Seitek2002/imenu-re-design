@@ -48,6 +48,13 @@ export interface OrderProduct {
  */
 export type PaymentStatus = 'not_required' | 'pending' | 'paid' | 'failed';
 
+/**
+ * OrderV2 = OrderList с проводов. Сверено вживую на проде 2026-05-20:
+ * всё camelCase, snake-варианты не приходят (был миф от старого Kuma-примера).
+ *
+ * Свагер врёт по двум полям — `venue` и `spot` объявлены `string`, реально
+ * возвращаются объектами; здесь типизированы по живому ответу.
+ */
 export interface OrderV2 {
   id: number;
   status: number;
@@ -55,18 +62,16 @@ export interface OrderV2 {
   serviceMode: number; // 1=DineIn, 2=Takeout, 3=Delivery
   totalPrice: string;
   orderProducts: OrderProduct[];
-  /** Поле плоское в свагере (OrderList.tableNum). Старый код может смотреть в `table.tableNum` — оставлено для совместимости. */
   tableNum?: string;
-  table?: {
-    id: number;
-    tableNum: string;
+  venue?: {
+    slug: string;
+    name: string;
   };
-  /**
-   * Филиал заказа. Swagger даёт `venue: string` (read-only) — обычно slug,
-   * иногда __str__ модели. Просто строка для отображения и сравнения с
-   * текущим venue из URL. Не пытаемся структурировать.
-   */
-  venue?: string;
+  spot?: {
+    id: number;
+    name: string;
+    address: string;
+  };
   address?: string | null;
   deliveryLatitude?: string | null;
   deliveryLongitude?: string | null;
@@ -74,37 +79,31 @@ export interface OrderV2 {
   needsCutlery?: boolean;
   phone?: string;
   paymentStatus?: PaymentStatus;
-  promotion?: string;
+  paymentMethod?: 1 | 2;
+  promotion?: string | null;
   source?: string;
-  created_at?: string;
+  createdAt?: string;
   paymentExpiresAt?: string | null;
   paymentUrl?: string | null;
-  /**
-   * Разложение суммы (Kuma 2026-05-20 §1.2). Все decimal-строки, не округлять.
-   * `bonus` — сколько бонусов списано с клиента (НЕ путать с `bonusEarned`).
-   *
-   * Бэк зовёт поля snake_case (items_total и т.п.) — фронт читает оба варианта
-   * через accessor на случай миграции на camelCase в будущем.
-   */
+  /** Разложение суммы (Kuma 2026-05-20 §1.2). Все decimal-строки, не округлять. */
   itemsTotal?: string;
-  items_total?: string;
   containerTotal?: string;
-  container_total?: string;
+  discountedProductsTotal?: string;
+  promotionDiscountAmount?: string;
+  servicePrice?: string;
   deliveryPrice?: string;
-  delivery_price?: string;
+  tipsPrice?: number;
+  /** Сколько бонусов списано с клиента (НЕ путать с bonusEarned). */
   bonus?: number;
   bonusEarned?: number;
-  bonus_earned?: number;
+  bonusAccrualPercent?: number;
 }
-
-/** Аксессоры для смешанной snake/camel сериализации /v2/orders/. */
-export const orderItemsTotal = (o: OrderV2) => o.itemsTotal ?? o.items_total;
-export const orderContainerTotal = (o: OrderV2) => o.containerTotal ?? o.container_total;
-export const orderDeliveryPrice = (o: OrderV2) => o.deliveryPrice ?? o.delivery_price;
-export const orderBonusEarned = (o: OrderV2) => o.bonusEarned ?? o.bonus_earned;
 
 export interface OrdersResponse {
   count: number;
+  /** Полная URL следующей страницы (offset-based DRF pagination). null = больше нет. */
+  next: string | null;
+  previous: string | null;
   results: OrderV2[];
 }
 

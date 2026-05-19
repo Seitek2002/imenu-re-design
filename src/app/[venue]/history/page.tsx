@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -17,9 +17,9 @@ import {
   History as HistoryIcon,
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
-import { useOrdersV2 } from '@/lib/api/queries';
+import { useOrdersInfiniteV2 } from '@/lib/api/queries';
 import { OrderStatus, ServiceMode } from '@/types/api';
-import type { OrderV2 } from '@/lib/order';
+import { type OrderV2 } from '@/lib/order';
 
 type FilterKey = 'all' | ServiceMode;
 
@@ -81,8 +81,7 @@ const itemsCount = (o: OrderV2) =>
 
 const subtitleFor = (o: OrderV2): string => {
   if (o.serviceMode === ServiceMode.DineIn) {
-    const t = o.tableNum ?? o.table?.tableNum;
-    if (t) return `Стол №${t}`;
+    if (o.tableNum) return `Стол №${o.tableNum}`;
   }
   if (o.address) return o.address;
   const first = o.orderProducts?.[0]?.product?.productName;
@@ -97,47 +96,44 @@ export default function HistoryPage() {
   const { venue } = useParams<{ venue: string }>();
   const phone = useClientStore((s) => s.phone);
   const [filter, setFilter] = useState<FilterKey>('all');
-  const [limit, setLimit] = useState(PAGE_SIZE);
 
-  const { data, isLoading, isFetching, isError, refetch } = useOrdersV2({
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useOrdersInfiniteV2({
     phone,
     venueSlug: venue,
-    limit,
+    limit: PAGE_SIZE,
     includeUnpaid: true,
   });
 
   const orders = useMemo(() => {
-    const list = data?.results ?? [];
+    const list = data?.pages.flatMap((p) => p.results) ?? [];
     return filter === 'all' ? list : list.filter((o) => o.serviceMode === filter);
   }, [data, filter]);
 
-  const totalCount = data?.count ?? 0;
-  const hasMore = (data?.results.length ?? 0) < totalCount;
-
-  // IntersectionObserver на sentinel в конце списка — поднимаем limit когда виден.
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const onSentinel = useCallback(
-    (node: HTMLDivElement | null) => {
-      sentinelRef.current = node;
-    },
-    [],
-  );
+  // IntersectionObserver на sentinel. Используем callback ref через useState —
+  // useRef не триггерит rerender, и effect не узнаёт когда node mount'нулся.
+  const [sentinelNode, setSentinelNode] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!hasMore) return;
-    const node = sentinelRef.current;
-    if (!node) return;
+    if (!sentinelNode || !hasNextPage) return;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting) && !isFetching) {
-          setLimit((prev) => prev + PAGE_SIZE);
+        if (entries.some((e) => e.isIntersecting) && !isFetchingNextPage) {
+          fetchNextPage();
         }
       },
       { rootMargin: '200px' },
     );
-    io.observe(node);
+    io.observe(sentinelNode);
     return () => io.disconnect();
-  }, [hasMore, isFetching, orders.length]);
+  }, [sentinelNode, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (!phone) {
     return <EmptyState venueSlug={venue} />;
@@ -224,7 +220,7 @@ export default function HistoryPage() {
 
         {orders.map((o) => {
           const t = TYPE_LABEL[o.serviceMode];
-          const { date, time } = fmtDate(o.created_at);
+          const { date, time } = fmtDate(o.createdAt);
           const subtitle = subtitleFor(o);
           const statusLabel = o.statusText || STATUS_LABEL[o.status];
           const statusTone = STATUS_TONE[o.status];
@@ -276,9 +272,9 @@ export default function HistoryPage() {
                           {statusLabel}
                         </span>
                       )}
-                      {o.venue && o.venue !== venue && (
+                      {o.venue && o.venue.slug !== venue && (
                         <span className='h-[26px] px-3 rounded-full text-[11px] font-medium inline-flex items-center bg-[#F4F1EE] text-[#6B6B6B]'>
-                          {o.venue}
+                          {o.venue.name}
                         </span>
                       )}
                       <span className='flex items-center gap-1 text-[13px] text-[#21201F]'>
@@ -308,9 +304,9 @@ export default function HistoryPage() {
           );
         })}
 
-        {hasMore && (
-          <div ref={onSentinel} className='py-4 text-center'>
-            {isFetching ? (
+        {hasNextPage && (
+          <div ref={setSentinelNode} className='py-4 text-center'>
+            {isFetchingNextPage ? (
               <Loader2 size={18} className='inline-block animate-spin text-[#9E9E9E]' />
             ) : (
               <span className='text-[12px] text-[#9E9E9E]'>···</span>
