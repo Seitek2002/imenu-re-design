@@ -121,11 +121,11 @@ export default async function OrderDetailPage({ params }: Props) {
           </div>
 
           <ul className='mt-3 flex flex-col gap-3'>
-            {order.orderProducts?.map((it) => {
+            {order.orderProducts?.map((it, idx) => {
               const img = it.product.productPhotoSmall || it.product.productPhoto;
               const lineTotal = Number(it.price) * it.count;
               return (
-                <li key={`${it.id}-${it.modificator}`} className='flex items-center gap-3'>
+                <li key={`${it.product.id}-${it.modificator}-${idx}`} className='flex items-center gap-3'>
                   <div className='relative w-[42px] h-[38px] rounded-lg overflow-hidden bg-[#F4F1EE] flex items-center justify-center shrink-0'>
                     {img ? (
                       <Image src={img} alt={it.product.productName} fill className='object-cover' />

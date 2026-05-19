@@ -2,15 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_V2_URL } from '../config';
 import { authedFetch } from './authed-fetch';
 import { AuthApiError, type AuthClient } from './auth';
-import { readSnakeJson, snakeJsonBody } from './case';
 import { useAuthStore } from '@/store/auth';
 import type { Locale } from '../locale';
 
 /**
  * GET/PATCH /api/v2/clients/me/ — Bearer.
  *
- * Контракт Kuma 2026-05-19 (project_auth_profile_contract §2).
- * Поля бэка snake_case; конвертируются через case.ts.
+ * Контракт Kuma 2026-05-19, поля сверены со свагером 2026-05-20: всё camelCase
+ * на проводе (бэк-middleware конвертирует snake↔camel прозрачно).
  *
  * Источник истины — useAuthStore.client. После любого PATCH здесь же
  * обновляем стор, чтобы все потребители (страница профиля, чекаут и т.п.)
@@ -38,7 +37,7 @@ export async function fetchMyProfile(): Promise<AuthClient> {
     requireAuth: true,
   });
   if (!res.ok) throw new AuthApiError(`me_failed_${res.status}`, res.status);
-  return readSnakeJson<AuthClient>(res);
+  return (await res.json()) as AuthClient;
 }
 
 export async function updateMyProfile(
@@ -47,7 +46,7 @@ export async function updateMyProfile(
   const res = await authedFetch(`${API_V2_URL}/clients/me/`, {
     method: 'PATCH',
     requireAuth: true,
-    body: snakeJsonBody(patch),
+    body: JSON.stringify(patch),
   });
   if (!res.ok) {
     let data: Record<string, unknown> | undefined;
@@ -61,7 +60,7 @@ export async function updateMyProfile(
       `me_patch_failed_${res.status}`;
     throw new AuthApiError(detail, res.status, data);
   }
-  return readSnakeJson<AuthClient>(res);
+  return (await res.json()) as AuthClient;
 }
 
 const ME_KEY = ['me'] as const;

@@ -1,29 +1,40 @@
 /**
  * Выбранный group-модификатор в исторической позиции заказа.
- * Контракт Kuma 2026-05-20: OrderProductSerializer.group_modifications
- * (вложено в OrderListSerializer). Используется для отрисовки «Кола · 1л»
- * в истории и для корректного rebuild basket'а в Repeat Order.
+ * Снимок из OrderProductSerializer.group_modifications — сверено по реальному
+ * прод-ответу 2026-05-20. Содержит всё нужное для рендера и rebuild basket'а
+ * без обращения к каталогу.
  */
 export interface OrderProductGroupModSelection {
   /** GroupItem.id */
   id: number;
   name: string;
   count: number;
-  /** decimal-string, доплата за единицу варианта */
+  /** decimal-string, цена варианта (абсолютная, не доплата) */
   price: string;
+  /** Group.id — к какой группе относится вариант. */
+  groupId: number;
+  /** Название группы для отображения (например, «Размер»). */
+  groupName: string;
+  /** Внешний ID из Poster — фронту не нужен, оставлен для отладки. */
+  externalId?: string;
 }
 
 export interface OrderProduct {
-  id: number;
+  id?: number;
   price: string;
   count: number;
+  /** Общая цена строки = price * count (до скидки). */
+  totalPrice?: string;
+  promotionDiscountAmount?: string;
+  discountedPrice?: string;
+  discountedTotalPrice?: string;
   modificator: number | null;
-  /** Имя плоского модификатора (если выбран). Может отсутствовать у старых заказов. */
   modificatorName?: string | null;
   groupModifications?: OrderProductGroupModSelection[];
   product: {
     id: number;
     productName: string;
+    weight?: number;
     productPhoto?: string;
     productPhotoSmall?: string;
     productPhotoLarge?: string;
@@ -50,11 +61,12 @@ export interface OrderV2 {
     id: number;
     tableNum: string;
   };
-  /** Филиал заказа (Kuma 2026-05-20 §G.2). Полезно когда у клиента заказы из разных мест. */
-  venue?: {
-    slug: string;
-    name: string;
-  };
+  /**
+   * Филиал заказа. Swagger даёт `venue: string` (read-only) — обычно slug,
+   * иногда __str__ модели. Просто строка для отображения и сравнения с
+   * текущим venue из URL. Не пытаемся структурировать.
+   */
+  venue?: string;
   address?: string | null;
   deliveryLatitude?: string | null;
   deliveryLongitude?: string | null;

@@ -57,7 +57,6 @@ export default function RepeatOrderButton({ order }: Props) {
     setBusy(true);
 
     let added = 0;
-    let needsReview = 0;
     let missing = 0;
 
     for (const it of order.orderProducts ?? []) {
@@ -78,37 +77,23 @@ export default function RepeatOrderButton({ order }: Props) {
         }
       }
 
-      // Восстанавливаем group-мод выбор: лукапим каждую запись it.groupModifications[]
-      // в product.groupModifications[].items[] чтобы определить groupId и собрать
-      // BasketGroupSelection с актуальными name/price из каталога.
-      if (it.groupModifications?.length && product.groupModifications?.length) {
+      // Восстанавливаем group-мод выбор. В ответе бэка каждый элемент содержит
+      // groupId/groupName + id/name/price — всё нужное для BasketGroupSelection,
+      // лукап в каталоге не нужен. Группируем по groupId.
+      if (it.groupModifications?.length) {
         const grouped = new Map<number, BasketGroupSelection>();
-        let lookupFailed = false;
         for (const gm of it.groupModifications) {
-          const groupDef = product.groupModifications.find((g) =>
-            g.items.some((i) => i.id === gm.id),
-          );
-          if (!groupDef) {
-            lookupFailed = true;
-            break;
-          }
-          const item = groupDef.items.find((i) => i.id === gm.id)!;
-          let entry = grouped.get(groupDef.id);
+          let entry = grouped.get(gm.groupId);
           if (!entry) {
-            entry = { groupId: groupDef.id, groupName: groupDef.name, items: [] };
-            grouped.set(groupDef.id, entry);
+            entry = { groupId: gm.groupId, groupName: gm.groupName, items: [] };
+            grouped.set(gm.groupId, entry);
           }
           entry.items.push({
-            id: item.id,
-            name: item.name,
+            id: gm.id,
+            name: gm.name,
             count: gm.count,
-            price: item.price,
+            price: gm.price,
           });
-        }
-        if (lookupFailed) {
-          // Какой-то выбранный вариант больше не в каталоге — лучше попросить юзера переcобрать.
-          needsReview += 1;
-          continue;
         }
         selection.groupSelections = Array.from(grouped.values());
       }
@@ -126,12 +111,12 @@ export default function RepeatOrderButton({ order }: Props) {
       return;
     }
 
-    if (needsReview > 0 || missing > 0) {
+    if (missing > 0) {
       setToast(
         t('repeatPartial', {
           added,
           total: order.orderProducts?.length ?? 0,
-          review: needsReview + missing,
+          review: missing,
         }),
       );
     } else {

@@ -2,18 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import { API_V2_URL } from '../config';
 import { authedFetch } from './authed-fetch';
 import { AuthApiError } from './auth';
-import { readSnakeJson } from './case';
 import { useAuthStore } from '@/store/auth';
 
 /**
  * GET /api/v2/client/bonus/transactions/ — Bearer.
  *
- * Контракт Kuma 2026-05-19 + дельта 2026-05-19 (frontend-api-changes-2026-05-19.md §2):
- *  - amount теперь integer-строка ("50" вместо "50.00") — дробных бонусов нет;
- *  - добавлены venue_slug / venue_name (фильтрация и отображение по филиалу);
- *  - добавлен balance_after (баланс после операции; null для исторических до 2026-05-19).
+ * Контракт Kuma 2026-05-19 + 2026-05-19/05-20:
+ *  - amount integer-строка ("50"); дробных бонусов нет;
+ *  - venueSlug / venueName (фильтрация и отображение по филиалу);
+ *  - balanceAfter (null для исторических записей до 2026-05-19).
  *
- * expiringSoon в строках по-прежнему нет (низкий приоритет).
+ * Поля на проводе camelCase (свагер). Бэк-middleware конвертирует snake↔camel
+ * прозрачно — фронту не нужен дополнительный слой.
  */
 
 export type BonusTransactionKind =
@@ -71,7 +71,8 @@ export interface BonusTransactionsParams {
 
 function buildQuery(params: BonusTransactionsParams): string {
   const q = new URLSearchParams();
-  if (params.venueSlug) q.append('venue_slug', params.venueSlug);
+  // Per swagger query params — camelCase (venueSlug, не venue_slug).
+  if (params.venueSlug) q.append('venueSlug', params.venueSlug);
   if (params.from) q.append('from', params.from);
   if (params.to) q.append('to', params.to);
   if (params.kind) q.append('kind', params.kind);
@@ -89,7 +90,7 @@ export async function fetchBonusTransactions(
   if (!res.ok) {
     throw new AuthApiError(`bonus_tx_failed_${res.status}`, res.status);
   }
-  return readSnakeJson<BonusTransactionsResponse>(res);
+  return (await res.json()) as BonusTransactionsResponse;
 }
 
 export function useBonusTransactions(params: BonusTransactionsParams) {

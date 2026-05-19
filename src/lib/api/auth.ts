@@ -172,12 +172,3 @@ export async function logoutAuth(): Promise<void> {
   // 204 — cookie очищается на бэке. Ошибки игнорируем, фронт всё равно чистит стор.
   await authFetch('/auth/logout/', { method: 'POST' }).catch(() => null);
 }
-
-export async function fetchMe(accessToken: string): Promise<AuthClient> {
-  const res = await authFetch('/auth/me/', {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!res.ok) throw await parseError(res);
-  const data = (await res.json()) as Record<string, unknown>;
-  return mapClient(data);
-}
