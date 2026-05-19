@@ -135,6 +135,7 @@ const DrawerCheckout: FC<IProps> = ({
       : null,
   );
   const [saveAddressIntent, setSaveAddressIntent] = useState<SaveAddressIntent | null>(null);
+  const [pickedAddressId, setPickedAddressId] = useState<number | null>(null);
   const hasToken = useAuthStore((s) => !!s.accessToken);
 
   // Достаем нужные ID для бекенда из стора
@@ -272,6 +273,9 @@ const DrawerCheckout: FC<IProps> = ({
               deliveryLatitude: coords.lat.toFixed(6),
               deliveryLongitude: coords.lng.toFixed(6),
             }
+          : {}),
+        ...(orderType === 'delivery' && pickedAddressId !== null
+          ? { clientAddressId: pickedAddressId }
           : {}),
         comment: finalComment,
         needsCutlery: needUtensils,
@@ -528,6 +532,7 @@ const DrawerCheckout: FC<IProps> = ({
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
                       onSaveIntentChange={setSaveAddressIntent}
+                      onPickedAddressIdChange={setPickedAddressId}
                     />
                   </div>
                 )}
@@ -680,6 +685,7 @@ const DrawerCheckout: FC<IProps> = ({
                       onCoordsChange={handleCoordsChange}
                       initialCoords={coords}
                       onSaveIntentChange={setSaveAddressIntent}
+                      onPickedAddressIdChange={setPickedAddressId}
                     />
                   </div>
                 )}

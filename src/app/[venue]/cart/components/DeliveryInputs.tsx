@@ -32,6 +32,11 @@ interface Props {
    * null означает «не сохранять».
    */
   onSaveIntentChange?: (intent: SaveAddressIntent | null) => void;
+  /**
+   * ID сохранённого адреса, выбранного из picker'а. null если пользователь
+   * правит вручную. Используется для телеметрии в POST /orders/ (Kuma 2026-05-19 §3).
+   */
+  onPickedAddressIdChange?: (id: number | null) => void;
 }
 
 const coordStr = (n: number) => n.toFixed(6);
@@ -42,6 +47,7 @@ export default function DeliveryInputs({
   initialCoords,
   initialStreet,
   onSaveIntentChange,
+  onPickedAddressIdChange,
 }: Props) {
   const t = useTranslations('Cart.address');
   const venue = useVenueStore((s) => s.data);
@@ -80,6 +86,10 @@ export default function DeliveryInputs({
   useEffect(() => {
     onCoordsChange(coords);
   }, [coords, onCoordsChange]);
+
+  useEffect(() => {
+    onPickedAddressIdChange?.(pickedId);
+  }, [pickedId, onPickedAddressIdChange]);
 
   // Прокидываем save-intent наверх (или null).
   useEffect(() => {

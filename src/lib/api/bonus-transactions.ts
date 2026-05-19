@@ -8,13 +8,12 @@ import { useAuthStore } from '@/store/auth';
 /**
  * GET /api/v2/client/bonus/transactions/ — Bearer.
  *
- * Контракт Kuma 2026-05-19 (см. project_auth_profile_contract §4).
- * Поля бэка — snake_case; конвертируем один раз через readSnakeJson.
+ * Контракт Kuma 2026-05-19 + дельта 2026-05-19 (frontend-api-changes-2026-05-19.md §2):
+ *  - amount теперь integer-строка ("50" вместо "50.00") — дробных бонусов нет;
+ *  - добавлены venue_slug / venue_name (фильтрация и отображение по филиалу);
+ *  - добавлен balance_after (баланс после операции; null для исторических до 2026-05-19).
  *
- * Открытые вопросы (см. KUMA_REQUEST_FOLLOWUP §2.2, §2.3):
- *  - amount приходит decimal-строкой ("50.00"), хотя бонусы трактуются
- *    как integer-сом — округляем для отображения;
- *  - venueSlug/balanceAfter/expiringSoon в строках пока нет.
+ * expiringSoon в строках по-прежнему нет (низкий приоритет).
  */
 
 export type BonusTransactionKind =
@@ -30,13 +29,19 @@ export type BonusTransactionKind =
 export interface BonusTransaction {
   id: number;
   kind: BonusTransactionKind;
-  /** decimal-string, например "50.00". Округляем при отображении. */
+  /** integer-строка, например "50". Дробных бонусов не бывает. */
   amount: string;
   isCredit: boolean;
   createdAt: string;
   orderId: number | null;
   title: string;
   subtitle: string;
+  /** Slug филиала, в котором произошла операция. null для системных записей. */
+  venueSlug: string | null;
+  /** Название филиала для отображения. null если venueSlug=null. */
+  venueName: string | null;
+  /** Баланс клиента после этой операции. null у исторических записей до 2026-05-19. */
+  balanceAfter: number | null;
 }
 
 export interface BonusTransactionsSummary {

@@ -12,6 +12,13 @@ export interface OrderProduct {
   };
 }
 
+/**
+ * Контракт Kuma 2026-05-19 (frontend-api-changes-2026-05-19.md §1).
+ * Enum закреплён на 4 значениях. Фронт просил ещё processing/expired/refunded/cancelled —
+ * Kuma не добавил, см. KUMA_REQUEST_FOLLOWUP §1.3.
+ */
+export type PaymentStatus = 'not_required' | 'pending' | 'paid' | 'failed';
+
 export interface OrderV2 {
   id: number;
   status: number;
@@ -31,7 +38,7 @@ export interface OrderV2 {
   comment?: string | null;
   needsCutlery?: boolean;
   phone?: string;
-  paymentStatus?: string;
+  paymentStatus?: PaymentStatus;
   promotion?: string;
   source?: string;
   created_at?: string;
@@ -88,6 +95,12 @@ export interface OrderCreateBody {
   needsCutlery?: boolean;
   deliveryLatitude?: string | null;
   deliveryLongitude?: string | null;
+  /**
+   * ID сохранённого адреса клиента из /clients/me/addresses/ (если пользователь
+   * выбрал из picker'а). Опциональное поле телеметрии — на поведение заказа не
+   * влияет (Kuma 2026-05-19 §3). Не передавать при ручном вводе адреса.
+   */
+  clientAddressId?: number | null;
   orderProducts: OrderProductInput[];
   paymentMethod?: 1 | 2; // 1=Наличные, 2=Безналичная (ELQR/карта; провайдер настроен на бекенде per-venue)
   paymentMethods?: 'cash' | 'elqr' | 'card'; // legacy: прод-бекенд пока читает строковое поле

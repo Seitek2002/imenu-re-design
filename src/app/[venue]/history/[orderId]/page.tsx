@@ -5,8 +5,15 @@ import { notFound } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 import { API_V2_URL } from '@/lib/config';
 import type { Locale } from '@/lib/locale';
-import type { OrderV2 } from '@/lib/order';
+import type { OrderV2, PaymentStatus } from '@/lib/order';
 import { ServiceMode } from '@/types/api';
+
+const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
+  not_required: 'Не требуется',
+  pending: 'Ожидает оплаты',
+  paid: 'Оплачен',
+  failed: 'Ошибка оплаты',
+};
 
 interface Props {
   params: Promise<{ venue: string; orderId: string }>;
@@ -148,7 +155,13 @@ export default async function OrderDetailPage({ params }: Props) {
 function DetailsBlock({ order }: { order: OrderV2 }) {
   const tableNum = order.tableNum ?? order.table?.tableNum;
   const rows: { label: string; value: string }[] = [];
-  if (order.paymentStatus) rows.push({ label: 'Статус оплаты', value: order.paymentStatus });
+  if (order.paymentStatus) {
+    const label = PAYMENT_STATUS_LABEL[order.paymentStatus] ?? order.paymentStatus;
+    // not_required скрываем — нет смысла говорить «не требуется» в детальном виде
+    if (order.paymentStatus !== 'not_required') {
+      rows.push({ label: 'Статус оплаты', value: label });
+    }
+  }
   if (order.statusText) rows.push({ label: 'Статус заказа', value: order.statusText });
   if (order.serviceMode === ServiceMode.DineIn && tableNum)
     rows.push({ label: 'Стол', value: `№ ${tableNum}` });

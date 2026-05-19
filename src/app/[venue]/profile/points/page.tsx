@@ -242,6 +242,9 @@ export default function PointsHistoryPage() {
                           <div className='text-[14px] text-[#21201F] truncate'>{e.title}</div>
                           <div className='text-[12px] text-[#9E9E9E] mt-0.5 truncate'>
                             {e.subtitle}
+                            {e.venueName && e.venueSlug !== venue && (
+                              <> · {e.venueName}</>
+                            )}
                           </div>
                         </div>
                         <div className='text-right shrink-0'>
@@ -255,6 +258,9 @@ export default function PointsHistoryPage() {
                           </div>
                           <div className='text-[12px] text-[#9E9E9E]'>
                             {timeLabel(new Date(e.createdAt))}
+                            {e.balanceAfter != null && (
+                              <> · → {fmtBalance(e.balanceAfter, locale)}</>
+                            )}
                           </div>
                         </div>
                       </li>
