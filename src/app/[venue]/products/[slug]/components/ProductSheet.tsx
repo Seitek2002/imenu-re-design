@@ -518,6 +518,8 @@ const ModifierPopover = ({
       ? null
       : (document.querySelector('[data-product-sheet]') as HTMLElement | null),
   );
+  const touchStartY = useRef<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -564,18 +566,41 @@ const ModifierPopover = ({
     <div
       className='absolute inset-0 z-30 flex items-end justify-center px-3 pt-4 pb-[100px]'
       onClick={onClose}
+      // Гасим всплытие touch: из-за React-портала свайп иначе долетает до
+      // swipe-to-dismiss основной модалки и закрывает её. Свайп вниз (когда
+      // сетка вверху) закрывает сам поповер.
+      onTouchStart={(e) => {
+        e.stopPropagation();
+        touchStartY.current = e.touches[0].clientY;
+      }}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => {
+        e.stopPropagation();
+        if (touchStartY.current == null) return;
+        const dy = e.changedTouches[0].clientY - touchStartY.current;
+        const atTop = (scrollRef.current?.scrollTop ?? 0) <= 0;
+        if (dy > 70 && atTop) onClose();
+        touchStartY.current = null;
+      }}
+      onTouchCancel={(e) => {
+        e.stopPropagation();
+        touchStartY.current = null;
+      }}
     >
       <div className='absolute inset-0 bg-black/15 popover-backdrop' />
       <div
         className='relative w-full max-w-[420px] max-h-full flex flex-col overflow-hidden rounded-3xl bg-gray-50 shadow-2xl border border-black/5 popover-rise'
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Грэб-хэндл вместо шапки — окно закрывается тапом вне/Escape/чипом */}
+        {/* Грэб-хэндл вместо шапки — окно закрывается свайпом вниз/тапом вне/Escape/чипом */}
         <div className='flex justify-center pt-2.5 pb-1 shrink-0'>
           <div className='w-9 h-1 rounded-full bg-[#21201F]/15' />
         </div>
 
-        <div className='px-3 pt-1 pb-4 flex-1 min-h-0 overflow-y-auto overscroll-contain'>
+        <div
+          ref={scrollRef}
+          className='px-3 pt-1 pb-4 flex-1 min-h-0 overflow-y-auto overscroll-contain'
+        >
           <div className='grid grid-cols-3 gap-2.5'>
             {group.items.map((item) => {
               const count = counts[item.id] ?? 0;
