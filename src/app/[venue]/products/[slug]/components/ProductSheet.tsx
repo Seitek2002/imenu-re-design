@@ -1091,7 +1091,7 @@ const ProductContent = ({
           <div className='md:grid md:grid-cols-2 md:gap-6 md:items-start'>
             <div className='relative w-full aspect-4/3 md:aspect-square md:rounded-2xl overflow-hidden shrink-0'>
               <Image
-                src={product.productPhoto || '/placeholder-dish.svg'}
+                src={product.productPhoto || '/placeholder.svg'}
                 alt={product.productName}
                 fill
                 className={`object-cover transition-opacity duration-500 ${

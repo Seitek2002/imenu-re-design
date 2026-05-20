@@ -167,6 +167,7 @@ export interface OrderCreateBody {
   bonus?: number;
   code?: string;
   hash?: string;
+
 }
 
 export interface PhoneVerificationHash {
@@ -181,6 +182,41 @@ export interface OrderCreateResponse {
   status?: string;
   message?: string;
   phoneVerificationHash?: string;
+}
+
+// --- БОНУСНЫЕ ТРАНЗАКЦИИ ---
+
+export type BonusTransactionKind =
+  | 'accrual'
+  | 'redeem'
+  | 'promo'
+  | 'gift'
+  | 'adjust_plus'
+  | 'adjust_minus'
+  | 'expire'
+  | 'refund';
+
+export interface BonusTransaction {
+  id: number;
+  kind: BonusTransactionKind;
+  /** Целое число в виде строки: "50", "150". Дробных бонусов нет. */
+  amount: string;
+  isCredit: boolean;
+  createdAt: string; // ISO 8601
+  orderId: number | null;
+  title: string;
+  subtitle: string;
+  venueSlug: string | null;
+  venueName: string | null;
+  /** Баланс клиента после операции. null у старых записей (до 2026-05-19). */
+  balanceAfter: number | null;
+}
+
+export interface BonusTransactionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: BonusTransaction[];
 }
 
 // --- /api/v2/orders/calculate/ (контракт Kuma 2026-05-12) ---

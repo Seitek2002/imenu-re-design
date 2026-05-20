@@ -88,6 +88,21 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
           isPriority={isPriority}
         />
 
+        {product.isVideoProduct && product.productVideo && (
+          <div className='absolute inset-0 rounded-2xl overflow-hidden'>
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <video
+              src={product.productVideo}
+              poster={product.productPhoto || undefined}
+              muted
+              loop
+              playsInline
+              autoPlay
+              className='w-full h-full object-cover'
+            />
+          </div>
+        )}
+
         {promoLabel && (
           <div className='absolute top-1.5 left-1.5 z-10 bg-brand text-white text-[11px] font-bold leading-none px-2 py-1 rounded-md shadow-sm'>
             {promoLabel}

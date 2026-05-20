@@ -7,6 +7,9 @@ import { X } from 'lucide-react';
 
 import { useMounted } from '@/hooks/useMounted';
 import { MOCK_VIDEO_PRODUCTS } from '@/data/mock-video-products';
+import { useVideoProductStore } from '@/store/videoProduct';
+import { useVenueStore } from '@/store/venue';
+import { useVenueProducts } from '@/lib/api/queries';
 
 import VideoBackground from './VideoBackground';
 import SizePill from './SizePill';
@@ -17,6 +20,7 @@ import ProductDetailSheet from './ProductDetailSheet';
 import IceVersionSheet from './IceVersionSheet';
 
 const DEMO_PARAM = 'demo';
+const VIDEO_PARAM = 'video';
 
 const haptic = (ms = 30) => {
   if (typeof navigator !== 'undefined' && navigator.vibrate)
@@ -25,17 +29,62 @@ const haptic = (ms = 30) => {
 
 /**
  * Full-screen витрина товара с видео-фоном.
- * Триггер: `?demo=<slug>` в URL.
+ * Триггеры:
+ *   ?demo=<slug>  — мок-режим для демонстрации
+ *   ?video=<id>   — реальный товар из API (isVideoProduct: true)
  */
 export default function VideoProductSheet() {
   const mounted = useMounted();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  // ── Мок-режим (?demo=<slug>) ────────────────────────────────────────────
   const demoSlug = searchParams.get(DEMO_PARAM);
   const mock = demoSlug ? (MOCK_VIDEO_PRODUCTS[demoSlug] ?? null) : null;
-  const isOpen = !!mock;
 
+  // ── Реальный товар (?video=<id>) ─────────────────────────────────────────
+  const videoId = searchParams.get(VIDEO_PARAM);
+  const videoProductFromStore = useVideoProductStore((s) => s.selectedProduct);
+  const clearVideoProduct = useVideoProductStore((s) => s.setProduct);
+
+  // Фолбэк: если URL содержит ?video=<id>, но стор пуст (прямой переход),
+  // ищем товар в уже загруженных данных каталога (React Query cache).
+  const venueSlug = useVenueStore((s) => s.data?.slug ?? null);
+  const spotId = useVenueStore((s) => s.spotId);
+  const { data: allProducts } = useVenueProducts(
+    !videoId || videoProductFromStore ? null : venueSlug,
+    spotId,
+  );
+  const productFromCache = videoId && !videoProductFromStore
+    ? (allProducts?.find((p) => p.id === Number(videoId)) ?? null)
+    : null;
+
+  // Берём из стора только если URL содержит ?video=
+  const realProduct = videoId ? (videoProductFromStore ?? productFromCache) : null;
+
+  const isOpen = !!(mock || realProduct);
+
+  // ── Единый источник данных для рендера ───────────────────────────────────
+  const product = realProduct ?? mock?.product ?? null;
+  const videoUrl = realProduct?.productVideoLarge ?? mock?.videoUrl ?? '';
+  const poster =
+    realProduct
+      ? (realProduct.productVideoPoster ?? realProduct.productPhoto ?? undefined)
+      : (mock?.product.productPhoto ?? mock?.posterUrl ?? undefined);
+  const productDetails = realProduct?.productDetails ?? mock?.productDetails ?? null;
+  const variantChip = realProduct?.iceVersionChip ?? mock?.variantChip ?? null;
+  const chipIcons: Record<string, string> = mock?.chipIcons ?? {};
+  const groupMeta = mock?.groupMeta ?? null;
+
+  // Альтернативная версия товара (Айс/Горячая)
+  const iceProduct = realProduct?.iceVersion ?? null;
+  const iceMock = useMemo(
+    () => (mock?.variantSlug ? (MOCK_VIDEO_PRODUCTS[mock.variantSlug] ?? null) : null),
+    [mock],
+  );
+  const hasVariant = !!(iceProduct || iceMock);
+
+  // ── Локальный стейт ──────────────────────────────────────────────────────
   const [sizeId, setSizeId] = useState<number | null>(null);
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [qnty, setQnty] = useState(1);
@@ -43,29 +92,24 @@ export default function VideoProductSheet() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [iceOpen, setIceOpen] = useState(false);
 
-  // Мок альтернативной версии (Айс/Горячая) — null если у товара нет альтернативы
-  const iceMock = useMemo(
-    () => (mock?.variantSlug ? (MOCK_VIDEO_PRODUCTS[mock.variantSlug] ?? null) : null),
-    [mock],
-  );
-
-  // Реинициализация при смене мока
-  const lastSlugRef = useRef<string | null>(null);
+  // Реинициализация при смене товара
+  const activeKey = realProduct ? `v:${realProduct.id}` : demoSlug;
+  const lastKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!mock) {
-      lastSlugRef.current = null;
+    if (!isOpen || !product) {
+      lastKeyRef.current = null;
       return;
     }
-    if (lastSlugRef.current === demoSlug) return;
-    lastSlugRef.current = demoSlug;
+    if (lastKeyRef.current === activeKey) return;
+    lastKeyRef.current = activeKey;
 
-    setSizeId(mock.product.modificators[0]?.id ?? null);
+    setSizeId(product.modificators[0]?.id ?? null);
     setCounts({});
     setQnty(1);
     setExpandedGroupId(null);
     setDetailOpen(false);
     setIceOpen(false);
-  }, [demoSlug, mock]);
+  }, [activeKey, isOpen, product]);
 
   // Scroll lock
   useEffect(() => {
@@ -82,11 +126,13 @@ export default function VideoProductSheet() {
   }, [isOpen, mounted]);
 
   const handleClose = useCallback(() => {
+    clearVideoProduct(null);
     const params = new URLSearchParams(searchParams.toString());
     params.delete(DEMO_PARAM);
+    params.delete(VIDEO_PARAM);
     const qs = params.toString();
     window.history.replaceState(null, '', qs ? `${pathname}?${qs}` : pathname);
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, clearVideoProduct]);
 
   // ESC → закрыть overlay (если детальный лист закрыт)
   useEffect(() => {
@@ -98,7 +144,7 @@ export default function VideoProductSheet() {
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, detailOpen, handleClose]);
 
-  const groups = useMemo(() => mock?.product.groupModifications ?? [], [mock]);
+  const groups = useMemo(() => product?.groupModifications ?? [], [product]);
 
   const expandedGroup = useMemo(
     () =>
@@ -108,11 +154,10 @@ export default function VideoProductSheet() {
     [expandedGroupId, groups],
   );
 
-  // Цена = цена размера + сумма выбранных доп. опций
   const unitPrice = useMemo(() => {
-    if (!mock) return 0;
-    const mod = mock.product.modificators.find((m) => m.id === sizeId);
-    const base = mod?.price ?? mock.product.productPrice;
+    if (!product) return 0;
+    const mod = product.modificators.find((m) => m.id === sizeId);
+    const base = mod?.price ?? product.productPrice;
     const adds = groups.reduce(
       (acc, g) =>
         acc +
@@ -120,11 +165,10 @@ export default function VideoProductSheet() {
       0,
     );
     return base + adds;
-  }, [mock, sizeId, groups, counts]);
+  }, [product, sizeId, groups, counts]);
 
   const totalPrice = unitPrice * qnty;
 
-  // Счётчики и выбранные элементы по группам — для чипов
   const groupCounts = useMemo(() => {
     const out: Record<number, number> = {};
     for (const g of groups) {
@@ -162,16 +206,7 @@ export default function VideoProductSheet() {
     setDetailOpen(true);
   }, []);
 
-  if (!mounted || !mock) return null;
-  const {
-    product,
-    videoUrl,
-    posterUrl,
-    chipIcons,
-    variantChip,
-    productDetails,
-    groupMeta,
-  } = mock;
+  if (!mounted || !product) return null;
 
   return createPortal(
     <div
@@ -180,10 +215,7 @@ export default function VideoProductSheet() {
       aria-modal='true'
       aria-label={product.productName}
     >
-      <VideoBackground
-        src={videoUrl}
-        poster={product.productPhoto || posterUrl}
-      />
+      <VideoBackground src={videoUrl} poster={poster} />
 
       {/* Градиент сверху и снизу для читаемости текста */}
       <div
@@ -255,16 +287,16 @@ export default function VideoProductSheet() {
         </div>
 
         {/* Нижний ряд чипов */}
-        <div className=' justify-end'>
-          {groups.length > 0 && (
+        <div className='justify-end'>
+          {(groups.length > 0 || hasVariant) && (
             <div className='relative z-10 shrink-0'>
               <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
                 {/* Чип «Айс версия» — показывается только если у товара есть альтернатива */}
-                {variantChip && iceMock && (
+                {variantChip && hasVariant && (
                   <>
                     <VariantChipButton
                       label={variantChip.label}
-                      photo={variantChip.photo}
+                      photo={variantChip.photo ?? ''}
                       onOpen={() => { haptic(25); setIceOpen(true); }}
                     />
                     <div
@@ -315,6 +347,7 @@ export default function VideoProductSheet() {
       <IceVersionSheet
         open={iceOpen}
         mock={iceMock}
+        iceProduct={iceProduct}
         onClose={() => setIceOpen(false)}
       />
     </div>,
@@ -347,7 +380,7 @@ function VariantChipButton({
         {label}
       </span>
       <div className='w-full flex justify-center'>
-        {!imgError ? (
+        {!imgError && photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photo}
