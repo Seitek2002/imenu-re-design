@@ -195,7 +195,16 @@
     "ariaOpen": "Открыть {name}",
     "ariaDecrement": "Уменьшить",
     "showMore": "Показать ещё {n}",
-    "showLess": "Свернуть"
+    "showLess": "Свернуть",
+    "back": "Назад",
+    "next": "Далее",
+    "skip": "Пропустить",
+    "stepProgress": "Шаг {current} из {total}",
+    "review": "Проверьте выбор",
+    "reviewHint": "Можно изменить любой выбор",
+    "extras": "Дополнительно",
+    "edit": "Изменить",
+    "noExtras": "Без дополнений"
   },
   "Categories": {
     "other": "Остальное",

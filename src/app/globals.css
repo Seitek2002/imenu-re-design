@@ -121,3 +121,33 @@ body {
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+@keyframes stepSlideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes stepSlideBack {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.step-slide-in {
+  animation: stepSlideIn 0.22s ease-out;
+}
+.step-slide-back {
+  animation: stepSlideBack 0.22s ease-out;
+}
+
+@keyframes popoverRise {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.popover-rise {
+  animation: popoverRise 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes popoverBackdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.popover-backdrop {
+  animation: popoverBackdrop 0.2s ease-out;
+}

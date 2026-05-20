@@ -9,10 +9,12 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
+import { Plus, Minus, Utensils, Check } from 'lucide-react';
 import { useSearchParams, usePathname, useParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 
 import {
+  GroupItem,
   GroupModification,
   Modificator,
   Product,
@@ -59,36 +61,6 @@ function buildGroupSelections(
     .filter((g) => g.items.length > 0);
 }
 
-function emojiForGroup(name: string): string {
-  const n = name.toLowerCase();
-  if (/молок|milk|сүт/.test(n)) return '🥛';
-  if (/сахар|sugar|шекер/.test(n)) return '🍬';
-  if (/сироп|syrup/.test(n)) return '🍯';
-  if (/лёд|лед|ice|муз/.test(n)) return '🧊';
-  if (/сливк|cream|каймак/.test(n)) return '🫧';
-  if (/соус|sauce/.test(n)) return '🫙';
-  if (/топпинг|topping/.test(n)) return '✨';
-  if (/темп|temperature/.test(n)) return '🌡️';
-  if (/размер|size|өлч/.test(n)) return '📐';
-  if (/хлеб|bread|нан/.test(n)) return '🍞';
-  if (/сыр|cheese|быш/.test(n)) return '🧀';
-  if (/мясо|meat|эт/.test(n)) return '🥩';
-  if (/специ|spice/.test(n)) return '🌶️';
-  if (/добавк|extra|кошумча/.test(n)) return '➕';
-  if (/напит|drink/.test(n)) return '🥤';
-  if (/десерт|dessert/.test(n)) return '🍮';
-  return '🍽️';
-}
-
-const CARD_COLORS = [
-  { bg: 'bg-orange-50', shadow: 'shadow-orange-100', iconBg: 'bg-orange-100' },
-  { bg: 'bg-sky-50',    shadow: 'shadow-sky-100',    iconBg: 'bg-sky-100' },
-  { bg: 'bg-violet-50', shadow: 'shadow-violet-100', iconBg: 'bg-violet-100' },
-  { bg: 'bg-emerald-50',shadow: 'shadow-emerald-100',iconBg: 'bg-emerald-100' },
-  { bg: 'bg-rose-50',   shadow: 'shadow-rose-100',   iconBg: 'bg-rose-100' },
-  { bg: 'bg-amber-50',  shadow: 'shadow-amber-100',  iconBg: 'bg-amber-100' },
-];
-
 const GroupsGrid = ({
   groups,
   counts,
@@ -105,12 +77,6 @@ const GroupsGrid = ({
   const required = groups.filter((g) => g.selection.min > 0);
   const optional = groups.filter((g) => g.selection.min === 0);
 
-  const [expandedId, setExpandedId] = useState<number | null>(
-    () => optional[0]?.id ?? null,
-  );
-
-  const expandedGroup = optional.find((g) => g.id === expandedId) ?? null;
-
   return (
     <div className='flex flex-col gap-5'>
       {required.map((g) => (
@@ -125,75 +91,11 @@ const GroupsGrid = ({
       ))}
 
       {optional.length > 0 && (
-        <div className='flex flex-col gap-3'>
-          <div className='flex gap-2.5 overflow-x-auto -mx-5 px-5 pb-1 scrollbar-none'>
-            {optional.map((g, idx) => {
-              const sum = sumGroupCount(g, counts);
-              const hasSelection = sum > 0;
-              const isExpanded = expandedId === g.id;
-              const hasError = !!errors[g.id];
-              const color = CARD_COLORS[idx % CARD_COLORS.length];
-              const emoji = emojiForGroup(g.name);
-
-              const chipLabel = (() => {
-                if (!hasSelection) return g.name;
-                if (g.selection.type === 'single') {
-                  const selected = g.items.find((i) => (counts[i.id] ?? 0) > 0);
-                  return selected?.name ?? g.name;
-                }
-                return `${g.name} ×${sum}`;
-              })();
-
-              return (
-                <button
-                  key={g.id}
-                  type='button'
-                  onClick={() => setExpandedId((prev) => (prev === g.id ? null : g.id))}
-                  className={`flex flex-col items-center justify-between pt-3 pb-2.5 px-2 w-[84px] h-[84px] rounded-2xl shrink-0 active:scale-95 transition-all shadow-sm ${
-                    isExpanded
-                      ? 'bg-[#21201F] shadow-[#21201F]/20'
-                      : hasError
-                        ? 'bg-red-50 shadow-red-100'
-                        : `${color.bg} ${color.shadow}`
-                  }`}
-                >
-                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-xl ${
-                    isExpanded ? 'bg-white/15' : hasError ? 'bg-red-100' : color.iconBg
-                  }`}>
-                    {hasSelection && !isExpanded ? (
-                      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#21201F' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-                        <polyline points='20 6 9 17 4 12' />
-                      </svg>
-                    ) : isExpanded ? (
-                      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-                        <line x1='5' y1='12' x2='19' y2='12' />
-                      </svg>
-                    ) : (
-                      <span className='leading-none'>{emoji}</span>
-                    )}
-                  </span>
-                  <span className={`text-[10px] font-semibold text-center leading-tight w-full line-clamp-2 ${
-                    isExpanded ? 'text-white' : hasError ? 'text-red-500' : 'text-[#21201F]/75'
-                  }`}>
-                    {chipLabel}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {expandedGroup && (
-            <div className='rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4'>
-              <GroupSection
-                group={expandedGroup}
-                counts={counts}
-                onChange={onChange}
-                error={errors[expandedGroup.id] ?? null}
-                absolutePricing={absolutePricing}
-              />
-            </div>
-          )}
-        </div>
+        <OptionalGroupsBar
+          groups={optional}
+          counts={counts}
+          onChange={onChange}
+        />
       )}
     </div>
   );
@@ -411,6 +313,404 @@ const GroupSection = ({
   );
 };
 
+/**
+ * Карточка модификатора. Реализация перенесена из VideoProductSheet/GroupGridItem
+ * и адаптирована под светлый ProductSheet: фото `w-14 h-14` со skeleton-лоадером
+ * и фолбэком `/splash-placeholder.svg`, полностью видимое название, вес·цена,
+ * степпер `− N +` на иконках lucide. Карточка типонезависима — семантику
+ * single/multiple задаёт родитель через `canIncrement` + `onInc`/`onDec`.
+ */
+const ModifierItemCard = ({
+  item,
+  count,
+  type,
+  canIncrement,
+  onInc,
+  onDec,
+}: {
+  item: GroupItem;
+  count: number;
+  type: 'single' | 'multiple';
+  canIncrement: boolean;
+  onInc: () => void;
+  onDec: () => void;
+}) => {
+  const t = useTranslations('Product');
+  const tc = useTranslations('Common');
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [hoverSide, setHoverSide] = useState<'l' | 'r' | null>(null);
+  const selected = count > 0;
+  const priceNum = Number(item.price);
+  const bruttoNum = Number(item.brutto);
+  const rawPhoto = item.photo || item.thumbnail || null;
+  const showImg = !!rawPhoto && !imgError;
+
+  // Зоны лево/право активны только когда есть что уменьшать (multiple, count>0)
+  const zonesActive = type === 'multiple' && count > 0;
+
+  const priceLabel =
+    priceNum > 0 ? t('pricePlus', { price: priceNum }) : t('free');
+  const meta =
+    bruttoNum > 0
+      ? `${Math.round(bruttoNum)} ${tc('weightUnit')} · ${priceLabel}`
+      : priceLabel;
+
+  // Клик по карточке. single — переключение выбора. multiple — левая половина
+  // уменьшает, правая увеличивает; на пустой карточке (или с клавиатуры) —
+  // просто добавляем.
+  const handleCardClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (type === 'single') {
+      if (selected) onDec();
+      else onInc();
+      return;
+    }
+    const keyboard = e.detail === 0;
+    if (count > 0 && !keyboard) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      if (e.clientX - rect.left < rect.width / 2) {
+        onDec();
+        return;
+      }
+    }
+    onInc();
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!zonesActive) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const side = e.clientX - rect.left < rect.width / 2 ? 'l' : 'r';
+    setHoverSide((prev) => (prev === side ? prev : side));
+  };
+  const handleMouseLeave = () =>
+    setHoverSide((prev) => (prev === null ? prev : null));
+
+  return (
+    <button
+      type='button'
+      onClick={handleCardClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      aria-label={item.name}
+      className={`group relative overflow-hidden rounded-2xl p-2 pt-3 flex flex-col items-center h-full min-h-[138px] text-center cursor-pointer transition-all duration-150 ${
+        selected
+          ? 'bg-white ring-2 ring-[#21201F]/25 shadow-md'
+          : 'bg-white ring-1 ring-black/5 hover:ring-[#21201F]/15 hover:shadow-sm'
+      }`}
+    >
+      {/* Оверлей наведённой стороны (лево −, право +) на всю высоту; фото лежит
+          выше (z-10) на непрозрачной плитке, поэтому им не задевается */}
+      {zonesActive && (
+        <>
+          <span
+            className={`pointer-events-none absolute inset-y-0 left-0 w-1/2 transition-colors duration-150 ${
+              hoverSide === 'l' ? 'bg-[#21201F]/[0.05]' : ''
+            }`}
+          />
+          <span
+            className={`pointer-events-none absolute inset-y-0 right-0 w-1/2 transition-colors duration-150 ${
+              hoverSide === 'r' ? 'bg-[#21201F]/[0.05]' : ''
+            }`}
+          />
+        </>
+      )}
+
+      <div className='relative z-10 flex flex-1 flex-col items-center w-full'>
+        {/* Фото — компактный квадрат (object-cover); skeleton при загрузке,
+            нейтральная иконка при отсутствии/ошибке */}
+        <div className='relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-gray-100'>
+          {showImg ? (
+            <>
+              {!imgLoaded && (
+                <div className='absolute inset-0 animate-pulse bg-black/5' />
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={rawPhoto}
+                alt={item.name}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                  imgLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            </>
+          ) : (
+            <div className='w-full h-full flex items-center justify-center'>
+              <Utensils size={20} strokeWidth={1.75} className='text-[#21201F]/25' />
+            </div>
+          )}
+        </div>
+
+        {/* Название — полностью видимое, без обрезки */}
+        <div className='text-[13px] font-bold mt-1 leading-snug text-[#21201F] break-words w-full'>
+          {item.name}
+        </div>
+
+        {/* Вес · цена */}
+        <div className='text-[11px] mt-0.5 text-[#21201F]/60 leading-tight w-full'>
+          {meta}
+        </div>
+
+        {/* Индикатор состояния (визуальный — клики обрабатывает карточка).
+            multiple+selected — степпер разнесён по краям: − слева, + справа */}
+        {!selected ? (
+          <div className='mt-auto pt-1.5 flex items-center justify-center min-h-7 pointer-events-none'>
+            <span className='w-7 h-7 rounded-full bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center'>
+              <Plus size={16} strokeWidth={2.5} className='text-[#21201F]' />
+            </span>
+          </div>
+        ) : type === 'single' ? (
+          <div className='mt-auto pt-1.5 flex items-center justify-center min-h-7 pointer-events-none'>
+            <span className='w-7 h-7 rounded-full bg-[#21201F] flex items-center justify-center'>
+              <Check size={15} strokeWidth={3} className='text-white' />
+            </span>
+          </div>
+        ) : (
+          <div className='mt-auto pt-1.5 w-full flex items-center justify-between min-h-7 pointer-events-none'>
+            <span
+              className={`w-6 h-6 rounded-full bg-white shadow-sm ring-1 flex items-center justify-center transition-all duration-150 ${
+                hoverSide === 'l' ? 'ring-[#21201F]/40 scale-110' : 'ring-black/5'
+              }`}
+            >
+              <Minus size={14} strokeWidth={2.5} className='text-[#21201F]' />
+            </span>
+            <span className='font-bold text-sm text-[#21201F]'>{count}</span>
+            <span
+              className={`w-6 h-6 rounded-full bg-white shadow-sm ring-1 flex items-center justify-center transition-all duration-150 ${
+                !canIncrement
+                  ? 'opacity-40 ring-black/5'
+                  : hoverSide === 'r'
+                    ? 'ring-[#21201F]/40 scale-110'
+                    : 'ring-black/5'
+              }`}
+            >
+              <Plus size={14} strokeWidth={2.5} className='text-[#21201F]' />
+            </span>
+          </div>
+        )}
+      </div>
+    </button>
+  );
+};
+
+/**
+ * Плавающее окно (≈343×320) с модификаторами одной группы. Рендерится порталом
+ * в контейнер шита `[data-product-sheet]`, поэтому позиционируется относительно
+ * него и одинаково работает на мобиле и десктопе. Закрывается тапом по фону
+ * или Escape.
+ */
+const ModifierPopover = ({
+  group,
+  counts,
+  onChange,
+  onClose,
+}: {
+  group: GroupModification;
+  counts: CountsState;
+  onChange: (next: CountsState) => void;
+  onClose: () => void;
+}) => {
+  // Контейнер шита уже в DOM к моменту открытия поповера — берём его лениво,
+  // без setState-in-effect.
+  const [container] = useState<HTMLElement | null>(() =>
+    typeof document === 'undefined'
+      ? null
+      : (document.querySelector('[data-product-sheet]') as HTMLElement | null),
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [onClose]);
+
+  const { type, min, max } = group.selection;
+  const sum = sumGroupCount(group, counts);
+  const canIncrementGlobal = max <= 0 || sum < max;
+
+  // Логика инкремента/декремента — как в VideoProductSheet/GroupGrid.
+  const handleInc = (itemId: number) => {
+    if (type === 'single') {
+      const next: CountsState = { ...counts };
+      for (const it of group.items) next[it.id] = 0;
+      next[itemId] = 1;
+      onChange(next);
+      return;
+    }
+    if (!canIncrementGlobal) return;
+    onChange({ ...counts, [itemId]: (counts[itemId] ?? 0) + 1 });
+  };
+
+  const handleDec = (itemId: number) => {
+    const current = counts[itemId] ?? 0;
+    if (current <= 0) return;
+    // single + min=0: повторный тап снимает выбор
+    if (type === 'single' && min === 0) {
+      onChange({ ...counts, [itemId]: 0 });
+      return;
+    }
+    onChange({ ...counts, [itemId]: current - 1 });
+  };
+
+  if (!container) return null;
+
+  return createPortal(
+    <div
+      className='absolute inset-0 z-30 flex items-end justify-center px-3 pt-4 pb-[100px]'
+      onClick={onClose}
+    >
+      <div className='absolute inset-0 bg-black/15 popover-backdrop' />
+      <div
+        className='relative w-full max-w-[420px] max-h-full flex flex-col overflow-hidden rounded-3xl bg-gray-50 shadow-2xl border border-black/5 popover-rise'
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Грэб-хэндл вместо шапки — окно закрывается тапом вне/Escape/чипом */}
+        <div className='flex justify-center pt-2.5 pb-1 shrink-0'>
+          <div className='w-9 h-1 rounded-full bg-[#21201F]/15' />
+        </div>
+
+        <div className='px-3 pt-1 pb-4 flex-1 min-h-0 overflow-y-auto overscroll-contain'>
+          <div className='grid grid-cols-3 gap-2.5'>
+            {group.items.map((item) => {
+              const count = counts[item.id] ?? 0;
+              const canIncrement =
+                type === 'single' ? count === 0 : canIncrementGlobal;
+              return (
+                <ModifierItemCard
+                  key={item.id}
+                  item={item}
+                  count={count}
+                  type={type}
+                  canIncrement={canIncrement}
+                  onInc={() => handleInc(item.id)}
+                  onDec={() => handleDec(item.id)}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>,
+    container,
+  );
+};
+
+/**
+ * Чип группы опциональных модификаторов. Дизайн перенесён из
+ * VideoProductSheet/GroupChip (3 состояния) и адаптирован под светлую тему:
+ * ничего не выбрано — «+» кружок над карточкой; выбран 1 — фото и название
+ * элемента; выбрано >1 — фото + бейдж количества. Тап открывает поповер.
+ */
+const OptionalGroupChip = ({
+  group,
+  counts,
+  active,
+  onClick,
+}: {
+  group: GroupModification;
+  counts: CountsState;
+  active: boolean;
+  onClick: () => void;
+}) => {
+  const [imgError, setImgError] = useState(false);
+  const sum = sumGroupCount(group, counts);
+  const selectedItem = group.items.find((i) => (counts[i.id] ?? 0) > 0);
+  const hasSelection = sum > 0;
+  const label = sum === 1 && selectedItem ? selectedItem.name : group.name;
+  const itemPhoto = selectedItem?.photo || selectedItem?.thumbnail || null;
+  const showImg = !!itemPhoto && !imgError;
+
+  return (
+    <button
+      type='button'
+      onClick={onClick}
+      className={`relative shrink-0 w-[92px] h-[90px] rounded-2xl flex flex-col items-center justify-center gap-1.5 px-1 active:scale-95 transition-all duration-150 outline-none ${
+        active
+          ? 'bg-white ring-2 ring-[#21201F]/15 shadow-sm'
+          : 'bg-gray-50 hover:bg-gray-100'
+      }`}
+      aria-pressed={active}
+      aria-label={hasSelection ? `${label}: ${sum}` : label}
+    >
+      {sum > 1 && (
+        <span className='absolute top-1.5 right-1.5 bg-[#21201F] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-4 text-center'>
+          {sum}
+        </span>
+      )}
+
+      {hasSelection ? (
+        showImg ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={itemPhoto}
+            alt=''
+            onError={() => setImgError(true)}
+            className='w-11 h-11 rounded-xl object-cover'
+          />
+        ) : (
+          <span className='w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center'>
+            <Utensils size={18} strokeWidth={1.75} className='text-[#21201F]/30' />
+          </span>
+        )
+      ) : (
+        <span className='w-9 h-9 rounded-full border border-[#21201F]/15 flex items-center justify-center'>
+          <Plus size={18} strokeWidth={2} className='text-[#21201F]' />
+        </span>
+      )}
+
+      <span className='text-[11px] font-medium text-center text-[#21201F] leading-tight line-clamp-2 break-words w-full'>
+        {label}
+      </span>
+    </button>
+  );
+};
+
+/**
+ * Ряд чипов-групп опциональных модификаторов. Тап по чипу открывает
+ * {@link ModifierPopover} с модификаторами этой группы.
+ */
+const OptionalGroupsBar = ({
+  groups,
+  counts,
+  onChange,
+}: {
+  groups: GroupModification[];
+  counts: CountsState;
+  onChange: (next: CountsState) => void;
+}) => {
+  const [openId, setOpenId] = useState<number | null>(null);
+  const openGroup = groups.find((g) => g.id === openId) ?? null;
+
+  return (
+    <div className='flex gap-2 overflow-x-auto -mx-5 px-5 pt-1 pb-1 items-center scrollbar-none'>
+      {groups.map((g) => (
+        <OptionalGroupChip
+          key={g.id}
+          group={g}
+          counts={counts}
+          active={openId === g.id}
+          onClick={() => setOpenId((prev) => (prev === g.id ? null : g.id))}
+        />
+      ))}
+
+      {openGroup && (
+        <ModifierPopover
+          group={openGroup}
+          counts={counts}
+          onChange={onChange}
+          onClose={() => setOpenId(null)}
+        />
+      )}
+    </div>
+  );
+};
+
 const ProductContent = ({
   product,
   onClose,
@@ -445,6 +745,36 @@ const ProductContent = ({
   // Правило: если есть groupModifications, плоские modificators игнорируем.
   const flatMods: Modificator[] = hasGroups ? [] : product.modificators ?? [];
 
+  // Мастер включается только когда есть хотя бы одна обязательная группа
+  // (min>0) — иначе остаётся одностраничный лист. Каждая обязательная группа —
+  // отдельный шаг; все опциональные собраны в один общий шаг (пиллами).
+  const requiredGroups = useMemo(
+    () => groups.filter((g) => g.selection.min > 0),
+    [groups],
+  );
+  const optionalGroups = useMemo(
+    () => groups.filter((g) => g.selection.min === 0),
+    [groups],
+  );
+  const hasOptional = optionalGroups.length > 0;
+  const wizard = requiredGroups.length > 0;
+
+  // Карта шагов: обязательные по одной, затем общий опциональный (если есть),
+  // затем обзор.
+  type WizardStep =
+    | { kind: 'required'; group: GroupModification }
+    | { kind: 'optional' }
+    | { kind: 'review' };
+  const steps: WizardStep[] = useMemo(() => {
+    const list: WizardStep[] = requiredGroups.map((group) => ({
+      kind: 'required',
+      group,
+    }));
+    if (hasOptional) list.push({ kind: 'optional' });
+    list.push({ kind: 'review' });
+    return list;
+  }, [requiredGroups, hasOptional]);
+
   const [qnty, setQnty] = useState(1);
   const [counts, setCounts] = useState<CountsState>(() => {
     // Pre-select the cheapest item in each required single-select group,
@@ -469,6 +799,45 @@ const ProductContent = ({
   );
   const [imgLoaded, setImgLoaded] = useState(false);
 
+  // --- Пошаговый мастер ---
+  const totalSteps = steps.length;
+  const [stepIndex, setStepIndex] = useState(0);
+  const [slideDir, setSlideDir] = useState<'fwd' | 'back'>('fwd');
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearAdvance = useCallback(() => {
+    if (advanceTimer.current) {
+      clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  }, []);
+  useEffect(() => clearAdvance, [clearAdvance]);
+
+  const goNext = useCallback(() => {
+    clearAdvance();
+    setSlideDir('fwd');
+    setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
+  }, [clearAdvance, totalSteps]);
+  const goBack = useCallback(() => {
+    clearAdvance();
+    setSlideDir('back');
+    setStepIndex((i) => Math.max(i - 1, 0));
+  }, [clearAdvance]);
+  const goToStep = useCallback(
+    (i: number) => {
+      clearAdvance();
+      setSlideDir(i >= stepIndex ? 'fwd' : 'back');
+      setStepIndex(i);
+    },
+    [clearAdvance, stepIndex],
+  );
+
+  const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
+  const isReviewStep = currentStep?.kind === 'review';
+  const isOptionalStep = currentStep?.kind === 'optional';
+  const currentGroup =
+    currentStep?.kind === 'required' ? currentStep.group : null;
+
   const selectedFlat = flatMods.find((m) => m.id === selectedFlatId) ?? null;
 
   const errors = useMemo(() => {
@@ -488,6 +857,26 @@ const ProductContent = ({
   }, [groups, counts, t]);
 
   const isValid = Object.keys(errors).length === 0;
+  const currentValid = currentGroup ? !errors[currentGroup.id] : true;
+
+  // Изменение на текущем шаге мастера. Для single-select обязательной группы
+  // после выбора авто-переход к следующему шагу (~260мс).
+  const handleCurrentChange = useCallback(
+    (next: CountsState) => {
+      setCounts(next);
+      // Авто-переход только для обязательных single-select: в опциональной
+      // группе тап может означать «снять выбор», поэтому шаг не двигаем.
+      if (
+        currentGroup &&
+        currentGroup.selection.type === 'single' &&
+        currentGroup.selection.min > 0
+      ) {
+        clearAdvance();
+        advanceTimer.current = setTimeout(() => goNext(), 260);
+      }
+    },
+    [currentGroup, clearAdvance, goNext],
+  );
 
   const unitPrice = useMemo(() => {
     const base = selectedFlat?.price ?? product.productPrice;
@@ -521,6 +910,235 @@ const ProductContent = ({
     product.weight > 0
       ? `${product.weight} ${product.unitDisplay || product.measureUnit || ''}`.trim()
       : null;
+
+  // ─── Пошаговый мастер (есть обязательные группы) ───
+  if (wizard) {
+    const progress = ((stepIndex + 1) / totalSteps) * 100;
+    const stepTitle = isReviewStep
+      ? t('review')
+      : isOptionalStep
+        ? t('extras')
+        : currentGroup!.selection.title || currentGroup!.name;
+    const slideClass = slideDir === 'fwd' ? 'step-slide-in' : 'step-slide-back';
+
+    // Индекс шага, на котором редактируется группа: обязательная — свой шаг,
+    // опциональная — общий опциональный шаг.
+    const stepIndexForGroup = (g: GroupModification) => {
+      if (g.selection.min > 0) {
+        return steps.findIndex(
+          (s) => s.kind === 'required' && s.group.id === g.id,
+        );
+      }
+      return steps.findIndex((s) => s.kind === 'optional');
+    };
+
+    return (
+      <>
+        <div
+          className='flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-4 md:pb-0'
+          {...scrollProps}
+        >
+          <div className='md:p-6'>
+            {/* Герой: фото, название, цена, промо, описание — как раньше */}
+            <div className='md:grid md:grid-cols-2 md:gap-6 md:items-start'>
+              <div className='relative w-full aspect-4/3 md:aspect-square md:rounded-2xl overflow-hidden shrink-0'>
+                <Image
+                  src={product.productPhoto || '/placeholder-dish.svg'}
+                  alt={product.productName}
+                  fill
+                  className={`object-cover transition-opacity duration-500 ${
+                    imgLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  sizes='(max-width: 768px) 100vw, 500px'
+                  onLoad={() => setImgLoaded(true)}
+                />
+              </div>
+
+              <div className='p-5 md:p-0 min-w-0'>
+                <h2 className='text-2xl font-bold leading-tight mb-1'>
+                  {product.productName}
+                </h2>
+                {unitPrice > 0 && (
+                  <div className='text-xl font-bold text-[#21201F] mb-2'>
+                    {unitPrice} {tc('currency')}
+                  </div>
+                )}
+                {promo && (
+                  <div className='flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5 mb-3'>
+                    <span className='text-orange-500 text-base leading-none mt-0.5'>🏷</span>
+                    <div className='min-w-0'>
+                      <p className='text-sm font-semibold text-orange-700 leading-tight'>{promo.name}</p>
+                      {promo.description && (
+                        <p className='text-xs text-orange-600 mt-0.5 leading-snug'>{promo.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {product.productDescription && (
+                  <p className='text-gray-500 text-sm leading-relaxed'>
+                    {product.productDescription}
+                  </p>
+                )}
+                {weightLabel && (
+                  <p className='text-xs text-gray-400 mt-1'>{t('weight', { value: weightLabel })}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Прогресс + текущий шаг */}
+            <div className='px-5 pb-2 md:px-0 md:pb-0 md:mt-6'>
+              <div className='mb-4'>
+                <div className='flex justify-between items-center mb-1.5'>
+                  <span className='text-sm font-semibold text-[#21201F] truncate pr-2'>
+                    {stepTitle}
+                  </span>
+                  <span className='text-xs text-gray-400 shrink-0'>
+                    {t('stepProgress', { current: stepIndex + 1, total: totalSteps })}
+                  </span>
+                </div>
+                <div className='h-1.5 w-full rounded-full bg-gray-100 overflow-hidden'>
+                  <div
+                    className='h-full bg-brand rounded-full transition-all duration-300 ease-out'
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+
+              <div key={stepIndex} className={slideClass}>
+            {currentGroup && (
+              <GroupSection
+                group={currentGroup}
+                counts={counts}
+                onChange={handleCurrentChange}
+                error={null}
+                absolutePricing={product.productPrice === 0}
+              />
+            )}
+
+            {isOptionalStep && (
+              <OptionalGroupsBar
+                groups={optionalGroups}
+                counts={counts}
+                onChange={setCounts}
+              />
+            )}
+
+            {isReviewStep && (
+              <div className='flex flex-col gap-2'>
+                <span className='text-xs text-gray-400'>{t('reviewHint')}</span>
+                {groups.map((g) => {
+                  const chosen = g.items.filter((i) => (counts[i.id] ?? 0) > 0);
+                  const label = chosen.length
+                    ? chosen
+                        .map((i) => {
+                          const c = counts[i.id] ?? 0;
+                          return c > 1 ? `${i.name} ×${c}` : i.name;
+                        })
+                        .join(', ')
+                    : t('noExtras');
+                  return (
+                    <button
+                      key={g.id}
+                      type='button'
+                      onClick={() => goToStep(stepIndexForGroup(g))}
+                      className='w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 text-left hover:bg-gray-100 active:scale-[0.99] transition-all'
+                    >
+                      <div className='min-w-0'>
+                        <div className='text-xs text-gray-400'>{g.name}</div>
+                        <div
+                          className={`font-medium truncate ${
+                            chosen.length ? 'text-[#21201F]' : 'text-gray-400'
+                          }`}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                      <span className='text-sm font-medium text-brand shrink-0'>
+                        {t('edit')}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Футер: навигация / добавление */}
+        <div className='p-4 border-t border-gray-100 bg-white md:bg-transparent md:border-none'>
+          {isReviewStep ? (
+            <div className='flex gap-3'>
+              <button
+                type='button'
+                onClick={goBack}
+                className='h-14 px-5 rounded-2xl bg-[#F5F5F5] font-semibold text-[#21201F] hover:bg-[#ececec] active:scale-95 transition-all shrink-0'
+              >
+                {t('back')}
+              </button>
+              <div className='flex items-center gap-4 bg-[#F5F5F5] rounded-2xl px-4 py-3 h-14'>
+                <button
+                  onClick={() => setQnty((q) => Math.max(1, q - 1))}
+                  className='active:scale-90 transition-transform'
+                >
+                  <Image src={minusIcon} alt='minus' />
+                </button>
+                <span className='font-bold text-lg w-4 text-center'>{qnty}</span>
+                <button
+                  onClick={() => setQnty((q) => q + 1)}
+                  className='active:scale-90 transition-transform'
+                >
+                  <Image src={plusIcon} alt='plus' />
+                </button>
+              </div>
+              <button
+                disabled={!isValid}
+                onClick={handleAdd}
+                className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 hover:brightness-95 disabled:opacity-40 disabled:active:scale-100'
+              >
+                <span>{t('add')}</span>
+                <span className='bg-white/20 px-2 py-0.5 rounded text-sm'>
+                  {totalPrice} с.
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className='flex gap-3'>
+              {stepIndex > 0 && (
+                <button
+                  type='button'
+                  onClick={goBack}
+                  className='h-14 px-5 rounded-2xl bg-[#F5F5F5] font-semibold text-[#21201F] hover:bg-[#ececec] active:scale-95 transition-all shrink-0'
+                >
+                  {t('back')}
+                </button>
+              )}
+              <button
+                disabled={!currentValid}
+                onClick={goNext}
+                className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 hover:brightness-95 disabled:opacity-40 disabled:active:scale-100'
+              >
+                <span>
+                  {isOptionalStep &&
+                  optionalGroups.every(
+                    (g) => sumGroupCount(g, counts) === 0,
+                  )
+                    ? t('skip')
+                    : t('next')}
+                </span>
+                {unitPrice > 0 && (
+                  <span className='bg-white/20 px-2 py-0.5 rounded text-sm'>
+                    {unitPrice} {tc('currency')}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -640,7 +1258,7 @@ const ProductContent = ({
 
           <button
             disabled={!isValid}
-            className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:active:scale-100'
+            className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 hover:brightness-95 disabled:opacity-40 disabled:active:scale-100'
             onClick={handleAdd}
           >
             <span>{t('add')}</span>
@@ -766,6 +1384,7 @@ export default function ProductSheet() {
       />
 
       <div
+        data-product-sheet
         className={`
           relative w-full md:w-[75%] md:max-w-2xl bg-white
           rounded-t-4xl md:rounded-4xl

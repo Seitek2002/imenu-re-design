@@ -195,7 +195,16 @@
     "ariaOpen": "Open {name}",
     "ariaDecrement": "Decrease",
     "showMore": "Show {n} more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "stepProgress": "Step {current} of {total}",
+    "review": "Review your choice",
+    "reviewHint": "You can change any choice",
+    "extras": "Extras",
+    "edit": "Edit",
+    "noExtras": "No extras"
   },
   "Categories": {
     "other": "Other",
