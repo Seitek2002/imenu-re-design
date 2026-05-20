@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   src: string;
-  poster: string;
+  poster?: string;
 }
 
 type ConnectionInfo = {
@@ -49,7 +49,7 @@ export default function VideoBackground({ src, poster }: Props) {
       {/* Видео: начинает прозрачным, появляется когда готово */}
       <video
         ref={videoRef}
-        src={src}
+        src={src || undefined}
         muted
         loop
         playsInline

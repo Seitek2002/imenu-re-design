@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import type { VideoProductMock } from '@/data/mock-video-products';
+import type { Product } from '@/types/api';
 
 import VideoBackground from './VideoBackground';
 import SizePill from './SizePill';
@@ -17,38 +18,53 @@ const haptic = (ms = 30) => {
 
 interface Props {
   open: boolean;
-  /** Данные альтернативной версии. Компонент остаётся смонтированным при закрытии для анимации. */
+  /** Мок-данные альтернативной версии (demo-режим). */
   mock: VideoProductMock | null;
+  /** Реальный вложенный товар из API (iceVersion). Приоритет над mock. */
+  iceProduct?: Product | null;
   onClose: () => void;
 }
 
 /**
  * Bottom sheet с полной видео-витриной альтернативной версии товара.
  * Открывается по клику на чип «Айс версия» / «Горячая версия».
- * Чип внутри («Горячая версия» / «Айс версия») закрывает этот sheet.
+ * Поддерживает оба источника данных: реальный Product и mock VideoProductMock.
  */
-export default function IceVersionSheet({ open, mock, onClose }: Props) {
+export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Props) {
+  // ── Единый источник данных ───────────────────────────────────────────────
+  const product = iceProduct ?? mock?.product ?? null;
+  const videoUrl = iceProduct?.productVideoLarge ?? mock?.videoUrl ?? '';
+  const poster =
+    iceProduct
+      ? (iceProduct.productVideoPoster ?? iceProduct.productPhoto ?? undefined)
+      : (mock?.product.productPhoto ?? mock?.posterUrl ?? undefined);
+  const productDetails = iceProduct?.productDetails ?? mock?.productDetails ?? null;
+  const variantChip = iceProduct?.iceVersionChip ?? mock?.variantChip ?? null;
+  const chipIcons: Record<string, string> = mock?.chipIcons ?? {};
+  const groupMeta = mock?.groupMeta ?? null;
+
+  // ── Локальный стейт ──────────────────────────────────────────────────────
   const [sizeId, setSizeId] = useState<number | null>(null);
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [qnty, setQnty] = useState(1);
   const [expandedGroupId, setExpandedGroupId] = useState<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  // Сброс стейта при смене мока (новый товар)
-  const lastMockIdRef = useRef<number | null>(null);
+  // Сброс стейта при смене товара
+  const lastIdRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!open || !mock) {
-      if (!open) lastMockIdRef.current = null;
+    if (!open || !product) {
+      if (!open) lastIdRef.current = null;
       return;
     }
-    if (lastMockIdRef.current === mock.product.id) return;
-    lastMockIdRef.current = mock.product.id;
-    setSizeId(mock.product.modificators[0]?.id ?? null);
+    if (lastIdRef.current === product.id) return;
+    lastIdRef.current = product.id;
+    setSizeId(product.modificators[0]?.id ?? null);
     setCounts({});
     setQnty(1);
     setExpandedGroupId(null);
     setDetailOpen(false);
-  }, [open, mock]);
+  }, [open, product]);
 
   // ESC → закрыть (если детальный лист закрыт)
   useEffect(() => {
@@ -60,7 +76,7 @@ export default function IceVersionSheet({ open, mock, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, detailOpen, onClose]);
 
-  const groups = useMemo(() => mock?.product.groupModifications ?? [], [mock]);
+  const groups = useMemo(() => product?.groupModifications ?? [], [product]);
 
   const expandedGroup = useMemo(
     () => (expandedGroupId == null ? null : groups.find((g) => g.id === expandedGroupId) ?? null),
@@ -68,15 +84,15 @@ export default function IceVersionSheet({ open, mock, onClose }: Props) {
   );
 
   const unitPrice = useMemo(() => {
-    if (!mock) return 0;
-    const mod = mock.product.modificators.find((m) => m.id === sizeId);
-    const base = mod?.price ?? mock.product.productPrice;
+    if (!product) return 0;
+    const mod = product.modificators.find((m) => m.id === sizeId);
+    const base = mod?.price ?? product.productPrice;
     const adds = groups.reduce(
       (acc, g) => acc + g.items.reduce((s, i) => s + Number(i.price) * (counts[i.id] ?? 0), 0),
       0,
     );
     return base + adds;
-  }, [mock, sizeId, groups, counts]);
+  }, [product, sizeId, groups, counts]);
 
   const groupCounts = useMemo(() => {
     const out: Record<number, number> = {};
@@ -104,9 +120,8 @@ export default function IceVersionSheet({ open, mock, onClose }: Props) {
     setSizeId(id);
   }, []);
 
-  if (!mock) return null;
+  if (!product) return null;
 
-  const { product, videoUrl, posterUrl, chipIcons, variantChip, productDetails, groupMeta } = mock;
   const totalPrice = unitPrice * qnty;
 
   return (
@@ -121,7 +136,7 @@ export default function IceVersionSheet({ open, mock, onClose }: Props) {
       aria-modal='true'
       aria-label={product.productName}
     >
-      <VideoBackground src={videoUrl} poster={product.productPhoto || posterUrl} />
+      <VideoBackground src={videoUrl} poster={poster} />
 
       <div
         className='absolute inset-0 bg-linear-to-b from-black/35 via-black/10 to-black/50 pointer-events-none'
@@ -196,7 +211,7 @@ export default function IceVersionSheet({ open, mock, onClose }: Props) {
               <>
                 <VariantReturnChip
                   label={variantChip.label}
-                  photo={variantChip.photo}
+                  photo={variantChip.photo ?? ''}
                   onReturn={() => { haptic(25); onClose(); }}
                 />
                 <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
@@ -259,7 +274,7 @@ function VariantReturnChip({
     >
       <span className='text-[11px] font-semibold text-[#21201F] leading-tight'>{label}</span>
       <div className='w-full flex justify-center'>
-        {!imgError ? (
+        {!imgError && photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photo}

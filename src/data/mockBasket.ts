@@ -17,7 +17,7 @@ export const MOCK_ITEMS: BasketItemType[] = [
     name: 'Английский завтрак',
     price: 370,
     quantity: 1,
-    image: '/placeholder-dish.svg', // Убедись, что картинка есть в public
+    image: '/placeholder.svg', // Убедись, что картинка есть в public
     modifierName: 'Большой',
   },
   {
@@ -26,7 +26,7 @@ export const MOCK_ITEMS: BasketItemType[] = [
     name: 'Каша манная',
     price: 140,
     quantity: 2,
-    image: '/placeholder-dish.svg',
+    image: '/placeholder.svg',
   },
   {
     key: '3',

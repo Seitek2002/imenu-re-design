@@ -55,7 +55,7 @@ function BasketItem({
           <div className='flex items-center gap-3 flex-1 min-w-0'>
             <div className='relative w-16 h-16 rounded-xl overflow-hidden bg-[#F1F2F3] shrink-0'>
               <Image
-                src={item.productPhoto || '/placeholder-dish.svg'}
+                src={item.productPhoto || '/placeholder.svg'}
                 alt={item.productName}
                 fill
                 className='object-cover'
