@@ -13,6 +13,7 @@ import { useSearchParams, usePathname, useParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 
 import {
+  GroupItem,
   GroupModification,
   Modificator,
   Product,
@@ -80,15 +81,6 @@ function emojiForGroup(name: string): string {
   return '🍽️';
 }
 
-const CARD_COLORS = [
-  { bg: 'bg-orange-50', shadow: 'shadow-orange-100', iconBg: 'bg-orange-100' },
-  { bg: 'bg-sky-50',    shadow: 'shadow-sky-100',    iconBg: 'bg-sky-100' },
-  { bg: 'bg-violet-50', shadow: 'shadow-violet-100', iconBg: 'bg-violet-100' },
-  { bg: 'bg-emerald-50',shadow: 'shadow-emerald-100',iconBg: 'bg-emerald-100' },
-  { bg: 'bg-rose-50',   shadow: 'shadow-rose-100',   iconBg: 'bg-rose-100' },
-  { bg: 'bg-amber-50',  shadow: 'shadow-amber-100',  iconBg: 'bg-amber-100' },
-];
-
 const GroupsGrid = ({
   groups,
   counts,
@@ -105,12 +97,6 @@ const GroupsGrid = ({
   const required = groups.filter((g) => g.selection.min > 0);
   const optional = groups.filter((g) => g.selection.min === 0);
 
-  const [expandedId, setExpandedId] = useState<number | null>(
-    () => optional[0]?.id ?? null,
-  );
-
-  const expandedGroup = optional.find((g) => g.id === expandedId) ?? null;
-
   return (
     <div className='flex flex-col gap-5'>
       {required.map((g) => (
@@ -125,75 +111,11 @@ const GroupsGrid = ({
       ))}
 
       {optional.length > 0 && (
-        <div className='flex flex-col gap-3'>
-          <div className='flex gap-2.5 overflow-x-auto -mx-5 px-5 pb-1 scrollbar-none'>
-            {optional.map((g, idx) => {
-              const sum = sumGroupCount(g, counts);
-              const hasSelection = sum > 0;
-              const isExpanded = expandedId === g.id;
-              const hasError = !!errors[g.id];
-              const color = CARD_COLORS[idx % CARD_COLORS.length];
-              const emoji = emojiForGroup(g.name);
-
-              const chipLabel = (() => {
-                if (!hasSelection) return g.name;
-                if (g.selection.type === 'single') {
-                  const selected = g.items.find((i) => (counts[i.id] ?? 0) > 0);
-                  return selected?.name ?? g.name;
-                }
-                return `${g.name} ×${sum}`;
-              })();
-
-              return (
-                <button
-                  key={g.id}
-                  type='button'
-                  onClick={() => setExpandedId((prev) => (prev === g.id ? null : g.id))}
-                  className={`flex flex-col items-center justify-between pt-3 pb-2.5 px-2 w-[84px] h-[84px] rounded-2xl shrink-0 active:scale-95 transition-all shadow-sm ${
-                    isExpanded
-                      ? 'bg-[#21201F] shadow-[#21201F]/20'
-                      : hasError
-                        ? 'bg-red-50 shadow-red-100'
-                        : `${color.bg} ${color.shadow}`
-                  }`}
-                >
-                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-xl ${
-                    isExpanded ? 'bg-white/15' : hasError ? 'bg-red-100' : color.iconBg
-                  }`}>
-                    {hasSelection && !isExpanded ? (
-                      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#21201F' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-                        <polyline points='20 6 9 17 4 12' />
-                      </svg>
-                    ) : isExpanded ? (
-                      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-                        <line x1='5' y1='12' x2='19' y2='12' />
-                      </svg>
-                    ) : (
-                      <span className='leading-none'>{emoji}</span>
-                    )}
-                  </span>
-                  <span className={`text-[10px] font-semibold text-center leading-tight w-full line-clamp-2 ${
-                    isExpanded ? 'text-white' : hasError ? 'text-red-500' : 'text-[#21201F]/75'
-                  }`}>
-                    {chipLabel}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {expandedGroup && (
-            <div className='rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4'>
-              <GroupSection
-                group={expandedGroup}
-                counts={counts}
-                onChange={onChange}
-                error={errors[expandedGroup.id] ?? null}
-                absolutePricing={absolutePricing}
-              />
-            </div>
-          )}
-        </div>
+        <OptionalGroupsBar
+          groups={optional}
+          counts={counts}
+          onChange={onChange}
+        />
       )}
     </div>
   );
@@ -411,6 +333,335 @@ const GroupSection = ({
   );
 };
 
+/**
+ * Карточка модификатора по макету: 97×135, светлый фон, фото/иконка сверху,
+ * название, вес·цена. Внизу — `+` (default) либо степпер `+ N −` (selected,
+ * круглые белые кнопки). Для single-select тап по карточке переключает выбор.
+ */
+const ModifierItemCard = ({
+  item,
+  count,
+  type,
+  canInc,
+  groupName,
+  onSingle,
+  onStep,
+}: {
+  item: GroupItem;
+  count: number;
+  type: 'single' | 'multiple';
+  canInc: boolean;
+  groupName: string;
+  onSingle: (itemId: number) => void;
+  onStep: (itemId: number, delta: number) => void;
+}) => {
+  const t = useTranslations('Product');
+  const tc = useTranslations('Common');
+  const selected = count > 0;
+  const priceNum = Number(item.price);
+  const bruttoNum = Number(item.brutto);
+  const img = item.thumbnail || item.photo || null;
+
+  const priceLabel =
+    priceNum > 0 ? t('pricePlus', { price: priceNum }) : t('free');
+  const meta =
+    bruttoNum > 0
+      ? `${Math.round(bruttoNum)} ${tc('weightUnit')} · ${priceLabel}`
+      : priceLabel;
+
+  // Фото занимает верх карточки. Без фото — компактный эмодзи-кружок, чтобы
+  // освободить место под полностью видимое название.
+  const media = img ? (
+    <div
+      className='w-full h-14 bg-contain bg-center bg-no-repeat shrink-0'
+      style={{ backgroundImage: `url(${img})` }}
+    />
+  ) : (
+    <div className='w-9 h-9 rounded-full bg-black/[0.04] flex items-center justify-center text-xl leading-none shrink-0'>
+      {emojiForGroup(groupName)}
+    </div>
+  );
+
+  const head = (
+    <>
+      {media}
+      <span className='mt-1.5 text-xs font-semibold text-center text-[#21201F] leading-snug w-full break-words'>
+        {item.name}
+      </span>
+      <span className='mt-0.5 text-[10px] text-gray-400 text-center leading-tight w-full'>
+        {meta}
+      </span>
+    </>
+  );
+
+  // min-h задаёт базовую высоту; ряд тянется по самой высокой карточке
+  // (align-items: stretch у grid), название никогда не обрезается.
+  const cardBase =
+    'relative flex flex-col items-center min-h-[124px] h-full rounded-2xl bg-white/70 px-2 pt-2.5 pb-2.5 transition-all duration-150';
+
+  // single-select: вся карточка — кнопка-переключатель
+  if (type === 'single') {
+    return (
+      <button
+        type='button'
+        onClick={() => onSingle(item.id)}
+        className={`${cardBase} active:scale-95 ${
+          selected ? 'ring-2 ring-[#21201F]' : ''
+        }`}
+      >
+        {head}
+        <span className='mt-auto pt-1 flex items-center justify-center'>
+          {selected ? (
+            <span className='w-7 h-7 rounded-full bg-[#21201F] flex items-center justify-center'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='14'
+                height='14'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='white'
+                strokeWidth='3'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              >
+                <polyline points='20 6 9 17 4 12' />
+              </svg>
+            </span>
+          ) : (
+            <span className='text-[#21201F] text-2xl leading-none font-light'>
+              +
+            </span>
+          )}
+        </span>
+      </button>
+    );
+  }
+
+  // multiple: `+` (default) ↔ степпер `+ N −` (selected)
+  return (
+    <div className={cardBase}>
+      {head}
+      <div className='mt-auto pt-1 flex items-center justify-center'>
+        {count === 0 ? (
+          <button
+            type='button'
+            onClick={() => onStep(item.id, +1)}
+            disabled={!canInc}
+            className='text-[#21201F] text-2xl leading-none font-light active:scale-90 transition-transform disabled:opacity-30'
+            aria-label={t('ariaAdd', { name: item.name })}
+          >
+            +
+          </button>
+        ) : (
+          <div className='flex items-center gap-2.5'>
+            <button
+              type='button'
+              onClick={() => onStep(item.id, +1)}
+              disabled={!canInc}
+              className='w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-[#21201F] text-lg leading-none pb-0.5 active:scale-90 transition-transform disabled:opacity-30'
+              aria-label={t('ariaAdd', { name: item.name })}
+            >
+              +
+            </button>
+            <span className='text-sm font-semibold text-[#21201F] w-3 text-center'>
+              {count}
+            </span>
+            <button
+              type='button'
+              onClick={() => onStep(item.id, -1)}
+              className='w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center text-[#21201F] text-lg leading-none pb-0.5 active:scale-90 transition-transform'
+              aria-label={t('ariaDecrement')}
+            >
+              −
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Плавающее окно (≈343×320) с модификаторами одной группы. Рендерится порталом
+ * в контейнер шита `[data-product-sheet]`, поэтому позиционируется относительно
+ * него и одинаково работает на мобиле и десктопе. Закрывается тапом по фону
+ * или Escape.
+ */
+const ModifierPopover = ({
+  group,
+  counts,
+  onChange,
+  onClose,
+}: {
+  group: GroupModification;
+  counts: CountsState;
+  onChange: (next: CountsState) => void;
+  onClose: () => void;
+}) => {
+  const t = useTranslations('Product');
+  const tc = useTranslations('Common');
+  // Контейнер шита уже в DOM к моменту открытия поповера — берём его лениво,
+  // без setState-in-effect.
+  const [container] = useState<HTMLElement | null>(() =>
+    typeof document === 'undefined'
+      ? null
+      : (document.querySelector('[data-product-sheet]') as HTMLElement | null),
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [onClose]);
+
+  const { type, min, max } = group.selection;
+  const sum = sumGroupCount(group, counts);
+
+  const handleSingle = (itemId: number) => {
+    const current = counts[itemId] ?? 0;
+    const next: CountsState = { ...counts };
+    for (const it of group.items) next[it.id] = 0;
+    // single + min=0: повторный тап снимает выбор
+    next[itemId] = current > 0 && min === 0 ? 0 : 1;
+    onChange(next);
+  };
+
+  const handleStep = (itemId: number, delta: number) => {
+    if (delta > 0 && sum >= max) return;
+    const nextVal = Math.max(0, (counts[itemId] ?? 0) + delta);
+    onChange({ ...counts, [itemId]: nextVal });
+  };
+
+  if (!container) return null;
+
+  return createPortal(
+    <div
+      className='absolute inset-0 z-30 flex items-end justify-center px-3 pb-[92px]'
+      onClick={onClose}
+    >
+      <div className='absolute inset-0 bg-black/15 popover-backdrop' />
+      <div
+        className='relative w-full max-w-[420px] rounded-3xl bg-[#F3ECE3] shadow-2xl border border-black/5 popover-rise'
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-4 pt-3.5 pb-2'>
+          <div className='flex flex-col min-w-0'>
+            <span className='font-semibold text-[#21201F] truncate'>
+              {group.name}
+            </span>
+            <span className='text-xs text-gray-500'>
+              {max > 0
+                ? t('chosenOf', { current: sum, max })
+                : t('chosen', { current: sum })}
+            </span>
+          </div>
+          <button
+            type='button'
+            onClick={onClose}
+            className='shrink-0 w-8 h-8 rounded-full bg-white/70 flex items-center justify-center text-gray-600 active:scale-90 transition-transform'
+            aria-label={tc('close')}
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-4 w-4'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M6 18L18 6M6 6l12 12'
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className='px-3 pb-4 max-h-[60vh] overflow-y-auto overscroll-contain'>
+          <div className='grid grid-cols-3 gap-2.5'>
+            {group.items.map((item) => (
+              <ModifierItemCard
+                key={item.id}
+                item={item}
+                count={counts[item.id] ?? 0}
+                type={type}
+                canInc={sum < max}
+                groupName={group.name}
+                onSingle={handleSingle}
+                onStep={handleStep}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>,
+    container,
+  );
+};
+
+/**
+ * Ряд карточек-групп (≈92×90) опциональных модификаторов. Тап по карточке
+ * открывает {@link ModifierPopover} с модификаторами этой группы. Default —
+ * крупный `+` и название; выбранная группа — тёмный бейдж с количеством.
+ */
+const OptionalGroupsBar = ({
+  groups,
+  counts,
+  onChange,
+}: {
+  groups: GroupModification[];
+  counts: CountsState;
+  onChange: (next: CountsState) => void;
+}) => {
+  const [openId, setOpenId] = useState<number | null>(null);
+  const openGroup = groups.find((g) => g.id === openId) ?? null;
+
+  return (
+    <div className='flex gap-2.5 overflow-x-auto -mx-5 px-5 pb-1 scrollbar-none'>
+      {groups.map((g) => {
+        const sum = sumGroupCount(g, counts);
+        const has = sum > 0;
+        return (
+          <button
+            key={g.id}
+            type='button'
+            onClick={() => setOpenId(g.id)}
+            className='flex flex-col items-center justify-center gap-1.5 w-[92px] h-[90px] shrink-0 rounded-2xl bg-gray-50 active:scale-95 transition-transform'
+          >
+            <span
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                has
+                  ? 'bg-[#21201F] text-white text-sm font-semibold'
+                  : 'bg-white shadow-sm text-[#21201F] text-2xl leading-none font-light pb-0.5'
+              }`}
+            >
+              {has ? sum : '+'}
+            </span>
+            <span className='text-[11px] font-medium text-center text-[#21201F]/80 leading-tight line-clamp-1 px-1 w-full'>
+              {g.name}
+            </span>
+          </button>
+        );
+      })}
+
+      {openGroup && (
+        <ModifierPopover
+          group={openGroup}
+          counts={counts}
+          onChange={onChange}
+          onClose={() => setOpenId(null)}
+        />
+      )}
+    </div>
+  );
+};
+
 const ProductContent = ({
   product,
   onClose,
@@ -445,6 +696,36 @@ const ProductContent = ({
   // Правило: если есть groupModifications, плоские modificators игнорируем.
   const flatMods: Modificator[] = hasGroups ? [] : product.modificators ?? [];
 
+  // Мастер включается только когда есть хотя бы одна обязательная группа
+  // (min>0) — иначе остаётся одностраничный лист. Каждая обязательная группа —
+  // отдельный шаг; все опциональные собраны в один общий шаг (пиллами).
+  const requiredGroups = useMemo(
+    () => groups.filter((g) => g.selection.min > 0),
+    [groups],
+  );
+  const optionalGroups = useMemo(
+    () => groups.filter((g) => g.selection.min === 0),
+    [groups],
+  );
+  const hasOptional = optionalGroups.length > 0;
+  const wizard = requiredGroups.length > 0;
+
+  // Карта шагов: обязательные по одной, затем общий опциональный (если есть),
+  // затем обзор.
+  type WizardStep =
+    | { kind: 'required'; group: GroupModification }
+    | { kind: 'optional' }
+    | { kind: 'review' };
+  const steps: WizardStep[] = useMemo(() => {
+    const list: WizardStep[] = requiredGroups.map((group) => ({
+      kind: 'required',
+      group,
+    }));
+    if (hasOptional) list.push({ kind: 'optional' });
+    list.push({ kind: 'review' });
+    return list;
+  }, [requiredGroups, hasOptional]);
+
   const [qnty, setQnty] = useState(1);
   const [counts, setCounts] = useState<CountsState>(() => {
     // Pre-select the cheapest item in each required single-select group,
@@ -469,6 +750,45 @@ const ProductContent = ({
   );
   const [imgLoaded, setImgLoaded] = useState(false);
 
+  // --- Пошаговый мастер ---
+  const totalSteps = steps.length;
+  const [stepIndex, setStepIndex] = useState(0);
+  const [slideDir, setSlideDir] = useState<'fwd' | 'back'>('fwd');
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearAdvance = useCallback(() => {
+    if (advanceTimer.current) {
+      clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  }, []);
+  useEffect(() => clearAdvance, [clearAdvance]);
+
+  const goNext = useCallback(() => {
+    clearAdvance();
+    setSlideDir('fwd');
+    setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
+  }, [clearAdvance, totalSteps]);
+  const goBack = useCallback(() => {
+    clearAdvance();
+    setSlideDir('back');
+    setStepIndex((i) => Math.max(i - 1, 0));
+  }, [clearAdvance]);
+  const goToStep = useCallback(
+    (i: number) => {
+      clearAdvance();
+      setSlideDir(i >= stepIndex ? 'fwd' : 'back');
+      setStepIndex(i);
+    },
+    [clearAdvance, stepIndex],
+  );
+
+  const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
+  const isReviewStep = currentStep?.kind === 'review';
+  const isOptionalStep = currentStep?.kind === 'optional';
+  const currentGroup =
+    currentStep?.kind === 'required' ? currentStep.group : null;
+
   const selectedFlat = flatMods.find((m) => m.id === selectedFlatId) ?? null;
 
   const errors = useMemo(() => {
@@ -488,6 +808,26 @@ const ProductContent = ({
   }, [groups, counts, t]);
 
   const isValid = Object.keys(errors).length === 0;
+  const currentValid = currentGroup ? !errors[currentGroup.id] : true;
+
+  // Изменение на текущем шаге мастера. Для single-select обязательной группы
+  // после выбора авто-переход к следующему шагу (~260мс).
+  const handleCurrentChange = useCallback(
+    (next: CountsState) => {
+      setCounts(next);
+      // Авто-переход только для обязательных single-select: в опциональной
+      // группе тап может означать «снять выбор», поэтому шаг не двигаем.
+      if (
+        currentGroup &&
+        currentGroup.selection.type === 'single' &&
+        currentGroup.selection.min > 0
+      ) {
+        clearAdvance();
+        advanceTimer.current = setTimeout(() => goNext(), 260);
+      }
+    },
+    [currentGroup, clearAdvance, goNext],
+  );
 
   const unitPrice = useMemo(() => {
     const base = selectedFlat?.price ?? product.productPrice;
@@ -521,6 +861,228 @@ const ProductContent = ({
     product.weight > 0
       ? `${product.weight} ${product.unitDisplay || product.measureUnit || ''}`.trim()
       : null;
+
+  // ─── Пошаговый мастер (есть обязательные группы) ───
+  if (wizard) {
+    const progress = ((stepIndex + 1) / totalSteps) * 100;
+    const stepTitle = isReviewStep
+      ? t('review')
+      : isOptionalStep
+        ? t('extras')
+        : currentGroup!.selection.title || currentGroup!.name;
+    const slideClass = slideDir === 'fwd' ? 'step-slide-in' : 'step-slide-back';
+
+    // Индекс шага, на котором редактируется группа: обязательная — свой шаг,
+    // опциональная — общий опциональный шаг.
+    const stepIndexForGroup = (g: GroupModification) => {
+      if (g.selection.min > 0) {
+        return steps.findIndex(
+          (s) => s.kind === 'required' && s.group.id === g.id,
+        );
+      }
+      return steps.findIndex((s) => s.kind === 'optional');
+    };
+
+    return (
+      <>
+        <div
+          className='flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-4 md:pb-0'
+          {...scrollProps}
+        >
+          <div className='md:p-6'>
+            {/* Герой: фото, название, цена, промо, описание — как раньше */}
+            <div className='md:grid md:grid-cols-2 md:gap-6 md:items-start'>
+              <div className='relative w-full aspect-4/3 md:aspect-square md:rounded-2xl overflow-hidden shrink-0'>
+                <Image
+                  src={product.productPhoto || '/placeholder-dish.svg'}
+                  alt={product.productName}
+                  fill
+                  className={`object-cover transition-opacity duration-500 ${
+                    imgLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  sizes='(max-width: 768px) 100vw, 500px'
+                  onLoad={() => setImgLoaded(true)}
+                />
+              </div>
+
+              <div className='p-5 md:p-0 min-w-0'>
+                <h2 className='text-2xl font-bold leading-tight mb-1'>
+                  {product.productName}
+                </h2>
+                {unitPrice > 0 && (
+                  <div className='text-xl font-bold text-[#21201F] mb-2'>
+                    {unitPrice} {tc('currency')}
+                  </div>
+                )}
+                {promo && (
+                  <div className='flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5 mb-3'>
+                    <span className='text-orange-500 text-base leading-none mt-0.5'>🏷</span>
+                    <div className='min-w-0'>
+                      <p className='text-sm font-semibold text-orange-700 leading-tight'>{promo.name}</p>
+                      {promo.description && (
+                        <p className='text-xs text-orange-600 mt-0.5 leading-snug'>{promo.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {product.productDescription && (
+                  <p className='text-gray-500 text-sm leading-relaxed'>
+                    {product.productDescription}
+                  </p>
+                )}
+                {weightLabel && (
+                  <p className='text-xs text-gray-400 mt-1'>{t('weight', { value: weightLabel })}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Прогресс + текущий шаг */}
+            <div className='px-5 pb-2 md:px-0 md:pb-0 md:mt-6'>
+              <div className='mb-4'>
+                <div className='flex justify-between items-center mb-1.5'>
+                  <span className='text-sm font-semibold text-[#21201F] truncate pr-2'>
+                    {stepTitle}
+                  </span>
+                  <span className='text-xs text-gray-400 shrink-0'>
+                    {t('stepProgress', { current: stepIndex + 1, total: totalSteps })}
+                  </span>
+                </div>
+                <div className='h-1.5 w-full rounded-full bg-gray-100 overflow-hidden'>
+                  <div
+                    className='h-full bg-brand rounded-full transition-all duration-300 ease-out'
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+
+              <div key={stepIndex} className={slideClass}>
+            {currentGroup && (
+              <GroupSection
+                group={currentGroup}
+                counts={counts}
+                onChange={handleCurrentChange}
+                error={null}
+                absolutePricing={product.productPrice === 0}
+              />
+            )}
+
+            {isOptionalStep && (
+              <OptionalGroupsBar
+                groups={optionalGroups}
+                counts={counts}
+                onChange={setCounts}
+              />
+            )}
+
+            {isReviewStep && (
+              <div className='flex flex-col gap-2'>
+                <span className='text-xs text-gray-400'>{t('reviewHint')}</span>
+                {groups.map((g) => {
+                  const chosen = g.items.filter((i) => (counts[i.id] ?? 0) > 0);
+                  const label = chosen.length
+                    ? chosen
+                        .map((i) => {
+                          const c = counts[i.id] ?? 0;
+                          return c > 1 ? `${i.name} ×${c}` : i.name;
+                        })
+                        .join(', ')
+                    : t('noExtras');
+                  return (
+                    <button
+                      key={g.id}
+                      type='button'
+                      onClick={() => goToStep(stepIndexForGroup(g))}
+                      className='w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 text-left active:scale-[0.99] transition-transform'
+                    >
+                      <div className='min-w-0'>
+                        <div className='text-xs text-gray-400'>{g.name}</div>
+                        <div
+                          className={`font-medium truncate ${
+                            chosen.length ? 'text-[#21201F]' : 'text-gray-400'
+                          }`}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                      <span className='text-sm font-medium text-brand shrink-0'>
+                        {t('edit')}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Футер: навигация / добавление */}
+        <div className='p-4 border-t border-gray-100 bg-white md:bg-transparent md:border-none'>
+          {isReviewStep ? (
+            <div className='flex gap-3'>
+              <button
+                type='button'
+                onClick={goBack}
+                className='h-14 px-5 rounded-2xl bg-[#F5F5F5] font-semibold text-[#21201F] active:scale-95 transition-transform shrink-0'
+              >
+                {t('back')}
+              </button>
+              <div className='flex items-center gap-4 bg-[#F5F5F5] rounded-2xl px-4 py-3 h-14'>
+                <button
+                  onClick={() => setQnty((q) => Math.max(1, q - 1))}
+                  className='active:scale-90 transition-transform'
+                >
+                  <Image src={minusIcon} alt='minus' />
+                </button>
+                <span className='font-bold text-lg w-4 text-center'>{qnty}</span>
+                <button
+                  onClick={() => setQnty((q) => q + 1)}
+                  className='active:scale-90 transition-transform'
+                >
+                  <Image src={plusIcon} alt='plus' />
+                </button>
+              </div>
+              <button
+                disabled={!isValid}
+                onClick={handleAdd}
+                className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 disabled:opacity-40 disabled:active:scale-100'
+              >
+                <span>{t('add')}</span>
+                <span className='bg-white/20 px-2 py-0.5 rounded text-sm'>
+                  {totalPrice} с.
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className='flex gap-3'>
+              {stepIndex > 0 && (
+                <button
+                  type='button'
+                  onClick={goBack}
+                  className='h-14 px-5 rounded-2xl bg-[#F5F5F5] font-semibold text-[#21201F] active:scale-95 transition-transform shrink-0'
+                >
+                  {t('back')}
+                </button>
+              )}
+              <button
+                disabled={!currentValid}
+                onClick={goNext}
+                className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center disabled:opacity-40 disabled:active:scale-100'
+              >
+                {isOptionalStep &&
+                optionalGroups.every(
+                  (g) => sumGroupCount(g, counts) === 0,
+                )
+                  ? t('skip')
+                  : t('next')}
+              </button>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -766,6 +1328,7 @@ export default function ProductSheet() {
       />
 
       <div
+        data-product-sheet
         className={`
           relative w-full md:w-[75%] md:max-w-2xl bg-white
           rounded-t-4xl md:rounded-4xl

@@ -195,7 +195,16 @@
     "ariaOpen": "{name} ачуу",
     "ariaDecrement": "Азайтуу",
     "showMore": "Дагы {n} көрсөтүү",
-    "showLess": "Жыйнаштыруу"
+    "showLess": "Жыйнаштыруу",
+    "back": "Артка",
+    "next": "Андан ары",
+    "skip": "Өткөрүп жиберүү",
+    "stepProgress": "{current}/{total} кадам",
+    "review": "Тандооңузду текшериңиз",
+    "reviewHint": "Каалаган тандоону өзгөртө аласыз",
+    "extras": "Кошумча",
+    "edit": "Өзгөртүү",
+    "noExtras": "Кошумчасыз"
   },
   "Categories": {
     "other": "Башкалар",
