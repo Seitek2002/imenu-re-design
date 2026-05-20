@@ -124,8 +124,22 @@ const DrawerCheckout: FC<IProps> = ({
   // --- FORM STATE ---
   const [showDeliveryComment, setShowDeliveryComment] = useState(false);
   const [showPickupComment, setShowPickupComment] = useState(false);
-  const [phone, setPhone] = useState(storedPhone || '');
-  const [countryId, setCountryId] = useState(storedCountryId || 'KG');
+  // Преднаполнение из auth-сессии: верифицированный номер лежит в client.phone
+  // (полный международный формат), парсим обратно в локальные цифры + страну.
+  // Только когда сохранённого телефона ещё нет — введённое не перетираем, поле
+  // остаётся редактируемым (контакт заказа может отличаться от номера логина).
+  // Снапшот стора, без подписки: дровер открывается уже после bootstrap сессии.
+  const authPrefill = (() => {
+    if (storedPhone) return null;
+    const ap = useAuthStore.getState().client?.phone;
+    if (!ap) return null;
+    const { digits, countryId: cid } = parsePhoneInput(ap, storedCountryId || 'KG');
+    return digits ? { digits, countryId: cid } : null;
+  })();
+  const [phone, setPhone] = useState(storedPhone || authPrefill?.digits || '');
+  const [countryId, setCountryId] = useState(
+    authPrefill?.countryId || storedCountryId || 'KG',
+  );
   const country = getCountryById(countryId);
   const [address, setAddress] = useState(storedAddress || '');
   const [coords, setCoords] = useState<Coords | null>(
