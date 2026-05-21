@@ -690,7 +690,9 @@ const OptionalGroupChip = ({
         </span>
       )}
 
-      <span className='text-[11px] font-medium text-center text-[#21201F] leading-tight line-clamp-2 break-words w-full'>
+      {/* Высота под две строки зарезервирована, чтобы «+»/фото у чипов с одно- и
+          двухстрочными названиями стояли на одном уровне (button — justify-center) */}
+      <span className='text-[11px] font-medium text-center text-[#21201F] leading-tight line-clamp-2 break-words w-full min-h-[28px]'>
         {label}
       </span>
     </button>
