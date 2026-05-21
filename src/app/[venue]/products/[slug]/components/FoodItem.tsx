@@ -10,6 +10,7 @@ import ProductLink from './foods/ProductLink';
 import { useVenueStore } from '@/store/venue';
 import { usePromotionsV2 } from '@/lib/api/queries';
 import { findActivePromotionForProduct } from '@/lib/promotions';
+import { productPriceLabel, variantPrice } from '@/lib/pricing';
 
 interface Props {
   product: Product;
@@ -31,8 +32,13 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
       ? `−${promoPercent}%`
       : tp('itemBadgeGeneric')
     : null;
-  let price = product.productPrice;
-  let isFrom = false;
+  // priceFrom/priceTo (2026-05-21) — диапазон по видимым вариантам, с учётом
+  // выбранной точки. Это приоритетный источник подписи: productPrice у товаров
+  // с вариантами часто 0. Фолбэк ниже остаётся для товаров с groupModifications
+  // (их priceFrom не покрывает — там per-item price, без per-spot).
+  const label = productPriceLabel(product);
+  let price = label?.price ?? product.productPrice;
+  let isFrom = label?.isFrom ?? false;
 
   if (price === 0) {
     const groups = product.groupModifications ?? [];
@@ -54,7 +60,9 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
 
     // 2) Cheapest flat modificator
     if (price === 0 && product.modificators && product.modificators.length > 0) {
-      const flatMin = Math.min(...product.modificators.map((m) => m.price));
+      const flatMin = Math.min(
+        ...product.modificators.map((m) => variantPrice(m, spotId)),
+      );
       if (flatMin > 0) {
         price = flatMin;
         isFrom = true;

@@ -10,6 +10,7 @@ import { MOCK_VIDEO_PRODUCTS } from '@/data/mock-video-products';
 import { useVideoProductStore } from '@/store/videoProduct';
 import { useVenueStore } from '@/store/venue';
 import { useVenueProducts } from '@/lib/api/queries';
+import { variantPrice } from '@/lib/pricing';
 
 import VideoBackground from './VideoBackground';
 import SizePill from './SizePill';
@@ -157,7 +158,7 @@ export default function VideoProductSheet() {
   const unitPrice = useMemo(() => {
     if (!product) return 0;
     const mod = product.modificators.find((m) => m.id === sizeId);
-    const base = mod?.price ?? product.productPrice;
+    const base = mod ? variantPrice(mod, spotId) : product.productPrice;
     const adds = groups.reduce(
       (acc, g) =>
         acc +
@@ -165,7 +166,7 @@ export default function VideoProductSheet() {
       0,
     );
     return base + adds;
-  }, [product, sizeId, groups, counts]);
+  }, [product, sizeId, groups, counts, spotId]);
 
   const totalPrice = unitPrice * qnty;
 
