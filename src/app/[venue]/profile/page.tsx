@@ -13,10 +13,11 @@ import {
   Store,
   ShoppingBag,
   MessageSquareText,
-  MapPin,
   LogOut,
   User as UserIcon,
   Loader2,
+  CreditCard,
+  Wallet,
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
 import { useAuthStore } from '@/store/auth';
@@ -32,6 +33,14 @@ import OtpLoginModal from '@/components/modals/OtpLoginModal';
 
 const MAX_TASTES = 20;
 const MAX_TASTE_LEN = 32;
+
+// Локальная KG-маска для отображения в профиле: «0XXX XXX XXX» (три группы по 3).
+// Не путать с formatPhoneInput (маска полей ввода, группы 3-2-2-2).
+function formatKgLocalPhone(localDigits: string): string {
+  const d = (localDigits || '').replace(/\D/g, '').slice(0, 9);
+  const groups = [d.slice(0, 3), d.slice(3, 6), d.slice(6, 9)].filter(Boolean);
+  return `0${groups.join(' ')}`;
+}
 
 export default function ProfilePage() {
   const t = useTranslations('Profile');
@@ -56,8 +65,13 @@ export default function ProfilePage() {
   const isLoginModalOpen = loginOpen || autoOpenLogin;
 
   const country = getCountryById(countryId);
+  // По макету номер показываем в локальном формате с ведущим 0 (без кода страны)
+  // для KG — единой маской «0XXX XXX XXX» (три группы по 3 цифры). Для прочих
+  // стран оставляем международный «+dial …».
   const fullPhone = phone
-    ? formatPhoneDisplay(phone, country.dial, countryId)
+    ? countryId === 'KG'
+      ? formatKgLocalPhone(phone)
+      : formatPhoneDisplay(phone, country.dial, countryId)
     : '';
 
   const { data: bonus, isLoading: bonusLoading } = useClientBonus({
@@ -106,9 +120,9 @@ export default function ProfilePage() {
     );
   }
 
-  const displayName =
-    [client?.firstname, client?.lastname].filter(Boolean).join(' ').trim() ||
-    t('guest');
+  // По макету в карточке только имя (без фамилии) — фамилия съедает строку
+  // и не даёт уложиться в фикс. высоту 77px.
+  const displayName = (client?.firstname ?? '').trim() || t('guest');
 
   return (
     <div className='min-h-svh pb-24'>
@@ -121,53 +135,47 @@ export default function ProfilePage() {
           <ChevronLeft size={24} />
         </Link>
         <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>{t('title')}</h1>
-        <button
-          onClick={() => requireAuth() && setEditOpen(true)}
-          className='ml-auto w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
-          aria-label={t('edit')}
-        >
-          <Pencil size={18} />
-        </button>
       </header>
 
-      <div className='px-4 mt-2 flex flex-col gap-3'>
-        <section className='grid grid-cols-[1.45fr_1fr] gap-3'>
+      <div className='px-4 mt-2 flex flex-col gap-[10px]'>
+        <section className='bg-white rounded-2xl p-4 grid grid-cols-[1.45fr_1fr] gap-3'>
           <button
             type='button'
             onClick={() => requireAuth() && setEditOpen(true)}
-            className='bg-white rounded-2xl p-4 text-left active:scale-[0.99] transition-transform'
+            className='bg-[#EAF7EC] border-[0.3px] border-[#1A5E00]/20 rounded-2xl p-4 h-[77px] flex flex-col justify-center text-left active:scale-[0.99] transition-transform'
           >
-            <div className='text-[13px] text-[#9E9E9E]'>{t('nameLabel')}</div>
-            <div className='mt-1 flex items-center justify-between'>
-              <span className='text-[15px] font-bold text-[#21201F] truncate'>
+            <div className='flex items-center justify-between gap-2'>
+              <span className='text-[14px] font-medium text-[#21201F] truncate'>
                 {displayName}
               </span>
-              <Pencil size={14} className='text-[#9E9E9E] shrink-0' />
+              <Pencil size={14} className='text-[#7C8A7E] shrink-0' />
             </div>
-            <div className='mt-3 text-[12px] text-[#9E9E9E]'>{fullPhone}</div>
+            <div className='mt-1 text-[16px] font-medium text-[#21201F]'>{fullPhone}</div>
           </button>
           <Link
             href={`/${venue}/profile/points`}
-            className='bg-[#21201F] text-white rounded-2xl p-4 flex flex-col justify-between active:scale-[0.99] transition-transform'
+            className='bg-[#FBF7FD] border-[0.3px] border-[#29003E]/20 rounded-2xl p-4 h-[77px] flex flex-col justify-between active:scale-[0.99] transition-transform'
           >
-            <div className='flex items-center justify-between text-[12px] opacity-70'>
+            <div className='flex items-center justify-between text-[12px] text-black'>
               <span>{t('bonusLabel')}</span>
               <ArrowRight size={14} />
             </div>
-            <div className='mt-2 text-[22px] font-extrabold'>
+            <div className='text-[22px] font-semibold text-[#8031C9] leading-none'>
               {bonusLoading ? '…' : (bonus?.bonus ?? 0).toLocaleString('ru-RU').replace(',', ' ')}
             </div>
-            {bonus?.clientGroup && bonus.clientGroup.loyaltyType !== '' && (
-              <div className='mt-1 text-[11px] opacity-70 truncate'>
-                {bonus.clientGroup.name}
-                {bonus.clientGroup.discountPercent > 0 && (
-                  <> · {bonus.clientGroup.loyaltyType === 'discount' ? '−' : '+'}
-                  {bonus.clientGroup.discountPercent}%</>
-                )}
-              </div>
-            )}
           </Link>
         </section>
+
+        {bonus?.clientGroup && bonus.clientGroup.discountPercent > 0 && (
+          <LoyaltySection
+            currentPercent={bonus.clientGroup.discountPercent}
+            // TODO: nextPercent/amountToNext/currency пока захардкожены — API не
+            // отдаёт порог следующего уровня (см. project_profile_redesign_gaps).
+            nextPercent={5}
+            amountToNext={10000}
+            currency='с'
+          />
+        )}
 
         <TastesSection
           tastes={client?.tastes ?? []}
@@ -180,9 +188,12 @@ export default function ProfilePage() {
           onLoginRequired={() => setLoginOpen(true)}
         />
 
+        <PaymentSection />
+
         <section className='bg-white rounded-2xl p-4'>
           <div className='text-[13px] font-semibold text-[#21201F]'>{t('quickLinks.title')}</div>
           <div className='mt-3 grid grid-cols-3 gap-2'>
+            <QuickLink icon={<Store size={20} />} label={t('quickLinks.venues')} />
             <Link
               href={`/${venue}/history`}
               className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'
@@ -190,7 +201,6 @@ export default function ProfilePage() {
               <ShoppingBag size={20} />
               <span className='text-[11px]'>{t('quickLinks.orders')}</span>
             </Link>
-            <QuickLink icon={<Store size={20} />} label={t('quickLinks.venues')} />
             <QuickLink icon={<MessageSquareText size={20} />} label={t('quickLinks.chat')} />
           </div>
         </section>
@@ -254,25 +264,32 @@ function AddressesSection({
     setEditing(addr);
   };
 
+  const showAddCard = !authed || addresses.length === 0 || addresses.length < 10;
+
   return (
     <section className='bg-white rounded-2xl p-4 relative'>
       <div className='flex items-center justify-between'>
         <div className='text-[13px] font-semibold text-[#21201F]'>
           {t('title')}
-          {addresses.length > 0 && (
-            <span className='text-[#9E9E9E] font-normal ml-1'>
-              ({addresses.length})
-            </span>
-          )}
         </div>
+        {authed && addresses.length > 0 && (
+          <button
+            type='button'
+            onClick={() => open(null)}
+            className='flex items-center gap-1 text-[12px] text-[#9E9E9E] active:scale-95 transition-transform'
+          >
+            {t('seeAll')}
+            <ArrowRight size={14} />
+          </button>
+        )}
       </div>
 
-      <div className='mt-3 grid grid-cols-3 gap-2'>
+      <div className='mt-3 flex items-stretch gap-2 overflow-x-auto -mx-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
         {authed && isLoading && addresses.length === 0
           ? Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2 animate-pulse'
+                className='w-[135px] h-[75px] shrink-0 rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2 animate-pulse'
               >
                 <div className='flex items-center gap-1.5'>
                   <div className='w-3.5 h-3.5 rounded-full bg-[#F4F1EE]' />
@@ -288,30 +305,40 @@ function AddressesSection({
                 key={a.id}
                 type='button'
                 onClick={() => open(a)}
-                className='rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-2 text-left active:scale-[0.98] transition-transform'
+                className={`w-[135px] h-[75px] shrink-0 rounded-xl border px-2.5 py-2 flex flex-col gap-0.5 text-left active:scale-[0.98] transition-transform ${
+                  a.isDefault
+                    ? 'border-[#E8A145] bg-[#FDF7ED]'
+                    : 'border-[#EDEAE7]'
+                }`}
               >
                 <div className='flex items-center gap-1.5'>
-                  <MapPin size={14} className='text-brand shrink-0' />
-                  <span className='text-[12px] font-semibold truncate'>
+                  <span className='text-[13px] font-semibold text-[#21201F] truncate'>
                     {a.label}
                   </span>
                   {a.isDefault && (
-                    <span className='ml-auto text-[9px] uppercase tracking-wide text-[#9E9E9E] bg-[#F4F1EE] px-1.5 py-0.5 rounded-full'>
+                    <span className='ml-auto text-[9px] font-medium text-white bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
                       {t('default')}
                     </span>
                   )}
                 </div>
-                <div className='text-[11px] text-[#9E9E9E] leading-snug line-clamp-2'>
-                  {a.address}
+                <div className='text-[11px] text-[#9E9E9E] leading-[1.45] line-clamp-2 pb-[1px]'>
+                  {[
+                    a.address,
+                    a.apartment && t('apartment', { value: a.apartment }),
+                    a.entrance && t('entrance', { value: a.entrance }),
+                    a.floor && t('floor', { value: a.floor }),
+                  ]
+                    .filter(Boolean)
+                    .join(', ')}
                 </div>
               </button>
             ))}
 
-        {(!authed || addresses.length < 10) && (
+        {showAddCard && (
           <button
             type='button'
             onClick={() => open(null)}
-            className='rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1 py-3'
+            className='w-[110px] h-[75px] shrink-0 rounded-xl border border-dashed border-[#D7D2CC] flex flex-col items-center justify-center text-[#9E9E9E] gap-1'
           >
             <Plus size={16} />
             <span className='text-[11px]'>{t('add')}</span>
@@ -330,6 +357,110 @@ function AddressesSection({
         onClose={() => setEditing(undefined)}
         address={editing ?? null}
       />
+    </section>
+  );
+}
+
+/**
+ * Уровень лояльности — переиспользуемая карточка.
+ * Слева крупный текущий процент скидки + подпись; справа индикатор прогресса
+ * (текущий уровень → следующий) с подписью «Еще {amount} {currency} до {next} %».
+ *
+ * `currentPercent` берётся из реального clientGroup.discountPercent. А вот
+ * `nextPercent` / `amountToNext` API не отдаёт (порога следующего уровня нет,
+ * см. project_profile_redesign_gaps) — на месте вызова они захардкожены с TODO.
+ * Когда они не заданы, правый индикатор не рендерится.
+ */
+function LoyaltySection({
+  currentPercent,
+  nextPercent,
+  amountToNext,
+  currency,
+}: {
+  currentPercent: number;
+  nextPercent?: number;
+  amountToNext?: number;
+  currency?: string;
+}) {
+  const t = useTranslations('Profile.loyalty');
+  const hasProgress =
+    typeof nextPercent === 'number' && typeof amountToNext === 'number';
+
+  return (
+    <section className='bg-white rounded-2xl p-4 flex items-center gap-4'>
+      <div className='shrink-0 text-center'>
+        <div className='text-[28px] font-bold leading-none bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] bg-clip-text text-transparent'>
+          {currentPercent} %
+        </div>
+        <div className='mt-1.5 text-[12px] font-medium text-[#9E9E9E]'>{t('title')}</div>
+      </div>
+
+      {hasProgress && (
+        <div className='flex-1 min-w-0 pl-4 border-l border-[#E5E1DD]'>
+          <div className='flex items-center gap-2'>
+            <span className='shrink-0 w-[36px] h-[36px] rounded-full border border-[#FFD5A8] flex items-center justify-center'>
+              <span className='w-[30px] h-[30px] rounded-full bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] text-white text-[10px] font-medium leading-none flex items-center justify-center text-center'>
+                {currentPercent}%
+              </span>
+            </span>
+            <span className='flex-1 border-t-2 border-dashed border-[#C9C2BB]' />
+            <span className='shrink-0 w-[30px] h-[30px] rounded-full bg-white border-2 border-[#D7D2CC] text-[#9E9E9E] text-[10px] font-medium leading-none flex items-center justify-center text-center'>
+              {nextPercent}%
+            </span>
+          </div>
+          <div className='mt-2 text-[12px] font-medium text-[#9E9E9E] leading-snug'>
+            {t('toNext', {
+              amount: amountToNext!.toLocaleString('ru-RU').replace(',', ' '),
+              currency: currency ?? '',
+              next: nextPercent!,
+            })}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/**
+ * Способ оплаты — статичная вёрстка по макету. Сохранённых способов оплаты в API
+ * нет (оплата идёт редиректом на paymentUrl, см. project_payment_contract).
+ * TODO: подключить реальные данные, когда появится эндпоинт сохранённых карт.
+ */
+function PaymentSection() {
+  const t = useTranslations('Profile.payment');
+  return (
+    <section className='bg-white rounded-2xl p-4'>
+      <div className='flex items-center justify-between'>
+        <div className='text-[13px] font-semibold text-[#21201F]'>
+          {t('title')}
+        </div>
+        <span className='flex items-center gap-1 text-[12px] text-[#9E9E9E]'>
+          {t('seeAll')}
+          <ArrowRight size={14} />
+        </span>
+      </div>
+
+      <div className='mt-3 flex items-stretch gap-2 overflow-x-auto -mx-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+        <div className='w-[135px] h-[75px] shrink-0 rounded-xl border border-[#E8A145] bg-[#FDF7ED] p-2.5 flex flex-col gap-1'>
+          <div className='flex items-center gap-1.5'>
+            <CreditCard size={16} className='text-[#1A1F71] shrink-0' />
+            <span className='text-[12px] font-bold text-[#1A1F71]'>VISA</span>
+            <span className='ml-auto text-[9px] font-medium text-white bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
+              {t('default')}
+            </span>
+          </div>
+          <div className='text-[12px] text-[#9E9E9E] tracking-widest'>
+            ••••4242
+          </div>
+        </div>
+
+        <div className='w-[135px] h-[75px] shrink-0 rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-1'>
+          <Wallet size={16} className='text-[#6B9A6E]' />
+          <span className='text-[12px] font-medium text-[#21201F]'>
+            {t('cash')}
+          </span>
+        </div>
+      </div>
     </section>
   );
 }
@@ -410,23 +541,23 @@ function TastesSection({
         {tastes.map((taste) => (
           <span
             key={taste}
-            className='inline-flex items-center gap-1.5 h-[30px] pl-3 pr-1.5 rounded-full bg-[#F4F1EE] text-[12px] text-[#21201F]'
+            className='inline-flex items-center gap-1.5 h-[30px] pl-3 pr-1.5 rounded-full bg-[#FDF7ED] text-[12px] text-[#21201F]'
           >
             {taste}
             <button
               type='button'
               onClick={() => remove(taste)}
               disabled={update.isPending}
-              className='w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-[#EDEAE7] disabled:opacity-50'
+              className='w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-[#F4E9D2] disabled:opacity-50'
               aria-label={t('remove', { name: taste })}
             >
-              <X size={12} className='text-[#9E9E9E]' />
+              <X size={14} className='text-[#C75D00]' />
             </button>
           </span>
         ))}
 
-        {adding ? (
-          <span className='inline-flex items-center h-[30px] pl-3 pr-1 rounded-full bg-[#F4F1EE]'>
+        {adding && (
+          <span className='inline-flex items-center h-[30px] pl-3 pr-1 rounded-full bg-[#FDF7ED]'>
             <input
               ref={inputRef}
               value={draft}
@@ -449,19 +580,19 @@ function TastesSection({
               <Loader2 size={12} className='animate-spin text-[#9E9E9E] mr-1.5' />
             )}
           </span>
-        ) : (
-          canAddMore && (
-            <button
-              type='button'
-              onClick={startAdd}
-              className='inline-flex items-center gap-1.5 h-[30px] px-3 rounded-full border border-dashed border-[#D7D2CC] text-[12px] text-[#9E9E9E]'
-            >
-              <Plus size={12} />
-              {t('add')}
-            </button>
-          )
         )}
       </div>
+
+      {!adding && canAddMore && (
+        <button
+          type='button'
+          onClick={startAdd}
+          className='mt-1 inline-flex items-center justify-center gap-1.5 w-[178px] h-[32px] rounded-xl border border-dashed border-[#EDEAE7] text-[12px] text-[#9E9E9E] active:scale-[0.99] transition-transform'
+        >
+          <Plus size={14} />
+          {t('add')}
+        </button>
+      )}
 
       {tastes.length === 0 && !adding && (
         <div className='mt-2 text-[11px] text-[#9E9E9E]'>
