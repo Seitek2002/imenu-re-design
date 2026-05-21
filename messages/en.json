@@ -323,16 +323,26 @@
       "loginButton": "Sign in via SMS",
       "menuLink": "Go to menu"
     },
+    "loyalty": {
+      "title": "Loyalty level",
+      "toNext": "{amount} {currency} more to reach {next} %"
+    },
+    "payment": {
+      "title": "Payment method",
+      "seeAll": "All",
+      "cash": "Cash",
+      "default": "Main"
+    },
     "quickLinks": {
-      "title": "Shortcuts",
-      "orders": "Orders",
-      "venues": "Locations",
-      "chat": "Chat"
+      "title": "Need help?",
+      "orders": "Order",
+      "venues": "Location",
+      "chat": "Other"
     },
     "tastes": {
-      "title": "Taste preferences",
-      "subtitle": "We'll keep them in mind when preparing your order",
-      "add": "Add",
+      "title": "Your preferences",
+      "subtitle": "We'll keep this in mind for every order",
+      "add": "Add a preference",
       "placeholder": "No onions",
       "empty": "Empty for now — add what doesn't work for you.",
       "presetsHint": "Popular choices:",
@@ -347,8 +357,12 @@
     },
     "addresses": {
       "title": "My addresses",
+      "seeAll": "All",
       "add": "Add",
-      "default": "main",
+      "default": "Main",
+      "apartment": "apt. {value}",
+      "entrance": "entrance {value}",
+      "floor": "floor {value}",
       "loading": "Loading…",
       "loginRequired": "Sign in via SMS to save addresses."
     }

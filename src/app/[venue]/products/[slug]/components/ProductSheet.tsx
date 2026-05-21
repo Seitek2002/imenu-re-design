@@ -633,6 +633,30 @@ const ModifierPopover = ({
  * ничего не выбрано — «+» кружок над карточкой; выбран 1 — фото и название
  * элемента; выбрано >1 — фото + бейдж количества. Тап открывает поповер.
  */
+/** Плитка мозаики 22×22 для чипа группы: фото с фолбэком на нейтральную
+ * иконку при отсутствии/ошибке загрузки. Состояние ошибки локально, чтобы
+ * каждая плитка падала независимо. */
+const MosaicTile = ({ item }: { item: GroupItem }) => {
+  const [errored, setErrored] = useState(false);
+  const photo = item.photo || item.thumbnail || null;
+  if (!photo || errored) {
+    return (
+      <span className='w-full h-full bg-gray-100 flex items-center justify-center'>
+        <Utensils size={12} strokeWidth={1.75} className='text-[#21201F]/30' />
+      </span>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={photo}
+      alt=''
+      onError={() => setErrored(true)}
+      className='w-full h-full object-cover'
+    />
+  );
+};
+
 const OptionalGroupChip = ({
   group,
   counts,
@@ -644,13 +668,13 @@ const OptionalGroupChip = ({
   active: boolean;
   onClick: () => void;
 }) => {
-  const [imgError, setImgError] = useState(false);
   const sum = sumGroupCount(group, counts);
-  const selectedItem = group.items.find((i) => (counts[i.id] ?? 0) > 0);
+  const selected = group.items.filter((i) => (counts[i.id] ?? 0) > 0);
   const hasSelection = sum > 0;
-  const label = sum === 1 && selectedItem ? selectedItem.name : group.name;
-  const itemPhoto = selectedItem?.photo || selectedItem?.thumbnail || null;
-  const showImg = !!itemPhoto && !imgError;
+  const label = sum === 1 && selected[0] ? selected[0].name : group.name;
+  // Мозаика из первых 4 уникальных выбранных модификаторов. Бейдж `+N` сверху
+  // продолжает отрабатывать оверфлоу по полному количеству (sum).
+  const tiles = selected.slice(0, 4);
 
   return (
     <button
@@ -671,26 +695,46 @@ const OptionalGroupChip = ({
       )}
 
       {hasSelection ? (
-        showImg ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={itemPhoto}
-            alt=''
-            onError={() => setImgError(true)}
-            className='w-11 h-11 rounded-xl object-cover'
-          />
-        ) : (
-          <span className='w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center'>
-            <Utensils size={18} strokeWidth={1.75} className='text-[#21201F]/30' />
-          </span>
-        )
+        <div
+          className='w-11 h-11 rounded-xl overflow-hidden grid gap-px bg-white'
+          style={
+            tiles.length >= 2
+              ? {
+                  gridTemplateColumns: '1fr 1fr',
+                  gridTemplateRows: tiles.length >= 3 ? '1fr 1fr' : '1fr',
+                }
+              : undefined
+          }
+        >
+          {tiles.length === 3 ? (
+            <>
+              <div className='row-span-2 overflow-hidden'>
+                <MosaicTile item={tiles[0]} />
+              </div>
+              <div className='overflow-hidden'>
+                <MosaicTile item={tiles[1]} />
+              </div>
+              <div className='overflow-hidden'>
+                <MosaicTile item={tiles[2]} />
+              </div>
+            </>
+          ) : (
+            tiles.map((item) => (
+              <div key={item.id} className='overflow-hidden'>
+                <MosaicTile item={item} />
+              </div>
+            ))
+          )}
+        </div>
       ) : (
         <span className='w-9 h-9 rounded-full border border-[#21201F]/15 flex items-center justify-center'>
           <Plus size={18} strokeWidth={2} className='text-[#21201F]' />
         </span>
       )}
 
-      <span className='text-[11px] font-medium text-center text-[#21201F] leading-tight line-clamp-2 break-words w-full'>
+      {/* Высота под две строки зарезервирована, чтобы «+»/фото у чипов с одно- и
+          двухстрочными названиями стояли на одном уровне (button — justify-center) */}
+      <span className='text-[11px] font-medium text-center text-[#21201F] leading-tight line-clamp-2 break-words w-full min-h-[28px]'>
         {label}
       </span>
     </button>
@@ -785,21 +829,19 @@ const ProductContent = ({
   const hasOptional = optionalGroups.length > 0;
   const wizard = requiredGroups.length > 0;
 
-  // Карта шагов: обязательные по одной, затем общий опциональный (если есть),
-  // затем обзор.
+  // Карта шагов: только обязательные группы + обзор. Опциональные шагом не
+  // считаются — они показываются как чипы-апселл над summary на review-шаге.
   type WizardStep =
     | { kind: 'required'; group: GroupModification }
-    | { kind: 'optional' }
     | { kind: 'review' };
   const steps: WizardStep[] = useMemo(() => {
     const list: WizardStep[] = requiredGroups.map((group) => ({
       kind: 'required',
       group,
     }));
-    if (hasOptional) list.push({ kind: 'optional' });
     list.push({ kind: 'review' });
     return list;
-  }, [requiredGroups, hasOptional]);
+  }, [requiredGroups]);
 
   const [qnty, setQnty] = useState(1);
   const [counts, setCounts] = useState<CountsState>(() => {
@@ -860,7 +902,6 @@ const ProductContent = ({
 
   const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
   const isReviewStep = currentStep?.kind === 'review';
-  const isOptionalStep = currentStep?.kind === 'optional';
   const currentGroup =
     currentStep?.kind === 'required' ? currentStep.group : null;
 
@@ -944,20 +985,18 @@ const ProductContent = ({
     const progress = ((stepIndex + 1) / totalSteps) * 100;
     const stepTitle = isReviewStep
       ? t('review')
-      : isOptionalStep
-        ? t('extras')
-        : currentGroup!.selection.title || currentGroup!.name;
+      : currentGroup!.selection.title || currentGroup!.name;
     const slideClass = slideDir === 'fwd' ? 'step-slide-in' : 'step-slide-back';
 
-    // Индекс шага, на котором редактируется группа: обязательная — свой шаг,
-    // опциональная — общий опциональный шаг.
+    // Индекс шага, на котором редактируется группа. Опциональные собраны на
+    // review-шаге (как апселл-чипы над summary), туда же и ведём.
     const stepIndexForGroup = (g: GroupModification) => {
       if (g.selection.min > 0) {
         return steps.findIndex(
           (s) => s.kind === 'required' && s.group.id === g.id,
         );
       }
-      return steps.findIndex((s) => s.kind === 'optional');
+      return steps.findIndex((s) => s.kind === 'review');
     };
 
     return (
@@ -1024,10 +1063,10 @@ const ProductContent = ({
                     {t('stepProgress', { current: stepIndex + 1, total: totalSteps })}
                   </span>
                 </div>
-                <div className='h-1.5 w-full rounded-full bg-gray-100 overflow-hidden'>
+                <div className='relative h-1.5 w-full rounded-full bg-gray-100 overflow-hidden'>
                   <div
-                    className='h-full bg-brand rounded-full transition-all duration-300 ease-out'
-                    style={{ width: `${progress}%` }}
+                    className='absolute inset-0 bg-[linear-gradient(to_right,#5EEAD4_0%,#FAA924_60%,#F3811F_100%)] transition-[clip-path] duration-300 ease-out'
+                    style={{ clipPath: `inset(0 ${100 - progress}% 0 0)` }}
                   />
                 </div>
               </div>
@@ -1043,50 +1082,59 @@ const ProductContent = ({
               />
             )}
 
-            {isOptionalStep && (
-              <OptionalGroupsBar
-                groups={optionalGroups}
-                counts={counts}
-                onChange={setCounts}
-              />
-            )}
-
             {isReviewStep && (
-              <div className='flex flex-col gap-2'>
-                <span className='text-xs text-gray-400'>{t('reviewHint')}</span>
-                {groups.map((g) => {
-                  const chosen = g.items.filter((i) => (counts[i.id] ?? 0) > 0);
-                  const label = chosen.length
-                    ? chosen
-                        .map((i) => {
-                          const c = counts[i.id] ?? 0;
-                          return c > 1 ? `${i.name} ×${c}` : i.name;
-                        })
-                        .join(', ')
-                    : t('noExtras');
-                  return (
-                    <button
-                      key={g.id}
-                      type='button'
-                      onClick={() => goToStep(stepIndexForGroup(g))}
-                      className='w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 text-left hover:bg-gray-100 active:scale-[0.99] transition-all'
-                    >
-                      <div className='min-w-0'>
-                        <div className='text-xs text-gray-400'>{g.name}</div>
-                        <div
-                          className={`font-medium truncate ${
-                            chosen.length ? 'text-[#21201F]' : 'text-gray-400'
-                          }`}
-                        >
-                          {label}
+              <div className='flex flex-col gap-4'>
+                {hasOptional && (
+                  <div>
+                    <div className='text-xs font-semibold text-[#21201F] mb-2'>
+                      {t('extras')}
+                    </div>
+                    <OptionalGroupsBar
+                      groups={optionalGroups}
+                      counts={counts}
+                      onChange={setCounts}
+                    />
+                  </div>
+                )}
+
+                <div className='flex flex-col gap-2'>
+                  <span className='text-xs text-gray-400'>{t('reviewHint')}</span>
+                  {requiredGroups.map((g) => {
+                    const chosen = g.items.filter(
+                      (i) => (counts[i.id] ?? 0) > 0,
+                    );
+                    const label = chosen.length
+                      ? chosen
+                          .map((i) => {
+                            const c = counts[i.id] ?? 0;
+                            return c > 1 ? `${i.name} ×${c}` : i.name;
+                          })
+                          .join(', ')
+                      : t('noExtras');
+                    return (
+                      <button
+                        key={g.id}
+                        type='button'
+                        onClick={() => goToStep(stepIndexForGroup(g))}
+                        className='w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 text-left hover:bg-gray-100 active:scale-[0.99] transition-all'
+                      >
+                        <div className='min-w-0'>
+                          <div className='text-xs text-gray-400'>{g.name}</div>
+                          <div
+                            className={`font-medium truncate ${
+                              chosen.length ? 'text-[#21201F]' : 'text-gray-400'
+                            }`}
+                          >
+                            {label}
+                          </div>
                         </div>
-                      </div>
-                      <span className='text-sm font-medium text-brand shrink-0'>
-                        {t('edit')}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span className='text-sm font-medium text-brand shrink-0'>
+                          {t('edit')}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
               </div>
@@ -1147,14 +1195,7 @@ const ProductContent = ({
                 onClick={goNext}
                 className='flex-1 min-w-0 bg-brand text-white font-bold rounded-2xl h-14 active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 hover:brightness-95 disabled:opacity-40 disabled:active:scale-100'
               >
-                <span>
-                  {isOptionalStep &&
-                  optionalGroups.every(
-                    (g) => sumGroupCount(g, counts) === 0,
-                  )
-                    ? t('skip')
-                    : t('next')}
-                </span>
+                <span>{t('next')}</span>
                 {unitPrice > 0 && (
                   <span className='bg-white/20 px-2 py-0.5 rounded text-sm'>
                     {unitPrice} {tc('currency')}

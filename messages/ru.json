@@ -323,16 +323,26 @@
       "loginButton": "Войти по SMS",
       "menuLink": "Перейти в меню"
     },
+    "loyalty": {
+      "title": "Уровень лояльности",
+      "toNext": "Еще {amount} {currency} до {next} %"
+    },
+    "payment": {
+      "title": "Способ оплаты",
+      "seeAll": "Все",
+      "cash": "Наличные",
+      "default": "Основной"
+    },
     "quickLinks": {
-      "title": "Быстрые ссылки",
-      "orders": "Заказы",
-      "venues": "Филиалы",
-      "chat": "Чат"
+      "title": "Нужна помощь?",
+      "orders": "Заказ",
+      "venues": "Филиал",
+      "chat": "Другое"
     },
     "tastes": {
-      "title": "Вкусовые предпочтения",
-      "subtitle": "Учтём при формировании заказа",
-      "add": "Добавить",
+      "title": "Ваши предпочтения",
+      "subtitle": "Мы учтем это в каждом заказе",
+      "add": "Добавить пожелание",
       "placeholder": "Без лука",
       "empty": "Пока пусто — добавьте, что вам не подходит.",
       "presetsHint": "Часто выбирают:",
@@ -347,8 +357,12 @@
     },
     "addresses": {
       "title": "Мои адреса",
+      "seeAll": "Все",
       "add": "Добавить",
-      "default": "осн",
+      "default": "Основной",
+      "apartment": "кв. {value}",
+      "entrance": "подъезд {value}",
+      "floor": "{value} этаж",
       "loading": "Загружаем…",
       "loginRequired": "Войдите по SMS, чтобы сохранять адреса."
     }
