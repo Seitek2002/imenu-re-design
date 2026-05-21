@@ -296,7 +296,9 @@
   },
   "Spot": {
     "pickupFrom": "Pickup from",
-    "switchConfirm": "Switching the location will clear your cart since prices and availability may differ. Continue?"
+    "switchConfirm": "Switching the location will clear your cart since prices and availability may differ. Continue?",
+    "chooseTitle": "Choose a location",
+    "chooseSubtitle": "Prices and availability depend on the location. Pick where you're ordering from."
   },
   "Search": {
     "results": "Search results",
@@ -334,7 +336,12 @@
       "placeholder": "No onions",
       "empty": "Empty for now — add what doesn't work for you.",
       "presetsHint": "Popular choices:",
-      "presets": ["No onions", "No cilantro", "Not spicy", "No garlic"],
+      "presets": [
+        "No onions",
+        "No cilantro",
+        "Not spicy",
+        "No garlic"
+      ],
       "loginRequired": "Sign in via SMS to save your preferences.",
       "remove": "Remove {name}"
     },

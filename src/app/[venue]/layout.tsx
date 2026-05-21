@@ -9,6 +9,7 @@ import TableBillBanner from './components/TableBillBanner';
 import FloatingCartButton from './components/FloatingCartButton';
 import PaymentRedirector from './components/PaymentRedirector';
 import PageTransition from './components/PageTransition';
+import SpotGate from './components/SpotGate';
 import VenueInitializer from '@/components/providers/VenueInitializer';
 import { API_V2_URL } from '@/lib/config';
 import type { Locale } from '@/lib/locale';
@@ -106,6 +107,7 @@ export default async function VenueLayout({
         </Suspense>
 
         <VenueInitializer venue={venueData} />
+        <SpotGate venue={venueData} />
         <PaymentRedirector />
         <TableBillBanner venueSlug={venueSlug} />
         <FloatingCartButton venueSlug={venueSlug} />
