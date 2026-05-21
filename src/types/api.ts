@@ -225,10 +225,26 @@ export interface MainButton {
   categories?: Category[] | null;
 }
 
+/**
+ * Доступность/цена варианта (или товара) на конкретной точке.
+ * Бэк (2026-05-21) при `?spotId=` отдаёт ровно одну запись — для запрошенной
+ * точки. Без `?spotId=` массив полный (по всем точкам, для админок/превью).
+ */
+export interface SpotAvailability {
+  spot: { id: number; name?: string };
+  price: number;
+  visible: boolean;
+}
+
 export interface Modificator {
   id: number;
   name: string;
   price: number;
+  /**
+   * Per-spot цены/видимость. С `?spotId=` — один элемент (запрошенная точка),
+   * берём цену оттуда (см. variantPrice). Может отсутствовать в старых ответах.
+   */
+  spotAvailabilities?: SpotAvailability[];
 }
 
 export interface ProductCategory {
@@ -289,6 +305,14 @@ export interface Product {
   productName: string;
   productDescription: string | null;
   productPrice: number;
+  /**
+   * Диапазон цен по видимым вариантам (2026-05-21). С `?spotId=` считается по
+   * этой точке. Для товара без вариантов priceFrom == priceTo == productPrice.
+   * null — нет ни одного видимого варианта. Используйте вместо productPrice для
+   * подписи «от X сом» (productPrice у товаров с вариантами часто 0).
+   */
+  priceFrom?: number | null;
+  priceTo?: number | null;
   weight: number;
 
   measureUnit?: string;

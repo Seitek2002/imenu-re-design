@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import type { VideoProductMock } from '@/data/mock-video-products';
 import type { Product } from '@/types/api';
+import { useVenueStore } from '@/store/venue';
+import { variantPrice } from '@/lib/pricing';
 
 import VideoBackground from './VideoBackground';
 import SizePill from './SizePill';
@@ -42,6 +44,8 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
   const variantChip = iceProduct?.iceVersionChip ?? mock?.variantChip ?? null;
   const chipIcons: Record<string, string> = mock?.chipIcons ?? {};
   const groupMeta = mock?.groupMeta ?? null;
+
+  const spotId = useVenueStore((s) => s.spotId);
 
   // ── Локальный стейт ──────────────────────────────────────────────────────
   const [sizeId, setSizeId] = useState<number | null>(null);
@@ -86,13 +90,13 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
   const unitPrice = useMemo(() => {
     if (!product) return 0;
     const mod = product.modificators.find((m) => m.id === sizeId);
-    const base = mod?.price ?? product.productPrice;
+    const base = mod ? variantPrice(mod, spotId) : product.productPrice;
     const adds = groups.reduce(
       (acc, g) => acc + g.items.reduce((s, i) => s + Number(i.price) * (counts[i.id] ?? 0), 0),
       0,
     );
     return base + adds;
-  }, [product, sizeId, groups, counts]);
+  }, [product, sizeId, groups, counts, spotId]);
 
   const groupCounts = useMemo(() => {
     const out: Record<number, number> = {};

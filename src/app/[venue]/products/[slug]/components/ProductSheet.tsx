@@ -29,6 +29,7 @@ import { useMounted } from '@/hooks/useMounted';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import { useVenueProducts, usePromotionsV2 } from '@/lib/api/queries';
+import { variantPrice } from '@/lib/pricing';
 import { findActivePromotionForProduct } from '@/lib/promotions';
 
 import plusIcon from '@/assets/Goods/plus.svg';
@@ -904,7 +905,9 @@ const ProductContent = ({
   );
 
   const unitPrice = useMemo(() => {
-    const base = selectedFlat?.price ?? product.productPrice;
+    const base = selectedFlat
+      ? variantPrice(selectedFlat, spotId)
+      : product.productPrice;
     const add = groups.reduce(
       (acc, g) =>
         acc +
@@ -915,7 +918,7 @@ const ProductContent = ({
       0,
     );
     return base + add;
-  }, [product, selectedFlat, groups, counts]);
+  }, [product, selectedFlat, groups, counts, spotId]);
 
   const totalPrice = unitPrice * qnty;
 
@@ -925,7 +928,7 @@ const ProductContent = ({
     addToBasket(product, qnty, {
       flatModId: selectedFlat?.id,
       flatModName: selectedFlat?.name,
-      flatModPrice: selectedFlat?.price,
+      flatModPrice: selectedFlat ? variantPrice(selectedFlat, spotId) : undefined,
       groupSelections: buildGroupSelections(product, counts),
     });
     onClose();
@@ -1242,7 +1245,7 @@ const ProductContent = ({
                             : 'text-gray-400'
                         }`}
                       >
-                        {mod.price} с.
+                        {variantPrice(mod, spotId)} с.
                       </div>
                     </button>
                   ))}
