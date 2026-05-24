@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
-import { MapPin, Trash2, X } from 'lucide-react';
+import { ChevronLeft, MapPin } from 'lucide-react';
 import { useMounted } from '@/hooks/useMounted';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import {
@@ -129,27 +129,41 @@ function Form({
   };
 
   return (
-    <div className='fixed inset-0 z-60 flex items-end sm:items-center justify-center'>
+    <div className='fixed inset-0 z-60 flex items-stretch justify-center'>
       <div
-        className='absolute inset-0 bg-black/50 backdrop-blur-sm'
+        className='absolute inset-0 bg-black/40'
         onClick={() => !busy && onClose()}
       />
-      <div className='relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300 max-h-[92vh] overflow-y-auto'>
-        <div className='flex items-center justify-between mb-4'>
-          <h3 className='text-[18px] font-bold text-[#21201F]'>
-            {isEdit ? t('titleEdit') : t('titleCreate')}
-          </h3>
+      <div className='relative bg-white w-full max-w-175 mx-auto flex flex-col animate-in slide-in-from-bottom-4 duration-300'>
+        <header className='sticky top-0 z-10 bg-white px-4 h-14 flex items-center border-b border-[#F1EEEB]'>
           <button
+            type='button'
             onClick={onClose}
             disabled={busy}
-            className='w-8 h-8 flex items-center justify-center rounded-full bg-[#F4F1EE] text-[#9E9E9E]'
+            className='w-10 h-10 flex items-center justify-center rounded-full active:bg-[#F4F1EE] disabled:opacity-60'
             aria-label={t('close')}
           >
-            <X size={16} />
+            <ChevronLeft size={24} />
           </button>
-        </div>
+          <h3 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>
+            {isEdit ? t('titleEdit') : t('titleCreate')}
+          </h3>
+        </header>
 
-        <div className='flex flex-col gap-3'>
+        <div className='flex-1 overflow-y-auto px-4 pt-4 pb-32 flex flex-col gap-4'>
+          <FieldButton
+            label={t('address')}
+            value={street}
+            placeholder={t('addressPlaceholder')}
+            onClick={() => setMapOpen(true)}
+            icon={
+              <MapPin
+                size={16}
+                className={coords ? 'text-[#F3811F]' : 'text-[#A4A4A4]'}
+              />
+            }
+          />
+
           <Field
             label={t('label')}
             value={label}
@@ -157,86 +171,65 @@ function Form({
             placeholder={t('labelPlaceholder')}
           />
 
-          <button
-            type='button'
-            onClick={() => setMapOpen(true)}
-            className='bg-[#F4F1EE] flex items-center gap-3 rounded-2xl py-3 px-4 text-left active:bg-[#EDEAE7] transition-colors'
-          >
-            <div className='w-9 h-9 shrink-0 rounded-full bg-white flex items-center justify-center'>
-              <MapPin size={18} className={coords ? 'text-brand' : 'text-[#A4A4A4]'} />
-            </div>
-            <div className='flex flex-col min-w-0 flex-1'>
-              <span className='text-[12px] text-[#9E9E9E]'>{t('pinOnMap')}</span>
-              <span className='text-[14px] font-medium text-[#21201F] truncate'>
-                {coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : t('pinEmpty')}
-              </span>
-            </div>
-          </button>
-
-          <Field
-            label={t('address')}
-            value={street}
-            onChange={setStreet}
-            placeholder={t('addressPlaceholder')}
-          />
-
-          <div className='grid grid-cols-3 gap-2'>
-            <Field
-              label={t('entrance')}
-              value={entrance ?? ''}
-              onChange={setEntrance}
-              compact
-            />
-            <Field label={t('floor')} value={floor ?? ''} onChange={setFloor} compact />
-            <Field label={t('apartment')} value={apartment ?? ''} onChange={setApartment} compact />
+          <div className='grid grid-cols-2 gap-2'>
+            <Field label={t('floor')} value={floor ?? ''} onChange={setFloor} placeholder={t('floorPlaceholder')} />
+            <Field label={t('entrance')} value={entrance ?? ''} onChange={setEntrance} placeholder={t('entrancePlaceholder')} />
           </div>
 
-          <Field
-            label={t('intercom')}
-            value={intercom ?? ''}
-            onChange={setIntercom}
-            placeholder={t('intercomPlaceholder')}
-          />
+          <div className='grid grid-cols-2 gap-2'>
+            <Field
+              label={t('apartment')}
+              value={apartment ?? ''}
+              onChange={setApartment}
+              placeholder={t('apartmentPlaceholder')}
+            />
+            <Field
+              label={t('intercom')}
+              value={intercom ?? ''}
+              onChange={setIntercom}
+              placeholder={t('intercomPlaceholder')}
+            />
+          </div>
 
           <Field
             label={t('comment')}
             value={comment ?? ''}
             onChange={setComment}
             placeholder={t('commentPlaceholder')}
+            textarea
           />
 
-          <label className='flex items-center justify-between gap-3 bg-[#F4F1EE] rounded-2xl py-3 px-4'>
-            <span className='text-[14px] text-[#21201F]'>{t('isDefault')}</span>
+          <label className='flex items-center justify-between gap-3 text-[13px] text-[#21201F]'>
+            <span>{t('isDefault')}</span>
             <input
               type='checkbox'
               checked={isDefault}
               onChange={(e) => setIsDefault(e.target.checked)}
-              className='w-5 h-5 accent-[#21201F]'
+              className='w-5 h-5 accent-[#F3811F]'
             />
           </label>
+
+          {error && (
+            <div className='text-[12px] text-[#DC2626]'>{error}</div>
+          )}
         </div>
 
-        {error && (
-          <div className='mt-3 text-[12px] text-[#DC2626]'>{error}</div>
-        )}
-
-        <div className='mt-5 flex items-center gap-2'>
+        <div className='absolute bottom-0 left-0 right-0 bg-white border-t border-[#F1EEEB] px-4 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] flex flex-col items-center gap-3'>
           {isEdit && (
             <button
               type='button'
               onClick={handleDelete}
               disabled={busy}
-              className='h-12 px-4 rounded-2xl bg-[#FDECEC] text-[#DC2626] inline-flex items-center justify-center disabled:opacity-60'
-              aria-label={t('delete')}
+              className='text-[13px] text-[#E0533A] font-medium active:opacity-80 disabled:opacity-60'
             >
-              <Trash2 size={18} />
+              {t('deleteAddress')}
             </button>
           )}
           <button
             type='button'
             onClick={handleSave}
             disabled={busy}
-            className='flex-1 h-12 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium active:scale-[0.99] transition-transform disabled:opacity-60'
+            className='w-full h-12 rounded-2xl bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] text-white text-[14px] font-medium active:scale-[0.99] transition-transform disabled:opacity-60'
           >
             {t('save')}
           </button>
@@ -260,31 +253,69 @@ function Form({
   );
 }
 
+function FieldButton({
+  label,
+  value,
+  placeholder,
+  onClick,
+  icon,
+}: {
+  label: string;
+  value: string;
+  placeholder?: string;
+  onClick: () => void;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className='flex flex-col gap-1.5'>
+      <span className='text-[13px] text-[#21201F]'>{label}</span>
+      <button
+        type='button'
+        onClick={onClick}
+        className='h-12 px-4 rounded-2xl border border-[#EDEAE7] bg-white text-left text-[14px] flex items-center gap-2 active:bg-[#FBF9F8] transition-colors'
+      >
+        {icon}
+        <span className={value ? 'text-[#21201F]' : 'text-[#A4A4A4]'}>
+          {value || placeholder}
+        </span>
+      </button>
+    </div>
+  );
+}
+
 function Field({
   label,
   value,
   onChange,
   placeholder,
-  compact,
+  textarea,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  compact?: boolean;
+  textarea?: boolean;
 }) {
   return (
-    <label className='flex flex-col gap-1'>
-      <span className={compact ? 'text-[11px] text-[#9E9E9E]' : 'text-[12px] text-[#9E9E9E]'}>
-        {label}
-      </span>
-      <input
-        type='text'
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`${compact ? 'h-10 px-3 text-[13px]' : 'h-12 px-4 text-[14px]'} rounded-2xl bg-[#F4F1EE] text-[#21201F] outline-none focus:ring-2 focus:ring-[#21201F]/10`}
-      />
+    <label className='flex flex-col gap-1.5'>
+      <span className='text-[13px] text-[#21201F]'>{label}</span>
+      {textarea ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={3}
+          className='min-h-[88px] px-4 py-3 rounded-2xl border border-[#EDEAE7] bg-white text-[#21201F] text-[14px] outline-none focus:border-[#F3811F]/60 placeholder:text-[#A4A4A4] resize-none'
+        />
+      ) : (
+        <input
+          type='text'
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className='h-12 px-4 rounded-2xl border border-[#EDEAE7] bg-white text-[#21201F] text-[14px] outline-none focus:border-[#F3811F]/60 placeholder:text-[#A4A4A4]'
+        />
+      )}
     </label>
   );
 }

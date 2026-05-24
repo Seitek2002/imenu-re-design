@@ -23,6 +23,21 @@ import {
 import { useAuthStore } from '@/store/auth';
 import type { Locale } from '@/lib/locale';
 
+function formatWithUs(createdAt: string | undefined, t: (k: string, p?: Record<string, number>) => string): string | null {
+  if (!createdAt) return null;
+  const from = new Date(createdAt);
+  if (isNaN(from.getTime())) return null;
+  const now = new Date();
+  const diffMs = now.getTime() - from.getTime();
+  if (diffMs < 0) return null;
+  const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+  if (years >= 1) return t('yearsWithUs', { count: years });
+  if (months >= 1) return t('monthsWithUs', { count: months });
+  return t('daysWithUs', { count: Math.max(days, 1) });
+}
+
 const ICON: Record<BonusTransactionKind, React.ElementType> = {
   accrual: ShoppingBag,
   redeem: ShoppingBag,
@@ -109,12 +124,16 @@ export default function PointsHistoryPage() {
   const { venue } = useParams<{ venue: string }>();
   const bootstrapped = useAuthStore((s) => s.bootstrapped);
   const hasToken = useAuthStore((s) => !!s.accessToken);
+  const client = useAuthStore((s) => s.client);
+  const withUsLabel = formatWithUs(client?.createdAt, t);
 
-  const [period, setPeriod] = useState<PeriodKey>('month');
+  const [period, setPeriod] = useState<PeriodKey>('all');
   const [periodOpen, setPeriodOpen] = useState(false);
 
+  // История баллов — глобальная (по всем филиалам), поэтому venueSlug в запрос
+  // не передаём. На каждой строке показываем филиал из e.venueName, чтобы
+  // пользователь видел, где именно прошла операция.
   const { data, isLoading, isError, refetch } = useBonusTransactions({
-    venueSlug: venue,
     limit: 100,
     from: periodFrom(period),
   });
@@ -143,17 +162,27 @@ export default function PointsHistoryPage() {
       </header>
 
       <div className='px-4 mt-2 flex flex-col gap-3'>
-        <section className='bg-white rounded-2xl px-4 py-4 flex items-stretch'>
+        <section className='bg-[#FBF7FD] border-[0.3px] border-[#29003E]/20 rounded-2xl px-4 py-4 flex items-stretch'>
           <div className='flex-1 pr-3'>
-            <div className='text-[13px] text-[#9E9E9E]'>{t('balance')}</div>
-            <div className='mt-1 text-[22px] font-extrabold text-[#21201F]'>
-              {summary ? t('balanceUnit', { value: fmtBalance(summary.balance, locale) }) : '—'}
+            <div className='text-[13px] text-[#21201F]'>
+              {withUsLabel ? t('withUs') : t('balance')}
+            </div>
+            <div className='mt-1 text-[22px] font-extrabold text-[#8031C9] leading-none'>
+              {withUsLabel ?? (summary ? t('balanceUnit', { value: fmtBalance(summary.balance, locale) }) : '—')}
             </div>
           </div>
-          <div className='w-px bg-[#EDEAE7]' />
+          <div className='w-px bg-[#29003E]/15' />
           <div className='flex-1 pl-4 flex flex-col gap-1.5 justify-center'>
-            <Stat label={t('earnedTotal')} value={summary ? fmtAmountStr(summary.earnedTotal, locale) : '—'} />
-            <Stat label={t('redeemedTotal')} value={summary ? fmtAmountStr(summary.redeemedTotal, locale) : '—'} />
+            <Stat
+              label={t('earnedTotal')}
+              value={summary ? '+ ' + fmtAmountStr(summary.earnedTotal, locale) : '—'}
+              valueClass='text-[#22A05A]'
+            />
+            <Stat
+              label={t('redeemedTotal')}
+              value={summary ? fmtAmountStr(summary.redeemedTotal, locale) : '—'}
+              valueClass='text-[#E0871A]'
+            />
           </div>
         </section>
 
@@ -207,30 +236,30 @@ export default function PointsHistoryPage() {
         )}
 
         {hasToken && isLoading && (
-          <div className='bg-white rounded-2xl px-4 py-4 animate-pulse flex flex-col gap-3 divide-y divide-[#EDEAE7]'>
-            <div className='pb-3'>
-              <div className='h-3 w-16 bg-[#F4F1EE] rounded mb-3' />
-              <div className='flex flex-col gap-3'>
-                {Array.from({ length: 4 }).map((_, i) => (
+          <div className='animate-pulse flex flex-col gap-5 pt-2'>
+            {Array.from({ length: 2 }).map((_, gi) => (
+              <div key={gi} className='flex flex-col gap-3'>
+                <div className='h-3 w-16 bg-[#EDEAE7] rounded' />
+                {Array.from({ length: 2 }).map((__, i) => (
                   <div key={i} className='flex items-center gap-3'>
-                    <div className='w-[42px] h-[42px] rounded-full bg-[#F4F1EE]' />
+                    <div className='w-9 h-9 rounded-full bg-[#EDEAE7]' />
                     <div className='flex-1 flex flex-col gap-1.5'>
-                      <div className='h-3.5 w-2/3 bg-[#F4F1EE] rounded' />
-                      <div className='h-3 w-1/2 bg-[#F8F6F7] rounded' />
+                      <div className='h-3.5 w-2/3 bg-[#EDEAE7] rounded' />
+                      <div className='h-3 w-1/2 bg-[#F2EFEC] rounded' />
                     </div>
                     <div className='flex flex-col items-end gap-1.5'>
-                      <div className='h-4 w-12 bg-[#F4F1EE] rounded' />
-                      <div className='h-3 w-10 bg-[#F8F6F7] rounded' />
+                      <div className='h-4 w-12 bg-[#EDEAE7] rounded' />
+                      <div className='h-3 w-10 bg-[#F2EFEC] rounded' />
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            ))}
           </div>
         )}
 
         {hasToken && isError && (
-          <div className='bg-white rounded-2xl px-4 py-8 text-center text-[13px] text-[#9E9E9E]'>
+          <div className='px-2 py-8 text-center text-[13px] text-[#9E9E9E]'>
             {t('loadError')}{' '}
             <button onClick={() => refetch()} className='text-[#21201F] underline'>
               {t('retry')}
@@ -239,37 +268,48 @@ export default function PointsHistoryPage() {
         )}
 
         {hasToken && !isLoading && !isError && groups.length === 0 && (
-          <div className='bg-white rounded-2xl px-4 py-8 text-center text-[13px] text-[#9E9E9E]'>
+          <div className='px-2 py-8 text-center text-[13px] text-[#9E9E9E]'>
             {t('empty')}
           </div>
         )}
 
         {groups.length > 0 && (
-          <section className='bg-white rounded-2xl px-4 py-4 flex flex-col divide-y divide-[#EDEAE7]'>
+          <div className='flex flex-col gap-5 pt-1'>
             {groups.map((g) => (
-              <div key={g.title} className='py-3 first:pt-0 last:pb-0'>
-                <div className='text-[12px] text-[#9E9E9E]'>{g.title}</div>
-                <ul className='mt-3 flex flex-col gap-3'>
-                  {g.entries.map((e) => {
+              <div key={g.title} className='flex flex-col'>
+                <div className='text-[12px] text-[#9E9E9E] mb-3 px-1'>{g.title}</div>
+                <ul className='flex flex-col'>
+                  {g.entries.map((e, idx) => {
                     const Icon = ICON[e.kind] ?? ShoppingBag;
                     return (
-                      <li key={e.id} className='flex items-center gap-3'>
-                        <div className='w-[42px] h-[42px] rounded-full bg-[#F4F1EE] flex items-center justify-center shrink-0'>
-                          <Icon size={20} className='text-[#21201F]' />
+                      <li
+                        key={e.id}
+                        className={`flex items-center gap-3 py-2.5 ${
+                          idx === 0 ? '' : 'border-t border-[#EAE6E1]'
+                        }`}
+                      >
+                        <div
+                          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                            e.isCredit
+                              ? 'bg-[#EAF7EC] text-[#22A05A]'
+                              : 'bg-[#FDF2E5] text-[#E0871A]'
+                          }`}
+                        >
+                          <Icon size={18} />
                         </div>
                         <div className='flex-1 min-w-0'>
-                          <div className='text-[14px] text-[#21201F] truncate'>{e.title}</div>
+                          <div className='text-[14px] font-semibold text-[#21201F] truncate'>
+                            {e.title}
+                          </div>
                           <div className='text-[12px] text-[#9E9E9E] mt-0.5 truncate'>
                             {e.subtitle}
-                            {e.venueName && e.venueSlug !== venue && (
-                              <> · {e.venueName}</>
-                            )}
+                            {e.venueName && <> · {e.venueName}</>}
                           </div>
                         </div>
                         <div className='text-right shrink-0'>
                           <div
                             className={`text-[15px] font-bold ${
-                              e.isCredit ? 'text-[#22A05A]' : 'text-[#E0533A]'
+                              e.isCredit ? 'text-[#22A05A]' : 'text-[#E0871A]'
                             }`}
                           >
                             {e.isCredit ? '+' : '−'}
@@ -277,9 +317,6 @@ export default function PointsHistoryPage() {
                           </div>
                           <div className='text-[12px] text-[#9E9E9E]'>
                             {timeLabel(new Date(e.createdAt))}
-                            {e.balanceAfter != null && (
-                              <> · → {fmtBalance(e.balanceAfter, locale)}</>
-                            )}
                           </div>
                         </div>
                       </li>
@@ -288,18 +325,26 @@ export default function PointsHistoryPage() {
                 </ul>
               </div>
             ))}
-          </section>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  valueClass?: string;
+}) {
   return (
     <div className='flex items-center justify-between text-[13px]'>
       <span className='text-[#9E9E9E]'>{label}</span>
-      <span className='text-[#21201F] font-semibold'>{value}</span>
+      <span className={`font-semibold ${valueClass ?? 'text-[#21201F]'}`}>{value}</span>
     </div>
   );
 }
