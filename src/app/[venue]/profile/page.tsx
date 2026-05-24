@@ -138,17 +138,17 @@ export default function ProfilePage() {
       </header>
 
       <div className='px-4 mt-2 flex flex-col gap-[10px]'>
-        <section className='bg-white rounded-2xl p-4 grid grid-cols-[1.45fr_1fr] gap-3'>
+        <section className='bg-white rounded-2xl p-2.5 grid grid-cols-[1.45fr_1fr] gap-2.5'>
           <button
             type='button'
             onClick={() => requireAuth() && setEditOpen(true)}
             className='bg-[#EAF7EC] border-[0.3px] border-[#1A5E00]/20 rounded-2xl p-4 h-[77px] flex flex-col justify-center text-left active:scale-[0.99] transition-transform'
           >
             <div className='flex items-center justify-between gap-2'>
-              <span className='text-[14px] font-medium text-[#21201F] truncate'>
+              <span className='text-[13px] font-medium text-[#21201F] truncate'>
                 {displayName}
               </span>
-              <Pencil size={14} className='text-[#7C8A7E] shrink-0' />
+              <Pencil size={16} className='text-[#7C8A7E] shrink-0' />
             </div>
             <div className='mt-1 text-[16px] font-medium text-[#21201F]'>{fullPhone}</div>
           </button>
@@ -158,7 +158,7 @@ export default function ProfilePage() {
           >
             <div className='flex items-center justify-between text-[12px] text-black'>
               <span>{t('bonusLabel')}</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={16} />
             </div>
             <div className='text-[22px] font-semibold text-[#8031C9] leading-none'>
               {bonusLoading ? '…' : (bonus?.bonus ?? 0).toLocaleString('ru-RU').replace(',', ' ')}
@@ -184,24 +184,31 @@ export default function ProfilePage() {
         />
 
         <AddressesSection
+          venueSlug={venue}
           authed={hasToken}
           onLoginRequired={() => setLoginOpen(true)}
         />
 
-        <PaymentSection />
+        <PaymentSection venueSlug={venue} />
 
         <section className='bg-white rounded-2xl p-4'>
           <div className='text-[13px] font-semibold text-[#21201F]'>{t('quickLinks.title')}</div>
           <div className='mt-3 grid grid-cols-3 gap-2'>
-            <QuickLink icon={<Store size={20} />} label={t('quickLinks.venues')} />
+            <QuickLink
+              icon={<Store size={20} className='text-[#F3811F]' />}
+              label={t('quickLinks.venues')}
+            />
             <Link
               href={`/${venue}/history`}
               className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'
             >
-              <ShoppingBag size={20} />
+              <ShoppingBag size={20} className='text-[#6B9A6E]' />
               <span className='text-[11px]'>{t('quickLinks.orders')}</span>
             </Link>
-            <QuickLink icon={<MessageSquareText size={20} />} label={t('quickLinks.chat')} />
+            <QuickLink
+              icon={<MessageSquareText size={20} className='text-[#3F6BDB]' />}
+              label={t('quickLinks.chat')}
+            />
           </div>
         </section>
 
@@ -241,9 +248,11 @@ export default function ProfilePage() {
 }
 
 function AddressesSection({
+  venueSlug,
   authed,
   onLoginRequired,
 }: {
+  venueSlug: string;
   authed: boolean;
   onLoginRequired: () => void;
 }) {
@@ -273,14 +282,13 @@ function AddressesSection({
           {t('title')}
         </div>
         {authed && addresses.length > 0 && (
-          <button
-            type='button'
-            onClick={() => open(null)}
+          <Link
+            href={`/${venueSlug}/profile/addresses`}
             className='flex items-center gap-1 text-[12px] text-[#9E9E9E] active:scale-95 transition-transform'
           >
             {t('seeAll')}
             <ArrowRight size={14} />
-          </button>
+          </Link>
         )}
       </div>
 
@@ -387,8 +395,12 @@ function LoyaltySection({
     typeof nextPercent === 'number' && typeof amountToNext === 'number';
 
   return (
-    <section className='bg-white rounded-2xl p-4 flex items-center gap-4'>
-      <div className='shrink-0 text-center'>
+    <section
+      className={`bg-white rounded-2xl p-2.5 ${
+        hasProgress ? 'grid grid-cols-2' : 'flex items-center justify-center'
+      }`}
+    >
+      <div className='flex flex-col items-center justify-center text-center'>
         <div className='text-[28px] font-bold leading-none bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] bg-clip-text text-transparent'>
           {currentPercent} %
         </div>
@@ -396,7 +408,7 @@ function LoyaltySection({
       </div>
 
       {hasProgress && (
-        <div className='flex-1 min-w-0 pl-4 border-l border-[#E5E1DD]'>
+        <div className='border-l border-[#E5E1DD] px-2.5 flex flex-col justify-center'>
           <div className='flex items-center gap-2'>
             <span className='shrink-0 w-[36px] h-[36px] rounded-full border border-[#FFD5A8] flex items-center justify-center'>
               <span className='w-[30px] h-[30px] rounded-full bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] text-white text-[10px] font-medium leading-none flex items-center justify-center text-center'>
@@ -408,7 +420,7 @@ function LoyaltySection({
               {nextPercent}%
             </span>
           </div>
-          <div className='mt-2 text-[12px] font-medium text-[#9E9E9E] leading-snug'>
+          <div className='mt-2 text-[12px] font-medium text-[#9E9E9E] leading-snug text-center'>
             {t('toNext', {
               amount: amountToNext!.toLocaleString('ru-RU').replace(',', ' '),
               currency: currency ?? '',
@@ -426,7 +438,7 @@ function LoyaltySection({
  * нет (оплата идёт редиректом на paymentUrl, см. project_payment_contract).
  * TODO: подключить реальные данные, когда появится эндпоинт сохранённых карт.
  */
-function PaymentSection() {
+function PaymentSection({ venueSlug }: { venueSlug: string }) {
   const t = useTranslations('Profile.payment');
   return (
     <section className='bg-white rounded-2xl p-4'>
@@ -434,10 +446,13 @@ function PaymentSection() {
         <div className='text-[13px] font-semibold text-[#21201F]'>
           {t('title')}
         </div>
-        <span className='flex items-center gap-1 text-[12px] text-[#9E9E9E]'>
+        <Link
+          href={`/${venueSlug}/profile/payment`}
+          className='flex items-center gap-1 text-[12px] text-[#9E9E9E] active:scale-95 transition-transform'
+        >
           {t('seeAll')}
           <ArrowRight size={14} />
-        </span>
+        </Link>
       </div>
 
       <div className='mt-3 flex items-stretch gap-2 overflow-x-auto -mx-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
