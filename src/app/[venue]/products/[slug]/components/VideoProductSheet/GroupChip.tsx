@@ -35,7 +35,9 @@ export default function GroupChip({
 
   const showSelectedPhoto = selectedCount === 1 && !!selectedItem?.photo && !imgError;
   const showGroupIcon    = selectedCount > 1 && !!icon && !imgError;
-  const showPlus         = !showSelectedPhoto && !showGroupIcon;
+  const isSelected       = selectedCount > 0;
+  const showPlus         = !isSelected;
+  const showImage        = showSelectedPhoto || showGroupIcon;
 
   const imageUrl = showSelectedPhoto ? selectedItem!.photo! : (icon ?? '');
   const label    = selectedCount === 1 && selectedItem ? selectedItem.name : group.name;
@@ -83,13 +85,17 @@ export default function GroupChip({
         {/* Фото (только в image-режиме) */}
         {!showPlus && (
           <div className='flex-1 flex items-center justify-center w-full'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt=''
-              onError={() => setImgError(true)}
-              className='w-14 h-14 object-contain'
-            />
+            {showImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageUrl}
+                alt=''
+                onError={() => setImgError(true)}
+                className='w-14 h-14 object-contain'
+              />
+            ) : (
+              <div className='w-14 h-14 rounded-xl bg-white/20' />
+            )}
           </div>
         )}
 
