@@ -79,15 +79,28 @@ const fmtDate = (iso?: string) => {
 const itemsCount = (o: OrderV2) =>
   o.orderProducts?.reduce((acc, p) => acc + (p.count || 0), 0) ?? 0;
 
-const subtitleFor = (o: OrderV2): string => {
-  if (o.serviceMode === ServiceMode.DineIn) {
-    if (o.tableNum) return `Стол №${o.tableNum}`;
+type SubtitleKind = 'venue' | 'items';
+
+const subtitleFor = (
+  o: OrderV2,
+): { text: string; kind: SubtitleKind } | null => {
+  // Филиал — основной контекст для каждой строки истории. Для доставки
+  // дописываем адрес через «·», чтобы было видно куда везли.
+  if (o.venue?.name) {
+    const base = o.venue.name;
+    return {
+      text: o.address ? `${base} · ${o.address}` : base,
+      kind: 'venue',
+    };
   }
-  if (o.address) return o.address;
+  // Системные/исторические записи без venue — фоллбэк на первый товар.
   const first = o.orderProducts?.[0]?.product?.productName;
   const extra = (o.orderProducts?.length ?? 0) - 1;
-  if (!first) return '';
-  return extra > 0 ? `${first} +${extra}` : first;
+  if (!first) return null;
+  return {
+    text: extra > 0 ? `${first} +${extra}` : first,
+    kind: 'items',
+  };
 };
 
 const PAGE_SIZE = 20;
@@ -272,11 +285,6 @@ export default function HistoryPage() {
                           {statusLabel}
                         </span>
                       )}
-                      {o.venue && o.venue.slug !== venue && (
-                        <span className='h-[26px] px-3 rounded-full text-[11px] font-medium inline-flex items-center bg-[#F4F1EE] text-[#6B6B6B]'>
-                          {o.venue.name}
-                        </span>
-                      )}
                       <span className='flex items-center gap-1 text-[13px] text-[#21201F]'>
                         <ShoppingBasket size={16} strokeWidth={2} className='text-[#9E9E9E]' />
                         {itemsCount(o)}
@@ -289,8 +297,12 @@ export default function HistoryPage() {
 
                   {subtitle && (
                     <div className='mt-3 flex items-center gap-1.5 text-[13px] text-[#21201F] min-w-0'>
-                      <MapPin size={16} strokeWidth={2} className='text-[#9E9E9E] shrink-0' />
-                      <span className='truncate'>{subtitle}</span>
+                      {subtitle.kind === 'items' ? (
+                        <ShoppingBag size={16} strokeWidth={2} className='text-[#9E9E9E] shrink-0' />
+                      ) : (
+                        <MapPin size={16} strokeWidth={2} className='text-[#9E9E9E] shrink-0' />
+                      )}
+                      <span className='truncate'>{subtitle.text}</span>
                     </div>
                   )}
 
