@@ -14,6 +14,9 @@ import {
   NotebookText,
   Loader2,
   CreditCard,
+  CirclePlus,
+  CircleMinus,
+  Coins,
   History as HistoryIcon,
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
@@ -291,19 +294,42 @@ export default function HistoryPage() {
                       </span>
                     </div>
                     <div className='text-[15px] font-bold text-[#21201F]'>
-                      {fmtMoney(o.totalPrice)} с
+                      {fmtMoney(o.totalPrice)} <span className='underline underline-offset-2'>с</span>
                     </div>
                   </div>
 
-                  {subtitle && (
-                    <div className='mt-3 flex items-center gap-1.5 text-[13px] text-[#21201F] min-w-0'>
-                      {subtitle.kind === 'items' ? (
-                        <ShoppingBag size={16} strokeWidth={2} className='text-[#9E9E9E] shrink-0' />
-                      ) : (
-                        <MapPin size={16} strokeWidth={2} className='text-[#9E9E9E] shrink-0' />
-                      )}
-                      <span className='truncate'>{subtitle.text}</span>
-                    </div>
+                  {(subtitle ||
+                    (o.bonusEarned != null && o.bonusEarned > 0) ||
+                    (o.bonus != null && o.bonus > 0)) && (
+                    <>
+                      <div className='mt-3 h-px bg-[#F1EEEB]' />
+                      <div className='mt-3 flex items-center justify-between gap-3'>
+                        <div className='flex items-center gap-1.5 text-[13px] text-[#9E9E9E] min-w-0'>
+                          {subtitle?.kind === 'items' ? (
+                            <ShoppingBag size={16} strokeWidth={2} className='shrink-0' />
+                          ) : (
+                            <MapPin size={16} strokeWidth={2} className='shrink-0' />
+                          )}
+                          <span className='truncate'>{subtitle?.text}</span>
+                        </div>
+                        <div className='flex items-center gap-2 shrink-0 text-[13px] text-[#21201F]'>
+                          {o.bonusEarned != null && o.bonusEarned > 0 && (
+                            <span className='inline-flex items-center gap-1 font-medium'>
+                              <CirclePlus size={16} strokeWidth={2} className='text-[#22A05A]' />
+                              {o.bonusEarned}
+                              <Coins size={14} strokeWidth={2} className='text-[#E0871A]' />
+                            </span>
+                          )}
+                          {o.bonus != null && o.bonus > 0 && (
+                            <span className='inline-flex items-center gap-1 font-medium'>
+                              <CircleMinus size={16} strokeWidth={2} className='text-[#E0533A]' />
+                              {o.bonus}
+                              <Coins size={14} strokeWidth={2} className='text-[#E0871A]' />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   {isPending && (

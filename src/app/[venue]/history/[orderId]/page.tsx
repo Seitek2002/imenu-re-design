@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Coins } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { API_V2_URL } from '@/lib/config';
@@ -193,7 +193,12 @@ async function BreakdownBlock({
   const t = await getTranslations('OrderDetail');
   const { itemsTotal, containerTotal, deliveryPrice, bonusEarned, bonus } = order;
 
-  const rows: { label: string; value: string; tone?: 'free' | 'minus' | 'plus' }[] = [];
+  type Row = {
+    label: string;
+    value: string;
+    tone?: 'free' | 'minus' | 'plus';
+  };
+  const rows: Row[] = [];
   if (itemsTotal && Number(itemsTotal) > 0) {
     rows.push({
       label: t('breakdown.itemsTotal'),
@@ -214,32 +219,33 @@ async function BreakdownBlock({
       tone: n > 0 ? undefined : 'free',
     });
   }
-  if (bonus != null && bonus > 0) {
-    rows.push({
-      label: t('breakdown.bonus'),
-      value: `−${fmtMoney(bonus, locale)}`,
-      tone: 'minus',
-    });
-  }
-
   return (
     <section className='bg-white rounded-2xl px-4 py-4 flex flex-col gap-2'>
       {rows.map((r) => (
         <div key={r.label} className='flex items-center justify-between text-[13px]'>
           <span className='text-[#9E9E9E]'>{r.label}</span>
           <span
-            className={
+            className={`inline-flex items-center gap-1 font-medium ${
               r.tone === 'minus'
-                ? 'text-[#E0533A] font-medium'
+                ? 'text-[#E0533A]'
                 : r.tone === 'free'
-                  ? 'text-[#22A05A] font-medium'
-                  : 'text-[#21201F] font-medium'
-            }
+                  ? 'text-[#22A05A]'
+                  : 'text-[#21201F]'
+            }`}
           >
             {r.value}
           </span>
         </div>
       ))}
+      {bonus != null && bonus > 0 && (
+        <div className='flex items-center justify-between text-[13px]'>
+          <span className='text-[#9E9E9E]'>{t('breakdown.bonus')}</span>
+          <span className='inline-flex items-center gap-1 font-medium text-[#21201F]'>
+            {fmtMoney(bonus, locale)}
+            <Coins size={14} strokeWidth={2} className='text-[#E0871A]' />
+          </span>
+        </div>
+      )}
       {rows.length > 0 && <div className='h-px bg-[#EDEAE7] my-1' />}
       <div className='flex items-center justify-between'>
         <span className='text-[14px] text-[#21201F]'>{t('total')}</span>
@@ -250,8 +256,9 @@ async function BreakdownBlock({
       {bonusEarned != null && bonusEarned > 0 && (
         <div className='flex items-center justify-between text-[12px]'>
           <span className='text-[#9E9E9E]'>{t('breakdown.bonusEarned')}</span>
-          <span className='text-[#22A05A] font-medium'>
-            +{fmtMoney(bonusEarned, locale)}
+          <span className='inline-flex items-center gap-1 font-medium text-[#21201F]'>
+            {fmtMoney(bonusEarned, locale)}
+            <Coins size={14} strokeWidth={2} className='text-[#E0871A]' />
           </span>
         </div>
       )}
