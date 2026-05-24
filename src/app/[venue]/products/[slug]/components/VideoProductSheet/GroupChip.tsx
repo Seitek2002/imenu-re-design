@@ -67,9 +67,10 @@ export default function GroupChip({
       <div
         className={`
           w-full rounded-[20px] bg-white/25 backdrop-blur-md flex flex-col items-center pb-2.5
+          overflow-hidden
           transition-all duration-150
           ${active ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-white/30'}
-          ${showPlus ? '-mt-5 pt-0' : 'pt-2.5'}
+          ${showPlus ? '-mt-5 pt-0' : 'pt-2.5 h-[108px]'}
         `}
       >
         {/* Бейдж для >1 выбранных */}
@@ -81,7 +82,7 @@ export default function GroupChip({
 
         {/* Фото (только в image-режиме) */}
         {!showPlus && (
-          <div className='w-full flex items-center justify-center pt-1 pb-1'>
+          <div className='flex-1 flex items-center justify-center w-full'>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}

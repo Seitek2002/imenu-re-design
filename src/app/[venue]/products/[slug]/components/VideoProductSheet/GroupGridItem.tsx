@@ -50,15 +50,17 @@ export default function GroupGridItem({
         relative rounded-2xl p-2 pt-3 flex flex-col items-center
         transition-all duration-150
         ${darkBg
-          ? 'bg-[#7D6150] ring-0'
+          ? 'bg-[#7D6150]'
           : selected
-            ? 'bg-linear-to-b from-white/70 to-white/40 backdrop-blur-md ring-2 ring-white shadow-lg'
-            : 'bg-linear-to-b from-white/55 to-white/30 backdrop-blur-md ring-1 ring-white/20'
+            ? 'bg-white/75 shadow-md'
+            : 'bg-white/30'
         }
       `}
     >
       {/* Фото с skeleton */}
-      <div className='relative w-14 h-14 shrink-0'>
+      <div className={`relative w-14 h-14 shrink-0 transition-all duration-200 ${
+        selected && !darkBg ? 'scale-[1.3] -translate-y-3 z-10' : ''
+      }`}>
         {!imgLoaded && (
           <div className='absolute inset-0 rounded-lg bg-white/30 animate-pulse' />
         )}

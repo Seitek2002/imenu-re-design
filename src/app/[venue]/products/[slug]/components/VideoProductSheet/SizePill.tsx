@@ -15,7 +15,7 @@ export default function SizePill({ options, selectedId, onSelect }: Props) {
   return (
     <div className='overflow-x-auto no-scrollbar -mx-5 px-5'>
       <div
-        className='inline-flex items-stretch gap-1 p-1 rounded-full bg-white/10 backdrop-blur-md w-max'
+        className='inline-flex items-stretch gap-1 p-1.5 rounded-full bg-white/10 backdrop-blur-md w-max'
         role='radiogroup'
         aria-label='Размер'
       >
@@ -35,9 +35,9 @@ export default function SizePill({ options, selectedId, onSelect }: Props) {
                   : 'text-white/70 hover:text-white/90'
               }`}
             >
-              <div className='text-base font-bold leading-tight'>{label}</div>
+              <div className='text-sm leading-tight'>{label}</div>
               {sub && (
-                <div className='text-[11px] leading-tight opacity-80 mt-0.5'>
+                <div className='text-sm leading-tight opacity-80 mt-1'>
                   {sub}
                 </div>
               )}

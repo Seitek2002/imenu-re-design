@@ -245,11 +245,11 @@ export default function VideoProductSheet() {
         className='relative z-10 px-5 pb-2 flex flex-col gap-3 shrink-0'
       >
         <div className='pr-12'>
-          <h1 className='text-[40px] font-bold leading-none tracking-tight'>
+          <h1 className='text-[40px] font-medium leading-none tracking-tight'>
             {product.productName}
           </h1>
           {product.productDescription && (
-            <p className='text-white/70 text-sm leading-snug mt-2 max-w-70'>
+            <p className='text-white/70 text-sm mt-2 max-w-70'>
               {product.productDescription}
             </p>
           )}
@@ -273,8 +273,8 @@ export default function VideoProductSheet() {
       </div>
 
       {/* Сетка группы (пока группа закрыта — пространство занято видео) */}
-      <div className='flex-1 flex flex-col'>
-        <div className='relative flex-1 flex flex-col justify-end z-10 px-4 py-2'>
+      <div className='flex-1 flex flex-col min-h-0'>
+        <div className='relative flex-1 flex flex-col justify-end z-10 px-4 py-2 min-h-0'>
           {expandedGroup && (
             <GroupGrid
               group={expandedGroup}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import type { GroupModification } from '@/types/api';
+import type { GroupItem, GroupModification } from '@/types/api';
 import GroupGridItem from './GroupGridItem';
 
 interface Props {
@@ -81,37 +81,35 @@ export default function GroupGrid({
     [counts, onChange],
   );
 
-  // ── Сегментный рендер ─────────────────────────────────────────────────────
+  // ── Сегментный рендер (4-col grid, dark selected) ────────────────────────
   if (segmentPairs && segmentPairs.length > 0) {
     const itemById = Object.fromEntries(group.items.map((i) => [i.id, i]));
+    const totalItems = segmentPairs.length * 2;
+    const cols = totalItems <= 4 ? 'grid-cols-2' : 'grid-cols-4';
+
     return (
-      <div className='overflow-y-auto overscroll-contain'>
-        <div className='bg-white/15 backdrop-blur-2xl rounded-3xl p-3 space-y-2'>
-          {segmentPairs.map(([id1, id2], rowIdx) => {
+      <div className='overflow-y-auto overscroll-contain min-h-0'>
+        <div className={`bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 grid ${cols} gap-2`}>
+          {segmentPairs.flatMap(([id1, id2]) => {
             const a = itemById[id1];
             const b = itemById[id2];
-            if (!a || !b) return null;
+            if (!a || !b) return [];
             const aSelected = (counts[id1] ?? 0) > 0;
             const bSelected = (counts[id2] ?? 0) > 0;
-            return (
-              <div
-                key={rowIdx}
-                className='flex bg-white/20 backdrop-blur-md rounded-2xl p-1 gap-1'
-              >
-                <SegmentOption
-                  label={a.name}
-                  photo={a.photo}
-                  selected={aSelected}
-                  onSelect={() => handleSegmentSelect([id1, id2], id1)}
-                />
-                <SegmentOption
-                  label={b.name}
-                  photo={b.photo}
-                  selected={bSelected}
-                  onSelect={() => handleSegmentSelect([id1, id2], id2)}
-                />
-              </div>
-            );
+            return [
+              <SegmentCard
+                key={id1}
+                item={a}
+                selected={aSelected}
+                onSelect={() => handleSegmentSelect([id1, id2], id1)}
+              />,
+              <SegmentCard
+                key={id2}
+                item={b}
+                selected={bSelected}
+                onSelect={() => handleSegmentSelect([id1, id2], id2)}
+              />,
+            ];
           })}
         </div>
       </div>
@@ -124,7 +122,7 @@ export default function GroupGrid({
   // 1–2 элемента — флекс с центровкой; 3+ — сетка
   if (itemCount <= 2) {
     return (
-      <div className='overflow-y-auto overscroll-contain'>
+      <div className='overflow-y-auto overscroll-contain min-h-0'>
         <div className='bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 flex justify-center gap-2'>
           {group.items.map((it) => {
             const count = counts[it.id] ?? 0;
@@ -150,7 +148,7 @@ export default function GroupGrid({
   const cols = columns === 4 ? 'grid-cols-4' : columns === 2 ? 'grid-cols-2' : 'grid-cols-3';
 
   return (
-    <div className='overflow-y-auto overscroll-contain'>
+    <div className='overflow-y-auto overscroll-contain min-h-0'>
       <div className={`bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 grid ${cols} gap-2`}>
         {group.items.map((it) => {
           const count = counts[it.id] ?? 0;
@@ -172,15 +170,13 @@ export default function GroupGrid({
   );
 }
 
-// ── Кнопка одного варианта внутри сегментного ряда ────────────────────────
-function SegmentOption({
-  label,
-  photo,
+// ── Карточка одного варианта сегментной группы (4-col grid, dark selected) ──
+function SegmentCard({
+  item,
   selected,
   onSelect,
 }: {
-  label: string;
-  photo?: string | null;
+  item: GroupItem;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -189,17 +185,22 @@ function SegmentOption({
       type='button'
       onClick={onSelect}
       className={`
-        flex-1 flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5
-        text-[13px] font-semibold text-[#21201F] text-center leading-tight
+        relative rounded-2xl p-2 flex flex-col items-center overflow-hidden h-25
         transition-all duration-150 active:scale-95
-        ${selected ? 'bg-white shadow-sm' : 'bg-transparent'}
+        ${selected ? 'bg-[#7D6150]' : 'bg-white/60'}
       `}
     >
-      {photo && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photo} alt='' className='w-5 h-5 object-contain shrink-0' />
-      )}
-      {label}
+      <div className='flex-1 flex items-center justify-center w-full'>
+        {item.photo && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.photo} alt='' className='w-14 h-14 object-contain' />
+        )}
+      </div>
+      <span className={`text-[11px] font-semibold text-center leading-tight line-clamp-2 ${
+        selected ? 'text-white' : 'text-[#21201F]'
+      }`}>
+        {item.name}
+      </span>
     </button>
   );
 }
