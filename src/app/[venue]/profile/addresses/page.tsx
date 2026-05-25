@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import {
@@ -12,8 +12,23 @@ import {
 } from '@/lib/api/addresses';
 import { useAuthStore } from '@/store/auth';
 import AddressEditModal from '@/components/modals/AddressEditModal';
+import { PROFILE_IN_DEVELOPMENT } from '../_inDevelopment';
 
 export default function AddressesPage() {
+  if (PROFILE_IN_DEVELOPMENT) return <ProfileRedirect />;
+  return <AddressesPageReal />;
+}
+
+function ProfileRedirect() {
+  const { venue } = useParams<{ venue: string }>();
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/${venue}/profile`);
+  }, [router, venue]);
+  return null;
+}
+
+function AddressesPageReal() {
   const t = useTranslations('Profile.addresses');
   const tProfile = useTranslations('Profile');
   const { venue } = useParams<{ venue: string }>();

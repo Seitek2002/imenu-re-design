@@ -23,16 +23,18 @@ export default function BonusAccrualBadge({
 }: Props) {
   const t = useTranslations('Cart.summary');
   const venue = useVenueStore((s) => s.data);
-  // Серверный процент — приоритет (учитывает clientGroup из Poster).
-  // Если backend не прислал — fallback на venue.bonusAccrualPercent.
+  // Серверный процент — приоритет, но только если он > 0. Backend возвращает
+  // bonusAccrualPercent=0 / bonusEarned=0 для анонимных гостей (без phone /
+  // clientGroup) — в этом случае показываем venue-дефолт, иначе бейдж всегда
+  // прятался бы для незалогиненных.
   const accrualPercent =
-    bonusAccrualPercent != null && bonusAccrualPercent >= 0
+    bonusAccrualPercent != null && bonusAccrualPercent > 0
       ? bonusAccrualPercent
       : venue?.isBonusSystemEnabled
         ? (venue?.bonusAccrualPercent ?? 0)
         : 0;
   const earnedBonus =
-    bonusEarned != null
+    bonusEarned != null && bonusEarned > 0
       ? bonusEarned
       : accrualPercent > 0
         ? Math.floor((total * accrualPercent) / 100)
