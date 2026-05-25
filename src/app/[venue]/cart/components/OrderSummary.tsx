@@ -109,20 +109,20 @@ export default function OrderSummary({
           <div className='flex flex-col gap-2 pb-1'>
             <div className='flex justify-between text-[#80868B]'>
               <span>{t('subtotal')}</span>
-              <span>{subtotal} c.</span>
+              <span>{subtotal} сом</span>
             </div>
 
             {containerTotal > 0 && (
               <div className='flex justify-between text-[#80868B]'>
                 <span>{t('containers')}</span>
-                <span>{Math.round(containerTotal)} c.</span>
+                <span>{Math.round(containerTotal)} сом</span>
               </div>
             )}
 
             {servicePrice > 0 && (
               <div className='flex justify-between text-[#80868B]'>
                 <span>{t('service')}</span>
-                <span>{Math.round(servicePrice)} c.</span>
+                <span>{Math.round(servicePrice)} сом</span>
               </div>
             )}
 
@@ -134,7 +134,7 @@ export default function OrderSummary({
                     {t('freeDelivery')}
                   </span>
                 ) : (
-                  <span>{Math.round(deliveryCost)} c.</span>
+                  <span>{Math.round(deliveryCost)} сом</span>
                 )}
               </div>
             )}
@@ -143,7 +143,7 @@ export default function OrderSummary({
               <div className='flex justify-between text-brand'>
                 <span className='truncate pr-2'>{promotion.name}</span>
                 <span className='whitespace-nowrap'>
-                  - {Math.round(promotionDiscount)} c.
+                  - {Math.round(promotionDiscount)} сом
                 </span>
               </div>
             )}
@@ -198,7 +198,7 @@ export default function OrderSummary({
                     />
                     <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
                       <span>{t('discount')}</span>
-                      <span>- {bonusApplied} c.</span>
+                      <span>- {bonusApplied} сом</span>
                     </div>
                   </div>
                 )}
@@ -212,7 +212,7 @@ export default function OrderSummary({
             }`}
           >
             <span>{t('total')}</span>
-            <span>{Math.round(finalTotal)} c.</span>
+            <span>{Math.round(finalTotal)} сом</span>
           </div>
         </div>
       </div>

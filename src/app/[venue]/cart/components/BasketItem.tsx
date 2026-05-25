@@ -100,10 +100,10 @@ function BasketItem({
                   originalLineTotal - discountedLineTotal > 0.5;
                 return (
                   <span className='mt-1 flex items-baseline gap-1.5'>
-                    <span className='text-sm font-medium text-[#21201F]'>{finalTotal} c.</span>
+                    <span className='text-sm font-medium text-[#21201F]'>{finalTotal} с.</span>
                     {showStrike && (
                       <span className='text-[11px] text-[#A4A4A4] line-through'>
-                        {Math.round(originalLineTotal!)} c.
+                        {Math.round(originalLineTotal!)} с.
                       </span>
                     )}
                   </span>

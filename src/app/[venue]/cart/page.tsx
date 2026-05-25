@@ -243,12 +243,12 @@ export default function BasketPage() {
                 <span
                   className={`text-xl font-bold ${calc.isLoading ? 'opacity-60' : ''}`}
                 >
-                  {Math.round(serverTotal)} c.
+                  {Math.round(serverTotal)} сом
                 </span>
                 {/* Если есть скидка, показываем старую цену зачеркнутой */}
                 {(discount > 0 || promoDiscount > 0) && (
                   <span className='text-xs text-gray-400 line-through'>
-                    {cartTotal} c.
+                    {cartTotal} сом
                   </span>
                 )}
               </div>

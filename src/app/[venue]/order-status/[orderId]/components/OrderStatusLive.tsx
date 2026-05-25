@@ -72,7 +72,7 @@ export default function OrderStatusLive({ initialOrder }: Props) {
       <div className='bg-white rounded-[20px] p-5 mt-4 shadow-sm flex justify-between items-center'>
         <span className='text-gray-500 font-medium'>{t('totalDue')}</span>
         <span className='text-2xl font-bold text-brand'>
-          {order.totalPrice} с.
+          {order.totalPrice} сом
         </span>
       </div>
 
