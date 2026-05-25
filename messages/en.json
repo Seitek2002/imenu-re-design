@@ -9,7 +9,7 @@
     "back": "Back",
     "search": "Search",
     "searchPlaceholder": "Search...",
-    "currency": "c.",
+    "currency": "⃀",
     "from": "from",
     "menu": "Menu",
     "viewAll": "All →",
@@ -149,7 +149,7 @@
       "mapPickHintSelected": "Point selected",
       "zoneFree": "Address is in the free delivery zone",
       "zonePaid": "Address is outside the free delivery zone",
-      "zonePaidFee": "Paid delivery: {amount} c.",
+      "zonePaidFee": "Paid delivery: {amount} ⃀",
       "saveToggle": "Save address",
       "saveLabelPlaceholder": "Home / Work / Mom's…",
       "saveLabelDefault": "My address"
@@ -165,7 +165,7 @@
       "geoError": "Couldn't determine your location",
       "searchEmpty": "Nothing found",
       "freeDeliveryNote": "You are in the free delivery zone",
-      "paidDeliveryNote": "Outside the free zone. Paid delivery: {amount} c.",
+      "paidDeliveryNote": "Outside the free zone. Paid delivery: {amount} ⃀",
       "outsideZoneNote": "Address is outside the free delivery zone"
     },
     "footer": {
@@ -187,7 +187,7 @@
     "free": "free",
     "weight": "Weight: {value}",
     "add": "Add",
-    "pricePlus": "+{price} c.",
+    "pricePlus": "+{price} ⃀",
     "errorChoose": "Choose {n}",
     "errorMin": "At least {n} required",
     "errorMax": "No more than {n}",
@@ -429,7 +429,7 @@
     "positions": "{count} items",
     "qty": "× {count}",
     "total": "Total",
-    "currency": "c.",
+    "currency": "⃀",
     "repeat": "Repeat order",
     "repeatLoading": "Building…",
     "repeatNothing": "Can't repeat — items no longer available",
@@ -557,7 +557,7 @@
     "bonusShort": "points",
     "paid": "Paid",
     "remaining": "Due",
-    "currency": "c.",
+    "currency": "⃀",
     "noTable": "No table selected. Please scan the table QR code.",
     "loading": "Loading order...",
     "loadError": "Failed to load the order",
@@ -573,7 +573,7 @@
     "draftSubtotal": "Before discount",
     "draftSavings": "Discount",
     "posOrderEmpty": "Waiter accepted the order — waiting for dishes",
-    "submitDraft": "Send order · {amount} c.",
+    "submitDraft": "Send order · {amount} ⃀",
     "summary": {
       "tickets": "{count, plural, =0 {No tickets} one {# ticket} other {# tickets}}",
       "empty": "No tickets",
@@ -601,7 +601,7 @@
       "disconnected": "○ offline"
     },
     "payment": {
-      "pay": "Pay {amount} c.",
+      "pay": "Pay {amount} ⃀",
       "creating": "Creating link...",
       "unavailable": "Payment service is temporarily unavailable. Please try again.",
       "invalidCode": "Invalid code. Please try again.",
@@ -624,12 +624,12 @@
   },
   "TableOrderBar": {
     "label": "Table №{num}",
-    "summary": "{count} items · {amount} c."
+    "summary": "{count} items · {amount} ⃀"
   },
   "TableBillBanner": {
     "title": "Open bill at your table",
     "subtitle": "{count, plural, one {# item on the waiter's check} other {# items on the waiter's check}}",
-    "cta": "View bill · {amount} c.",
+    "cta": "View bill · {amount} ⃀",
     "dismiss": "Dismiss"
   },
   "PosOrderStatus": {

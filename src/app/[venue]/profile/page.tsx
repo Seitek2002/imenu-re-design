@@ -182,7 +182,7 @@ export default function ProfilePage() {
                 ? Math.ceil(Number(loyalty.turnoverToNext))
                 : undefined
             }
-            currency='с'
+            currency='⃀'
           />
         )}
 
@@ -333,7 +333,7 @@ function AddressesSection({
                     {a.label}
                   </span>
                   {a.isDefault && (
-                    <span className='ml-auto text-[9px] font-medium text-white bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
+                    <span className='ml-auto text-[9px] font-medium text-[#F28A1A] bg-[#FFEBD0] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
                       {t('default')}
                     </span>
                   )}
@@ -409,27 +409,33 @@ function LoyaltySection({
         hasProgress ? 'grid grid-cols-2' : 'flex items-center justify-center'
       }`}
     >
-      <div className='flex flex-col items-center justify-center text-center'>
-        <div className='text-[28px] font-bold leading-none bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] bg-clip-text text-transparent'>
+      <div className='flex flex-col items-center text-center justify-between gap-3'>
+        <div className='flex-1 flex items-center text-[28px] font-bold leading-[1.1] bg-[linear-gradient(to_top,#FAA924_31%,#F3811F_71%)] bg-clip-text text-transparent'>
           {currentPercent} %
         </div>
-        <div className='mt-1.5 text-[12px] font-medium text-[#9E9E9E]'>{t('title')}</div>
+        <div className='text-[12px] font-medium leading-[1.1] text-[#21201F]'>
+          {t('title')}
+        </div>
       </div>
 
       {hasProgress && (
-        <div className='border-l border-[#E5E1DD] px-2.5 flex flex-col justify-center'>
-          <div className='flex items-center gap-2'>
+        <div className='border-l border-[#E5E1DD] px-2.5 flex flex-col items-center text-center justify-between gap-3'>
+          <div className='flex-1 flex items-center gap-2 w-full'>
             <span className='shrink-0 w-[36px] h-[36px] rounded-full border border-[#FFD5A8] flex items-center justify-center'>
-              <span className='w-[30px] h-[30px] rounded-full bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] text-white text-[10px] font-medium leading-none flex items-center justify-center text-center'>
+              <span className='w-[30px] h-[30px] rounded-full bg-[#F28A1A] text-white text-[12px] font-medium leading-[1.1] flex items-center justify-center'>
                 {currentPercent}%
               </span>
             </span>
-            <span className='flex-1 border-t-2 border-dashed border-[#C9C2BB]' />
-            <span className='shrink-0 w-[30px] h-[30px] rounded-full bg-white border-2 border-[#D7D2CC] text-[#9E9E9E] text-[10px] font-medium leading-none flex items-center justify-center text-center'>
+            <span className='flex-1 flex items-center'>
+              <span className='w-1.5 h-1.5 rotate-45 bg-[#C9C2BB] shrink-0' />
+              <span className='flex-1 h-px bg-[#C9C2BB]' />
+              <span className='w-1.5 h-1.5 rotate-45 bg-[#C9C2BB] shrink-0' />
+            </span>
+            <span className='shrink-0 w-[30px] h-[30px] rounded-full bg-white border border-[#D7D2CC] text-[#21201F] text-[12px] font-medium leading-[1.1] flex items-center justify-center'>
               {nextPercent}%
             </span>
           </div>
-          <div className='mt-2 text-[12px] font-medium text-[#9E9E9E] leading-snug text-center'>
+          <div className='text-[12px] font-medium leading-[1.1] text-[#21201F]'>
             {t('toNext', {
               amount: amountToNext!.toLocaleString('ru-RU').replace(',', ' '),
               currency: currency ?? '',
@@ -469,11 +475,11 @@ function PaymentSection({ venueSlug }: { venueSlug: string }) {
           <div className='flex items-center gap-1.5'>
             <CreditCard size={16} className='text-[#1A1F71] shrink-0' />
             <span className='text-[12px] font-bold text-[#1A1F71]'>VISA</span>
-            <span className='ml-auto text-[9px] font-medium text-white bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
+            <span className='ml-auto text-[9px] font-medium text-[#F28A1A] bg-[#FFEBD0] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
               {t('default')}
             </span>
           </div>
-          <div className='text-[12px] text-[#9E9E9E] tracking-widest'>
+          <div className='text-[12px] text-[#21201F] tracking-widest'>
             ••••4242
           </div>
         </div>
