@@ -279,6 +279,9 @@
     "close": "Close",
     "aria": "Wi-Fi Info"
   },
+  "Header": {
+    "testMode": "Trial mode"
+  },
   "MainAction": {
     "callBtn": "Call waiter",
     "confirmTitle": "Call waiter?",
@@ -528,6 +531,48 @@
   "History": {
     "title": "Section under construction",
     "description": "We're writing the history right now... Check back a bit later!"
+  },
+  "Support": {
+    "title": "Help",
+    "tabs": {
+      "venue": "Branch",
+      "order": "Order",
+      "other": "Other"
+    },
+    "venueLabel": "Choose a branch",
+    "venuePlaceholder": "Branch",
+    "venueEmpty": "No branches available",
+    "orderLabel": "Choose an order",
+    "orderPlaceholder": "Order",
+    "orderEmpty": "You don't have any orders yet",
+    "topicLabel": "Choose a topic",
+    "topicPlaceholder": "E.g. App issue",
+    "topics": [
+      "App issue",
+      "Payment didn't go through",
+      "Points didn't arrive",
+      "Sign in / sign up",
+      "Other"
+    ],
+    "problemLabel": "Describe the problem",
+    "problemPlaceholder": "Tell us the details",
+    "photosLabel": "Photos",
+    "photoAdd": "Add",
+    "submit": "Send",
+    "submitting": "Sending…",
+    "success": {
+      "title": "Sent successfully",
+      "description": "Your request was sent {date}",
+      "viewAll": "View requests",
+      "close": "Close"
+    },
+    "errors": {
+      "selectRequired": "Pick one of the options",
+      "problemRequired": "Describe the problem",
+      "tooManyPhotos": "Up to {max} photos",
+      "fileTooBig": "File larger than {mb} MB",
+      "submitFailed": "Couldn't send. Try again."
+    }
   },
   "Nav": {
     "home": "Home",

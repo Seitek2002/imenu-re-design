@@ -11,6 +11,7 @@ import wifiIcon from '@/assets/Header/wifi-icon.svg';
 const MainHeader = () => {
   const [isWifiOpen, setWifiOpen] = useState(false);
   const t = useTranslations('Wifi');
+  const tHeader = useTranslations('Header');
 
   // 3. Получаем данные заведения
   const venue = useVenueStore((state) => state.data);
@@ -25,7 +26,11 @@ const MainHeader = () => {
 
   return (
     <>
-      <header className='header-main sticky top-0 z-30 flex justify-between items-center gap-3 px-4 py-4 rounded-b-4xl bg-white shadow-sm'>
+      <header className='header-main sticky top-0 z-30 flex flex-col gap-1.5 px-4 pt-2 pb-4 rounded-b-4xl bg-white shadow-sm'>
+        <span className='text-[10px] font-medium leading-none text-[#FF6B00] whitespace-nowrap'>
+          {tHeader('testMode')}
+        </span>
+        <div className='flex justify-between items-center gap-3'>
         <div className='header-left flex items-center min-w-0 flex-1'>
           {/* ДИНАМИЧЕСКИЙ ЛОГОТИП */}
           {venue.logo && (
@@ -78,6 +83,7 @@ const MainHeader = () => {
           )}
 
           <LanguageDropdown />
+        </div>
         </div>
       </header>
 
