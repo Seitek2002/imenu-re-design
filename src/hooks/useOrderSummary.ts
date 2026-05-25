@@ -26,7 +26,9 @@ export function useOrderSummary({ subtotal, deliveryType, deliveryCost }: Option
 
   const { data: bonusData } = useClientBonus({ phone, venueSlug: venue?.slug ?? '' });
   const availableBonuses = bonusData?.bonus ?? 0;
-  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * 0.5));
+  // bonusMaxDeductiblePercent per-venue (Kuma 2026-05-24 §4), fallback 50.
+  const maxRatio = (venue?.bonusMaxDeductiblePercent ?? 50) / 100;
+  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * maxRatio));
   const effectiveAmount = isBonusUsed ? Math.min(Math.max(0, bonusAmount), maxDeductible) : 0;
   const discount = effectiveAmount;
 

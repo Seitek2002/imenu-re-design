@@ -22,6 +22,12 @@ interface Props {
   bonusApplied: number;
   bonusEarned: number;
   bonusAccrualPercent: number;
+  /**
+   * Максимум % от orderBaseTotal который можно оплатить бонусами.
+   * Из venue.bonusMaxDeductiblePercent (Kuma 2026-05-24 §4). Дефолт 50 если
+   * бэк не прислал поле (старые venue).
+   */
+  bonusMaxDeductiblePercent?: number;
   finalTotal: number;
   servicePrice: number;
   containerTotal: number;
@@ -39,6 +45,7 @@ export default function OrderSummary({
   bonusApplied,
   bonusEarned,
   bonusAccrualPercent,
+  bonusMaxDeductiblePercent = 50,
   finalTotal,
   servicePrice,
   containerTotal,
@@ -52,14 +59,18 @@ export default function OrderSummary({
   const setBonusUsed = useBonusStore((s) => s.setBonusUsed);
   const setBonusAmount = useBonusStore((s) => s.setBonusAmount);
 
-  // Слайдер: верхняя граница — 50% от суммы заказа (правило Postera), но не больше баланса.
+  // Слайдер: верхняя граница — bonusMaxDeductiblePercent от суммы заказа
+  // (правило Postera, per-venue, Kuma 2026-05-24 §4), но не больше баланса.
   const orderBaseTotal =
     subtotal +
     containerTotal +
     servicePrice +
     (deliveryType === 'delivery' && !isFreeDelivery ? deliveryCost : 0) -
     promotionDiscount;
-  const sliderMax = Math.floor(Math.min(bonusAvailable, orderBaseTotal * 0.5));
+  const maxDeductibleRatio = bonusMaxDeductiblePercent / 100;
+  const sliderMax = Math.floor(
+    Math.min(bonusAvailable, orderBaseTotal * maxDeductibleRatio),
+  );
   const sliderValue = isBonusUsed
     ? Math.min(Math.max(0, Math.floor(bonusAmount)), sliderMax)
     : 0;

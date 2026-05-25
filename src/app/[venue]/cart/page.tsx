@@ -222,6 +222,7 @@ export default function BasketPage() {
               bonusApplied={bonusToApply}
               bonusEarned={earnedBonus}
               bonusAccrualPercent={calc.bonusAccrualPercent}
+              bonusMaxDeductiblePercent={venueData?.bonusMaxDeductiblePercent}
               finalTotal={serverTotal}
               servicePrice={calc.servicePrice}
               containerTotal={calc.containerTotal}

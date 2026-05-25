@@ -87,12 +87,19 @@ type SubtitleKind = 'venue' | 'items';
 const subtitleFor = (
   o: OrderV2,
 ): { text: string; kind: SubtitleKind } | null => {
-  // Филиал — основной контекст для каждой строки истории. Для доставки
-  // дописываем адрес через «·», чтобы было видно куда везли.
+  // Филиал — основной контекст для каждой строки истории.
+  // Для доставки → venue · адрес доставки (куда везли).
+  // Для takeaway/dine-in → venue · адрес точки (spot.address) — где забирали /
+  // ели (Kuma 2026-05-24 §5). spot пришёл объектом из orders/list.
   if (o.venue?.name) {
     const base = o.venue.name;
+    const suffix =
+      o.address ??
+      o.spot?.address ??
+      o.spot?.name ??
+      null;
     return {
-      text: o.address ? `${base} · ${o.address}` : base,
+      text: suffix ? `${base} · ${suffix}` : base,
       kind: 'venue',
     };
   }

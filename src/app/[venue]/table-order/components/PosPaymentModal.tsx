@@ -13,6 +13,7 @@ import OtpModal from '@/components/ui/OtpModal';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 import { savePendingPosPayment } from '@/lib/payment-link-store';
 import { useClientStore } from '@/store/client';
+import { useVenueStore } from '@/store/venue';
 import { toMoneyNumber, subtractMoney, formatMoney } from '@/types/pos-order';
 
 interface Props {
@@ -39,7 +40,12 @@ export default function PosPaymentModal({
   const { data: bonusData } = useClientBonus({ phone: fullPhone, venueSlug });
   const availableBonuses = bonusData?.bonus ?? 0;
   const remainingNum = toMoneyNumber(remaining);
-  const maxDeductible = Math.floor(Math.min(availableBonuses, remainingNum * 0.5));
+  // bonusMaxDeductiblePercent per-venue (Kuma 2026-05-24 §4), fallback 50.
+  const maxRatio =
+    (useVenueStore.getState().data?.bonusMaxDeductiblePercent ?? 50) / 100;
+  const maxDeductible = Math.floor(
+    Math.min(availableBonuses, remainingNum * maxRatio),
+  );
 
   const [bonusUsed, setBonusUsed] = useState(false);
   const [bonusValue, setBonusValue] = useState(0);

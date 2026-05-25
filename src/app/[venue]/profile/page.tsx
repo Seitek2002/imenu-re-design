@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
 import { useAuthStore } from '@/store/auth';
-import { useClientBonus } from '@/lib/api/queries';
+import { useClientBonus, useClientLoyalty } from '@/lib/api/queries';
 import { useUpdateMe } from '@/lib/api/me';
 import { useMyAddresses, type MyAddress } from '@/lib/api/addresses';
 import { logoutAuth } from '@/lib/api/auth';
@@ -75,6 +75,10 @@ export default function ProfilePage() {
     : '';
 
   const { data: bonus, isLoading: bonusLoading } = useClientBonus({
+    phone,
+    venueSlug: venue,
+  });
+  const { data: loyalty } = useClientLoyalty({
     phone,
     venueSlug: venue,
   });
@@ -169,10 +173,15 @@ export default function ProfilePage() {
         {bonus?.clientGroup && bonus.clientGroup.discountPercent > 0 && (
           <LoyaltySection
             currentPercent={bonus.clientGroup.discountPercent}
-            // TODO: nextPercent/amountToNext/currency пока захардкожены — API не
-            // отдаёт порог следующего уровня (см. project_profile_redesign_gaps).
-            nextPercent={5}
-            amountToNext={10000}
+            // Шкала из /v2/client/loyalty/ (Kuma 2026-05-24 §6b). У не-Poster
+            // venue endpoint вернёт 404 → loyalty = null → прогресс не
+            // рендерится, остаётся только текущий процент.
+            nextPercent={loyalty?.nextGroup?.discountPercent}
+            amountToNext={
+              loyalty?.turnoverToNext
+                ? Math.ceil(Number(loyalty.turnoverToNext))
+                : undefined
+            }
             currency='с'
           />
         )}

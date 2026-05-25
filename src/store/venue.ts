@@ -47,6 +47,11 @@ export interface Venue {
   colorTheme?: string;
   isBonusSystemEnabled?: boolean;
   bonusAccrualPercent?: number;
+  /**
+   * Максимум % от суммы заказа, который клиент может оплатить бонусами.
+   * Integer 0..100; дефолт 50. Kuma 2026-05-24 §4. Per-venue.
+   */
+  bonusMaxDeductiblePercent?: number;
   table?: {
     id: number;
     tableNum: string;

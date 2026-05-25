@@ -108,6 +108,12 @@ export interface Venue {
   // Бонусная система
   isBonusSystemEnabled: boolean;
   bonusAccrualPercent?: number;
+  /**
+   * Максимум % от суммы заказа, который клиент может оплатить бонусами.
+   * Integer 0..100; дефолт 50. Kuma 2026-05-24 §4. Per-venue, меняется в админке.
+   * Если поле отсутствует — обратно совместимый fallback 50.
+   */
+  bonusMaxDeductiblePercent?: number;
 }
 
 // --- ORDERS ---

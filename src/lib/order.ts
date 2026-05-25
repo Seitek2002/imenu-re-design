@@ -119,6 +119,12 @@ export interface ClientGroup {
   name: string;
   discountPercent: number;
   loyaltyType: 'bonus' | 'discount' | '';
+  /**
+   * Минимальный товарооборот клиента для попадания в эту группу.
+   * Decimal-строка ("10000"). Пришло в nextGroup со стороны Kuma 2026-05-24
+   * (ранее не было). У currentGroup может отсутствовать — поле опциональное.
+   */
+  requiredTurnover?: string;
 }
 
 export interface BonusResponse {
@@ -127,6 +133,34 @@ export interface BonusResponse {
   bonus: number;
   /** Появилось 2026-05-12 (контракт Kuma). Может отсутствовать у не-Poster заведений. */
   clientGroup?: ClientGroup | null;
+  /**
+   * Следующий уровень лояльности. null если клиент уже на верхнем.
+   * Для не-Poster venue также null. Kuma 2026-05-24 §6a.
+   */
+  nextGroup?: ClientGroup | null;
+  /** Сколько ещё нужно потратить до nextGroup. Decimal-строка. null если nextGroup null. */
+  turnoverToNext?: string | null;
+  /** Сумма оплаченного клиентом за всё время. Decimal-строка. */
+  totalPayedSum?: string;
+}
+
+/**
+ * Полная шкала лояльности из /v2/client/loyalty/. Возвращает 200 только для
+ * Poster venue; иначе 404 — фронт должен фоллбэчить на discountPercent из
+ * clientGroup без прогресс-бара. Kuma 2026-05-24 §6b.
+ */
+export interface LoyaltyResponse {
+  phoneNumber: string;
+  venue: string;
+  loyaltyType: 'bonus' | 'discount' | '';
+  /** Decimal-строка. */
+  totalPayedSum: string;
+  currentGroup: ClientGroup;
+  nextGroup: ClientGroup | null;
+  /** Decimal-строка. null если nextGroup null. */
+  turnoverToNext: string | null;
+  /** Все уровни группы сверху вниз по requiredTurnover. */
+  scale: ClientGroup[];
 }
 
 export interface OrderProductGroupModInput {
