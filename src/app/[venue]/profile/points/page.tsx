@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   ChevronLeft,
@@ -22,6 +22,7 @@ import {
 } from '@/lib/api/bonus-transactions';
 import { useAuthStore } from '@/store/auth';
 import type { Locale } from '@/lib/locale';
+import { PROFILE_IN_DEVELOPMENT } from '../_inDevelopment';
 
 function formatWithUs(createdAt: string | undefined, t: (k: string, p?: Record<string, number>) => string): string | null {
   if (!createdAt) return null;
@@ -118,6 +119,20 @@ function groupByDay(
 }
 
 export default function PointsHistoryPage() {
+  if (PROFILE_IN_DEVELOPMENT) return <ProfileRedirect />;
+  return <PointsHistoryPageReal />;
+}
+
+function ProfileRedirect() {
+  const { venue } = useParams<{ venue: string }>();
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/${venue}/profile`);
+  }, [router, venue]);
+  return null;
+}
+
+function PointsHistoryPageReal() {
   const t = useTranslations('ProfileBonus');
   const tProfile = useTranslations('Profile');
   const locale = useLocale() as Locale;

@@ -30,9 +30,26 @@ import { formatPhoneDisplay } from '@/lib/helpers/phone';
 import EditProfileModal from '@/components/modals/EditProfileModal';
 import AddressEditModal from '@/components/modals/AddressEditModal';
 import OtpLoginModal from '@/components/modals/OtpLoginModal';
+import { PROFILE_IN_DEVELOPMENT } from './_inDevelopment';
 
 const MAX_TASTES = 20;
 const MAX_TASTE_LEN = 32;
+
+function InDevelopmentStub() {
+  return (
+    <div className='min-h-svh pb-24 flex flex-col items-center justify-center px-6 text-center'>
+      <div className='w-20 h-20 rounded-full bg-[#F1ECF4] flex items-center justify-center mb-5'>
+        <UserIcon className='w-9 h-9 text-[#7E5A95]' strokeWidth={1.5} />
+      </div>
+      <h1 className='text-[20px] font-semibold text-[#1A1A1A] mb-2'>
+        Раздел в разработке
+      </h1>
+      <p className='text-[14px] text-[#6B6B6B] leading-snug max-w-[280px]'>
+        Мы дорабатываем личный кабинет — он скоро вернётся.
+      </p>
+    </div>
+  );
+}
 
 // Локальная KG-маска для отображения в профиле: «0XXX XXX XXX» (три группы по 3).
 // Не путать с formatPhoneInput (маска полей ввода, группы 3-2-2-2).
@@ -43,6 +60,11 @@ function formatKgLocalPhone(localDigits: string): string {
 }
 
 export default function ProfilePage() {
+  if (PROFILE_IN_DEVELOPMENT) return <InDevelopmentStub />;
+  return <ProfilePageReal />;
+}
+
+function ProfilePageReal() {
   const t = useTranslations('Profile');
   const { venue } = useParams<{ venue: string }>();
   const router = useRouter();

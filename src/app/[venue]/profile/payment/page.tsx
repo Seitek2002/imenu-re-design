@@ -6,10 +6,12 @@
  * нужно подцепить хук вроде useMyCards() и принять/убрать «Основной».
  */
 
+import { useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight, CreditCard, Plus, QrCode, Wallet } from 'lucide-react';
+import { PROFILE_IN_DEVELOPMENT } from '../_inDevelopment';
 
 interface MockCard {
   id: string;
@@ -24,6 +26,20 @@ const MOCK_CARDS: MockCard[] = [
 ];
 
 export default function PaymentMethodsPage() {
+  if (PROFILE_IN_DEVELOPMENT) return <ProfileRedirect />;
+  return <PaymentMethodsPageReal />;
+}
+
+function ProfileRedirect() {
+  const { venue } = useParams<{ venue: string }>();
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/${venue}/profile`);
+  }, [router, venue]);
+  return null;
+}
+
+function PaymentMethodsPageReal() {
   const t = useTranslations('Profile.payment');
   const tProfile = useTranslations('Profile');
   const { venue } = useParams<{ venue: string }>();
