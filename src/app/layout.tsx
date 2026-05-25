@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
-import { Inter } from 'next/font/google';
+import { Inter, Noto_Sans_Symbols_2 } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import QueryProvider from '@/components/providers/QueryProvider';
@@ -12,6 +12,16 @@ const geistInter = Inter({
   variable: '--font-geist-inter',
   display: 'swap',
   subsets: ['latin'],
+});
+
+// Fallback для символов, которых нет в Inter/Cruinn/системных шрифтах
+// (например, ⃀ — кыргызский сом U+20C0). Подгружается только когда браузеру
+// нужен глиф из этого диапазона; обычный текст идёт через Inter.
+const somFallback = Noto_Sans_Symbols_2({
+  weight: '400',
+  variable: '--font-som-fallback',
+  display: 'swap',
+  subsets: ['symbols'],
 });
 
 const cruinn = localFont({
@@ -82,7 +92,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${cruinn.variable} ${geistInter.variable} antialiased`}
+        className={`${cruinn.variable} ${geistInter.variable} ${somFallback.variable} antialiased`}
       >
         {/* Блокируем pinch-zoom на iOS Safari — touch-action и viewport user-scalable=no там игнорируются */}
         <script
