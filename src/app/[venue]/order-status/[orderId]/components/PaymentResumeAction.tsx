@@ -33,8 +33,12 @@ export default function PaymentResumeAction({ orderId, expiresAt, paymentUrl: pa
   const cancelMutation = useCancelOrderV2();
 
   useEffect(() => {
+    // Бэк — источник правды (Kuma 2026-05-24 §3): order.paymentUrl выживает
+    // через смену устройства и очистку localStorage. На localStorage падаем
+    // только если бэк его ещё не вернул (e.g. сразу после createOrder, до
+    // первого рефетча).
     const saved = getPendingPayment(orderId);
-    setPaymentUrl(saved?.paymentUrl ?? paymentUrlProp ?? null);
+    setPaymentUrl(paymentUrlProp ?? saved?.paymentUrl ?? null);
   }, [orderId, paymentUrlProp]);
 
   useEffect(() => {

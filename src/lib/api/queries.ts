@@ -9,6 +9,7 @@ import {
   BonusResponse,
   CalculateRequest,
   CalculateResponse,
+  LoyaltyResponse,
   OrderCreateBody,
   OrderCreateResponse,
   OrdersResponse,
@@ -234,6 +235,46 @@ export const useClientBonus = ({
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,
     refetchOnMount: 'always',
+  });
+};
+
+/**
+ * GET /v2/client/loyalty/?venueSlug=&phone= — полная шкала лояльности.
+ * Kuma 2026-05-24 §6b. Возвращает 200 только для Poster-venue; для остальных
+ * (или клиент не найден) — 404. Хук в этом случае отдаёт data=null и UI
+ * должен мягко деградировать к одному текущему % из clientGroup.
+ */
+async function fetchClientLoyalty(
+  { phone, venueSlug }: { phone: string; venueSlug: string },
+  locale: Locale,
+): Promise<LoyaltyResponse | null> {
+  const params = new URLSearchParams();
+  params.append('phone', normalizePhoneForApi(phone));
+  params.append('venueSlug', venueSlug);
+
+  const res = await fetch(`${API_URL}/v2/client/loyalty/?${params.toString()}`, {
+    method: 'GET',
+    headers: buildHeaders(locale),
+  });
+
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`loyalty_failed_${res.status}`);
+  return res.json();
+}
+
+export const useClientLoyalty = ({
+  phone,
+  venueSlug,
+}: {
+  phone: string;
+  venueSlug: string;
+}) => {
+  const locale = useLocale() as Locale;
+  return useQuery({
+    queryKey: ['loyalty', phone, venueSlug, locale],
+    queryFn: () => fetchClientLoyalty({ phone, venueSlug }, locale),
+    enabled: !!phone && phone.length > 5 && !!venueSlug,
+    staleTime: 1000 * 60 * 5,
   });
 };
 
