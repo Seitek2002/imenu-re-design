@@ -9,7 +9,7 @@
     "back": "Артка",
     "search": "Издөө",
     "searchPlaceholder": "Издөө...",
-    "currency": "с.",
+    "currency": "⃀",
     "from": "баштап",
     "menu": "Меню",
     "viewAll": "Баары →",
@@ -149,7 +149,7 @@
       "mapPickHintSelected": "Чекит тандалды",
       "zoneFree": "Дарек акысыз жеткирүү аймагында",
       "zonePaid": "Дарек акысыз жеткирүү аймагынан тышкары",
-      "zonePaidFee": "Акылуу жеткирүү: {amount} с.",
+      "zonePaidFee": "Акылуу жеткирүү: {amount} ⃀",
       "saveToggle": "Даректи сактоо",
       "saveLabelPlaceholder": "Үй / Иш / Апамдын үйү…",
       "saveLabelDefault": "Менин дарегим"
@@ -165,7 +165,7 @@
       "geoError": "Жайгашкан жерди аныктоо мүмкүн болбоду",
       "searchEmpty": "Эч нерсе табылган жок",
       "freeDeliveryNote": "Сиз акысыз жеткирүү аймагындасыз",
-      "paidDeliveryNote": "Акысыз жеткирүү аймагынан тышкары. Акылуу жеткирүү: {amount} с.",
+      "paidDeliveryNote": "Акысыз жеткирүү аймагынан тышкары. Акылуу жеткирүү: {amount} ⃀",
       "outsideZoneNote": "Дарек акысыз жеткирүү аймагынан тышкары"
     },
     "footer": {
@@ -187,7 +187,7 @@
     "free": "акысыз",
     "weight": "Салмагы: {value}",
     "add": "Кошуу",
-    "pricePlus": "+{price} с.",
+    "pricePlus": "+{price} ⃀",
     "errorChoose": "{n} тандоо керек",
     "errorMin": "Кеминде {n}",
     "errorMax": "{n} көп эмес",
@@ -429,7 +429,7 @@
     "positions": "{count} позиция",
     "qty": "{count} д.",
     "total": "Жыйынтыгы",
-    "currency": "с",
+    "currency": "⃀",
     "repeat": "Буйрутманы кайталоо",
     "repeatLoading": "Чогултулууда…",
     "repeatNothing": "Кайталоо мүмкүн эмес — товарлар жок",
@@ -557,7 +557,7 @@
     "bonusShort": "балл",
     "paid": "Төлөнгөн",
     "remaining": "Калды",
-    "currency": "c.",
+    "currency": "⃀",
     "noTable": "Стол тандалган эмес. Столдун QR кодун скандаңыз.",
     "loading": "Буйрутма жүктөлүүдө...",
     "loadError": "Буйрутманы жүктөө мүмкүн болбоду",
@@ -573,7 +573,7 @@
     "draftSubtotal": "Арзандатуусуз",
     "draftSavings": "Арзандатуу",
     "posOrderEmpty": "Официант буйрутманы кабыл алды — тамактарды күтөбүз",
-    "submitDraft": "Буйрутма берүү · {amount} c.",
+    "submitDraft": "Буйрутма берүү · {amount} ⃀",
     "summary": {
       "tickets": "{count, plural, =0 {Чек жок} one {# чек} other {# чек}}",
       "empty": "Чек жок",
@@ -601,7 +601,7 @@
       "disconnected": "○ байланыш жок"
     },
     "payment": {
-      "pay": "{amount} c. төлөө",
+      "pay": "{amount} ⃀ төлөө",
       "creating": "Шилтеме даярдалууда...",
       "unavailable": "Төлөм кызматы убактылуу жеткиликсиз. Кайра аракет кылыңыз.",
       "invalidCode": "Код туура эмес. Кайра аракет кылыңыз.",
@@ -624,12 +624,12 @@
   },
   "TableOrderBar": {
     "label": "Стол №{num}",
-    "summary": "{count} поз. · {amount} с."
+    "summary": "{count} поз. · {amount} ⃀"
   },
   "TableBillBanner": {
     "title": "Столдо ачык эсеп бар",
     "subtitle": "{count, plural, one {Официанттын чегинде # позиция} other {Официанттын чегинде # позиция}}",
-    "cta": "Эсепти ачуу · {amount} с.",
+    "cta": "Эсепти ачуу · {amount} ⃀",
     "dismiss": "Жашыруу"
   },
   "PosOrderStatus": {

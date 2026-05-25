@@ -66,7 +66,7 @@ export default function PaymentMethodsPage() {
                     ••••{c.last4}
                   </span>
                   {c.isDefault && (
-                    <span className='ml-auto text-[9px] font-medium text-white bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
+                    <span className='ml-auto text-[9px] font-medium text-[#F28A1A] bg-[#FFEBD0] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
                       {t('default')}
                     </span>
                   )}

@@ -203,7 +203,7 @@ function AddressRow({
               {address.label}
             </span>
             {isDefault && (
-              <span className='text-[9px] font-medium text-white bg-[linear-gradient(to_right,#FAA924_31%,#F3811F_71%)] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
+              <span className='text-[9px] font-medium text-[#F28A1A] bg-[#FFEBD0] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
                 {t('default')}
               </span>
             )}
