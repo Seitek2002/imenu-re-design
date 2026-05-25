@@ -203,21 +203,27 @@ export default function ProfilePage() {
         <section className='bg-white rounded-2xl p-4'>
           <div className='text-[13px] font-semibold text-[#21201F]'>{t('quickLinks.title')}</div>
           <div className='mt-3 grid grid-cols-3 gap-2'>
-            <QuickLink
-              icon={<Store size={20} className='text-[#F3811F]' />}
-              label={t('quickLinks.venues')}
-            />
             <Link
-              href={`/${venue}/history`}
+              href={`/${venue}/support?tab=venue`}
+              className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'
+            >
+              <Store size={20} className='text-[#F3811F]' />
+              <span className='text-[11px]'>{t('quickLinks.venues')}</span>
+            </Link>
+            <Link
+              href={`/${venue}/support?tab=order`}
               className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'
             >
               <ShoppingBag size={20} className='text-[#6B9A6E]' />
               <span className='text-[11px]'>{t('quickLinks.orders')}</span>
             </Link>
-            <QuickLink
-              icon={<MessageSquareText size={20} className='text-[#3F6BDB]' />}
-              label={t('quickLinks.chat')}
-            />
+            <Link
+              href={`/${venue}/support?tab=other`}
+              className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'
+            >
+              <MessageSquareText size={20} className='text-[#3F6BDB]' />
+              <span className='text-[11px]'>{t('quickLinks.chat')}</span>
+            </Link>
           </div>
         </section>
 
@@ -725,11 +731,3 @@ function EmptyState({
   );
 }
 
-function QuickLink({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <button className='rounded-xl border border-[#EDEAE7] flex flex-col items-center justify-center gap-1.5 py-3 text-[#21201F]'>
-      {icon}
-      <span className='text-[11px]'>{label}</span>
-    </button>
-  );
-}

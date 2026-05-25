@@ -49,6 +49,6 @@ next-env.d.ts
 skills-lock.json
 /tmp/
 /*.png
-KUMA_REQUEST_FOLLOWUP.md
-KUMA_REQUEST.md
-KUMA_REQUEST_2026-05-24.md
+# Личные заметки с вопросами к Куме — не коммитятся, просто папка
+# для черновиков. Любой новый KUMA_REQUEST_*.md клади сюда.
+/kuma/

@@ -279,6 +279,9 @@
     "close": "Закрыть",
     "aria": "Wi-Fi Info"
   },
+  "Header": {
+    "testMode": "Запущен пробный режим"
+  },
   "MainAction": {
     "callBtn": "Позвать официанта",
     "confirmTitle": "Вызвать официанта?",
@@ -528,6 +531,48 @@
   "History": {
     "title": "Раздел в разработке",
     "description": "Мы прямо сейчас пишем историю... Загляните сюда чуть позже!"
+  },
+  "Support": {
+    "title": "Помощь",
+    "tabs": {
+      "venue": "Филиал",
+      "order": "Заказ",
+      "other": "Другое"
+    },
+    "venueLabel": "Укажите филиал",
+    "venuePlaceholder": "Филиал",
+    "venueEmpty": "Нет доступных филиалов",
+    "orderLabel": "Укажите заказ",
+    "orderPlaceholder": "Заказ",
+    "orderEmpty": "У вас пока нет заказов",
+    "topicLabel": "Укажите тему",
+    "topicPlaceholder": "Например: Проблемы с приложением",
+    "topics": [
+      "Проблемы с приложением",
+      "Оплата не прошла",
+      "Не пришли баллы",
+      "Регистрация / вход",
+      "Другое"
+    ],
+    "problemLabel": "Опишите проблему",
+    "problemPlaceholder": "Расскажите подробности",
+    "photosLabel": "Фотографии",
+    "photoAdd": "Добавить",
+    "submit": "Отправить",
+    "submitting": "Отправляем…",
+    "success": {
+      "title": "Успешно отправлено",
+      "description": "Ваша заявка отправлена {date}",
+      "viewAll": "Посмотреть заявки",
+      "close": "Закрыть"
+    },
+    "errors": {
+      "selectRequired": "Выберите один из вариантов",
+      "problemRequired": "Опишите проблему",
+      "tooManyPhotos": "Максимум {max} фото",
+      "fileTooBig": "Файл больше {mb} МБ",
+      "submitFailed": "Не удалось отправить. Попробуйте ещё раз."
+    }
   },
   "Nav": {
     "home": "Главная",

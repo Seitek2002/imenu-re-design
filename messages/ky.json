@@ -279,6 +279,9 @@
     "close": "Жабуу",
     "aria": "Wi-Fi Info"
   },
+  "Header": {
+    "testMode": "Сыноо режими"
+  },
   "MainAction": {
     "callBtn": "Официантты чакыруу",
     "confirmTitle": "Официантты чакырасызбы?",
@@ -528,6 +531,48 @@
   "History": {
     "title": "Бөлүм иштелип жатат",
     "description": "Биз азыр тарыхты жазып жатабыз... Бир аздан кийин кайра кайрылыңыз!"
+  },
+  "Support": {
+    "title": "Жардам",
+    "tabs": {
+      "venue": "Филиал",
+      "order": "Буйрутма",
+      "other": "Башка"
+    },
+    "venueLabel": "Филиалды тандаңыз",
+    "venuePlaceholder": "Филиал",
+    "venueEmpty": "Жеткиликтүү филиалдар жок",
+    "orderLabel": "Буйрутманы тандаңыз",
+    "orderPlaceholder": "Буйрутма",
+    "orderEmpty": "Азырынча буйрутмаларыңыз жок",
+    "topicLabel": "Теманы тандаңыз",
+    "topicPlaceholder": "Мисалы: Колдонмо менен көйгөй",
+    "topics": [
+      "Колдонмо менен көйгөй",
+      "Төлөм өтпөдү",
+      "Балл түшпөдү",
+      "Каттоо / кирүү",
+      "Башка"
+    ],
+    "problemLabel": "Көйгөйдү сүрөттөңүз",
+    "problemPlaceholder": "Чоо-жайын айтыңыз",
+    "photosLabel": "Сүрөттөр",
+    "photoAdd": "Кошуу",
+    "submit": "Жөнөтүү",
+    "submitting": "Жөнөтүлүүдө…",
+    "success": {
+      "title": "Ийгиликтүү жөнөтүлдү",
+      "description": "Сурамыңыз {date} жөнөтүлдү",
+      "viewAll": "Сурамдарды көрүү",
+      "close": "Жабуу"
+    },
+    "errors": {
+      "selectRequired": "Бирөөнү тандаңыз",
+      "problemRequired": "Көйгөйдү сүрөттөңүз",
+      "tooManyPhotos": "Эң көп {max} сүрөт",
+      "fileTooBig": "Файл {mb} МБден чоң",
+      "submitFailed": "Жөнөтүү ишке ашпады. Кайталаңыз."
+    }
   },
   "Nav": {
     "home": "Башкы",
