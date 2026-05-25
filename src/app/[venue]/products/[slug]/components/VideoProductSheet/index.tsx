@@ -374,13 +374,10 @@ function VariantChipButton({
     <button
       type='button'
       onClick={onOpen}
-      className='relative shrink-0 w-21 h-22 rounded-[20px] flex flex-col items-start justify-between p-2.5 active:scale-95 transition-all duration-150 bg-white/25 backdrop-blur-md ring-1 ring-white/30'
+      className='relative shrink-0 w-21 h-27 rounded-[20px] flex flex-col items-center justify-between pt-2.5 pb-2.5 overflow-hidden active:scale-95 transition-all duration-150 bg-white/25 backdrop-blur-md ring-1 ring-white/30'
       aria-label={label}
     >
-      <span className='text-[11px] font-semibold text-[#21201F] leading-tight'>
-        {label}
-      </span>
-      <div className='w-full flex justify-center'>
+      <div className='flex-1 flex items-center justify-center w-full'>
         {!imgError && photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -393,6 +390,9 @@ function VariantChipButton({
           <div className='w-14 h-14 rounded-xl bg-white/20' />
         )}
       </div>
+      <span className='text-[11px] font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
+        {label}
+      </span>
     </button>
   );
 }
