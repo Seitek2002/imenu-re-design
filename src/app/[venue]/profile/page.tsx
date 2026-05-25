@@ -182,7 +182,7 @@ export default function ProfilePage() {
                 ? Math.ceil(Number(loyalty.turnoverToNext))
                 : undefined
             }
-            currency='⃀'
+            currency='сом'
           />
         )}
 

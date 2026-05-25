@@ -84,7 +84,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
       <div className='relative group lg:w-fit'>
         <Link
           href={`/${venueSlug}/cart`}
-          aria-label={`${t('title')} — ${totalPrice} c.`}
+          aria-label={`${t('title')} — ${totalPrice} с.`}
           className={`
             relative mx-4
             flex items-center justify-between
@@ -103,7 +103,7 @@ export default function FloatingCartButton({ venueSlug }: Props) {
             <span className='font-medium text-sm'>{t('title')}</span>
           </div>
 
-          <span className='font-bold text-sm lg:hidden'>{totalPrice} c.</span>
+          <span className='font-bold text-sm lg:hidden'>{totalPrice} с.</span>
 
           <ShoppingBag size={26} className='hidden lg:block' strokeWidth={2.2} />
 

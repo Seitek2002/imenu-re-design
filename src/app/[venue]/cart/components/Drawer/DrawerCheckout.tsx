@@ -477,7 +477,7 @@ const DrawerCheckout: FC<IProps> = ({
             />
             <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
               <span>{t('bonusDiscount')}</span>
-              <span>− {effectiveBonus} c.</span>
+              <span>− {effectiveBonus} сом</span>
             </div>
           </div>
         )}

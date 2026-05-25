@@ -301,7 +301,7 @@ export default function HistoryPage() {
                       </span>
                     </div>
                     <div className='text-[15px] font-bold text-[#21201F]'>
-                      {fmtMoney(o.totalPrice)} ⃀
+                      {fmtMoney(o.totalPrice)} сом
                     </div>
                   </div>
 

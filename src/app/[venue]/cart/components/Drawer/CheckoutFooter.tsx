@@ -16,7 +16,7 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
     <div className='flex items-center gap-4'>
       <div className='flex flex-col'>
         <span className='text-xs text-gray-500 font-medium'>{t('totalDue')}</span>
-        <span className='text-2xl font-bold text-[#111111]'>{total} c.</span>
+        <span className='text-2xl font-bold text-[#111111]'>{total} сом</span>
       </div>
 
       <button
