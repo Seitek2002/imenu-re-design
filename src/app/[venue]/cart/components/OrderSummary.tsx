@@ -20,8 +20,8 @@ interface Props {
   promotionDiscount: number;
   bonusAvailable: number;
   bonusApplied: number;
-  bonusEarned: number;
-  bonusAccrualPercent: number;
+  bonusEarned: number | undefined;
+  bonusAccrualPercent: number | undefined;
   /**
    * Максимум % от orderBaseTotal который можно оплатить бонусами.
    * Из venue.bonusMaxDeductiblePercent (Kuma 2026-05-24 §4). Дефолт 50 если

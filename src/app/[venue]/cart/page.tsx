@@ -70,7 +70,7 @@ export default function BasketPage() {
   const bonusToApply = calc.bonusApplied;
   const promoDiscount = calc.promotionDiscount;
   const discount = bonusToApply;
-  const earnedBonus = calc.bonusEarned;
+  const earnedBonus = calc.bonusEarned ?? 0;
   const serverDeliveryPrice = calc.raw ? calc.deliveryPrice : deliveryPrice;
   const serverIsFreeDelivery =
     orderType === 'delivery' && calc.raw
