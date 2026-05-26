@@ -70,16 +70,16 @@ export default function BonusHero({
         </div>
       </div>
 
-      <div className='font-cruinn relative mt-1.5 flex items-baseline gap-2 text-[48px] font-black leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
+      <div className='relative mt-1.5 flex items-baseline gap-2 text-[48px] font-black leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
         {fmt(balance, locale)}
-        <small className='font-sans text-[12px] font-semibold text-[#8E8780] tracking-normal'>
+        <small className='text-[12px] font-semibold text-[#8E8780] tracking-normal'>
           {t('bonus.points')}
         </small>
       </div>
 
       <div className='relative mt-3.5 grid grid-cols-[1fr_1px_1fr] gap-0 rounded-[14px] border-[0.5px] border-[#ECE6DE] bg-[#FAF6F1] p-3'>
         <div className='px-3.5'>
-          <div className='font-cruinn text-[22px] font-extrabold leading-none tracking-tight'>
+          <div className='text-[22px] font-extrabold leading-none tracking-tight'>
             <span className='text-brand'>+{accrualPercent}%</span>
           </div>
           <div className='mt-1 text-[11px] leading-tight font-medium text-[#8E8780]'>
@@ -88,7 +88,7 @@ export default function BonusHero({
         </div>
         <div className='bg-[#ECE6DE]' />
         <div className='px-3.5'>
-          <div className='font-cruinn text-[22px] font-extrabold leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
+          <div className='text-[22px] font-extrabold leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
             {t('bonus.upTo', { n: maxDeductiblePercent })}
           </div>
           <div className='mt-1 text-[11px] leading-tight font-medium text-[#8E8780]'>

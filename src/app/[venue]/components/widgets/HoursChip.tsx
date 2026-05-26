@@ -59,7 +59,7 @@ export default function HoursChip({ schedules, onClick }: Props) {
         <div className='text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#8E8780]'>
           {t('chip.scheduleLabel')}
         </div>
-        <div className='font-cruinn mt-2 text-[18px] font-extrabold tracking-tight text-[#0E0E0F]'>
+        <div className='mt-2 text-[18px] font-extrabold tracking-tight text-[#0E0E0F]'>
           {t('chip.scheduleEmpty')}
         </div>
       </button>
@@ -108,7 +108,7 @@ export default function HoursChip({ schedules, onClick }: Props) {
         {isOpen ? t('chip.openLabel') : t('chip.closedLabel')}
       </div>
 
-      <div className='font-cruinn mt-2 text-[24px] font-extrabold leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
+      <div className='mt-2 text-[24px] font-extrabold leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
         {is24
           ? t('chip.open24')
           : isOpen

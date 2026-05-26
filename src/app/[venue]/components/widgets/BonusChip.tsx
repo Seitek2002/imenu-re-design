@@ -35,7 +35,7 @@ export default function BonusChip({
         />
         {t('chip.points')}
       </div>
-      <div className='font-cruinn mt-2 flex items-baseline gap-1 text-[32px] font-black leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
+      <div className='mt-2 flex items-baseline gap-1 text-[32px] font-black leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
         {fmt(balance, locale)}
       </div>
       <div className='mt-1.5 text-[11.5px] leading-tight font-medium text-[#8E8780]'>

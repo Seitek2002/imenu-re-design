@@ -18,7 +18,7 @@ export default function RedeemChip({ maxDeductiblePercent }: Props) {
         />
         {t('chip.redeem')}
       </div>
-      <div className='font-cruinn mt-2 text-[28px] font-black leading-none tracking-tight tabular-nums'>
+      <div className='mt-2 text-[28px] font-black leading-none tracking-tight tabular-nums'>
         <span className='text-brand'>
           {t('chip.redeemValue', { n: maxDeductiblePercent })}
         </span>
