@@ -240,7 +240,16 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
           <div className='relative z-10 shrink-0'>
             <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
 
-              {/* Чипы предпочтений — всегда первые */}
+              {/* Чип возврата — всегда первый */}
+              <VariantReturnChip
+                variantType={iceProduct?.variantType ?? null}
+                label={variantChip?.label ?? 'Назад'}
+                onReturn={() => { haptic(25); onClose(); }}
+              />
+
+              <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
+
+              {/* Базовые чипы предпочтений */}
               {PREFERENCE_CHIPS.map((pref) => (
                 <PreferenceChipButton
                   key={pref.id}
@@ -254,15 +263,6 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
                   onClick={() => handleTogglePref(pref.id)}
                 />
               ))}
-
-              {/* Разделитель — VariantReturnChip всегда присутствует */}
-              <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
-
-              <VariantReturnChip
-                variantType={iceProduct?.variantType ?? null}
-                label={variantChip?.label ?? 'Назад'}
-                onReturn={() => { haptic(25); onClose(); }}
-              />
 
               {groups.length > 0 && (
                 <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />

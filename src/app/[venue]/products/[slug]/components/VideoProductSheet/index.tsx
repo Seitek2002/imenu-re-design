@@ -320,7 +320,19 @@ export default function VideoProductSheet() {
         <div className='justify-end'>
           <div className='relative z-10 shrink-0'>
             <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
-              {/* Чипы предпочтений — всегда первые */}
+              {/* Чип «Айс/Горячая версия» — всегда первый */}
+              {variantChip && hasVariant && (
+                <>
+                  <VariantChipButton
+                    variantType={iceProduct?.variantType ?? iceMock?.variantType ?? null}
+                    label={variantChip.label}
+                    onOpen={() => { haptic(25); setIceOpen(true); }}
+                  />
+                  <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
+                </>
+              )}
+
+              {/* Базовые чипы предпочтений */}
               {PREFERENCE_CHIPS.map((pref) => (
                 <PreferenceChipButton
                   key={pref.id}
@@ -335,22 +347,8 @@ export default function VideoProductSheet() {
                 />
               ))}
 
-              {(hasVariant || groups.length > 0) && (
+              {groups.length > 0 && (
                 <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
-              )}
-
-              {/* Чип «Айс/Горячая версия» */}
-              {variantChip && hasVariant && (
-                <>
-                  <VariantChipButton
-                    variantType={iceProduct?.variantType ?? iceMock?.variantType ?? null}
-                    label={variantChip.label}
-                    onOpen={() => { haptic(25); setIceOpen(true); }}
-                  />
-                  {groups.length > 0 && (
-                    <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
-                  )}
-                </>
               )}
 
               {/* Группы */}
