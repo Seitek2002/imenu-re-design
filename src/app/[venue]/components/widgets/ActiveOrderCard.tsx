@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -16,9 +17,7 @@ type Tone = 'brand' | 'green' | 'amber' | 'red';
 
 interface Props {
   order: OrderV2;
-  extraCount: number;
   venueSlug: string;
-  onMultiClick: () => void;
 }
 
 function pickTone(status: number): Tone {
@@ -32,16 +31,6 @@ function modeKey(mode: number): 'takeout' | 'delivery' | 'dinein' {
   if (mode === ServiceMode.Delivery) return 'delivery';
   if (mode === ServiceMode.DineIn) return 'dinein';
   return 'takeout';
-}
-
-// Бэк пока не возвращает etaMinutes — деривируем разумный дефолт по статусу,
-// чтобы subtitle с ICU-плюрализацией "~Nм" не показывал "~0м".
-// Можно заменить на реальное значение, когда Kuma добавит поле.
-function deriveEtaMinutes(status: number): number {
-  if (status === OrderStatus.Created) return 15;
-  if (status === OrderStatus.Preparing) return 10;
-  if (status === OrderStatus.InDelivery) return 10;
-  return 0;
 }
 
 const TONE_TINT: Record<Tone, string> = {
@@ -65,9 +54,7 @@ const TONE_ACCENT: Record<Tone, string> = {
 
 export default function ActiveOrderCard({
   order,
-  extraCount,
   venueSlug,
-  onMultiClick,
 }: Props) {
   const t = useTranslations('Widgets');
   const ts = useTranslations('OrderStatus');
@@ -78,7 +65,6 @@ export default function ActiveOrderCard({
   const isPending = order.status === OrderStatus.PendingPayment;
   const isReady = order.status === OrderStatus.Ready;
   const isCancelled = order.status === OrderStatus.Cancelled;
-  const isMulti = extraCount > 0;
 
   const stepCount = mk === 'dinein' ? 3 : 4;
   const ladder: StepLadder = Array.from({ length: stepCount }, (_, i) => ({
@@ -86,7 +72,22 @@ export default function ActiveOrderCard({
     label: ts(`steps.${mk}.${i}_title`),
   }));
 
-  const eta = deriveEtaMinutes(order.status);
+  // Elapsed since createdAt — ETA с бэка ещё нет, показываем «прошло X мин»
+  // как сигнал, что заказ живой. Тикаем раз в 30 сек, чтобы лейбл оставался
+  // свежим без перерендера всего виджета.
+  const [now, setNow] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  const createdMs = order.createdAt ? new Date(order.createdAt).getTime() : NaN;
+  const elapsedMin = Number.isFinite(createdMs)
+    ? Math.max(0, Math.floor((now - createdMs) / 60_000))
+    : 0;
+  const elapsedLabel =
+    elapsedMin < 1
+      ? t('elapsedJustNow')
+      : t('elapsedAgo', { min: elapsedMin });
 
   const headline = (() => {
     if (isPending)
@@ -153,7 +154,7 @@ export default function ActiveOrderCard({
           });
     if (mk === 'delivery')
       return t.rich('subDelivery', {
-        min: eta,
+        elapsed: elapsedLabel,
         address: order.address ?? t('addressFallback'),
         b: (chunks) => (
           <b className='font-bold text-[#4B4742] tabular-nums'>{chunks}</b>
@@ -161,14 +162,14 @@ export default function ActiveOrderCard({
       });
     if (mk === 'dinein')
       return t.rich('subDinein', {
-        min: eta,
+        elapsed: elapsedLabel,
         table: order.tableNum ?? '—',
         b: (chunks) => (
           <b className='font-bold text-[#4B4742] tabular-nums'>{chunks}</b>
         ),
       });
     return t.rich('subTakeout', {
-      min: eta,
+      elapsed: elapsedLabel,
       b: (chunks) => (
         <b className='font-bold text-[#4B4742] tabular-nums'>{chunks}</b>
       ),
@@ -191,19 +192,15 @@ export default function ActiveOrderCard({
           </span>
         </div>
 
-        {extraCount > 0 ? (
-          <div className='inline-flex h-7 items-center gap-1.5 rounded-full bg-brand px-3 text-[11.5px] font-extrabold tracking-wider text-white whitespace-nowrap shadow-[0_4px_12px_-4px_rgba(255,107,0,0.4)]'>
-            +{extraCount} {t('extrasNoun', { count: extraCount })}
-          </div>
-        ) : isPending ? (
+        {isPending && (
           <div className='inline-flex h-7 items-center gap-1.5 rounded-full bg-amber-100 px-3 text-[12px] font-bold text-amber-700 tabular-nums'>
             <Wallet size={13} />
             {order.totalPrice} {t('currencyShort')}
           </div>
-        ) : null}
+        )}
       </div>
 
-      <h3 className='font-cruinn relative mt-3.5 text-[22px] font-bold leading-tight tracking-tight text-[#0E0E0F]'>
+      <h3 className='relative mt-3.5 text-[22px] font-bold leading-tight tracking-tight text-[#0E0E0F]'>
         {headline}
       </h3>
       <p className='relative mt-1 text-[12.5px] leading-snug font-medium text-[#8E8780]'>
@@ -243,11 +240,7 @@ export default function ActiveOrderCard({
     </>
   );
 
-  return isMulti ? (
-    <button type='button' onClick={onMultiClick} className={cardCls}>
-      {inner}
-    </button>
-  ) : (
+  return (
     <Link href={`/${venueSlug}/order-status/${order.id}`} className={cardCls}>
       {inner}
     </Link>

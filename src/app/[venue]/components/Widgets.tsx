@@ -7,13 +7,12 @@ import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
 import { useOrdersV2, useClientBonus } from '@/lib/api/queries';
 import { OrderStatus } from '@/types/api';
-import type { OrderV2 } from '@/lib/order';
 import { calculateOrderProgress } from '@/lib/helpers/progressHelper';
 
-import OrdersSheet from './OrdersSheet';
 import ScheduleModal from '@/components/modals/ScheduleModal';
 
 import ActiveOrderCard from './widgets/ActiveOrderCard';
+import ActiveOrdersCarousel from './widgets/ActiveOrdersCarousel';
 import BonusHero from './widgets/BonusHero';
 import BonusChip from './widgets/BonusChip';
 import HoursChip from './widgets/HoursChip';
@@ -31,7 +30,6 @@ interface IWidgetsProps {
  */
 const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const [isScheduleOpen, setScheduleOpen] = useState(false);
-  const [isOrdersOpen, setOrdersOpen] = useState(false);
   const locale = useLocale();
 
   const { phone } = useCheckout();
@@ -56,18 +54,20 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
       o.paymentStatus !== 'cancelled',
   );
 
-  // Featured = closest-to-ready. Остальные доступны через "+N" pill.
-  const featuredOrder: OrderV2 | null = activeOrders.length
-    ? activeOrders.reduce((best, o) =>
-        calculateOrderProgress(o.status, o.serviceMode) >
-        calculateOrderProgress(best.status, best.serviceMode)
-          ? o
-          : best,
-      )
-    : null;
+  // Виджет дышит только живыми заказами — pending уходит в /history.
+  // Несколько заказов рисуются responsive snap-каруселью: на mobile одна
+  // карточка + peek, на планшете 2, на десктопе (max-w-175 ≈ 700px) — тоже
+  // 2, но без full-bleed-хака чтобы не вылезать за макс-ширину контейнера.
+  const visibleOrders = activeOrders
+    .filter((o) => o.status !== OrderStatus.PendingPayment)
+    .sort(
+      (a, b) =>
+        calculateOrderProgress(b.status, b.serviceMode) -
+        calculateOrderProgress(a.status, a.serviceMode),
+    );
 
-  const extraCount = Math.max(0, activeOrders.length - 1);
-  const hasOrder = featuredOrder !== null;
+  const hasOrder = visibleOrders.length > 0;
+  const isMulti = visibleOrders.length > 1;
   const bonusEnabled = venue?.isBonusSystemEnabled ?? false;
 
   // BonusResponse не отдаёт bonusAccrualPercent — берём дефолт venue. Это
@@ -80,12 +80,14 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
     <>
       <div className='mt-2 flex flex-col gap-2'>
         {hasOrder ? (
-          <ActiveOrderCard
-            order={featuredOrder!}
-            extraCount={extraCount}
-            venueSlug={venueSlug}
-            onMultiClick={() => setOrdersOpen(true)}
-          />
+          isMulti ? (
+            <ActiveOrdersCarousel
+              orders={visibleOrders}
+              venueSlug={venueSlug}
+            />
+          ) : (
+            <ActiveOrderCard order={visibleOrders[0]} venueSlug={venueSlug} />
+          )
         ) : bonusEnabled ? (
           <BonusHero
             balance={bonusData?.bonus ?? 0}
@@ -125,12 +127,6 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
         </div>
       </div>
 
-      <OrdersSheet
-        open={isOrdersOpen}
-        onClose={() => setOrdersOpen(false)}
-        orders={activeOrders}
-        venueSlug={venueSlug}
-      />
       <ScheduleModal
         isOpen={isScheduleOpen}
         onClose={() => setScheduleOpen(false)}
