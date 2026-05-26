@@ -16,7 +16,7 @@ export function VariantChip({ variantType, label, inverted = false, onClick }: P
     : variantType;
 
   const Icon = effectiveType === 'ice' ? Snowflake : effectiveType === 'hot' ? Flame : null;
-  const displayLabel = effectiveType === 'ice' ? 'Айс' : effectiveType === 'hot' ? 'Горячий' : label;
+  const displayLabel = effectiveType === 'ice' ? 'Айс версия' : effectiveType === 'hot' ? 'Горячая версия' : label;
 
   return (
     <button
