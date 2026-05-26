@@ -1,0 +1,131 @@
+'use client';
+
+import type { ComponentType } from 'react';
+import { Candy, SlidersHorizontal } from 'lucide-react';
+
+export interface PreferenceOption {
+  id: string;
+  label: string;
+}
+
+export interface PreferenceChipDef {
+  id: string;
+  label: string;
+  Icon: ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  options: PreferenceOption[];
+}
+
+export const PREFERENCE_CHIPS: PreferenceChipDef[] = [
+  {
+    id: 'sugar',
+    label: 'Сахар',
+    Icon: Candy,
+    options: [
+      { id: '0', label: 'Без сахара' },
+      { id: '1', label: '1 ложка' },
+      { id: '2', label: '2 ложки' },
+      { id: '3', label: '3 ложки' },
+    ],
+  },
+  {
+    id: 'extra',
+    label: 'Доп.',
+    Icon: SlidersHorizontal,
+    options: [
+      { id: 'sleeve',    label: 'С манжетом'    },
+      { id: 'no-sleeve', label: 'Без манжета'   },
+      { id: 'own-cup',   label: 'Свой стакан'   },
+      { id: 'cup',       label: 'Просто стакан' },
+    ],
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Чип предпочтения — встраивается в строку чипов (всегда первым)
+// ---------------------------------------------------------------------------
+export function PreferenceChipButton({
+  chip,
+  active,
+  selectedOptionLabel,
+  onClick,
+}: {
+  chip: PreferenceChipDef;
+  active: boolean;
+  selectedOptionLabel?: string;
+  onClick: () => void;
+}) {
+  const { Icon, label } = chip;
+  const isSelected = !!selectedOptionLabel;
+
+  return (
+    <button
+      type='button'
+      onClick={onClick}
+      className='relative shrink-0 w-21 active:scale-95 transition-all duration-150 outline-none'
+      aria-pressed={active}
+      aria-label={selectedOptionLabel ?? label}
+    >
+      <div
+        className={`
+          w-full h-27 rounded-[20px] flex flex-col items-center justify-between
+          pt-2.5 pb-2.5 overflow-hidden transition-all duration-150
+          ${isSelected
+            ? active
+              ? 'bg-white/75 ring-2 ring-white shadow-md'
+              : 'bg-white/60'
+            : active
+              ? 'bg-white/50 ring-2 ring-white shadow-md'
+              : 'bg-white/25 backdrop-blur-md ring-1 ring-white/30'
+          }
+        `}
+      >
+        <div className='flex-1 flex items-center justify-center w-full'>
+          <Icon size={28} strokeWidth={1.5} className='text-[#21201F]' />
+        </div>
+        <span className='text-[11px] font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
+          {selectedOptionLabel ?? label}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Панель выбора — появляется над строкой чипов
+// ---------------------------------------------------------------------------
+export function PreferenceGrid({
+  chip,
+  selectedId,
+  onSelect,
+}: {
+  chip: PreferenceChipDef;
+  selectedId: string | null;
+  onSelect: (optionId: string | null) => void;
+}) {
+  return (
+    <div className='w-full'>
+      <div className='flex flex-wrap gap-2'>
+        {chip.options.map((opt) => {
+          const selected = selectedId === opt.id;
+          return (
+            <button
+              key={opt.id}
+              type='button'
+              onClick={() => onSelect(selected ? null : opt.id)}
+              className={`
+                px-4 py-2.5 rounded-full text-sm font-semibold
+                transition-all duration-150 active:scale-95
+                ${selected
+                  ? 'bg-white text-[#21201F]'
+                  : 'bg-white/20 text-white backdrop-blur-sm ring-1 ring-white/30'
+                }
+              `}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
