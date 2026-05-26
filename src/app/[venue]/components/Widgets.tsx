@@ -1,37 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 
 import { useCheckout } from '@/store/checkout';
+import { useVenueStore } from '@/store/venue';
 import { useOrdersV2, useClientBonus } from '@/lib/api/queries';
 import { OrderStatus } from '@/types/api';
-import { OrderV2 } from '@/lib/order';
+import type { OrderV2 } from '@/lib/order';
+import { calculateOrderProgress } from '@/lib/helpers/progressHelper';
 
-import ScheduleModal from '@/components/modals/ScheduleModal';
-import CircularProgress from '@/components/ui/CircularProgress';
 import OrdersSheet from './OrdersSheet';
+import ScheduleModal from '@/components/modals/ScheduleModal';
 
-import widget2 from '@/assets/Widgets/widget-2.png';
-import widget3 from '@/assets/Widgets/widget-3.png';
-import widget1 from '@/assets/Widgets/widget-1.png';
-import { calculateOrderProgress, statusToStepIndex } from '@/lib/helpers/progressHelper';
-import { ServiceMode } from '@/types/api';
-import { Check, Clock, Truck, Wallet, ChefHat } from 'lucide-react';
+import ActiveOrderCard from './widgets/ActiveOrderCard';
+import BonusHero from './widgets/BonusHero';
+import BonusChip from './widgets/BonusChip';
+import HoursChip from './widgets/HoursChip';
+import RedeemChip from './widgets/RedeemChip';
 
 interface IWidgetsProps {
   venueSlug: string;
 }
 
+/**
+ * Live-Status section — adaptive hero + 2-up chip row.
+ *   - active order → ActiveOrderCard (step ladder, items strip, CTA на Ready)
+ *   - no order + bonus on → BonusHero (balance, accrual/cap pair, прогресс)
+ *   - no order + bonus off → HoursChip только, на всю ширину
+ */
 const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const [isScheduleOpen, setScheduleOpen] = useState(false);
   const [isOrdersOpen, setOrdersOpen] = useState(false);
-  const t = useTranslations('Widgets');
   const locale = useLocale();
 
   const { phone } = useCheckout();
+  const venue = useVenueStore((s) => s.data);
 
   const { data: bonusData } = useClientBonus({ phone, venueSlug });
   const { data: ordersData } = useOrdersV2({
@@ -42,20 +46,18 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   });
 
   // Cron бэка переводит зависший pending → expired/cancelled с лагом до ~6 мин
-  // (Kuma 2026-05-25 §5.1), поэтому дублируем фильтр по paymentStatus, чтобы
-  // не показывать «ожидает оплату» на уже терминальных заказах в это окно.
-  const activeOrders = ordersData?.results?.filter(
+  // (Kuma 2026-05-25 §5.1), поэтому дублируем фильтр по paymentStatus.
+  const activeOrders = (ordersData?.results ?? []).filter(
     (o) =>
       o.status !== OrderStatus.Completed &&
       o.status !== OrderStatus.Cancelled &&
       o.paymentStatus !== 'expired' &&
       o.paymentStatus !== 'failed' &&
       o.paymentStatus !== 'cancelled',
-  ) ?? [];
+  );
 
-  // Самый срочный = с максимальным прогрессом (ближе всего к готовности).
-  // Так пользователь видит то, что вот-вот изменится; остальные доступны в /history.
-  const featuredOrder = activeOrders.length
+  // Featured = closest-to-ready. Остальные доступны через "+N" pill.
+  const featuredOrder: OrderV2 | null = activeOrders.length
     ? activeOrders.reduce((best, o) =>
         calculateOrderProgress(o.status, o.serviceMode) >
         calculateOrderProgress(best.status, best.serviceMode)
@@ -65,74 +67,63 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
     : null;
 
   const extraCount = Math.max(0, activeOrders.length - 1);
-  const hasActiveOrders = featuredOrder !== null;
+  const hasOrder = featuredOrder !== null;
+  const bonusEnabled = venue?.isBonusSystemEnabled ?? false;
+
+  // BonusResponse не отдаёт bonusAccrualPercent — берём дефолт venue. Это
+  // повторяет логику BonusAccrualBadge.tsx (см. c615b84): для анонов
+  // /calculate/ возвращает 0, фронт фоллбэчит на venue.bonusAccrualPercent.
+  const accrualPercent = venue?.bonusAccrualPercent ?? 0;
+  const maxDeductiblePercent = venue?.bonusMaxDeductiblePercent ?? 50;
 
   return (
     <>
-      <div className='home-widgets bg-white rounded-4xl p-4 mt-2 flex gap-2 overflow-x-auto snap-x no-scrollbar'>
-        {hasActiveOrders ? (
-          <ActiveOrderWidget
-            featuredOrder={featuredOrder}
+      <div className='mt-2 flex flex-col gap-2'>
+        {hasOrder ? (
+          <ActiveOrderCard
+            order={featuredOrder!}
             extraCount={extraCount}
             venueSlug={venueSlug}
             onMultiClick={() => setOrdersOpen(true)}
           />
-        ) : (
-          <Link
-            href={`/${venueSlug}/history`}
-            className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden group'
-          >
-            <div className='text-[#0404138C] font-bold text-xs mb-2 relative z-10 leading-tight'>
-              {t('myOrders')}
-            </div>
-            <div className='relative w-full h-14 flex items-center justify-center'>
-              <Image
-                src={widget1}
-                alt='Orders'
-                fill
-                className='object-contain transition-all duration-500 opacity-100 scale-100'
-                sizes='120px'
-              />
-            </div>
-          </Link>
-        )}
+        ) : bonusEnabled ? (
+          <BonusHero
+            balance={bonusData?.bonus ?? 0}
+            accrualPercent={accrualPercent}
+            maxDeductiblePercent={maxDeductiblePercent}
+            nextGroupName={bonusData?.nextGroup?.name ?? null}
+            turnoverToNext={
+              bonusData?.turnoverToNext != null
+                ? Number(bonusData.turnoverToNext)
+                : null
+            }
+            venueSlug={venueSlug}
+            locale={locale}
+          />
+        ) : null}
 
-        <div className='home-widget bg-[#FAFAFA] rounded-3xl min-w-35 p-4 text-xs text-center snap-start'>
-          <div className='text-[#0404138C] font-bold text-xs mb-2 leading-tight'>
-            {t('bonus')}
-          </div>
-          <div className='flex items-center justify-center gap-2 mt-3'>
-            <Image src={widget2} alt='Points' width={24} height={24} />
-            <span className='text-xl font-black leading-none text-[#111111]'>
-              {(bonusData?.bonus ?? 0).toLocaleString(locale)}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type='button'
-          onClick={() => setScheduleOpen(true)}
-          className='home-widget bg-[#FAFAFA] rounded-3xl min-w-30 p-4 text-xs text-center snap-start active:scale-95 transition-transform cursor-pointer'
+        <div
+          className={`grid gap-2.5 ${
+            bonusEnabled ? 'grid-cols-2' : 'grid-cols-1'
+          }`}
         >
-          <div className='text-[#0404138C] font-bold text-xs mb-2 leading-tight'>
-            {t('schedule')}
-          </div>
-          <div className='relative w-full h-12'>
-            <Image
-              src={widget3}
-              alt='Schedule'
-              fill
-              className='object-contain'
-              sizes='120px'
-            />
-          </div>
-        </button>
+          {bonusEnabled &&
+            (hasOrder ? (
+              <BonusChip
+                balance={bonusData?.bonus ?? 0}
+                accrualPercent={accrualPercent}
+                venueSlug={venueSlug}
+                locale={locale}
+              />
+            ) : (
+              <RedeemChip maxDeductiblePercent={maxDeductiblePercent} />
+            ))}
+          <HoursChip
+            schedules={venue?.schedules ?? []}
+            onClick={() => setScheduleOpen(true)}
+          />
+        </div>
       </div>
-
-      <ScheduleModal
-        isOpen={isScheduleOpen}
-        onClose={() => setScheduleOpen(false)}
-      />
 
       <OrdersSheet
         open={isOrdersOpen}
@@ -140,137 +131,12 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
         orders={activeOrders}
         venueSlug={venueSlug}
       />
+      <ScheduleModal
+        isOpen={isScheduleOpen}
+        onClose={() => setScheduleOpen(false)}
+      />
     </>
   );
 };
-
-interface ActiveOrderWidgetProps {
-  featuredOrder: OrderV2;
-  extraCount: number;
-  venueSlug: string;
-  onMultiClick: () => void;
-}
-
-type Tone = 'brand' | 'green' | 'amber' | 'red';
-
-const TONE_BG: Record<Tone, string> = {
-  brand: 'bg-[#FAFAFA]',
-  green: 'bg-green-50',
-  amber: 'bg-amber-50',
-  red: 'bg-red-50',
-};
-
-const TONE_TEXT: Record<Tone, string> = {
-  brand: 'text-brand',
-  green: 'text-green-600',
-  amber: 'text-amber-700',
-  red: 'text-red-600',
-};
-
-const TONE_RING_COLOR: Record<Tone, string> = {
-  brand: 'var(--brand)',
-  green: '#16a34a',
-  amber: '#d97706',
-  red: '#dc2626',
-};
-
-function modeKey(mode: number): 'takeout' | 'delivery' | 'dinein' {
-  if (mode === ServiceMode.Delivery) return 'delivery';
-  if (mode === ServiceMode.DineIn) return 'dinein';
-  return 'takeout';
-}
-
-function pickTone(status: number): Tone {
-  if (status === OrderStatus.PendingPayment) return 'amber';
-  if (status === OrderStatus.Cancelled) return 'red';
-  if (status === OrderStatus.Ready) return 'green';
-  return 'brand';
-}
-
-function StatusIcon({ status, serviceMode, tone }: { status: number; serviceMode: number; tone: Tone }) {
-  const cls = `${TONE_TEXT[tone]}`;
-  if (status === OrderStatus.PendingPayment) return <Wallet size={20} className={cls} strokeWidth={2.5} />;
-  if (status === OrderStatus.Ready) return <Check size={22} className={cls} strokeWidth={3} />;
-  if (status === OrderStatus.InDelivery) return <Truck size={20} className={cls} strokeWidth={2.5} />;
-  if (status === OrderStatus.Preparing) return <ChefHat size={20} className={cls} strokeWidth={2.5} />;
-  if (serviceMode === ServiceMode.Delivery) return <Truck size={20} className={cls} strokeWidth={2.5} />;
-  return <Clock size={20} className={cls} strokeWidth={2.5} />;
-}
-
-function ActiveOrderWidget({
-  featuredOrder,
-  extraCount,
-  venueSlug,
-  onMultiClick,
-}: ActiveOrderWidgetProps) {
-  const ts = useTranslations('OrderStatus');
-  const isMulti = extraCount > 0;
-  const { status, serviceMode } = featuredOrder;
-  const tone = pickTone(status);
-  const progress = calculateOrderProgress(status, serviceMode);
-  const showProgress = tone === 'brand' || tone === 'green';
-
-  const statusText: string = (() => {
-    if (status === OrderStatus.PendingPayment) return ts('pendingPayment');
-    if (status === OrderStatus.Cancelled) return ts('cancelled');
-    const stepIdx = statusToStepIndex(status, serviceMode);
-    return ts(`steps.${modeKey(serviceMode)}.${stepIdx}_title`);
-  })();
-
-  const className = `home-widget rounded-3xl min-w-32 p-4 text-xs text-center snap-start active:scale-95 transition-transform relative overflow-hidden ${TONE_BG[tone]}`;
-
-  const inner = (
-    <>
-      {extraCount > 0 && (
-        <span className='absolute top-1.5 right-1.5 z-30 bg-brand text-white text-[10px] font-bold leading-none px-1.5 py-0.5 rounded-full shadow-sm'>
-          +{extraCount}
-        </span>
-      )}
-      <div className={`font-bold text-[10px] mb-2 leading-tight uppercase tracking-wide ${TONE_TEXT[tone]} opacity-70`}>
-        #{featuredOrder.id}
-      </div>
-      <div className='relative w-full h-12 flex items-center justify-center mb-1.5 animate-in zoom-in duration-500'>
-        {showProgress ? (
-          <CircularProgress
-            value={tone === 'green' ? 100 : progress}
-            size={44}
-            strokeWidth={3}
-            color={TONE_RING_COLOR[tone]}
-          >
-            <StatusIcon status={status} serviceMode={serviceMode} tone={tone} />
-          </CircularProgress>
-        ) : (
-          <div
-            className={`w-11 h-11 rounded-full flex items-center justify-center ${
-              tone === 'amber' ? 'bg-amber-100' : 'bg-red-100'
-            }`}
-          >
-            <StatusIcon status={status} serviceMode={serviceMode} tone={tone} />
-          </div>
-        )}
-      </div>
-      <div className={`font-bold text-[11px] leading-tight ${TONE_TEXT[tone]}`}>
-        {statusText}
-      </div>
-    </>
-  );
-
-  if (isMulti) {
-    return (
-      <button type='button' onClick={onMultiClick} className={className}>
-        {inner}
-      </button>
-    );
-  }
-
-  return (
-    <Link
-      href={`/${venueSlug}/order-status/${featuredOrder.id}`}
-      className={className}
-    >
-      {inner}
-    </Link>
-  );
-}
 
 export default Widgets;
