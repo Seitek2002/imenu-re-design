@@ -515,6 +515,8 @@
       "deliveryPrice": "Жеткирүү",
       "bonus": "Эсептен чыкты",
       "bonusEarned": "Топтолду",
+      "promotionDiscount": "Арзандатуу",
+      "servicePrice": "Тейлөө акысы",
       "free": "Бекер"
     },
     "serviceMode": {

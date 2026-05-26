@@ -10,6 +10,7 @@ import { OrderStatus } from '@/types/api';
 import { useOrderByIdV2 } from '@/lib/api/queries';
 import StatusProgressBar from './StatusProgressBar';
 import OrderItemsList from './OrderItemsList';
+import OrderBreakdown from './OrderBreakdown';
 import PaymentCountdown from './PaymentCountdown';
 import PaymentResumeAction from './PaymentResumeAction';
 import { markPaymentSuccess } from './PaymentSuccessOverlay';
@@ -68,12 +69,7 @@ export default function OrderStatusLive({ initialOrder }: Props) {
         />
       )}
       <OrderItemsList items={order.orderProducts} />
-      <div className='bg-white rounded-[20px] p-5 mt-4 shadow-sm flex justify-between items-center'>
-        <span className='text-gray-500 font-medium'>{t('totalDue')}</span>
-        <span className='text-2xl font-bold text-brand'>
-          {order.totalPrice} сом
-        </span>
-      </div>
+      <OrderBreakdown order={order} />
 
       {isCompleted && (
         <Link

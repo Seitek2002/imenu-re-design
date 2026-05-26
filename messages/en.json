@@ -515,6 +515,8 @@
       "deliveryPrice": "Delivery",
       "bonus": "Bonuses spent",
       "bonusEarned": "Bonuses earned",
+      "promotionDiscount": "Discount",
+      "servicePrice": "Service fee",
       "free": "Free"
     },
     "serviceMode": {

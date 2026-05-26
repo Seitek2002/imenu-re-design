@@ -515,6 +515,8 @@
       "deliveryPrice": "Доставка",
       "bonus": "Списано бонусов",
       "bonusEarned": "Начислено бонусов",
+      "promotionDiscount": "Скидка",
+      "servicePrice": "Сервисный сбор",
       "free": "Бесплатно"
     },
     "serviceMode": {
