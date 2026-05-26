@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { X } from 'lucide-react';
+import { Flame, Snowflake, X } from 'lucide-react';
 
 import { useMounted } from '@/hooks/useMounted';
 import { MOCK_VIDEO_PRODUCTS } from '@/data/mock-video-products';
@@ -295,8 +295,8 @@ export default function VideoProductSheet() {
                 {variantChip && hasVariant && (
                   <>
                     <VariantChipButton
+                      variantType={iceProduct?.variantType ?? iceMock?.variantType ?? null}
                       label={variantChip.label}
-                      photo={variantChip.photo ?? ''}
                       onOpen={() => { haptic(25); setIceOpen(true); }}
                     />
                     <div
@@ -359,38 +359,32 @@ export default function VideoProductSheet() {
 // Variant chip (Айс версия и т.п.) — локальный компонент, не экспортируется
 // ---------------------------------------------------------------------------
 function VariantChipButton({
+  variantType,
   label,
-  photo,
   onOpen,
 }: {
+  variantType: 'ice' | 'hot' | null | undefined;
   label: string;
-  photo: string;
   onOpen: () => void;
 }) {
-  const [imgError, setImgError] = useState(false);
+  const Icon = variantType === 'ice' ? Snowflake : variantType === 'hot' ? Flame : null;
+  const displayLabel = variantType === 'ice' ? 'Айс' : variantType === 'hot' ? 'Горячий' : label;
 
   return (
     <button
       type='button'
       onClick={onOpen}
       className='relative shrink-0 w-21 h-27 rounded-[20px] flex flex-col items-center justify-between pt-2.5 pb-2.5 overflow-hidden active:scale-95 transition-all duration-150 bg-white/25 backdrop-blur-md ring-1 ring-white/30'
-      aria-label={label}
+      aria-label={displayLabel}
     >
       <div className='flex-1 flex items-center justify-center w-full'>
-        {!imgError && photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photo}
-            alt=''
-            onError={() => setImgError(true)}
-            className='w-14 h-14 object-contain'
-          />
-        ) : (
-          <div className='w-14 h-14 rounded-xl bg-white/20' />
-        )}
+        {Icon
+          ? <Icon size={36} strokeWidth={1.5} className='text-white' />
+          : <div className='w-10 h-10 rounded-full bg-white/20' />
+        }
       </div>
-      <span className='text-[11px] font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
-        {label}
+      <span className='text-[11px] font-semibold text-white text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
+        {displayLabel}
       </span>
     </button>
   );

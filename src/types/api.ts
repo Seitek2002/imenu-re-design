@@ -353,6 +353,8 @@ export interface Product {
   iceVersionId?: number | null;
   /** Данные чипа «Айс версия» / «Горячая версия» */
   iceVersionChip?: IceVersionChip | null;
+  /** Тип варианта: "ice" — холодный, "hot" — горячий, null — обычный */
+  variantType?: 'ice' | 'hot' | null;
   /** Полный объект альтернативного товара — встроен в ответ, второй запрос не нужен */
   iceVersion?: Product | null;
 }

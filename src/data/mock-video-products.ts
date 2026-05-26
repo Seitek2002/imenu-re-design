@@ -42,6 +42,8 @@ export interface VideoProductMock {
    * Если задан — показывается variantChip, по клику открывается bottom sheet.
    */
   variantSlug?: string;
+  /** Тип варианта для mock-данных */
+  variantType?: 'ice' | 'hot' | null;
 }
 
 // ---------------------------------------------------------------------------
