@@ -204,37 +204,33 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
         )}
       </div>
 
-      {/* Нижний ряд чипов */}
-      {groups.length > 0 && (
-        <div className='relative z-10 shrink-0'>
-          <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
+      {/* Нижний ряд чипов — чип возврата всегда виден */}
+      <div className='relative z-10 shrink-0'>
+        <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
 
-            {/* Чип «Горячая/Айс версия» — закрывает этот sheet */}
-            {variantChip && (
-              <>
-                <VariantReturnChip
-                  label={variantChip.label}
-                  photo={variantChip.photo ?? ''}
-                  onReturn={() => { haptic(25); onClose(); }}
-                />
-                <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
-              </>
-            )}
+          <VariantReturnChip
+            label={variantChip?.label ?? 'Назад'}
+            photo={variantChip?.photo ?? ''}
+            onReturn={() => { haptic(25); onClose(); }}
+          />
 
-            {groups.map((g) => (
-              <GroupChip
-                key={g.id}
-                group={g}
-                icon={chipIcons[g.name]}
-                active={expandedGroupId === g.id}
-                selectedCount={groupCounts[g.id] ?? 0}
-                selectedItem={groupSelectedItems[g.id]}
-                onClick={() => handleToggleGroup(g.id)}
-              />
-            ))}
-          </div>
+          {groups.length > 0 && (
+            <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
+          )}
+
+          {groups.map((g) => (
+            <GroupChip
+              key={g.id}
+              group={g}
+              icon={chipIcons[g.name]}
+              active={expandedGroupId === g.id}
+              selectedCount={groupCounts[g.id] ?? 0}
+              selectedItem={groupSelectedItems[g.id]}
+              onClick={() => handleToggleGroup(g.id)}
+            />
+          ))}
         </div>
-      )}
+      </div>
 
       <BottomBar
         qnty={qnty}
