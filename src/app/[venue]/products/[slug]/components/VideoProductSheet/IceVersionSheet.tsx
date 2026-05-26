@@ -168,9 +168,18 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
             {product.productName}
           </h1>
           {product.productDescription && (
-            <p className='text-white/70 text-sm leading-snug mt-2 max-w-70'>
+            <p className='text-white/70 text-sm leading-snug mt-2 max-w-70 line-clamp-2'>
               {product.productDescription}
             </p>
+          )}
+          {productDetails && (
+            <button
+              type='button'
+              onClick={() => { haptic(25); setDetailOpen(true); }}
+              className='text-sm mt-1 pl-1 w-fit text-white underline underline-offset-[6px] decoration-white/50 decoration-1'
+            >
+              Подробнее
+            </button>
           )}
         </div>
 
@@ -179,16 +188,6 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
           selectedId={sizeId}
           onSelect={handleSelectSize}
         />
-
-        {productDetails && (
-          <button
-            type='button'
-            onClick={() => { haptic(25); setDetailOpen(true); }}
-            className='text-sm pl-1 w-fit text-white underline underline-offset-[6px] decoration-white/50 decoration-1'
-          >
-            Подробнее
-          </button>
-        )}
       </div>
 
       {/* Сетка группы */}

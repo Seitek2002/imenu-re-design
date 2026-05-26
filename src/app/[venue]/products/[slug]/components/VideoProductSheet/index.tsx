@@ -249,9 +249,18 @@ export default function VideoProductSheet() {
             {product.productName}
           </h1>
           {product.productDescription && (
-            <p className='text-white/70 text-sm mt-2 max-w-70'>
+            <p className='text-white/70 text-sm mt-2 max-w-70 line-clamp-2'>
               {product.productDescription}
             </p>
+          )}
+          {productDetails && (
+            <button
+              type='button'
+              onClick={handleDetailOpen}
+              className='text-sm mt-1 pl-1 w-fit text-white underline underline-offset-[6px] decoration-white/50 decoration-1'
+            >
+              Подробнее
+            </button>
           )}
         </div>
 
@@ -260,16 +269,6 @@ export default function VideoProductSheet() {
           selectedId={sizeId}
           onSelect={handleSelectSize}
         />
-
-        {productDetails && (
-          <button
-            type='button'
-            onClick={handleDetailOpen}
-            className='text-sm pl-1 w-fit text-white underline underline-offset-[6px] decoration-white/50 decoration-1'
-          >
-            Подробнее
-          </button>
-        )}
       </div>
 
       {/* Сетка группы (пока группа закрыта — пространство занято видео) */}
