@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Plus, Minus, Utensils, Check } from 'lucide-react';
+import { Plus, Minus, Utensils, Check, ChevronLeft } from 'lucide-react';
 import { useSearchParams, usePathname, useParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -1149,9 +1149,10 @@ const ProductContent = ({
               <button
                 type='button'
                 onClick={goBack}
-                className='h-14 px-5 rounded-2xl bg-[#F5F5F5] font-semibold text-[#21201F] hover:bg-[#ececec] active:scale-95 transition-all shrink-0'
+                aria-label={t('back')}
+                className='h-14 w-14 rounded-2xl bg-[#F5F5F5] text-[#21201F] hover:bg-[#ececec] active:scale-95 transition-all shrink-0 flex items-center justify-center'
               >
-                {t('back')}
+                <ChevronLeft size={22} strokeWidth={2.25} />
               </button>
               <div className='flex items-center gap-4 bg-[#F5F5F5] rounded-2xl px-4 py-3 h-14'>
                 <button
@@ -1185,9 +1186,10 @@ const ProductContent = ({
                 <button
                   type='button'
                   onClick={goBack}
-                  className='h-14 px-5 rounded-2xl bg-[#F5F5F5] font-semibold text-[#21201F] hover:bg-[#ececec] active:scale-95 transition-all shrink-0'
+                  aria-label={t('back')}
+                  className='h-14 w-14 rounded-2xl bg-[#F5F5F5] text-[#21201F] hover:bg-[#ececec] active:scale-95 transition-all shrink-0 flex items-center justify-center'
                 >
-                  {t('back')}
+                  <ChevronLeft size={22} strokeWidth={2.25} />
                 </button>
               )}
               <button

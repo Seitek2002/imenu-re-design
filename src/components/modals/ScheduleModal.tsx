@@ -46,11 +46,11 @@ export default function ScheduleModal({ isOpen, onClose }: Props) {
   return (
     <div className='fixed inset-0 z-100 flex items-end lg:items-center justify-center'>
       <div
-        className='absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-300'
+        className='absolute inset-0 bg-black/60 backdrop-blur-[2px] enter-fade'
         onClick={onClose}
       />
 
-      <div className='relative w-full lg:max-w-sm bg-white rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl z-10 animate-in slide-in-from-bottom-4 lg:zoom-in-95 duration-300'>
+      <div className='relative w-full lg:max-w-sm bg-white rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl z-10 enter-sheet'>
         <div className='flex justify-between items-center mb-6'>
           <div className='flex items-center gap-3'>
             <div className='w-10 h-10 bg-brand/10 rounded-full flex items-center justify-center text-brand'>

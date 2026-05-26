@@ -3,91 +3,80 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useVenueStore } from '@/store/venue'; // 1. Подключаем стор
-import WifiModal from '@/components/modals/WifiModal'; // 2. Подключаем модалку
+import { Wifi } from 'lucide-react';
+
+import { useVenueStore } from '@/store/venue';
+import WifiModal from '@/components/modals/WifiModal';
 import LanguageDropdown from '@/app/[venue]/components/LanguageDropdown';
-import wifiIcon from '@/assets/Header/wifi-icon.svg';
 
 const MainHeader = () => {
   const [isWifiOpen, setWifiOpen] = useState(false);
   const t = useTranslations('Wifi');
   const tHeader = useTranslations('Header');
 
-  // 3. Получаем данные заведения
   const venue = useVenueStore((state) => state.data);
   const tableNumber = useVenueStore((state) => state.tableNumber);
 
-  // 4. Проверяем наличие Wi-Fi (пока берем первую точку)
   const currentSpot = venue?.spots?.[0];
   const hasWifiInfo = !!(currentSpot?.wifiText || currentSpot?.wifiUrl);
 
-  // Фолбэк на случай, если данные еще не загрузились (скелетон или просто скрываем)
   if (!venue) return null;
 
   return (
     <>
-      <header className='header-main sticky top-0 z-30 flex flex-col gap-1.5 px-4 pt-2 pb-4 rounded-b-4xl bg-white shadow-sm'>
-        <span className='text-[10px] font-medium leading-none text-[#FF6B00] whitespace-nowrap'>
+      <div className='px-4 pt-3 pb-1'>
+        <span className='text-[10.5px] font-medium leading-none text-[#FF6B00] tracking-tight'>
           {tHeader('testMode')}
         </span>
-        <div className='flex justify-between items-center gap-3'>
-        <div className='header-left flex items-center min-w-0 flex-1'>
-          {/* ДИНАМИЧЕСКИЙ ЛОГОТИП */}
+      </div>
+
+      <header
+        className='header-main relative z-30 mx-1 mt-1 flex items-center justify-between gap-3 rounded-[22px] bg-white px-3.5 py-3 shadow-[0_1px_0_rgba(40,28,16,0.04),_0_8px_24px_-16px_rgba(40,28,16,0.10)]'
+      >
+        <div className='flex min-w-0 flex-1 items-center gap-2.5'>
           {venue.logo && (
-            <div className='relative w-10 h-10 shrink-0'>
+            <div className='relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#0E0E0F]'>
               <Image
                 src={venue.logo}
                 alt={venue.companyName}
                 fill
-                className='object-contain' // или object-cover, зависит от формы лого
+                className='object-contain'
                 priority
               />
             </div>
           )}
 
-          <div className='flex flex-col ml-2 overflow-hidden'>
-            {/* ВМЕСТО КАРТИНКИ "logoName" ТЕПЕРЬ ТЕКСТ.
-               API возвращает название текстом, а не картинкой.
-            */}
-            <h1 className='text-[#111111] font-bold text-lg leading-tight truncate'>
+          <div className='flex min-w-0 flex-col leading-tight'>
+            <h1 className='truncate text-[15px] font-extrabold tracking-wide text-[#111111]'>
               {venue.companyName}
             </h1>
-
-            <span className='font-cruinn font-bold text-[10px] leading-none text-[#111111] mt-0.5'>
+            <span className='font-cruinn mt-0.5 text-[10px] font-bold leading-none text-[#111111]'>
               Powered by iMenu.kg
             </span>
           </div>
         </div>
 
-        <div className='flex gap-2 shrink-0'>
+        <div className='flex shrink-0 items-center gap-2'>
           {tableNumber && (
-            <div className='flex items-center h-10 px-2.5 rounded-[14px] bg-[#FAFAFA] text-[12px] font-bold text-[#111111] whitespace-nowrap'>
+            <div className='inline-flex h-9 items-center rounded-[14px] bg-[#FAFAFA] px-2.5 text-[12px] font-bold whitespace-nowrap text-[#111111]'>
               Стол №{tableNumber}
             </div>
           )}
 
-          {/* ПОКАЗЫВАЕМ КНОПКУ ТОЛЬКО ЕСЛИ ЕСТЬ WI-FI */}
           {hasWifiInfo && (
-            <div className='group relative'>
-              <button
-                onClick={() => setWifiOpen(true)}
-                className='p-2.5 rounded-[14px] bg-[#FAFAFA] cursor-pointer active:scale-95 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none transition-all'
-                aria-label={t('aria')}
-              >
-                <Image src={wifiIcon} alt='wifi' width={20} height={20} />
-              </button>
-              <span className='hidden lg:block absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap bg-black/85 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50'>
-                {t('aria')}
-              </span>
-            </div>
+            <button
+              onClick={() => setWifiOpen(true)}
+              aria-label={t('aria')}
+              className='inline-flex h-9 w-9 items-center justify-center rounded-[14px] border border-[#ECE6DE] bg-white text-[#111111] transition-all hover:bg-gray-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand'
+            >
+              <Wifi size={18} strokeWidth={2.25} />
+            </button>
           )}
 
           <LanguageDropdown />
         </div>
-        </div>
       </header>
 
-      {/* МОДАЛКА ПОДКЛЮЧЕНА СЮДА */}
       <WifiModal
         isOpen={isWifiOpen}
         onClose={() => setWifiOpen(false)}

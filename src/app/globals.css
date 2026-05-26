@@ -151,3 +151,50 @@ body {
 .popover-backdrop {
   animation: popoverBackdrop 0.2s ease-out;
 }
+
+/* Enter-анимации модалок/попапов через @starting-style — без JS-костылей.
+   Браузерная поддержка: Chrome 117+, Safari 17.5+, Firefox 129+.
+   Старые браузеры просто покажут конечное состояние без анимации. */
+
+.enter-fade {
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+}
+@starting-style {
+  .enter-fade { opacity: 0; }
+}
+
+.enter-pop {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms ease-out,
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@starting-style {
+  .enter-pop { opacity: 0; transform: scale(0.95); }
+}
+
+.enter-sheet,
+.enter-sheet-sm {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease-out,
+              transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@starting-style {
+  .enter-sheet,
+  .enter-sheet-sm { opacity: 0; transform: translateY(16px); }
+}
+/* На брейкпойнте диалог центрируется → должен «всплывать», а не ехать снизу.
+   .enter-sheet переключается на lg (1024), .enter-sheet-sm — на sm (640),
+   в зависимости от того, где консьюмер меняет items-end → items-center. */
+@media (min-width: 1024px) {
+  @starting-style {
+    .enter-sheet { opacity: 0; transform: scale(0.95); }
+  }
+}
+@media (min-width: 640px) {
+  @starting-style {
+    .enter-sheet-sm { opacity: 0; transform: scale(0.95); }
+  }
+}
