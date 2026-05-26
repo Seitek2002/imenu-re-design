@@ -4,9 +4,9 @@
  * /[venue]/support — экран «Помощь». Три таба (Филиал/Заказ/Другое), под
  * каждый свой селектор, общая textarea + загрузка фото + кнопка «Отправить».
  *
- * Бэк-эндпоинта для тикетов пока нет — submit мокается через setTimeout и
- * показывает success-modal. Когда появится — заменить `submitMock` на
- * реальный mutation, остальное оставить как есть.
+ * Подключено к POST /v2/support/tickets/ (Kuma 2026-05-25 §2). Endpoint
+ * работает и без auth: бэк перезаписывает `phone` из JWT, но если токена
+ * нет — берёт переданное в body значение.
  */
 
 import { useMemo, useRef, useState } from 'react';
@@ -29,11 +29,20 @@ import { useVenueStore } from '@/store/venue';
 import { useClientStore } from '@/store/client';
 import { useOrdersInfiniteV2 } from '@/lib/api/queries';
 import type { OrderV2 } from '@/lib/order';
+import { API_V2_URL } from '@/lib/config';
+import { normalizePhoneForApi } from '@/lib/helpers/phone';
+import { getAccessTokenSnapshot } from '@/store/auth';
 
 type TabKey = 'venue' | 'order' | 'other';
 
 const MAX_PHOTOS = 5;
-const MAX_FILE_MB = 8;
+const MAX_FILE_MB = 5;
+
+interface PhotoItem {
+  url: string;
+  name: string;
+  file: File;
+}
 
 const TAB_ICONS: Record<TabKey, React.ElementType> = {
   venue: Store,
@@ -102,9 +111,7 @@ export default function SupportPage() {
   });
   const [openSelector, setOpenSelector] = useState(false);
   const [problem, setProblem] = useState('');
-  const [photos, setPhotos] = useState<Array<{ url: string; name: string }>>(
-    [],
-  );
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [successAt, setSuccessAt] = useState<Date | null>(null);
@@ -186,11 +193,15 @@ export default function SupportPage() {
         setError(t('errors.tooManyPhotos', { max: MAX_PHOTOS }));
         break;
       }
+      if (!f.type.startsWith('image/')) {
+        setError(t('errors.notImage'));
+        continue;
+      }
       if (f.size > MAX_FILE_MB * 1024 * 1024) {
         setError(t('errors.fileTooBig', { mb: MAX_FILE_MB }));
         continue;
       }
-      next.push({ url: URL.createObjectURL(f), name: f.name });
+      next.push({ url: URL.createObjectURL(f), name: f.name, file: f });
     }
     setPhotos(next);
     if (photoInputRef.current) photoInputRef.current.value = '';
@@ -215,12 +226,40 @@ export default function SupportPage() {
       setError(t('errors.problemRequired'));
       return;
     }
+    if (problem.length > 2000) {
+      setError(t('errors.problemTooLong'));
+      return;
+    }
+    if (!phone) {
+      setError(t('errors.phoneRequired'));
+      return;
+    }
     setSubmitting(true);
     try {
-      // TODO: заменить мок на реальный POST /v2/support/tickets/ когда
-      // эндпоинт появится. Сейчас просто симулируем сетевой запрос.
-      await new Promise((r) => setTimeout(r, 700));
-      setSuccessAt(new Date());
+      const fd = new FormData();
+      fd.append('kind', tab);
+      fd.append('reference', currentValue);
+      fd.append('problem', problem.trim());
+      fd.append('phone', normalizePhoneForApi(phone));
+      fd.append('venueSlug', venueSlug);
+      photos.forEach((p) => fd.append('photos', p.file));
+
+      const token = getAccessTokenSnapshot();
+      // Не выставляем Content-Type вручную — браузер сам подставит
+      // multipart/form-data с правильным boundary (Kuma §5.4).
+      const res = await fetch(`${API_V2_URL}/support/tickets/`, {
+        method: 'POST',
+        body: fd,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (res.status === 201) {
+        setSuccessAt(new Date());
+        return;
+      }
+
+      const body = await res.json().catch(() => ({}));
+      setError(humanizeSupportError(body, res.status, t));
     } catch {
       setError(t('errors.submitFailed'));
     } finally {
@@ -590,6 +629,33 @@ function SuccessSheet({
       </div>
     </div>
   );
+}
+
+type Translator = ReturnType<typeof useTranslations>;
+
+/**
+ * Преобразует DRF-ответ об ошибке в одну читаемую строку. Формат бэка:
+ * `{ "photos": ["Файл больше 5 MB."], "phone": ["..."] }` либо `{ "detail": "..." }`.
+ */
+function humanizeSupportError(
+  body: unknown,
+  httpStatus: number,
+  t: Translator,
+): string {
+  if (httpStatus >= 500) return t('errors.serverDown');
+  if (!body || typeof body !== 'object') return t('errors.submitFailed');
+
+  const rec = body as Record<string, unknown>;
+  if (typeof rec.detail === 'string') return rec.detail;
+
+  for (const [field, msgs] of Object.entries(rec)) {
+    if (Array.isArray(msgs) && msgs.length && typeof msgs[0] === 'string') {
+      return field === 'photos' || field === 'detail'
+        ? (msgs[0] as string)
+        : `${field}: ${msgs[0]}`;
+    }
+  }
+  return t('errors.submitFailed');
 }
 
 function formatShortDate(iso: string | undefined): string {

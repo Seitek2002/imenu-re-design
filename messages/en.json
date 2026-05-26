@@ -467,8 +467,11 @@
     "paymentStatus": {
       "not_required": "Not required",
       "pending": "Awaiting payment",
+      "processing": "Processing…",
       "paid": "Paid",
-      "failed": "Payment failed"
+      "failed": "Payment failed",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
     }
   },
   "OtpLogin": {
@@ -569,8 +572,12 @@
     "errors": {
       "selectRequired": "Pick one of the options",
       "problemRequired": "Describe the problem",
+      "problemTooLong": "Description is too long (max 2000 characters)",
+      "phoneRequired": "Sign in with your phone number to submit a ticket",
       "tooManyPhotos": "Up to {max} photos",
       "fileTooBig": "File larger than {mb} MB",
+      "notImage": "Images only",
+      "serverDown": "Server is unavailable. Try again later.",
       "submitFailed": "Couldn't send. Try again."
     }
   },

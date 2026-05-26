@@ -42,11 +42,40 @@ export interface OrderProduct {
 }
 
 /**
- * Контракт Kuma 2026-05-19 (frontend-api-changes-2026-05-19.md §1).
- * Enum закреплён на 4 значениях. Фронт просил ещё processing/expired/refunded/cancelled —
- * Kuma не добавил, см. KUMA_REQUEST_FOLLOWUP §1.3.
+ * Контракт Kuma 2026-05-25 (frontend-instructions-2026-05-25.md §1).
+ * Расширенный enum. Гарантия: после терминального события заказ уходит
+ * status=4 → status=7 (CANCELLED) либо status=0 (NEW). Поэтому не нужны
+ * ручные проверки `paymentExpiresAt > Date.now()` — cron каждые 5 мин
+ * сам переведёт зависший pending в `expired`.
+ *
+ * `processing` — зарезервирован под 3DS/отложенные платежи, бэк его пока
+ * не выставляет; в UI безопасно мапить как `pending`.
  */
-export type PaymentStatus = 'not_required' | 'pending' | 'paid' | 'failed';
+export type PaymentStatus =
+  | 'pending'
+  | 'processing'
+  | 'paid'
+  | 'failed'
+  | 'expired'
+  | 'cancelled'
+  | 'not_required';
+
+export type PaymentBadgeTone = 'success' | 'warning' | 'danger' | 'muted' | 'info';
+
+/**
+ * Маппинг paymentStatus → tone бэйджа. `not_required` (наличные) и
+ * `paid` для активных списков обычно не показывают — но решает вызов.
+ * `processing` подаётся как info, остальные — см. таблицу в письме Kuma.
+ */
+export const PAYMENT_STATUS_TONE: Record<PaymentStatus, PaymentBadgeTone> = {
+  pending: 'warning',
+  processing: 'info',
+  paid: 'success',
+  failed: 'danger',
+  expired: 'muted',
+  cancelled: 'muted',
+  not_required: 'muted',
+};
 
 /**
  * OrderV2 = OrderList с проводов. Сверено вживую на проде 2026-05-20:

@@ -247,13 +247,13 @@ export default function HistoryPage() {
           const subtitle = subtitleFor(o);
           const statusLabel = o.statusText || STATUS_LABEL[o.status];
           const statusTone = STATUS_TONE[o.status];
-          // Маршрутизация: pending → /order-status (там есть оплата и countdown).
-          // Не проверяем здесь paymentExpiresAt vs Date.now() — Date.now() в
-          // render нарушает react-hooks/purity, и сама /order-status корректно
-          // показывает expired-state когда время вышло.
+          // Pending = живой инвойс. В 6-мин окне до срабатывания cron'а
+          // (Kuma 2026-05-25 §5.1) status может остаться 4, но paymentStatus
+          // уже expired/failed/cancelled — такие в /order-status вести нельзя
+          // (там paymentUrl=null, юзер увидит экран без действий).
           const isPending =
-            o.status === OrderStatus.PendingPayment ||
-            o.paymentStatus === 'pending';
+            o.status === OrderStatus.PendingPayment &&
+            (o.paymentStatus == null || o.paymentStatus === 'pending');
           const href = isPending
             ? `/${venue}/order-status/${o.id}`
             : `/${venue}/history/${o.id}`;
@@ -339,9 +339,7 @@ export default function HistoryPage() {
                     </>
                   )}
 
-                  {isPending && (
-                    <ResumePaymentRow expiresAt={o.paymentExpiresAt} />
-                  )}
+                  {isPending && o.paymentUrl && <ResumePaymentRow />}
                 </div>
                 <ChevronRight size={20} className='text-[#C4C4C4] mt-9' />
               </div>
@@ -363,38 +361,11 @@ export default function HistoryPage() {
   );
 }
 
-function ResumePaymentRow({ expiresAt }: { expiresAt?: string | null }) {
-  const target = expiresAt ? new Date(expiresAt).getTime() : NaN;
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    if (Number.isNaN(target)) return;
-    // первый тик через секунду — countdown стартует чуть позже, зато не
-    // дёргаем setState синхронно в effect (react-hooks/set-state-in-effect).
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [target]);
-
-  const remaining = Number.isNaN(target) || now === null ? null : target - now;
-  const expired = remaining != null && remaining <= 0;
-
-  let timeText = '';
-  if (remaining != null && !expired) {
-    const total = Math.floor(remaining / 1000);
-    const m = Math.floor(total / 60);
-    const s = total % 60;
-    timeText = ` · ${m}:${s.toString().padStart(2, '0')}`;
-  }
-
+function ResumePaymentRow() {
   return (
-    <div
-      className={`mt-3 inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-[13px] font-semibold ${
-        expired
-          ? 'bg-[#FDECEC] text-[#DC2626]'
-          : 'bg-[#21201F] text-white'
-      }`}
-    >
+    <div className='mt-3 inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-[13px] font-semibold bg-[#21201F] text-white'>
       <CreditCard size={16} strokeWidth={2.2} />
-      <span>{expired ? 'Время оплаты истекло' : `Продолжить оплату${timeText}`}</span>
+      <span>Продолжить оплату</span>
     </div>
   );
 }

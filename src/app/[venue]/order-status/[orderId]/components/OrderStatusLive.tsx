@@ -64,7 +64,6 @@ export default function OrderStatusLive({ initialOrder }: Props) {
       {isPendingPayment && (
         <PaymentResumeAction
           orderId={order.id}
-          expiresAt={order.paymentExpiresAt}
           paymentUrl={order.paymentUrl}
         />
       )}
