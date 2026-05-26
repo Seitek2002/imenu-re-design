@@ -80,9 +80,9 @@ export function PreferenceChipButton({
         `}
       >
         <div className='flex-1 flex items-center justify-center w-full'>
-          <Icon size={28} strokeWidth={1.5} className='text-[#21201F]' />
+          <Icon size={28} strokeWidth={1.5} className='text-white' />
         </div>
-        <span className='text-[11px] font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
+        <span className='text-[11px] font-semibold text-white text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
           {selectedOptionLabel ?? label}
         </span>
       </div>
