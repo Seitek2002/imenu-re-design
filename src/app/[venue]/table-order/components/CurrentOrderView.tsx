@@ -685,14 +685,17 @@ function TicketCard({
   actionButton,
 }: TicketCardProps) {
   const tt = useTranslations('TableOrder');
+  // Drop the dashed stripe/border on draft so the POS ticket («Оплатить стол»)
+  // dominates visually. Draft is communicated through its statusTone badge
+  // и пунктирной кнопки-комментария, отдельного контура карточке не нужно.
   const stripeCls =
     stripe === 'brand'
       ? 'bg-brand'
       : stripe === 'neutral'
         ? 'bg-[#9CA3AF]'
-        : 'bg-transparent border-y border-dashed border-brand/40';
+        : 'bg-[#E7E7E7]';
 
-  const wrapperBorder = stripe === 'dashed' ? 'border-2 border-dashed border-brand/30' : '';
+  const wrapperBorder = '';
 
   const toneCls =
     statusTone === 'progress'

@@ -233,79 +233,81 @@ export default function PosPaymentModal({
             </div>
           </div>
 
-          {/* Bonuses */}
-          {availableBonuses > 0 && (
-            <div className='bg-[#F5F5F5] rounded-xl py-3 px-4'>
-              <div className='flex items-center justify-between'>
-                <div className='flex flex-col'>
-                  <span className='text-sm font-bold text-[#111] leading-tight'>
-                    {t('payment.bonusLabel')}
-                  </span>
-                  <span className='text-[10px] text-gray-500'>
-                    {t('payment.bonusAvailableShort', { amount: availableBonuses })}
-                  </span>
-                </div>
-                <button
-                  type='button'
-                  onClick={handleBonusToggle}
-                  disabled={maxDeductible <= 0}
-                  aria-label={t('payment.bonusLabel')}
-                  className={`relative w-10 h-6 rounded-full transition-colors duration-300 disabled:opacity-50 ${
-                    bonusUsed ? 'bg-green-500' : 'bg-gray-200'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ${
-                      bonusUsed ? 'translate-x-4' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-              {bonusUsed && maxDeductible > 0 && (
-                <div className='mt-3 border-t border-dashed border-gray-200 pt-2'>
-                  <input
-                    type='range'
-                    min={0}
-                    max={maxDeductible}
-                    step={1}
-                    value={bonusToUse}
-                    onChange={(e) => setBonusValue(Number(e.target.value))}
-                    className='w-full accent-brand cursor-pointer'
-                  />
-                  <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
-                    <span>{t('payment.bonusDiscount')}</span>
-                    <span>− {bonusToUse} {t('currency')}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Summary */}
-          <div className='bg-[#FAFAFA] border border-[#E7E7E7] rounded-xl p-3 text-sm flex flex-col gap-1.5'>
+          {/* Summary — повторяет паттерн OrderSummary из корзины: строки
+              breakdown'а сверху, бонусный блок внутри (toggle + slider),
+              «Итого» отделено разделителем. Один контейнер вместо двух
+              отдельных, чтобы визуально читалось как единый чек. */}
+          <div className='bg-[#FAFAFA] border border-[#E7E7E7] rounded-xl p-3 text-sm flex flex-col gap-2'>
             <div className='flex justify-between text-[#6B6B6B]'>
               <span>{t('payment.checkSum')}</span>
-              <span>
+              <span className='tabular-nums'>
                 {remaining} {t('currency')}
               </span>
             </div>
             {bonusToUse > 0 && (
               <div className='flex justify-between text-brand'>
                 <span>{t('payment.bonusApplied')}</span>
-                <span>
+                <span className='tabular-nums'>
                   −{bonusToUse} {t('currency')}
                 </span>
               </div>
             )}
-            <div className='flex justify-between font-bold text-[#111111] pt-1.5 border-t border-[#E7E7E7]'>
+
+            {availableBonuses > 0 && (
+              <div className='bg-white rounded-lg p-3 border border-brand/20'>
+                <div className='flex items-center justify-between'>
+                  <div className='flex flex-col'>
+                    <span className='text-sm font-bold text-[#111] leading-tight'>
+                      {t('payment.bonusLabel')}
+                    </span>
+                    <span className='text-[10px] text-gray-500'>
+                      {t('payment.bonusAvailableShort', { amount: availableBonuses })}
+                    </span>
+                  </div>
+                  <button
+                    type='button'
+                    onClick={handleBonusToggle}
+                    disabled={maxDeductible <= 0}
+                    aria-label={t('payment.bonusLabel')}
+                    className={`relative w-10 h-6 rounded-full transition-colors duration-300 disabled:opacity-50 ${
+                      bonusUsed ? 'bg-brand' : 'bg-gray-200'
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ${
+                        bonusUsed ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {bonusUsed && maxDeductible > 0 && (
+                  <div className='mt-3 border-t border-dashed border-gray-200 pt-2'>
+                    <input
+                      type='range'
+                      min={0}
+                      max={maxDeductible}
+                      step={1}
+                      value={bonusToUse}
+                      onChange={(e) => setBonusValue(Number(e.target.value))}
+                      className='w-full accent-brand cursor-pointer'
+                    />
+                    <div className='mt-1 flex justify-between text-xs text-brand font-medium'>
+                      <span>{t('payment.bonusDiscount')}</span>
+                      <span>− {bonusToUse} {t('currency')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className='flex justify-between font-bold text-[#111111] pt-2 border-t border-[#E7E7E7]'>
               <span>{t('payment.toPay')}</span>
-              <span>
+              <span className='tabular-nums'>
                 {finalToPayStr} {t('currency')}
               </span>
             </div>
+            <BonusAccrualBadge total={finalToPay} className='mt-1' />
           </div>
-
-          <BonusAccrualBadge total={finalToPay} />
 
           {error && (
             <div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3'>
