@@ -64,13 +64,13 @@ export default function PaymentResumeAction({ orderId, paymentUrl: paymentUrlPro
         type='button'
         onClick={handleCancel}
         disabled={cancelMutation.isPending}
-        className='w-full h-10 rounded-xl text-[#6B6B6B] text-sm font-medium active:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5'
+        className='w-full h-10 rounded-xl text-red-600 text-sm font-semibold active:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5'
       >
         {cancelMutation.isPending && <Loader2 size={14} className='animate-spin' />}
         {t('cancelResume')}
       </button>
       {cancelError && (
-        <p className='text-center text-xs text-red-500'>{cancelError}</p>
+        <p className='text-center text-xs text-red-600'>{cancelError}</p>
       )}
     </div>
   );
