@@ -398,9 +398,9 @@ export default function SupportPage() {
         <SuccessSheet
           sentAt={successAt}
           onViewAll={() => {
-            // TODO: страница «Мои заявки» — когда появится эндпоинт. Пока
-            // возвращаем в профиль.
-            router.push(`/${venueSlug}/profile`);
+            // /support/my пока на моках — реальный список ждёт подключения
+            // GET /v2/support/tickets/ (Kuma 2026-05-25 §2, P1).
+            router.push(`/${venueSlug}/support/my`);
           }}
           onClose={() => {
             setSelected({ venue: null, order: null, other: null });
