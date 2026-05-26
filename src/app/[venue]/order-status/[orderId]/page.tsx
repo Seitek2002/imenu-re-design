@@ -3,7 +3,6 @@ import PaymentSuccessOverlay from './components/PaymentSuccessOverlay';
 import { OrderV2 } from '@/lib/order';
 import StatusHeader from './components/StatusHeader';
 import OrderNotFound from './components/OrderNotFound';
-import OrderSaver from './components/OrderSaver';
 import { API_V2_URL } from '@/lib/config';
 import { getLocale } from 'next-intl/server';
 import type { Locale } from '@/lib/locale';
@@ -40,7 +39,6 @@ export default async function OrderStatusPage({ params }: Props) {
   return (
     <main className='min-h-svh bg-[#F8F6F7] pb-10'>
       <StatusHeader venueSlug={venue} orderId={order.id} />
-      <OrderSaver orderId={order.id} />
       <PaymentSuccessOverlay orderId={order.id} />
 
       <div className='px-4 pt-2'>

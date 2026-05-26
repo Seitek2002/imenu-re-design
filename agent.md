@@ -144,7 +144,6 @@ src/
     basket.ts       # localStorage: позиции корзины + venueSlug-скоуп; ключ строки = productId|flatModId|groupSelections (см. buildKey)
     checkout.ts     # localStorage: phone, countryId, address, deliveryLat/Lng, needUtensils, комментарии
     bonus.ts        # включение списания бонусов + сумма
-    active-order.ts # активный заказ для бэйджа/баннера
     client.ts       # клиент Poster
     product.ts      # выбранный продукт для ProductSheet
     ui.ts / ui-floating.ts # UI-флаги, открытость шторок

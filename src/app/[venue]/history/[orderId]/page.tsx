@@ -6,7 +6,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { API_V2_URL } from '@/lib/config';
 import type { Locale } from '@/lib/locale';
 import { type OrderV2 } from '@/lib/order';
-import { OrderStatus, ServiceMode } from '@/types/api';
+import { ServiceMode } from '@/types/api';
 import RepeatOrderButton from './RepeatOrderButton';
 import PayNowButton from './PayNowButton';
 
@@ -163,15 +163,7 @@ export default async function OrderDetailPage({ params }: Props) {
 
         <DetailsBlock order={order} />
 
-        {order.paymentStatus === 'pending' &&
-          order.paymentUrl &&
-          order.status !== OrderStatus.Cancelled &&
-          order.status !== OrderStatus.Completed && (
-            <PayNowButton
-              paymentUrl={order.paymentUrl}
-              expiresAt={order.paymentExpiresAt}
-            />
-          )}
+        {order.paymentUrl && <PayNowButton paymentUrl={order.paymentUrl} />}
 
         <RepeatOrderButton order={order} />
       </div>

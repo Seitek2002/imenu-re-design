@@ -20,6 +20,7 @@ import { OrderStatus, Product, Promotion } from '@/types/api';
 import { normalizePhoneForApi } from '../helpers/phone';
 import type { Locale } from '../locale';
 import { getAccessTokenSnapshot } from '@/store/auth';
+import { gcPendingPaymentsForOrders } from '../payment-link-store';
 
 const API_BASE = API_V2_URL;
 
@@ -75,7 +76,9 @@ async function fetchOrders(
   });
 
   if (!res.ok) throw new Error('Failed to fetch orders');
-  return res.json();
+  const data: OrdersResponse = await res.json();
+  gcPendingPaymentsForOrders(data.results);
+  return data;
 }
 
 export const useOrdersV2 = (params: OrdersParams) => {
@@ -98,6 +101,10 @@ export const useOrdersV2 = (params: OrdersParams) => {
     // Не грузим, если телефона нет
     enabled: !!phone && phone.length > 5,
     refetchInterval: 15000, // Обновляем каждые 15 сек
+    // Kuma 2026-05-25 §5.1: refetch на возврат во вкладку — главный
+    // механизм, через который зависший pending обновляется в expired
+    // быстрее cron-окна (~6 мин).
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -115,7 +122,9 @@ async function fetchOrdersByUrl(
     headers: buildHeaders(locale),
   });
   if (!res.ok) throw new Error('Failed to fetch orders');
-  return res.json();
+  const data: OrdersResponse = await res.json();
+  gcPendingPaymentsForOrders(data.results);
+  return data;
 }
 
 function buildOrdersUrl(params: OrdersParams): string {
@@ -151,6 +160,7 @@ export const useOrdersInfiniteV2 = (params: OrdersParams) => {
     getNextPageParam: (last) => last.next ?? undefined,
     enabled: !!phone && phone.length > 5,
     refetchInterval: 15000,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -163,7 +173,9 @@ async function fetchOrderById(
     headers: buildHeaders(locale),
   });
   if (!res.ok) throw new Error('Failed to fetch order');
-  return res.json();
+  const data: OrderV2 = await res.json();
+  gcPendingPaymentsForOrders([data]);
+  return data;
 }
 
 export const useOrderByIdV2 = (
@@ -321,10 +333,11 @@ export const useCreateOrderV2 = () => {
   });
 };
 
-// --- /api/v2/orders/{id}/cancel/ (Kuma 2026-05-17) ---
+// --- /api/v2/orders/{id}/cancel/ (Kuma 2026-05-17, обновлено 2026-05-25 §1.6) ---
 // Работает только при status=4 (PendingPayment).
-// 200 → заказ отменён; 400 → нельзя отменить в текущем статусе; 404 → не найден.
-async function cancelOrderApi(orderId: number, locale: Locale): Promise<void> {
+// 200 → возвращает заказ с paymentStatus='cancelled', status=7;
+// 400 → нельзя отменить в текущем статусе; 404 → не найден.
+async function cancelOrderApi(orderId: number, locale: Locale): Promise<OrderV2> {
   const res = await fetch(`${API_BASE}/orders/${orderId}/cancel/`, {
     method: 'POST',
     headers: buildHeaders(locale),
@@ -333,6 +346,7 @@ async function cancelOrderApi(orderId: number, locale: Locale): Promise<void> {
     const data = await res.json().catch(() => ({}));
     throw new Error(data?.detail ?? `Error ${res.status}`);
   }
+  return res.json();
 }
 
 export const useCancelOrderV2 = () => {
@@ -340,8 +354,11 @@ export const useCancelOrderV2 = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (orderId: number) => cancelOrderApi(orderId, locale),
-    onSuccess: (_data, orderId) => {
-      queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+    onSuccess: (cancelled, orderId) => {
+      queryClient.setQueryData(['order', orderId, locale], cancelled);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders-infinite'] });
+      gcPendingPaymentsForOrders([cancelled]);
     },
   });
 };

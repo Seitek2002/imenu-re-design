@@ -76,6 +76,15 @@ export default function VenueInitializer({
     const color = venue?.colorTheme || '#b45309';
     document.documentElement.style.setProperty('--brand-color', color);
 
+    // Разовая зачистка мёртвого ключа: до 2026-05-26 был store
+    // `imenu-active-order` (writer-only через OrderSaver), нигде не
+    // читался. Стор удалён — подчищаем след у вернувшихся юзеров.
+    try {
+      localStorage.removeItem('imenu-active-order');
+    } catch {
+      // SSR / private-browsing guard
+    }
+
     initialized.current = true;
   }, [venue, tableId, spotId, isKioskMode, setContext, currentSlug]);
 

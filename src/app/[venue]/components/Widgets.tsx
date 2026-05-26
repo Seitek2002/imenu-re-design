@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -41,10 +41,16 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
     includeUnpaid: true,
   });
 
+  // Cron бэка переводит зависший pending → expired/cancelled с лагом до ~6 мин
+  // (Kuma 2026-05-25 §5.1), поэтому дублируем фильтр по paymentStatus, чтобы
+  // не показывать «ожидает оплату» на уже терминальных заказах в это окно.
   const activeOrders = ordersData?.results?.filter(
     (o) =>
       o.status !== OrderStatus.Completed &&
-      o.status !== OrderStatus.Cancelled,
+      o.status !== OrderStatus.Cancelled &&
+      o.paymentStatus !== 'expired' &&
+      o.paymentStatus !== 'failed' &&
+      o.paymentStatus !== 'cancelled',
   ) ?? [];
 
   // Самый срочный = с максимальным прогрессом (ближе всего к готовности).
@@ -191,31 +197,6 @@ function StatusIcon({ status, serviceMode, tone }: { status: number; serviceMode
   return <Clock size={20} className={cls} strokeWidth={2.5} />;
 }
 
-function formatRemaining(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-function PaymentTimer({ expiresAt }: { expiresAt: string }) {
-  const target = new Date(expiresAt).getTime();
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (Number.isNaN(target)) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [target]);
-  if (Number.isNaN(target)) return null;
-  const remaining = target - now;
-  const expired = remaining <= 0;
-  return (
-    <span className={`text-[10px] font-bold leading-none ${expired ? 'text-red-600' : 'text-amber-700'}`}>
-      {expired ? '0:00' : formatRemaining(remaining)}
-    </span>
-  );
-}
-
 function ActiveOrderWidget({
   featuredOrder,
   extraCount,
@@ -224,7 +205,7 @@ function ActiveOrderWidget({
 }: ActiveOrderWidgetProps) {
   const ts = useTranslations('OrderStatus');
   const isMulti = extraCount > 0;
-  const { status, serviceMode, paymentExpiresAt } = featuredOrder;
+  const { status, serviceMode } = featuredOrder;
   const tone = pickTone(status);
   const progress = calculateOrderProgress(status, serviceMode);
   const showProgress = tone === 'brand' || tone === 'green';
@@ -271,12 +252,6 @@ function ActiveOrderWidget({
       <div className={`font-bold text-[11px] leading-tight ${TONE_TEXT[tone]}`}>
         {statusText}
       </div>
-      {status === OrderStatus.PendingPayment && paymentExpiresAt && (
-        <div className='mt-1 flex items-center justify-center gap-1'>
-          <Clock size={10} className='text-amber-700' strokeWidth={2.5} />
-          <PaymentTimer expiresAt={paymentExpiresAt} />
-        </div>
-      )}
     </>
   );
 

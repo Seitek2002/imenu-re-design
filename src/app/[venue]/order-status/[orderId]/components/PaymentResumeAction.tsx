@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CreditCard, Loader2 } from 'lucide-react';
 import {
@@ -11,44 +11,29 @@ import { useCancelOrderV2 } from '@/lib/api/queries';
 
 interface Props {
   orderId: number;
-  /** ISO-8601 from order.paymentExpiresAt; if null, treated as still valid. */
-  expiresAt?: string | null;
   /** Payment URL coming from the backend (order.paymentUrl). Used as a fallback when no link is cached locally. */
   paymentUrl?: string | null;
 }
 
-function isExpired(expiresAt?: string | null): boolean {
-  if (!expiresAt) return false;
-  const target = new Date(expiresAt).getTime();
-  if (Number.isNaN(target)) return false;
-  return target <= Date.now();
-}
-
-export default function PaymentResumeAction({ orderId, expiresAt, paymentUrl: paymentUrlProp }: Props) {
+export default function PaymentResumeAction({ orderId, paymentUrl: paymentUrlProp }: Props) {
   const t = useTranslations('OrderStatus');
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(paymentUrlProp ?? null);
-  const [, setNow] = useState(() => Date.now());
+  // Бэк — источник правды (Kuma 2026-05-24 §3 / 2026-05-25 §1.4):
+  // paymentUrl выживает через смену устройства и сам становится null
+  // на любом терминальном статусе. На sessionStorage падаем только если
+  // бэк его ещё не вернул (e.g. сразу после createOrder).
+  const fromBackend =
+    paymentUrlProp ??
+    (typeof window !== 'undefined'
+      ? getPendingPayment(orderId)?.paymentUrl
+      : null) ??
+    null;
+  const [cancelled, setCancelled] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
 
   const cancelMutation = useCancelOrderV2();
 
-  useEffect(() => {
-    // Бэк — источник правды (Kuma 2026-05-24 §3): order.paymentUrl выживает
-    // через смену устройства и очистку localStorage. На localStorage падаем
-    // только если бэк его ещё не вернул (e.g. сразу после createOrder, до
-    // первого рефетча).
-    const saved = getPendingPayment(orderId);
-    setPaymentUrl(paymentUrlProp ?? saved?.paymentUrl ?? null);
-  }, [orderId, paymentUrlProp]);
-
-  useEffect(() => {
-    if (!expiresAt) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [expiresAt]);
-
+  const paymentUrl = cancelled ? null : fromBackend;
   if (!paymentUrl) return null;
-  if (isExpired(expiresAt)) return null;
 
   const handleResume = () => {
     window.location.href = paymentUrl;
@@ -59,7 +44,7 @@ export default function PaymentResumeAction({ orderId, expiresAt, paymentUrl: pa
     try {
       await cancelMutation.mutateAsync(orderId);
       clearPendingPayment(orderId);
-      setPaymentUrl(null);
+      setCancelled(true);
     } catch (err) {
       setCancelError(err instanceof Error ? err.message : t('cancelError'));
     }
