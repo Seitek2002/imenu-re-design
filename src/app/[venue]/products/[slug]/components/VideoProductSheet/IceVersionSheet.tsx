@@ -131,7 +131,7 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
   return (
     <div
       className={`
-        absolute inset-0 z-40 flex flex-col text-white overflow-hidden
+        absolute inset-0 z-40 flex flex-col text-white overflow-hidden pb-6
         transition-transform duration-500
         ${open ? 'translate-y-0' : 'translate-y-full'}
       `}
@@ -190,54 +190,58 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
         />
       </div>
 
-      {/* Сетка группы */}
-      <div className='relative z-10 flex-1 min-h-0 px-4 py-2'>
-        {expandedGroup && (
-          <GroupGrid
-            group={expandedGroup}
-            counts={counts}
-            onChange={setCounts}
-            columns={groupMeta?.[expandedGroup.id]?.columns}
-            darkSelected={groupMeta?.[expandedGroup.id]?.darkSelected}
-            segmentPairs={groupMeta?.[expandedGroup.id]?.segmentPairs}
-          />
-        )}
-      </div>
-
-      {/* Нижний ряд чипов — чип возврата всегда виден */}
-      <div className='relative z-10 shrink-0'>
-        <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
-
-          <VariantReturnChip
-            variantType={iceProduct?.variantType ?? null}
-            label={variantChip?.label ?? 'Назад'}
-            onReturn={() => { haptic(25); onClose(); }}
-          />
-
-          {groups.length > 0 && (
-            <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
-          )}
-
-          {groups.map((g) => (
-            <GroupChip
-              key={g.id}
-              group={g}
-              icon={chipIcons[g.name]}
-              active={expandedGroupId === g.id}
-              selectedCount={groupCounts[g.id] ?? 0}
-              selectedItem={groupSelectedItems[g.id]}
-              onClick={() => handleToggleGroup(g.id)}
+      {/* Сетка группы + нижняя панель */}
+      <div className='flex-1 flex flex-col min-h-0'>
+        <div className='relative flex-1 flex flex-col justify-end z-10 px-4 py-2 min-h-0'>
+          {expandedGroup && (
+            <GroupGrid
+              group={expandedGroup}
+              counts={counts}
+              onChange={setCounts}
+              columns={groupMeta?.[expandedGroup.id]?.columns}
+              darkSelected={groupMeta?.[expandedGroup.id]?.darkSelected}
+              segmentPairs={groupMeta?.[expandedGroup.id]?.segmentPairs}
             />
-          ))}
+          )}
+        </div>
+
+        <div className='justify-end'>
+          {/* Нижний ряд чипов — чип возврата всегда виден */}
+          <div className='relative z-10 shrink-0'>
+            <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
+
+              <VariantReturnChip
+                variantType={iceProduct?.variantType ?? null}
+                label={variantChip?.label ?? 'Назад'}
+                onReturn={() => { haptic(25); onClose(); }}
+              />
+
+              {groups.length > 0 && (
+                <div className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5' aria-hidden='true' />
+              )}
+
+              {groups.map((g) => (
+                <GroupChip
+                  key={g.id}
+                  group={g}
+                  icon={chipIcons[g.name]}
+                  active={expandedGroupId === g.id}
+                  selectedCount={groupCounts[g.id] ?? 0}
+                  selectedItem={groupSelectedItems[g.id]}
+                  onClick={() => handleToggleGroup(g.id)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <BottomBar
+            qnty={qnty}
+            onQntyChange={(n) => { haptic(25); setQnty(n); }}
+            totalPrice={totalPrice}
+            onAdd={() => { haptic(60); onClose(); }}
+          />
         </div>
       </div>
-
-      <BottomBar
-        qnty={qnty}
-        onQntyChange={(n) => { haptic(25); setQnty(n); }}
-        totalPrice={totalPrice}
-        onAdd={() => { haptic(60); onClose(); }}
-      />
 
       {productDetails && (
         <ProductDetailSheet
