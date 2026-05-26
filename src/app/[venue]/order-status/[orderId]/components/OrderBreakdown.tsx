@@ -52,7 +52,7 @@ export default function OrderBreakdown({ order }: { order: OrderV2 }) {
       value: `${fmtMoney(Number(order.servicePrice), locale)} ${currency}`,
     });
   }
-  if (order.deliveryPrice != null) {
+  if (order.serviceMode === 3 && order.deliveryPrice != null) {
     const n = Number(order.deliveryPrice);
     rows.push({
       label: t('breakdown.deliveryPrice'),
