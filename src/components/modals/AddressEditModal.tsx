@@ -131,10 +131,10 @@ function Form({
   return (
     <div className='fixed inset-0 z-60 flex items-stretch justify-center'>
       <div
-        className='absolute inset-0 bg-black/40'
+        className='absolute inset-0 bg-black/40 enter-fade'
         onClick={() => !busy && onClose()}
       />
-      <div className='relative bg-white w-full max-w-175 mx-auto flex flex-col animate-in slide-in-from-bottom-4 duration-300'>
+      <div className='relative bg-white w-full max-w-175 mx-auto flex flex-col enter-sheet'>
         <header className='sticky top-0 z-10 bg-white px-4 h-14 flex items-center border-b border-[#F1EEEB]'>
           <button
             type='button'

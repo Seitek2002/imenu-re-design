@@ -140,8 +140,8 @@ export default function ScanPage() {
 
       {/* Модалка ошибки (Невалидный QR) */}
       {errorModalOpen && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200'>
-          <div className='bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl scale-100 animate-in zoom-in-95 duration-200'>
+        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm enter-fade'>
+          <div className='bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl enter-pop'>
             <div className='flex justify-between items-start mb-4'>
               <div className='w-12 h-12 bg-red-100 rounded-full flex items-center justify-center'>
                 <AlertCircle className='w-6 h-6 text-red-600' />

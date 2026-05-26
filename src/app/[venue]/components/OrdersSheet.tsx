@@ -82,10 +82,10 @@ export default function OrdersSheet({
   return createPortal(
     <div className='fixed inset-0 z-100 flex items-end sm:items-center justify-center'>
       <div
-        className='absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200'
+        className='absolute inset-0 bg-black/40 backdrop-blur-sm enter-fade'
         onClick={onClose}
       />
-      <div className='relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-5 pb-8 shadow-2xl z-10 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200'>
+      <div className='relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-5 pb-8 shadow-2xl z-10 enter-sheet-sm'>
         <div className='flex justify-between items-center mb-4'>
           <h3 className='font-bold text-lg text-gray-900'>
             {t('activeOrdersTitle', { count: orders.length })}

@@ -51,7 +51,7 @@ export default function ModalPortal({
     >
       {/* Backdrop */}
       <div
-        className='absolute inset-0 bg-black/50 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-200'
+        className='absolute inset-0 bg-black/50 backdrop-blur-[2px] enter-fade'
         onClick={() => {
           if (navigator.vibrate) navigator.vibrate(50);
           onClose();
@@ -59,7 +59,7 @@ export default function ModalPortal({
       />
 
       {/* Card + Animation */}
-      <div className='relative bg-white rounded-3xl w-full max-w-sm max-h-[85vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 fade-in duration-200'>
+      <div className='relative bg-white rounded-3xl w-full max-w-sm max-h-[85vh] overflow-y-auto shadow-2xl enter-pop'>
         {children}
       </div>
     </div>,

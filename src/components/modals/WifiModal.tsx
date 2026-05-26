@@ -34,12 +34,12 @@ export default function WifiModal({ isOpen, onClose, text, url }: Props) {
     <div className='fixed inset-0 z-60 flex items-end lg:items-center justify-center'>
       {/* Backdrop */}
       <div
-        className='absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-300'
+        className='absolute inset-0 bg-black/60 backdrop-blur-[2px] enter-fade'
         onClick={onClose}
       />
 
       {/* Content */}
-      <div className='relative bg-white w-full lg:max-w-sm rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl z-10 animate-in slide-in-from-bottom-4 lg:zoom-in-95 duration-300'>
+      <div className='relative bg-white w-full lg:max-w-sm rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl z-10 enter-sheet'>
         {/* Иконка Wi-Fi сверху */}
         <div className='w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4'>
           <svg

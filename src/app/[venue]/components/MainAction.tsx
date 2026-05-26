@@ -150,14 +150,14 @@ export default function MainAction({ venueSlug }: Props) {
       </div>
 
       {showConfirm && (
-        <div className='fixed inset-0 z-100 flex items-center justify-center px-4 animate-in fade-in duration-200'>
+        <div className='fixed inset-0 z-100 flex items-center justify-center px-4'>
           <div
-            className='absolute inset-0 bg-black/40 backdrop-blur-sm'
+            className='absolute inset-0 bg-black/40 backdrop-blur-sm enter-fade'
             onClick={() => !isLoading && setShowConfirm(false)}
           />
 
           {/* Карточка */}
-          <div className='relative w-full max-w-xs bg-white rounded-[30px] p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center'>
+          <div className='relative w-full max-w-xs bg-white rounded-[30px] p-6 shadow-2xl enter-pop text-center'>
             <div className='w-16 h-16 bg-brand/10 text-brand rounded-full flex items-center justify-center mx-auto mb-4'>
               <BellRing size={32} />
             </div>
@@ -193,13 +193,13 @@ export default function MainAction({ venueSlug }: Props) {
       )}
 
       {showSuccess && (
-        <div className='fixed inset-0 z-100 flex items-center justify-center px-4 animate-in fade-in duration-200'>
+        <div className='fixed inset-0 z-100 flex items-center justify-center px-4'>
           <div
-            className='absolute inset-0 bg-black/40 backdrop-blur-sm'
+            className='absolute inset-0 bg-black/40 backdrop-blur-sm enter-fade'
             onClick={() => setShowSuccess(false)}
           />
 
-          <div className='relative w-full max-w-xs bg-white rounded-[30px] p-6 shadow-2xl animate-in zoom-in-95 duration-200 text-center'>
+          <div className='relative w-full max-w-xs bg-white rounded-[30px] p-6 shadow-2xl enter-pop text-center'>
             <div className='w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4'>
               <CheckCircle size={32} />
             </div>

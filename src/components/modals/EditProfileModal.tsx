@@ -97,10 +97,10 @@ function Form({
   return (
     <div className='fixed inset-0 z-60 flex items-end sm:items-center justify-center'>
       <div
-        className='absolute inset-0 bg-black/50 backdrop-blur-sm'
+        className='absolute inset-0 bg-black/50 backdrop-blur-sm enter-fade'
         onClick={() => !update.isPending && onClose()}
       />
-      <div className='relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300 max-h-[92vh] overflow-y-auto'>
+      <div className='relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl enter-sheet-sm max-h-[92vh] overflow-y-auto'>
         <div className='flex items-center justify-between mb-4'>
           <h3 className='text-[18px] font-bold text-[#21201F]'>{t('title')}</h3>
           <button

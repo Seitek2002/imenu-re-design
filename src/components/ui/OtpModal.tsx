@@ -58,8 +58,8 @@ export default function OtpModal({ open, phone, isLoading, error, onConfirm, onC
 
   return (
     <div className='fixed inset-0 z-200 flex items-end lg:items-center justify-center'>
-      <div className='absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-300' onClick={onClose} />
-      <div className='relative w-full lg:max-w-sm bg-white rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl animate-in slide-in-from-bottom-4 lg:zoom-in-95 duration-300'>
+      <div className='absolute inset-0 bg-black/60 backdrop-blur-[2px] enter-fade' onClick={onClose} />
+      <div className='relative w-full lg:max-w-sm bg-white rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl enter-sheet'>
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-[#111111] font-bold text-lg'>Подтверждение</h2>
           <button
