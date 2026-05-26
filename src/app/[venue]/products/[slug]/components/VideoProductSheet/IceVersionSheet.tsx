@@ -164,11 +164,11 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
         className='relative z-10 px-5 pb-2 flex flex-col gap-3 shrink-0'
       >
         <div className='pr-12'>
-          <h1 className='text-[40px] font-bold leading-none tracking-tight'>
+          <h1 className='text-[40px] font-medium leading-none tracking-tight'>
             {product.productName}
           </h1>
           {product.productDescription && (
-            <p className='text-white/70 text-sm leading-snug mt-2 max-w-70 line-clamp-2'>
+            <p className='text-white/70 text-sm mt-2 max-w-70 line-clamp-2'>
               {product.productDescription}
             </p>
           )}
