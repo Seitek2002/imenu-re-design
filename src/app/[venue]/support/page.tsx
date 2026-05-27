@@ -602,9 +602,9 @@ function SuccessSheet({
   const t = useTranslations('Support.success');
   const dateStr = `${String(sentAt.getDate()).padStart(2, '0')}.${String(sentAt.getMonth() + 1).padStart(2, '0')} ${String(sentAt.getHours()).padStart(2, '0')}:${String(sentAt.getMinutes()).padStart(2, '0')}`;
   return (
-    <div className='fixed inset-0 z-50 flex items-end sm:items-center justify-center'>
+    <div className='fixed inset-0 z-60 flex items-end sm:items-center justify-center'>
       <div className='absolute inset-0 bg-black/40 enter-fade' onClick={onClose} />
-      <div className='relative bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl p-6 pt-8 flex flex-col items-center text-center enter-sheet-sm'>
+      <div className='relative bg-white w-full max-w-md sm:rounded-3xl rounded-t-3xl px-6 pt-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col items-center text-center enter-sheet-sm'>
         <div className='w-14 h-14 rounded-full bg-[#EAF7EC] inline-flex items-center justify-center mb-3'>
           <Check size={28} className='text-[#22A05A]' strokeWidth={2.5} />
         </div>
