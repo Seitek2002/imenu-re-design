@@ -388,7 +388,8 @@
     },
     "loyalty": {
       "title": "Уровень лояльности",
-      "toNext": "Еще {amount} {currency} до {next} %"
+      "toNext": "Еще {amount} {currency} до {next} %",
+      "maxLevel": "Максимальный уровень"
     },
     "quickLinks": {
       "title": "Нужна помощь?",

@@ -388,7 +388,8 @@
     },
     "loyalty": {
       "title": "Лоялдуулук деңгээли",
-      "toNext": "{next} %ке чейин дагы {amount} {currency}"
+      "toNext": "{next} %ке чейин дагы {amount} {currency}",
+      "maxLevel": "Эң жогорку деңгээл"
     },
     "quickLinks": {
       "title": "Жардам керекпи?",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -195,9 +196,11 @@ function ProfilePageReal() {
         {bonus?.clientGroup && bonus.clientGroup.discountPercent > 0 && (
           <LoyaltySection
             currentPercent={bonus.clientGroup.discountPercent}
-            // Шкала из /v2/client/loyalty/ (Kuma 2026-05-24 §6b). У не-Poster
-            // venue endpoint вернёт 404 → loyalty = null → прогресс не
-            // рендерится, остаётся только текущий процент.
+            // /v2/client/loyalty/ (Kuma 2026-05-24 §6b). У не-Poster venue
+            // endpoint вернёт 404 → loyalty = null → рендерим только текущий
+            // процент. Если loyalty есть и nextGroup === null — клиент на
+            // максимальном уровне, показываем VIP-плашку.
+            isMaxLevel={!!loyalty && loyalty.nextGroup === null}
             nextPercent={loyalty?.nextGroup?.discountPercent}
             amountToNext={
               loyalty?.turnoverToNext
@@ -407,22 +410,25 @@ function AddressesSection({
 }
 
 /**
- * Уровень лояльности — переиспользуемая карточка.
- * Слева крупный текущий процент скидки + подпись; справа индикатор прогресса
- * (текущий уровень → следующий) с подписью «Еще {amount} {currency} до {next} %».
+ * Уровень лояльности — карточка current↔next.
  *
- * `currentPercent` берётся из реального clientGroup.discountPercent. А вот
- * `nextPercent` / `amountToNext` API не отдаёт (порога следующего уровня нет,
- * см. project_profile_redesign_gaps) — на месте вызова они захардкожены с TODO.
- * Когда они не заданы, правый индикатор не рендерится.
+ * Правая колонка имеет три состояния:
+ *  - есть `nextPercent`+`amountToNext` (есть следующий уровень) →
+ *    индикатор current → next + подпись «Еще X сом до Y %».
+ *  - `isMaxLevel` (loyalty есть и nextGroup === null) → VIP-плашка
+ *    (public/vip-badge.png) + подпись «Максимальный уровень».
+ *  - ничего из этого (не-Poster venue, /v2/client/loyalty/ вернул 404) →
+ *    правый блок не рендерится, секция в одну колонку.
  */
 function LoyaltySection({
   currentPercent,
+  isMaxLevel,
   nextPercent,
   amountToNext,
   currency,
 }: {
   currentPercent: number;
+  isMaxLevel?: boolean;
   nextPercent?: number;
   amountToNext?: number;
   currency?: string;
@@ -430,11 +436,12 @@ function LoyaltySection({
   const t = useTranslations('Profile.loyalty');
   const hasProgress =
     typeof nextPercent === 'number' && typeof amountToNext === 'number';
+  const showRight = hasProgress || isMaxLevel;
 
   return (
     <section
       className={`bg-white rounded-2xl p-2.5 ${
-        hasProgress ? 'grid grid-cols-2' : 'flex items-center justify-center'
+        showRight ? 'grid grid-cols-2' : 'flex items-center justify-center'
       }`}
     >
       <div className='flex flex-col items-center text-center justify-between gap-3'>
@@ -446,30 +453,52 @@ function LoyaltySection({
         </div>
       </div>
 
-      {hasProgress && (
+      {showRight && (
         <div className='border-l border-[#E5E1DD] px-2.5 flex flex-col items-center text-center justify-between gap-3'>
-          <div className='flex-1 flex items-center gap-2 w-full'>
-            <span className='shrink-0 w-[36px] h-[36px] rounded-full border border-[#FFD5A8] flex items-center justify-center'>
-              <span className='w-[30px] h-[30px] rounded-full bg-[#F28A1A] text-white text-[12px] font-medium leading-[1.1] flex items-center justify-center'>
-                {currentPercent}%
-              </span>
-            </span>
-            <span className='flex-1 flex items-center'>
-              <span className='w-1.5 h-1.5 rotate-45 bg-[#C9C2BB] shrink-0' />
-              <span className='flex-1 h-px bg-[#C9C2BB]' />
-              <span className='w-1.5 h-1.5 rotate-45 bg-[#C9C2BB] shrink-0' />
-            </span>
-            <span className='shrink-0 w-[30px] h-[30px] rounded-full bg-white border border-[#D7D2CC] text-[#21201F] text-[12px] font-medium leading-[1.1] flex items-center justify-center'>
-              {nextPercent}%
-            </span>
-          </div>
-          <div className='text-[12px] font-medium leading-[1.1] text-[#21201F]'>
-            {t('toNext', {
-              amount: amountToNext!.toLocaleString('ru-RU').replace(',', ' '),
-              currency: currency ?? '',
-              next: nextPercent!,
-            })}
-          </div>
+          {hasProgress ? (
+            <>
+              <div className='flex-1 flex items-center gap-2 w-full'>
+                <span className='shrink-0 w-[36px] h-[36px] rounded-full border border-[#FFD5A8] flex items-center justify-center'>
+                  <span className='w-[30px] h-[30px] rounded-full bg-[#F28A1A] text-white text-[12px] font-medium leading-[1.1] flex items-center justify-center'>
+                    {currentPercent}%
+                  </span>
+                </span>
+                <span className='flex-1 flex items-center'>
+                  <span className='w-1.5 h-1.5 rotate-45 bg-[#C9C2BB] shrink-0' />
+                  <span className='flex-1 h-px bg-[#C9C2BB]' />
+                  <span className='w-1.5 h-1.5 rotate-45 bg-[#C9C2BB] shrink-0' />
+                </span>
+                <span className='shrink-0 w-[30px] h-[30px] rounded-full bg-white border border-[#D7D2CC] text-[#21201F] text-[12px] font-medium leading-[1.1] flex items-center justify-center'>
+                  {nextPercent}%
+                </span>
+              </div>
+              <div className='text-[12px] font-medium leading-[1.1] text-[#21201F]'>
+                {t('toNext', {
+                  amount: amountToNext!
+                    .toLocaleString('ru-RU')
+                    .replace(',', ' '),
+                  currency: currency ?? '',
+                  next: nextPercent!,
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className='flex-1 flex items-center justify-center'>
+                <Image
+                  src='/vip-badge.png'
+                  alt='VIP'
+                  width={84}
+                  height={28}
+                  className='h-7 w-auto'
+                  priority
+                />
+              </div>
+              <div className='text-[12px] font-medium leading-[1.1] text-[#21201F]'>
+                {t('maxLevel')}
+              </div>
+            </>
+          )}
         </div>
       )}
     </section>
