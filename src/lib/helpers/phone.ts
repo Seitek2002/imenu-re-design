@@ -12,16 +12,15 @@ export function normalizePhoneForApi(raw: string, dialCode: string = '996'): str
 }
 
 // Форматирует локальные цифры для отображения в поле ввода (без кода страны).
-// KG (9):    XXX XX XX XX  →  700 12 34 56
+// KG (9):    XXX XXX XXX   →  700 123 456
 // RU/KZ (10): XXX XXX-XX-XX →  900 123-45-67
 // US (10):   XXX XXX-XXXX  →  212 555-0123
 export function formatPhoneInput(digits: string, countryId: string): string {
   const d = (digits || '').replace(/\D/g, '');
   if (countryId === 'KG') {
     if (d.length <= 3) return d;
-    if (d.length <= 5) return `${d.slice(0, 3)} ${d.slice(3)}`;
-    if (d.length <= 7) return `${d.slice(0, 3)} ${d.slice(3, 5)} ${d.slice(5)}`;
-    return `${d.slice(0, 3)} ${d.slice(3, 5)} ${d.slice(5, 7)} ${d.slice(7, 9)}`;
+    if (d.length <= 6) return `${d.slice(0, 3)} ${d.slice(3)}`;
+    return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6, 9)}`;
   }
   if (countryId === 'US') {
     if (d.length <= 3) return d;
