@@ -8,6 +8,7 @@ import {
   ClipboardEvent,
 } from 'react';
 import { useTranslations } from 'next-intl';
+import { Loader2 } from 'lucide-react';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import {
   formatPhoneInput,
@@ -38,7 +39,9 @@ interface Props {
 
 type Stage = 'phone' | 'code';
 
-const OTP_LENGTH = 4;
+// Дефолт до получения ответа от /auth/otp/request/ — бэк подтверждает
+// финальную длину через otpRequest.codeLength (Kuma 2026-05-19).
+const DEFAULT_OTP_LENGTH = 4;
 
 export default function OtpLoginModal(props: Props) {
   useEscapeKey(props.open, props.onClose);
@@ -105,10 +108,12 @@ function Form({
   const [phoneDigits, setPhoneDigits] = useState(initialPhone ?? '');
   const [requesting, setRequesting] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
+  /** Подсветка поля красным, когда пользователь жмёт submit с неполным номером. */
+  const [phoneSubmitTried, setPhoneSubmitTried] = useState(false);
 
   const [otpRequest, setOtpRequest] = useState<OtpRequestResult | null>(null);
   const [codeDigits, setCodeDigits] = useState<string[]>(
-    Array(OTP_LENGTH).fill(''),
+    Array(DEFAULT_OTP_LENGTH).fill(''),
   );
   const [verifying, setVerifying] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
@@ -116,6 +121,15 @@ function Form({
   const [resendIn, setResendIn] = useState(0);
 
   const codeRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const codeLength = otpRequest?.codeLength ?? DEFAULT_OTP_LENGTH;
+
+  // Фокусируем первую цифру при переходе на code-stage (а также после ресенда —
+  // resendIn перезапускается из 0, что триггерит этот эффект только при stage
+  // change). useEffect надёжнее, чем setTimeout(50): не зависит от тайминга.
+  useEffect(() => {
+    if (stage !== 'code') return;
+    codeRefs.current[0]?.focus();
+  }, [stage, otpRequest?.requestId]);
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -132,10 +146,18 @@ function Form({
     setCountryId(parsed.countryId);
     setPhoneDigits(parsed.digits);
     setRequestError(null);
+    // Юзер начал править — снимаем красную подсветку «неполного номера».
+    setPhoneSubmitTried(false);
   };
 
   const handleRequest = async () => {
-    if (!isPhoneValid || requesting) return;
+    if (!isPhoneValid) {
+      // Сигналим пользователю, что номер недозаполнен — подсветим поле красным
+      // (поскольку disabled-кнопка молча игнорирует клик/Enter).
+      setPhoneSubmitTried(true);
+      return;
+    }
+    if (requesting) return;
     setRequesting(true);
     setRequestError(null);
     try {
@@ -144,10 +166,9 @@ function Form({
         venueSlug,
       });
       setOtpRequest(result);
+      setCodeDigits(Array(result.codeLength).fill(''));
       setResendIn(result.resendAfter);
       setStage('code');
-      // фокус на первое поле кода
-      window.setTimeout(() => codeRefs.current[0]?.focus(), 50);
     } catch (err) {
       setRequestError(translateRequestError(err));
     } finally {
@@ -159,12 +180,12 @@ function Form({
     if (resendIn > 0 || requesting) return;
     setOtpError(null);
     setAttemptsLeft(null);
-    setCodeDigits(Array(OTP_LENGTH).fill(''));
+    setCodeDigits(Array(codeLength).fill(''));
     await handleRequest();
   };
 
   const handleVerify = async (code: string) => {
-    if (!otpRequest || code.length !== OTP_LENGTH || verifying) return;
+    if (!otpRequest || code.length !== codeLength || verifying) return;
     setVerifying(true);
     setOtpError(null);
     try {
@@ -195,12 +216,25 @@ function Form({
   };
 
   const handleCodeChange = (idx: number, val: string) => {
-    const digit = val.replace(/\D/g, '').slice(-1);
+    // iOS SMS autofill приходит сразу полной строкой в первое поле —
+    // распределяем её по всем ячейкам и стартуем verify.
+    const cleaned = val.replace(/\D/g, '');
+    if (cleaned.length > 1) {
+      const filled = cleaned.slice(0, codeLength).split('');
+      const next = Array(codeLength)
+        .fill('')
+        .map((_, i) => filled[i] ?? '');
+      setCodeDigits(next);
+      codeRefs.current[Math.min(filled.length, codeLength) - 1]?.focus();
+      if (filled.length === codeLength) handleVerify(next.join(''));
+      return;
+    }
+    const digit = cleaned.slice(-1);
     const next = [...codeDigits];
     next[idx] = digit;
     setCodeDigits(next);
-    if (digit && idx < OTP_LENGTH - 1) codeRefs.current[idx + 1]?.focus();
-    if (next.every((d) => d !== '')) {
+    if (digit && idx < codeLength - 1) codeRefs.current[idx + 1]?.focus();
+    if (next.length === codeLength && next.every((d) => d !== '')) {
       handleVerify(next.join(''));
     }
   };
@@ -219,11 +253,11 @@ function Form({
     const pasted = e.clipboardData
       .getData('text')
       .replace(/\D/g, '')
-      .slice(0, OTP_LENGTH);
-    if (pasted.length === OTP_LENGTH) {
+      .slice(0, codeLength);
+    if (pasted.length === codeLength) {
       const next = pasted.split('');
       setCodeDigits(next);
-      codeRefs.current[OTP_LENGTH - 1]?.focus();
+      codeRefs.current[codeLength - 1]?.focus();
       handleVerify(pasted);
     }
   };
@@ -232,7 +266,9 @@ function Form({
     <div className='fixed inset-0 z-200 flex items-end lg:items-center justify-center'>
       <div
         className='absolute inset-0 bg-black/60 backdrop-blur-[2px] enter-fade'
-        onClick={onClose}
+        // Не закрываем модалку случайным тапом по фону во время сетевого
+        // запроса — иначе fetch улетает в никуда, а пользователь теряет ввод.
+        onClick={() => !requesting && !verifying && onClose()}
       />
       <div className='relative w-full lg:max-w-sm bg-white rounded-t-4xl lg:rounded-3xl p-6 pb-10 lg:pb-6 shadow-2xl enter-sheet'>
         <div className='flex justify-between items-center mb-4'>
@@ -254,27 +290,46 @@ function Form({
               {t('phonePrompt')}
             </p>
 
-            <div className='flex items-center gap-2 bg-[#F5F5F5] rounded-2xl px-3 h-14 mb-1'>
+            <div
+              className={`flex items-center gap-2 bg-[#F5F5F5] rounded-2xl px-3 h-14 mb-1 border transition-colors ${
+                phoneSubmitTried && !isPhoneValid
+                  ? 'border-red-500'
+                  : 'border-transparent'
+              }`}
+            >
               <CountryCodeSelect value={countryId} onChange={setCountryId} />
               <input
                 type='tel'
                 inputMode='numeric'
+                autoComplete='tel'
                 autoFocus
                 placeholder={country.placeholder}
                 value={formatPhoneInput(phoneDigits, countryId)}
                 onChange={(e) => handlePhoneChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    void handleRequest();
+                  }
+                }}
                 className='flex-1 bg-transparent outline-none text-[#111111] text-base'
               />
             </div>
             {requestError && (
               <p className='text-red-500 text-sm mt-2'>{requestError}</p>
             )}
+            {phoneSubmitTried && !isPhoneValid && !requestError && (
+              <p className='text-red-500 text-sm mt-2'>
+                {t('errors.requestInvalidPhone')}
+              </p>
+            )}
 
             <button
-              disabled={!isPhoneValid || requesting}
+              disabled={requesting}
               onClick={handleRequest}
-              className='mt-5 w-full py-4 rounded-2xl bg-[#111111] text-white font-semibold text-base disabled:opacity-40 transition-opacity'
+              className='mt-5 w-full py-4 rounded-2xl bg-[#111111] text-white font-semibold text-base disabled:opacity-60 transition-opacity flex items-center justify-center gap-2'
             >
+              {requesting && <Loader2 size={16} className='animate-spin' />}
               {requesting ? t('submitPhoneLoading') : t('submitPhone')}
             </button>
           </>
@@ -284,7 +339,7 @@ function Form({
           <>
             <p className='text-[#6B6B6B] text-sm mb-6'>
               {t('codePrompt', {
-                length: OTP_LENGTH,
+                length: codeLength,
                 phone: formatPhoneMasked(fullPhone),
               })}
             </p>
@@ -298,12 +353,18 @@ function Form({
                   }}
                   type='tel'
                   inputMode='numeric'
-                  maxLength={1}
+                  // iOS читает код из SMS-баннера и предложит автоподстановку,
+                  // если первый input помечен one-time-code. На Android Chrome
+                  // тоже распознаёт. Остальные поля — обычный numeric, чтобы
+                  // не дублировать предложение.
+                  autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                  // maxLength=1 не позволяет вставить весь код из SMS-autofill —
+                  // увеличиваем до длины кода; handleCodeChange сам распределит.
+                  maxLength={i === 0 ? codeLength : 1}
                   value={d}
                   onChange={(e) => handleCodeChange(i, e.target.value)}
                   onKeyDown={(e) => handleCodeKey(i, e)}
                   onPaste={handleCodePaste}
-                  autoFocus={i === 0}
                   className='w-14 h-14 text-center text-xl font-bold text-[#111111] bg-[#F5F5F5] rounded-2xl outline-none border-2 border-transparent focus:border-[#111111] transition-colors'
                 />
               ))}
@@ -332,7 +393,7 @@ function Form({
                 onClick={() => {
                   setStage('phone');
                   setOtpRequest(null);
-                  setCodeDigits(Array(OTP_LENGTH).fill(''));
+                  setCodeDigits(Array(DEFAULT_OTP_LENGTH).fill(''));
                   setOtpError(null);
                 }}
                 className='text-[#6B6B6B] underline-offset-2 hover:underline'
