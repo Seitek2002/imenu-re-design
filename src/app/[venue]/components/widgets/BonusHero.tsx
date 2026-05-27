@@ -11,6 +11,9 @@ interface Props {
   balance: number;
   accrualPercent: number;
   maxDeductiblePercent: number;
+  /** Имя текущей группы лояльности из `bonusData.clientGroup.name`. null у
+   *  не-Poster venue или гостя — рендерим «Гость». */
+  currentGroupName: string | null;
   nextGroupName: string | null;
   /** Decimal-string `turnoverToNext` from BonusResponse, parsed to number. */
   turnoverToNext: number | null;
@@ -27,6 +30,7 @@ export default function BonusHero({
   balance,
   accrualPercent,
   maxDeductiblePercent,
+  currentGroupName,
   nextGroupName,
   turnoverToNext,
   venueSlug,
@@ -66,7 +70,7 @@ export default function BonusHero({
               background: 'linear-gradient(140deg, #C9A876, #8E6A3D)',
             }}
           />
-          {t('bonus.tierGuest')}
+          {currentGroupName?.trim() || t('bonus.tierGuest')}
         </div>
       </div>
 

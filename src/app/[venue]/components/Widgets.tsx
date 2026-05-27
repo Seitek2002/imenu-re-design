@@ -93,6 +93,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
             balance={bonusData?.bonus ?? 0}
             accrualPercent={accrualPercent}
             maxDeductiblePercent={maxDeductiblePercent}
+            currentGroupName={bonusData?.clientGroup?.name ?? null}
             nextGroupName={bonusData?.nextGroup?.name ?? null}
             turnoverToNext={
               bonusData?.turnoverToNext != null
