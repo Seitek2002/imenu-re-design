@@ -467,3 +467,101 @@ export const usePromotionsV2 = (
     staleTime: 1000 * 60 * 5,
   });
 };
+
+// --- /api/v2/support/tickets/ (Kuma 2026-05-27) ---
+// Paginated DRF, sort=createdAt desc, фильтр только ?phone= (остальное
+// фильтруем клиент-сайд), без Bearer — phone берётся из query.
+// Backend status enum: new | in_progress | resolved | closed → маппим в
+// фронтовый pending | in_review | resolved | closed.
+// reference: { kind, id, label } (Вариант A — денормализованный label).
+// photos: string[] (плоский массив URL'ов, поле переименовано из photo_urls).
+
+export type SupportTicketKind = 'venue' | 'order' | 'other';
+export type SupportTicketStatus =
+  | 'pending'
+  | 'in_review'
+  | 'resolved'
+  | 'closed';
+
+export interface SupportTicket {
+  id: number;
+  kind: SupportTicketKind;
+  referenceLabel: string;
+  problem: string;
+  photos: string[];
+  status: SupportTicketStatus;
+  createdAt: string;
+}
+
+interface SupportTicketWire {
+  id: number;
+  kind?: SupportTicketKind;
+  reference?: { kind?: SupportTicketKind; id?: number | string; label?: string };
+  problem: string;
+  photos?: string[];
+  status: 'new' | 'in_progress' | 'resolved' | 'closed';
+  createdAt: string;
+}
+
+interface SupportTicketsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: SupportTicketWire[];
+}
+
+const STATUS_FROM_WIRE: Record<
+  SupportTicketWire['status'],
+  SupportTicketStatus
+> = {
+  new: 'pending',
+  in_progress: 'in_review',
+  resolved: 'resolved',
+  closed: 'closed',
+};
+
+function mapSupportTicket(w: SupportTicketWire): SupportTicket {
+  return {
+    id: w.id,
+    kind: w.kind ?? w.reference?.kind ?? 'other',
+    referenceLabel: w.reference?.label ?? '',
+    problem: w.problem,
+    photos: w.photos ?? [],
+    status: STATUS_FROM_WIRE[w.status] ?? 'pending',
+    createdAt: w.createdAt,
+  };
+}
+
+async function fetchSupportTickets(
+  { phone, venueSlug }: { phone: string; venueSlug?: string },
+  locale: Locale,
+): Promise<SupportTicket[]> {
+  const params = new URLSearchParams();
+  params.append('phone', normalizePhoneForApi(phone));
+  if (venueSlug) params.append('venueSlug', venueSlug);
+
+  const res = await fetch(
+    `${API_BASE}/support/tickets/?${params.toString()}`,
+    { method: 'GET', headers: buildHeaders(locale) },
+  );
+  if (!res.ok) throw new Error(`support_tickets_failed_${res.status}`);
+  const data: SupportTicketsResponse = await res.json();
+  return data.results.map(mapSupportTicket);
+}
+
+export const useSupportTicketsV2 = ({
+  phone,
+  venueSlug,
+}: {
+  phone: string;
+  venueSlug?: string;
+}) => {
+  const locale = useLocale() as Locale;
+  return useQuery({
+    queryKey: ['support-tickets', phone, venueSlug, locale],
+    queryFn: () => fetchSupportTickets({ phone, venueSlug }, locale),
+    enabled: !!phone && phone.length > 5,
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+  });
+};

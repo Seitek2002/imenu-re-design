@@ -148,8 +148,13 @@ function ProfilePageReal() {
   }
 
   // По макету в карточке только имя (без фамилии) — фамилия съедает строку
-  // и не даёт уложиться в фикс. высоту 77px.
-  const displayName = (client?.firstname ?? '').trim() || t('guest');
+  // и не даёт уложиться в фикс. высоту 77px. Если firstname пуст, но
+  // заполнена фамилия — показываем её, чтобы пользователь видел «свои» данные,
+  // а не «Гость».
+  const displayName =
+    (client?.firstname ?? '').trim() ||
+    (client?.lastname ?? '').trim() ||
+    t('guest');
 
   return (
     <div className='min-h-svh pb-24'>

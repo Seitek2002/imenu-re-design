@@ -3,17 +3,12 @@
 /**
  * /[venue]/support/my — «Мои заявки» (история жалоб).
  *
- * Сейчас рендерится на мок-данных: контракт `GET /v2/support/tickets/`
- * существует (Kuma 2026-05-25 §2), но шейп ответа и enum статусов
- * не подтверждён. Открытые вопросы вынесены в [[project_kuma_questions]] —
- * до их закрытия фронт показывает реалистичный список из useMockTickets().
- *
- * Маппинг полей при подключении бэка будет тривиальным: id/kind/reference/
- * problem/photos/createdAt уже совпадают с тем, что мы отправляли в
- * POST /support/tickets/.
+ * GET /v2/support/tickets/?phone=&venueSlug= — Kuma 2026-05-27.
+ * Paginated DRF, sort=createdAt desc, маппинг статусов выполняется в
+ * useSupportTicketsV2. Чат (lastReplyAt) — P2.
  */
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -29,26 +24,20 @@ import {
   Image as ImageIcon,
   Inbox,
   Plus,
+  Loader2,
 } from 'lucide-react';
 
 import { useClientStore } from '@/store/client';
+import {
+  useSupportTicketsV2,
+  type SupportTicket,
+  type SupportTicketKind,
+  type SupportTicketStatus,
+} from '@/lib/api/queries';
 
-type Kind = 'venue' | 'order' | 'other';
-type Status = 'pending' | 'in_review' | 'resolved' | 'closed';
-
-interface Ticket {
-  id: number;
-  kind: Kind;
-  /** Резолвед label (название филиала / №заказа / тема). На бэк ждём
-   *  денормализацию — иначе фронту придётся отдельным запросом. */
-  referenceLabel: string;
-  problem: string;
-  photos: string[];
-  status: Status;
-  createdAt: string;
-  /** Двусторонний чат заявок отложен P2 (Kuma 2026-05-25). Сейчас всегда null. */
-  lastReply: null;
-}
+type Kind = SupportTicketKind;
+type Status = SupportTicketStatus;
+type Ticket = SupportTicket;
 
 const KIND_ICON: Record<Kind, React.ElementType> = {
   venue: Store,
@@ -68,57 +57,6 @@ const STATUS_TONE: Record<Status, { bg: string; fg: string }> = {
   resolved: { bg: 'bg-[#E8F8EE]', fg: 'text-[#22A05A]' },
   closed: { bg: 'bg-[#EFEFEF]', fg: 'text-[#6B6B6B]' },
 };
-
-const useMockTickets = (): Ticket[] =>
-  useMemo(
-    () => [
-      {
-        id: 1041,
-        kind: 'order',
-        referenceLabel: '№ 28491',
-        problem:
-          'Привезли остывший суп, доставка прибыла позже расчётного времени на ~25 мин. Очень разочарованы.',
-        photos: [],
-        status: 'in_review',
-        createdAt: '2026-05-25T19:42:00+06:00',
-        lastReply: null,
-      },
-      {
-        id: 1037,
-        kind: 'venue',
-        referenceLabel: 'iMenu · Чуй 165',
-        problem:
-          'Кондиционер в зале не работал, было душно. На столе остались крошки от предыдущих гостей.',
-        photos: ['https://placehold.co/200x200/png'],
-        status: 'pending',
-        createdAt: '2026-05-24T13:18:00+06:00',
-        lastReply: null,
-      },
-      {
-        id: 1018,
-        kind: 'other',
-        referenceLabel: 'Не пришли баллы',
-        problem:
-          'Оплатил заказ № 28102 на 4520 сом, по приложению должно было начислиться 226 баллов. Прошло 3 дня — баланс прежний.',
-        photos: [],
-        status: 'resolved',
-        createdAt: '2026-05-19T10:05:00+06:00',
-        lastReply: null,
-      },
-      {
-        id: 1002,
-        kind: 'order',
-        referenceLabel: '№ 27634',
-        problem:
-          'Заказ пришёл не полностью — отсутствует один из бургеров. Курьер сказал «как принесли так и везу».',
-        photos: [],
-        status: 'closed',
-        createdAt: '2026-05-10T20:11:00+06:00',
-        lastReply: null,
-      },
-    ],
-    [],
-  );
 
 const monthShort = [
   'янв', 'фев', 'мар', 'апр', 'май', 'июн',
@@ -150,29 +88,31 @@ export default function SupportMyPage() {
   const { venue: venueSlug } = useParams<{ venue: string }>();
   const tProfile = useTranslations('Profile');
   const phone = useClientStore((s) => s.phone);
-  const tickets = useMockTickets();
+  const { data: tickets, isLoading } = useSupportTicketsV2({
+    phone: phone ?? '',
+    venueSlug,
+  });
 
   if (!phone) {
     return <EmptyState venueSlug={venueSlug} unauth />;
   }
-  if (tickets.length === 0) {
+  if (isLoading && !tickets) {
+    return (
+      <div className='min-h-svh flex flex-col'>
+        <Header venueSlug={venueSlug} tProfile={tProfile} />
+        <div className='flex-1 flex items-center justify-center'>
+          <Loader2 size={24} className='animate-spin text-[#9E9E9E]' />
+        </div>
+      </div>
+    );
+  }
+  if (!tickets || tickets.length === 0) {
     return <EmptyState venueSlug={venueSlug} />;
   }
 
   return (
     <div className='min-h-svh pb-24'>
-      <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
-        <Link
-          href={`/${venueSlug}/profile`}
-          className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
-          aria-label={tProfile('back')}
-        >
-          <ChevronLeft size={24} />
-        </Link>
-        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>
-          Мои заявки
-        </h1>
-      </header>
+      <Header venueSlug={venueSlug} tProfile={tProfile} />
 
       <div className='px-4 mt-2 flex flex-col gap-3'>
         {tickets.map((tk) => (
@@ -296,6 +236,29 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
   );
 }
 
+function Header({
+  venueSlug,
+  tProfile,
+}: {
+  venueSlug: string;
+  tProfile: ReturnType<typeof useTranslations>;
+}) {
+  return (
+    <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
+      <Link
+        href={`/${venueSlug}/profile`}
+        className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
+        aria-label={tProfile('back')}
+      >
+        <ChevronLeft size={24} />
+      </Link>
+      <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>
+        Мои заявки
+      </h1>
+    </header>
+  );
+}
+
 function EmptyState({
   venueSlug,
   unauth,
@@ -306,18 +269,7 @@ function EmptyState({
   const tProfile = useTranslations('Profile');
   return (
     <div className='min-h-svh pb-24 flex flex-col'>
-      <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
-        <Link
-          href={`/${venueSlug}/profile`}
-          className='w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm active:scale-95 transition-transform'
-          aria-label={tProfile('back')}
-        >
-          <ChevronLeft size={24} />
-        </Link>
-        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>
-          Мои заявки
-        </h1>
-      </header>
+      <Header venueSlug={venueSlug} tProfile={tProfile} />
 
       <div className='flex-1 flex flex-col items-center justify-center px-6 text-center'>
         <div className='w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-5'>
