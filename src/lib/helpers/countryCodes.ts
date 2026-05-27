@@ -8,7 +8,7 @@ export interface CountryCode {
 }
 
 export const COUNTRY_CODES: CountryCode[] = [
-  { id: 'KG', name: 'Кыргызстан', dial: '996', flag: '🇰🇬', length: 9,  placeholder: '700 12 34 56' },
+  { id: 'KG', name: 'Кыргызстан', dial: '996', flag: '🇰🇬', length: 9,  placeholder: '700 123 456' },
   { id: 'RU', name: 'Россия',     dial: '7',   flag: '🇷🇺', length: 10, placeholder: '900 123-45-67' },
   { id: 'KZ', name: 'Казахстан',  dial: '7',   flag: '🇰🇿', length: 10, placeholder: '700 123-45-67' },
   { id: 'US', name: 'США',        dial: '1',   flag: '🇺🇸', length: 10, placeholder: '212 555-0123' },

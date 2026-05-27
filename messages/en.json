@@ -388,7 +388,8 @@
     },
     "loyalty": {
       "title": "Loyalty level",
-      "toNext": "{amount} {currency} more to reach {next} %"
+      "toNext": "{amount} {currency} more to reach {next} %",
+      "maxLevel": "Top level reached"
     },
     "quickLinks": {
       "title": "Need help?",
