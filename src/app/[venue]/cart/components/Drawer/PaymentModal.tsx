@@ -8,6 +8,8 @@ interface Props {
   onClose: () => void;
   method: 'elqr' | 'cash';
   onSelect: (m: 'elqr' | 'cash') => void;
+  /** Доступны ли наличные. Для delivery/takeout — false, только онлайн. */
+  allowCash?: boolean;
 }
 
 export default function PaymentModal({
@@ -15,6 +17,7 @@ export default function PaymentModal({
   onClose,
   method,
   onSelect,
+  allowCash = true,
 }: Props) {
   const t = useTranslations('Cart.payment');
   return (
@@ -36,14 +39,16 @@ export default function PaymentModal({
               onClose();
             }}
           />
-          <PaymentOption
-            label={t('cash')}
-            isActive={method === 'cash'}
-            onClick={() => {
-              onSelect('cash');
-              onClose();
-            }}
-          />
+          {allowCash && (
+            <PaymentOption
+              label={t('cash')}
+              isActive={method === 'cash'}
+              onClick={() => {
+                onSelect('cash');
+                onClose();
+              }}
+            />
+          )}
         </div>
       </div>
     </ModalPortal>

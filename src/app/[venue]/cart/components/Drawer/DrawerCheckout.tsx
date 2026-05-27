@@ -158,6 +158,13 @@ const DrawerCheckout: FC<IProps> = ({
   const venueData = useVenueStore((state) => state.data);
 
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
+  // Наличные доступны только при заказе за столом (dinein). Для самовывоза и
+  // доставки оплата всегда онлайн через ELQR — на случай если в стейте остался
+  // 'cash' (например юзер сменил orderType с dinein), сбрасываем в эффекте.
+  const allowCash = orderType === 'dinein';
+  useEffect(() => {
+    if (!allowCash && paymentMethod === 'cash') setPaymentMethod('elqr');
+  }, [allowCash, paymentMethod]);
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
   const [pickupTime, setPickupTime] = useState(tt('asap'));
@@ -807,6 +814,7 @@ const DrawerCheckout: FC<IProps> = ({
         onClose={() => setShowPaymentModal(false)}
         method={paymentMethod}
         onSelect={setPaymentMethod}
+        allowCash={allowCash}
       />
 
       <DevErrorModal
