@@ -52,6 +52,7 @@ function formatQty(qty: string): string {
 
 export default function CurrentOrderView({ venueSlug }: Props) {
   const t = useTranslations('TableOrder');
+  const tBonus = useTranslations('Cart.summary');
   const queryClient = useQueryClient();
   const mounted = useMounted();
   const tableId = useVenueStore((s) => s.tableId);
@@ -157,6 +158,21 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const earnedDraftBonus = accrualPercent > 0 ? Math.floor((draftFinal * accrualPercent) / 100) : 0;
   const earnedPosBonus = accrualPercent > 0 ? Math.floor((posRemaining * accrualPercent) / 100) : 0;
   const canPayPos = !!posOrder && posRemaining > 0;
+
+  const renderBonusBadge = (earned: number) =>
+    earned > 0 ? (
+      <div className='flex items-center justify-between bg-gradient-to-r from-emerald-50 to-emerald-50/60 border border-emerald-500 rounded-xl px-4 py-2.5'>
+        <div className='flex items-center gap-2'>
+          <Image src={coinIcon} alt='bonus' width={22} height={22} className='object-contain' />
+          <span className='text-sm font-semibold text-[#111]'>{tBonus('earnBonus')}</span>
+        </div>
+        <div className='flex items-center gap-1.5'>
+          <span className='text-sm text-gray-400'>{accrualPercent}%</span>
+          <span className='text-gray-300 text-sm'>→</span>
+          <span className='text-base font-extrabold text-brand'>+{earned}</span>
+        </div>
+      </div>
+    ) : null;
 
   // Resume-payment banner: if user returned from paygate without completing,
   // surface the saved link as long as the bill still has something to pay.
@@ -280,15 +296,9 @@ export default function CurrentOrderView({ venueSlug }: Props) {
     ) : (
       <button
         onClick={() => setPayOpen(true)}
-        className='w-full bg-brand text-white font-bold h-11 rounded-xl active:scale-95 transition-transform shadow-sm flex items-center justify-center gap-2'
+        className='w-full bg-brand text-white font-bold h-11 rounded-xl active:scale-95 transition-transform shadow-sm'
       >
-        <span>{t('payment.pay', { amount: posRemainingStr })}</span>
-        {earnedPosBonus > 0 && (
-          <span className='flex items-center gap-1 text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full bg-white/20'>
-            +{earnedPosBonus}
-            <Image src={coinIcon} alt='' width={13} height={13} className='object-contain' />
-          </span>
-        )}
+        {t('payment.pay', { amount: posRemainingStr })}
       </button>
     )
   ) : null;
@@ -296,15 +306,9 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const draftSubmitButton = hasDraft ? (
     <button
       onClick={() => setCheckoutOpen(true)}
-      className='w-full bg-brand text-white font-bold h-11 rounded-xl active:scale-95 transition-transform shadow-sm flex items-center justify-center gap-2'
+      className='w-full bg-brand text-white font-bold h-11 rounded-xl active:scale-95 transition-transform shadow-sm'
     >
-      <span>{t('submitDraft', { amount: formatMoney(draftFinal) })}</span>
-      {earnedDraftBonus > 0 && (
-        <span className='flex items-center gap-1 text-[11px] font-semibold opacity-90 px-2 py-0.5 rounded-full bg-white/20'>
-          +{earnedDraftBonus}
-          <Image src={coinIcon} alt='' width={13} height={13} className='object-contain' />
-        </span>
-      )}
+      {t('submitDraft', { amount: formatMoney(draftFinal) })}
     </button>
   ) : null;
 
@@ -332,6 +336,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             sum={formatMoney(posOrder.total)}
             numericSum={toNumber(posOrder.total)}
             currency={t('currency')}
+            bonusBadge={canPayPos ? renderBonusBadge(earnedPosBonus) : null}
             actionButton={posPayButton}
           >
             <p className='text-sm text-[#6B6B6B] text-center py-2'>{t('posOrderEmpty')}</p>
@@ -349,6 +354,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             numericSum={toNumber(posOrder.total)}
             originalSum={formatMoney(posSubtotalDisplay)}
             currency={t('currency')}
+            bonusBadge={canPayPos ? renderBonusBadge(earnedPosBonus) : null}
             actionButton={posPayButton}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
@@ -479,6 +485,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
             sum={formatMoney(draftFinal)}
             numericSum={Number(draftFinal) || 0}
             currency={t('currency')}
+            bonusBadge={renderBonusBadge(earnedDraftBonus)}
             actionButton={draftSubmitButton}
           >
             <ul className='divide-y divide-[#E7E7E7]'>
@@ -668,6 +675,7 @@ interface TicketCardProps {
   originalSum?: string;
   currency: string;
   children: React.ReactNode;
+  bonusBadge?: React.ReactNode;
   actionButton?: React.ReactNode;
 }
 
@@ -682,6 +690,7 @@ function TicketCard({
   originalSum,
   currency,
   children,
+  bonusBadge,
   actionButton,
 }: TicketCardProps) {
   const tt = useTranslations('TableOrder');
@@ -733,6 +742,7 @@ function TicketCard({
             {sum} {currency}
           </span>
         </div>
+        {bonusBadge && <div className='pb-3'>{bonusBadge}</div>}
         {actionButton && <div className='pb-3'>{actionButton}</div>}
       </div>
     </div>

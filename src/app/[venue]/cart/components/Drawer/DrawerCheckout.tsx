@@ -30,6 +30,7 @@ import CheckoutForm from '../CheckoutForm';
 import PaymentMethodRow from './PaymentMethodRow';
 import PaymentModal from './PaymentModal';
 import CheckoutFooter from './CheckoutFooter';
+import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 
 import tableIcon from '@/assets/Cart/table.svg';
 import { useVenueStore } from '@/store/venue';
@@ -649,6 +650,7 @@ const DrawerCheckout: FC<IProps> = ({
               className='absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-10 pb-8 transition-transform duration-150'
               style={{ transform: `translateY(-${keyboardOffset}px)` }}
             >
+              <BonusAccrualBadge total={finalTotal} className='mb-3' />
               <CheckoutFooter
                 total={finalTotal}
                 isSubmitting={isLoading}
@@ -798,6 +800,7 @@ const DrawerCheckout: FC<IProps> = ({
               </div>
 
               <div className='mt-4'>
+                <BonusAccrualBadge total={finalTotal} className='mb-3' />
                 <CheckoutFooter
                   total={finalTotal}
                   isSubmitting={isLoading}
