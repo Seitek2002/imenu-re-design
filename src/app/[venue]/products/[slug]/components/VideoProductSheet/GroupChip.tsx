@@ -59,7 +59,7 @@ export default function GroupChip({
         `}
       >
         {/* Верхняя зона: фото / иконка группы / плюсик */}
-        <div className='flex-1 flex items-center justify-center w-full'>
+        <div className='flex items-center justify-center w-full'>
           {showImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -71,14 +71,14 @@ export default function GroupChip({
           ) : isSelected ? (
             <div className='w-14 h-14 rounded-xl bg-white/20' />
           ) : (
-            <div className='w-10 h-10 rounded-full bg-white/60 flex items-center justify-center'>
+            <div className='w-8 h-8 rounded-full bg-white/60 flex items-center justify-center'>
               <Plus size={19} strokeWidth={2.5} className='text-[#21201F]' />
             </div>
           )}
         </div>
 
         {/* Название */}
-        <span className='text-[11px] font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
+        <span className='flex-1 mt-2.5 text-[10px] wrap-break-word font-semibold text-[#21201F] text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
           {label}
         </span>
       </div>

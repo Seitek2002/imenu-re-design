@@ -20,8 +20,12 @@ export function VariantChip({ variantType, label, active = false, onClick }: Var
     <button
       type='button'
       onClick={onClick}
+      style={{
+        backdropFilter: 'blur(12.2px)',
+        boxShadow: 'inset 1px 1px 1.3px #FFFFFF, inset -1px -1px 1.3px rgba(255,255,255,0.62)',
+      }}
       className={`
-        relative shrink-0 w-21 h-27 rounded-[20px] flex flex-col items-center justify-between
+        relative shrink-0 w-21 h-[90px] rounded-[20px] flex flex-col items-center justify-between
         pt-2.5 pb-2.5 overflow-hidden active:scale-95 transition-all duration-150
         ${active
           ? 'bg-white/75 ring-2 ring-white shadow-md'
@@ -54,7 +58,7 @@ export function DecafChip({ label, onClick }: DecafChipProps) {
     <button
       type='button'
       onClick={onClick}
-      className='relative shrink-0 w-21 h-27 rounded-[20px] flex flex-col items-center justify-between pt-2.5 pb-2.5 overflow-hidden active:scale-95 transition-all duration-150'
+      className='relative shrink-0 w-21 h-[90px] rounded-[20px] flex flex-col items-center justify-between pt-2.5 pb-2.5 overflow-hidden active:scale-95 transition-all duration-150'
       style={{
         backgroundColor: 'rgba(161, 122, 80, 0.67)',
         backdropFilter: 'blur(12.2px)',
