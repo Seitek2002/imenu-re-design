@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GroupItem, Product } from '@/types/api';
 import { useVenueStore } from '@/store/venue';
 import { variantPrice } from '@/lib/pricing';
-import { PREFERENCE_CHIPS } from './PreferenceChips';
 
 export const haptic = (ms = 30) => {
-  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(ms);
+  if (typeof navigator !== 'undefined' && navigator.vibrate)
+    navigator.vibrate(ms);
 };
 
 export function useVideoSheet({
@@ -25,8 +25,9 @@ export function useVideoSheet({
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [qnty, setQnty] = useState(1);
   const [expandedGroupId, setExpandedGroupId] = useState<number | null>(null);
-  const [expandedPrefId, setExpandedPrefId] = useState<string | null>(null);
-  const [prefSelections, setPrefSelections] = useState<Record<string, string | null>>({});
+  const [prefSelections, setPrefSelections] = useState<
+    Record<string, string | null>
+  >({});
   const [detailOpen, setDetailOpen] = useState(false);
 
   const lastResetKeyRef = useRef<string | null>(null);
@@ -41,7 +42,6 @@ export function useVideoSheet({
     setCounts({});
     setQnty(1);
     setExpandedGroupId(null);
-    setExpandedPrefId(null);
     setPrefSelections({});
     setDetailOpen(false);
   }, [open, product, resetKey]);
@@ -49,13 +49,11 @@ export function useVideoSheet({
   const groups = useMemo(() => product?.groupModifications ?? [], [product]);
 
   const expandedGroup = useMemo(
-    () => (expandedGroupId == null ? null : groups.find((g) => g.id === expandedGroupId) ?? null),
+    () =>
+      expandedGroupId == null
+        ? null
+        : (groups.find((g) => g.id === expandedGroupId) ?? null),
     [expandedGroupId, groups],
-  );
-
-  const expandedPref = useMemo(
-    () => (expandedPrefId ? (PREFERENCE_CHIPS.find((c) => c.id === expandedPrefId) ?? null) : null),
-    [expandedPrefId],
   );
 
   const unitPrice = useMemo(() => {
@@ -63,7 +61,9 @@ export function useVideoSheet({
     const mod = product.modificators.find((m) => m.id === sizeId);
     const base = mod ? variantPrice(mod, spotId) : product.productPrice;
     const adds = groups.reduce(
-      (acc, g) => acc + g.items.reduce((s, i) => s + Number(i.price) * (counts[i.id] ?? 0), 0),
+      (acc, g) =>
+        acc +
+        g.items.reduce((s, i) => s + Number(i.price) * (counts[i.id] ?? 0), 0),
       0,
     );
     return base + adds;
@@ -88,12 +88,10 @@ export function useVideoSheet({
   const handleToggleGroup = useCallback((id: number) => {
     haptic(25);
     setExpandedGroupId((prev) => (prev === id ? null : id));
-    setExpandedPrefId(null);
   }, []);
 
-  const handleTogglePref = useCallback((id: string) => {
+  const handleTogglePref = useCallback(() => {
     haptic(25);
-    setExpandedPrefId((prev) => (prev === id ? null : id));
     setExpandedGroupId(null);
   }, []);
 
@@ -115,7 +113,6 @@ export function useVideoSheet({
     setDetailOpen,
     groups,
     expandedGroup,
-    expandedPref,
     unitPrice,
     totalPrice: unitPrice * qnty,
     groupCounts,

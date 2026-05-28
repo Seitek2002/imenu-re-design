@@ -1,7 +1,6 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import { Candy, SlidersHorizontal } from 'lucide-react';
 
 export interface PreferenceOption {
   id: string;
@@ -11,34 +10,13 @@ export interface PreferenceOption {
 export interface PreferenceChipDef {
   id: string;
   label: string;
-  Icon: ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  Icon: ComponentType<{
+    size?: number;
+    strokeWidth?: number;
+    className?: string;
+  }>;
   options: PreferenceOption[];
 }
-
-export const PREFERENCE_CHIPS: PreferenceChipDef[] = [
-  {
-    id: 'sugar',
-    label: 'Сахар',
-    Icon: Candy,
-    options: [
-      { id: '0', label: 'Без сахара' },
-      { id: '1', label: '1 ложка' },
-      { id: '2', label: '2 ложки' },
-      { id: '3', label: '3 ложки' },
-    ],
-  },
-  {
-    id: 'extra',
-    label: 'Доп.',
-    Icon: SlidersHorizontal,
-    options: [
-      { id: 'sleeve',    label: 'С манжетом'    },
-      { id: 'no-sleeve', label: 'Без манжета'   },
-      { id: 'own-cup',   label: 'Свой стакан'   },
-      { id: 'cup',       label: 'Просто стакан' },
-    ],
-  },
-];
 
 // ---------------------------------------------------------------------------
 // Чип предпочтения — встраивается в строку чипов (всегда первым)
@@ -69,13 +47,14 @@ export function PreferenceChipButton({
         className={`
           w-full h-[90px] rounded-2xl flex flex-col items-center justify-between
           pt-[10px] pb-[10px] px-4 overflow-hidden transition-all duration-150
-          ${isSelected
-            ? active
-              ? 'bg-white/75 ring-2 ring-white shadow-md'
-              : 'bg-white/60'
-            : active
-              ? 'bg-white/50 ring-2 ring-white shadow-md'
-              : 'bg-white/30 backdrop-blur-[10px] ring-1 ring-white/30'
+          ${
+            isSelected
+              ? active
+                ? 'bg-white/75 ring-2 ring-white shadow-md'
+                : 'bg-white/60'
+              : active
+                ? 'bg-white/50 ring-2 ring-white shadow-md'
+                : 'bg-white/30 backdrop-blur-[10px] ring-1 ring-white/30'
           }
         `}
       >
@@ -115,9 +94,10 @@ export function PreferenceGrid({
               className={`
                 px-4 py-2.5 rounded-full text-sm font-semibold
                 transition-all duration-150 active:scale-95
-                ${selected
-                  ? 'bg-white text-[#21201F]'
-                  : 'bg-white/20 text-white backdrop-blur-sm ring-1 ring-white/30'
+                ${
+                  selected
+                    ? 'bg-white text-[#21201F]'
+                    : 'bg-white/20 text-white backdrop-blur-sm ring-1 ring-white/30'
                 }
               `}
             >

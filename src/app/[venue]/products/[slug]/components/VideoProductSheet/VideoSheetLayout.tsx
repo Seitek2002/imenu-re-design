@@ -12,11 +12,6 @@ import GroupChip from './GroupChip';
 import GroupGrid from './GroupGrid';
 import BottomBar from './BottomBar';
 import ProductDetailSheet from './ProductDetailSheet';
-import {
-  PREFERENCE_CHIPS,
-  PreferenceChipButton,
-  PreferenceGrid,
-} from './PreferenceChips';
 
 interface Props {
   rootClassName: string;
@@ -62,18 +57,14 @@ export default function VideoSheetLayout({
     setCounts,
     qnty,
     setQnty,
-    prefSelections,
-    setPrefSelections,
     detailOpen,
     setDetailOpen,
     groups,
     expandedGroup,
-    expandedPref,
     totalPrice,
     groupCounts,
     groupSelectedItems,
     handleToggleGroup,
-    handleTogglePref,
     handleSelectSize,
   } = useVideoSheet({ product, open, resetKey });
 
@@ -163,18 +154,6 @@ export default function VideoSheetLayout({
               darkSelected={groupMeta?.[expandedGroup.id]?.darkSelected}
               segmentPairs={groupMeta?.[expandedGroup.id]?.segmentPairs}
             />
-          ) : expandedPref ? (
-            <PreferenceGrid
-              chip={expandedPref}
-              selectedId={prefSelections[expandedPref.id] ?? null}
-              onSelect={(optId) => {
-                haptic(15);
-                setPrefSelections((prev) => ({
-                  ...prev,
-                  [expandedPref.id]: optId,
-                }));
-              }}
-            />
           ) : null}
         </div>
 
@@ -187,33 +166,10 @@ export default function VideoSheetLayout({
                     {variantChipSlot}
                   </div>
                   <div
-                    className='w-px h-12 bg-white/25 shrink-0 mb-8 mx-0.5'
+                    className='w-px h-12 bg-white/25 shrink-0 mb-6 mx-0.5'
                     aria-hidden='true'
                   />
                 </>
-              )}
-
-              {PREFERENCE_CHIPS.map((pref) => (
-                <PreferenceChipButton
-                  key={pref.id}
-                  chip={pref}
-                  active={expandedPref?.id === pref.id}
-                  selectedOptionLabel={
-                    prefSelections[pref.id]
-                      ? pref.options.find(
-                          (o) => o.id === prefSelections[pref.id],
-                        )?.label
-                      : undefined
-                  }
-                  onClick={() => handleTogglePref(pref.id)}
-                />
-              ))}
-
-              {groups.length > 0 && (
-                <div
-                  className='w-px h-12 bg-white/25 shrink-0 mb-8 mx-0.5'
-                  aria-hidden='true'
-                />
               )}
 
               {groups.map((g) => (

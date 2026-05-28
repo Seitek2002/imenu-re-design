@@ -108,7 +108,7 @@ export default function GroupGridItem({
       )}
 
       {/* Кнопки +/− */}
-      <div className='mt-1.5 flex items-center justify-center gap-2 min-h-7'>
+      <div className='mt-1.5 flex-1 flex items-end justify-center gap-2 min-h-7'>
         {selected ? (
           <>
             <button
