@@ -4,7 +4,12 @@
  * Триггер: `?demo=<slug>` в любом venue-URL.
  */
 
-import type { GroupItem, GroupModification, Product, ProductDetails } from '@/types/api';
+import type {
+  GroupItem,
+  GroupModification,
+  Product,
+  ProductDetails,
+} from '@/types/api';
 
 export type { ProductDetails };
 
@@ -114,65 +119,107 @@ const item = (
 const MILK_GROUP: GroupModification = {
   id: ID.groupMilk,
   name: 'Молоко',
-  selection: { type: 'multiple', title: 'Выберите молоко', description: '', min: 0, max: 1 },
+  selection: {
+    type: 'multiple',
+    title: 'Выберите молоко',
+    description: '',
+    min: 0,
+    max: 1,
+  },
   items: [
-    item(ID.milkCoconut,    'Кокосовое',   '15', '30', '/test/milk/coconut.png'),
-    item(ID.milkBanana,     'Банановое',   '15', '30', '/test/milk/banana.png'),
-    item(ID.milkAlmond,     'Миндальное',  '15', '30', '/test/milk/almond.png'),
-    item(ID.milkLactoseFree,'Безлактозное','15', '30', '/test/milk/lactose-free.png'),
-    item(ID.milkOat,        'Овсяное',     '60', '200', '/test/milk/oat.png'),
-    item(ID.milkSoy,        'Соевое',      '15', '30', '/test/milk/soy.png'),
+    item(ID.milkCoconut, 'Кокосовое', '15', '30', '/test/milk/coconut.png'),
+    item(ID.milkBanana, 'Банановое', '15', '30', '/test/milk/banana.png'),
+    item(ID.milkAlmond, 'Миндальное', '15', '30', '/test/milk/almond.png'),
+    item(
+      ID.milkLactoseFree,
+      'Безлактозное',
+      '15',
+      '30',
+      '/test/milk/lactose-free.png',
+    ),
+    item(ID.milkOat, 'Овсяное', '60', '200', '/test/milk/oat.png'),
+    item(ID.milkSoy, 'Соевое', '15', '30', '/test/milk/soy.png'),
   ],
 };
 
 const SUGAR_GROUP: GroupModification = {
   id: ID.groupSugar,
   name: 'Сахар',
-  selection: { type: 'multiple', title: 'Сахар', description: '', min: 0, max: 1 },
+  selection: {
+    type: 'multiple',
+    title: 'Сахар',
+    description: '',
+    min: 0,
+    max: 1,
+  },
   items: [
     item(ID.sugarSyrup, 'Сахарный сироп', '50', '200', '/test/sugar/syrup.png'),
-    item(ID.sugarCubes, 'Сахар',          '0',  '2',   '/test/sugar/cubes.png'),
-    item(ID.sugarNone,  'Без сахара',     '0',  '0',   '/test/sugar/none.png'),
+    item(ID.sugarCubes, 'Сахар', '0', '2', '/test/sugar/cubes.png'),
+    item(ID.sugarNone, 'Без сахара', '0', '0', '/test/sugar/none.png'),
   ],
 };
 
 const ADDONS_GROUP: GroupModification = {
   id: ID.groupAddons,
   name: 'Добавки',
-  selection: { type: 'multiple', title: 'Добавки', description: '', min: 0, max: 4 },
+  selection: {
+    type: 'multiple',
+    title: 'Добавки',
+    description: '',
+    min: 0,
+    max: 4,
+  },
   items: [
-    item(ID.addonCinnamon, 'Корица',      '5',  '5',   '/test/addons/cinnamon.png'),
-    item(ID.addonHoney,    'Мед',         '15', '15',  '/test/addons/honey.png'),
-    item(ID.addonCream,    'Сливки',      '50', '200', '/test/addons/cream.png'),
-    item(ID.addonLemon,    'Лимон слайс', '5',  '5',   '/test/addons/lemon.png'),
-    item(ID.addonMint,     'Мята',        '15', '15',  '/test/addons/mint.png'),
-    item(ID.addonIce,      'Лед',         '0',  '40',  '/test/addons/ice.png'),
+    item(ID.addonCinnamon, 'Корица', '5', '5', '/test/addons/cinnamon.png'),
+    item(ID.addonHoney, 'Мед', '15', '15', '/test/addons/honey.png'),
+    item(ID.addonCream, 'Сливки', '50', '200', '/test/addons/cream.png'),
+    item(ID.addonLemon, 'Лимон слайс', '5', '5', '/test/addons/lemon.png'),
+    item(ID.addonMint, 'Мята', '15', '15', '/test/addons/mint.png'),
+    item(ID.addonIce, 'Лед', '0', '40', '/test/addons/ice.png'),
   ],
 };
 
 /** Группа настройки стакана — 4 колонки, тёмный стиль выделения */
 const DOP_GROUP: GroupModification = {
   id: ID.groupDop,
-  name: 'Дополнительно',
-  selection: { type: 'multiple', title: 'Настройка стакана', description: '', min: 0, max: 0 },
+  name: 'Опции',
+  selection: {
+    type: 'multiple',
+    title: 'Настройка стакана',
+    description: '',
+    min: 0,
+    max: 0,
+  },
   items: [
-    item(ID.dopSleeve,   'С манжетом',   '0', '0', '/test/cup/sleeve.png'),
-    item(ID.dopNoSleeve, 'Без манжета',  '0', '0', '/test/cup/no-sleeve.png'),
-    item(ID.dopLid,      'С крышкой',    '0', '0', '/test/cup/lid.png'),
-    item(ID.dopNoLid,    'Без крышки',   '0', '0', '/test/cup/no-lid.png'),
-    item(ID.dopCup,      'Стакан',       '0', '0', '/test/cup/cup.png'),
-    item(ID.dopOwnCup,   'Свой стакан',  '0', '0', '/test/cup/own.png'),
-    item(ID.dopStandard, 'Стандарт',     '0', '0', '/test/cup/standard.png'),
-    item(ID.dopHot,      'Погорячее',    '0', '0', '/test/cup/hot.png'),
+    item(ID.dopSleeve, 'С манжетом', '0', '0', '/test/cup/sleeve.png'),
+    item(ID.dopNoSleeve, 'Без манжета', '0', '0', '/test/cup/no-sleeve.png'),
+    item(ID.dopLid, 'С крышкой', '0', '0', '/test/cup/lid.png'),
+    item(ID.dopNoLid, 'Без крышки', '0', '0', '/test/cup/no-lid.png'),
+    item(ID.dopCup, 'Стакан', '0', '0', '/test/cup/cup.png'),
+    item(ID.dopOwnCup, 'Свой стакан', '0', '0', '/test/cup/own.png'),
+    item(ID.dopStandard, 'Стандарт', '0', '0', '/test/cup/standard.png'),
+    item(ID.dopHot, 'Погорячее', '0', '0', '/test/cup/hot.png'),
   ],
 };
 
 const ESPRESSO_GROUP: GroupModification = {
   id: ID.groupEspresso,
   name: 'Эспрессо',
-  selection: { type: 'multiple', title: 'Эспрессо', description: '', min: 0, max: 3 },
+  selection: {
+    type: 'multiple',
+    title: 'Эспрессо',
+    description: '',
+    min: 0,
+    max: 3,
+  },
   items: [
-    item(ID.espExtraShot, 'Экстра шот', '30', '10', '/test/espresso/extra-shot.png'),
+    item(
+      ID.espExtraShot,
+      'Экстра шот',
+      '30',
+      '10',
+      '/test/espresso/extra-shot.png',
+    ),
   ],
 };
 
@@ -182,34 +229,76 @@ const ESPRESSO_GROUP: GroupModification = {
 const ICE_MILK_GROUP: GroupModification = {
   id: ID.groupIceMilk,
   name: 'Молоко',
-  selection: { type: 'multiple', title: 'Молоко', description: '', min: 0, max: 1 },
+  selection: {
+    type: 'multiple',
+    title: 'Молоко',
+    description: '',
+    min: 0,
+    max: 1,
+  },
   items: [
     item(ID.iceMilkCoconut, 'Кокосовое', '15', '30', '/test/milk/coconut.png'),
-    item(ID.iceMilkAlmond,  'Миндальное','15', '30', '/test/milk/almond.png'),
-    item(ID.iceMilkOat,     'Овсяное',   '60', '200', '/test/milk/oat.png'),
-    item(ID.iceMilkBanana,  'Банановое', '15', '30', '/test/milk/banana.png'),
+    item(ID.iceMilkAlmond, 'Миндальное', '15', '30', '/test/milk/almond.png'),
+    item(ID.iceMilkOat, 'Овсяное', '60', '200', '/test/milk/oat.png'),
+    item(ID.iceMilkBanana, 'Банановое', '15', '30', '/test/milk/banana.png'),
   ],
 };
 
 const ICE_SYRUP_GROUP: GroupModification = {
   id: ID.groupIceSyrup,
   name: 'Сироп',
-  selection: { type: 'single', title: 'Сироп', description: '', min: 0, max: 1 },
+  selection: {
+    type: 'single',
+    title: 'Сироп',
+    description: '',
+    min: 0,
+    max: 1,
+  },
   items: [
-    item(ID.iceSyrupCaramel,   'Карамель', '30', '15', '/test/syrup/caramel.png'),
-    item(ID.iceSyrupVanilla,   'Ваниль',   '30', '15', '/test/syrup/vanilla.png'),
-    item(ID.iceSyrupChocolate, 'Шоколад',  '30', '15', '/test/syrup/chocolate.png'),
+    item(ID.iceSyrupCaramel, 'Карамель', '30', '15', '/test/syrup/caramel.png'),
+    item(ID.iceSyrupVanilla, 'Ваниль', '30', '15', '/test/syrup/vanilla.png'),
+    item(
+      ID.iceSyrupChocolate,
+      'Шоколад',
+      '30',
+      '15',
+      '/test/syrup/chocolate.png',
+    ),
   ],
 };
 
 const ICE_TOPPING_GROUP: GroupModification = {
   id: ID.groupIceTopping,
   name: 'Топпинг',
-  selection: { type: 'multiple', title: 'Топпинг', description: '', min: 0, max: 2 },
+  selection: {
+    type: 'multiple',
+    title: 'Топпинг',
+    description: '',
+    min: 0,
+    max: 2,
+  },
   items: [
-    item(ID.iceToppingCream,        'Взбитые сливки', '50', '30', '/test/topping/cream.png'),
-    item(ID.iceToppingCaramelSauce, 'Карам. соус',    '20', '15', '/test/topping/caramel-sauce.png'),
-    item(ID.iceToppingMint,         'Мятный сироп',   '30', '15', '/test/topping/mint.png'),
+    item(
+      ID.iceToppingCream,
+      'Взбитые сливки',
+      '50',
+      '30',
+      '/test/topping/cream.png',
+    ),
+    item(
+      ID.iceToppingCaramelSauce,
+      'Карам. соус',
+      '20',
+      '15',
+      '/test/topping/caramel-sauce.png',
+    ),
+    item(
+      ID.iceToppingMint,
+      'Мятный сироп',
+      '30',
+      '15',
+      '/test/topping/mint.png',
+    ),
   ],
 };
 
@@ -217,10 +306,16 @@ const ICE_TOPPING_GROUP: GroupModification = {
 const ICE_LEVEL_GROUP: GroupModification = {
   id: ID.groupIceLevel,
   name: 'Лёд',
-  selection: { type: 'multiple', title: 'Количество льда', description: '', min: 0, max: 1 },
+  selection: {
+    type: 'multiple',
+    title: 'Количество льда',
+    description: '',
+    min: 0,
+    max: 1,
+  },
   items: [
     item(ID.iceMore, 'Много', '0', '0', '/test/ice/more.png'),
-    item(ID.iceLess, 'Мало',  '0', '0', '/test/ice/less.png'),
+    item(ID.iceLess, 'Мало', '0', '0', '/test/ice/less.png'),
   ],
 };
 
@@ -230,7 +325,8 @@ const ICE_LEVEL_GROUP: GroupModification = {
 const MOKKA_PRODUCT: Product = {
   id: ID.product,
   productName: 'Мокка',
-  productDescription: 'Нежный мокка с шоколадным вкусом и мягкой сливочной пенкой',
+  productDescription:
+    'Нежный мокка с шоколадным вкусом и мягкой сливочной пенкой',
   productPrice: 220,
   weight: 350,
   unit: 'г',
@@ -240,11 +336,17 @@ const MOKKA_PRODUCT: Product = {
   productPhotoLarge: '/test/mokka-vertical.png',
   categories: [],
   modificators: [
-    { id: ID.modSizeBig,   name: 'Большой 450 г',  price: 270 },
-    { id: ID.modSizeStd,   name: 'Стандарт 350 г', price: 220 },
+    { id: ID.modSizeBig, name: 'Большой 450 г', price: 270 },
+    { id: ID.modSizeStd, name: 'Стандарт 350 г', price: 220 },
     { id: ID.modSizeSmall, name: 'Маленький 250 г', price: 180 },
   ],
-  groupModifications: [MILK_GROUP, SUGAR_GROUP, ADDONS_GROUP, DOP_GROUP, ESPRESSO_GROUP],
+  groupModifications: [
+    MILK_GROUP,
+    SUGAR_GROUP,
+    ADDONS_GROUP,
+    DOP_GROUP,
+    ESPRESSO_GROUP,
+  ],
   variantType: 'hot',
   variantChip: { label: 'Горячая', photo: null },
 };
@@ -252,7 +354,8 @@ const MOKKA_PRODUCT: Product = {
 const MOKKA_ICE_PRODUCT: Product = {
   id: ID.productIce,
   productName: 'Мокка Айс',
-  productDescription: 'Освежающий холодный мокка со льдом и мягкой шоколадной нотой',
+  productDescription:
+    'Освежающий холодный мокка со льдом и мягкой шоколадной нотой',
   productPrice: 210,
   weight: 380,
   unit: 'мл',
@@ -262,11 +365,16 @@ const MOKKA_ICE_PRODUCT: Product = {
   productPhotoLarge: '/test/mokka-ice-vertical.png',
   categories: [],
   modificators: [
-    { id: ID.modIceSizeLarge, name: 'Макси 480 мл',    price: 260 },
-    { id: ID.modIceSizeStd,   name: 'Стандарт 380 мл', price: 210 },
-    { id: ID.modIceSizeSmall, name: 'Мини 280 мл',     price: 170 },
+    { id: ID.modIceSizeLarge, name: 'Макси 480 мл', price: 260 },
+    { id: ID.modIceSizeStd, name: 'Стандарт 380 мл', price: 210 },
+    { id: ID.modIceSizeSmall, name: 'Мини 280 мл', price: 170 },
   ],
-  groupModifications: [ICE_MILK_GROUP, ICE_SYRUP_GROUP, ICE_TOPPING_GROUP, ICE_LEVEL_GROUP],
+  groupModifications: [
+    ICE_MILK_GROUP,
+    ICE_SYRUP_GROUP,
+    ICE_TOPPING_GROUP,
+    ICE_LEVEL_GROUP,
+  ],
   variantType: 'ice',
   variantChip: { label: 'Айс версия', photo: null },
 };
@@ -274,7 +382,8 @@ const MOKKA_ICE_PRODUCT: Product = {
 const MOKKA_DECAF_PRODUCT: Product = {
   id: ID.productDecaf,
   productName: 'Мокка Декаф',
-  productDescription: 'Насыщенный мокка без кофеина — весь вкус шоколада и сливочной пенки',
+  productDescription:
+    'Насыщенный мокка без кофеина — весь вкус шоколада и сливочной пенки',
   productPrice: 235,
   weight: 350,
   unit: 'г',
@@ -284,9 +393,9 @@ const MOKKA_DECAF_PRODUCT: Product = {
   productPhotoLarge: '/test/mokka-vertical.png',
   categories: [],
   modificators: [
-    { id: ID.modSizeBig,   name: 'Большой 450 г',   price: 285 },
-    { id: ID.modSizeStd,   name: 'Стандарт 350 г',  price: 235 },
-    { id: ID.modSizeSmall, name: 'Маленький 250 г',  price: 195 },
+    { id: ID.modSizeBig, name: 'Большой 450 г', price: 285 },
+    { id: ID.modSizeStd, name: 'Стандарт 350 г', price: 235 },
+    { id: ID.modSizeSmall, name: 'Маленький 250 г', price: 195 },
   ],
   groupModifications: [MILK_GROUP, SUGAR_GROUP, ADDONS_GROUP, DOP_GROUP],
   variantType: 'decaf',
@@ -303,11 +412,11 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
     posterUrl: '/test/mokka-vertical.png',
 
     chipIcons: {
-      [MILK_GROUP.name]:    '/test/chips/milk.png',
-      [SUGAR_GROUP.name]:   '/test/chips/sugar.png',
-      [ADDONS_GROUP.name]:  '/test/chips/addons.png',
-      [DOP_GROUP.name]:     '/test/chips/cup.png',
-      [ESPRESSO_GROUP.name]:'/test/chips/espresso.png',
+      [MILK_GROUP.name]: '/test/chips/milk.png',
+      [SUGAR_GROUP.name]: '/test/chips/sugar.png',
+      [ADDONS_GROUP.name]: '/test/chips/addons.png',
+      [DOP_GROUP.name]: '/test/chips/cup.png',
+      [ESPRESSO_GROUP.name]: '/test/chips/espresso.png',
     },
 
     productDetails: {
@@ -333,9 +442,9 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
     groupMeta: {
       [DOP_GROUP.id]: {
         segmentPairs: [
-          [ID.dopSleeve,   ID.dopNoSleeve],
-          [ID.dopLid,      ID.dopNoLid],
-          [ID.dopCup,      ID.dopOwnCup],
+          [ID.dopSleeve, ID.dopNoSleeve],
+          [ID.dopLid, ID.dopNoLid],
+          [ID.dopCup, ID.dopOwnCup],
           [ID.dopStandard, ID.dopHot],
         ],
       },
@@ -348,10 +457,10 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
     posterUrl: '/test/mokka-ice-vertical.png',
 
     chipIcons: {
-      [ICE_MILK_GROUP.name]:    '/test/chips/milk.png',
-      [ICE_SYRUP_GROUP.name]:   '/test/chips/syrup.png',
+      [ICE_MILK_GROUP.name]: '/test/chips/milk.png',
+      [ICE_SYRUP_GROUP.name]: '/test/chips/syrup.png',
       [ICE_TOPPING_GROUP.name]: '/test/chips/topping.png',
-      [ICE_LEVEL_GROUP.name]:   '/test/chips/ice.png',
+      [ICE_LEVEL_GROUP.name]: '/test/chips/ice.png',
     },
 
     productDetails: {
@@ -387,10 +496,10 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
     posterUrl: '/test/mokka-vertical.png',
 
     chipIcons: {
-      [MILK_GROUP.name]:   '/test/chips/milk.png',
-      [SUGAR_GROUP.name]:  '/test/chips/sugar.png',
+      [MILK_GROUP.name]: '/test/chips/milk.png',
+      [SUGAR_GROUP.name]: '/test/chips/sugar.png',
       [ADDONS_GROUP.name]: '/test/chips/addons.png',
-      [DOP_GROUP.name]:    '/test/chips/cup.png',
+      [DOP_GROUP.name]: '/test/chips/cup.png',
     },
 
     productDetails: {
@@ -412,9 +521,9 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
     groupMeta: {
       [DOP_GROUP.id]: {
         segmentPairs: [
-          [ID.dopSleeve,   ID.dopNoSleeve],
-          [ID.dopLid,      ID.dopNoLid],
-          [ID.dopCup,      ID.dopOwnCup],
+          [ID.dopSleeve, ID.dopNoSleeve],
+          [ID.dopLid, ID.dopNoLid],
+          [ID.dopCup, ID.dopOwnCup],
           [ID.dopStandard, ID.dopHot],
         ],
       },
@@ -427,9 +536,9 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
 // Order here defines chip order in the UI (left → right).
 // ---------------------------------------------------------------------------
 export const VARIANT_GROUPS: Record<string, string[]> = {
-  'mokka':       ['mokka-decaf', 'mokka',       'mokka-ice'],
-  'mokka-ice':   ['mokka-decaf', 'mokka',       'mokka-ice'],
-  'mokka-decaf': ['mokka-decaf', 'mokka',       'mokka-ice'],
+  mokka: ['mokka-decaf', 'mokka', 'mokka-ice'],
+  'mokka-ice': ['mokka-decaf', 'mokka', 'mokka-ice'],
+  'mokka-decaf': ['mokka-decaf', 'mokka', 'mokka-ice'],
 };
 
 // ---------------------------------------------------------------------------
@@ -439,7 +548,10 @@ export const VARIANT_GROUPS: Record<string, string[]> = {
 /**
  * Парсит «человеческое» название и вес из строки вида "Большой 450 г".
  */
-export function parseSizeModName(name: string): { label: string; sub: string | null } {
+export function parseSizeModName(name: string): {
+  label: string;
+  sub: string | null;
+} {
   const m = name.match(/^(.+?)\s+(\d+\s*[а-яa-z]+)\s*$/i);
   if (m) return { label: m[1].trim(), sub: m[2].trim() };
   return { label: name, sub: null };
