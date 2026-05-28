@@ -4,16 +4,16 @@ import type { VideoProductMock } from '@/data/mock-video-products';
 import type { Product } from '@/types/api';
 
 import VideoSheetLayout from './VideoSheetLayout';
-import { VariantChip } from './VariantChip';
 
 interface Props {
   open: boolean;
   mock: VideoProductMock | null;
   iceProduct?: Product | null;
+  variantChipSlot?: React.ReactNode;
   onClose: () => void;
 }
 
-export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Props) {
+export default function IceVersionSheet({ open, mock, iceProduct, variantChipSlot, onClose }: Props) {
   const product = iceProduct ?? mock?.product ?? null;
   if (!product) return null;
 
@@ -22,7 +22,6 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
     ? (iceProduct.productVideoPoster ?? iceProduct.productPhoto ?? undefined)
     : (mock?.product.productPhoto ?? mock?.posterUrl ?? undefined);
   const productDetails = iceProduct?.productDetails ?? mock?.productDetails ?? null;
-  const variantChip = iceProduct?.iceVersionChip ?? mock?.variantChip ?? null;
   const chipIcons: Record<string, string> = mock?.chipIcons ?? {};
   const groupMeta = mock?.groupMeta ?? null;
 
@@ -44,14 +43,7 @@ export default function IceVersionSheet({ open, mock, iceProduct, onClose }: Pro
       resetKey={String(product.id)}
       onClose={onClose}
       onAdd={onClose}
-      variantChipSlot={
-        <VariantChip
-          variantType={iceProduct?.variantType ?? null}
-          label={variantChip?.label ?? 'Назад'}
-          inverted
-          onClick={onClose}
-        />
-      }
+      variantChipSlot={variantChipSlot}
     />
   );
 }

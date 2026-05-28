@@ -1,25 +1,35 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useMounted } from '@/hooks/useMounted';
-import { MOCK_VIDEO_PRODUCTS } from '@/data/mock-video-products';
+import { MOCK_VIDEO_PRODUCTS, VARIANT_GROUPS } from '@/data/mock-video-products';
 import { useVideoProductStore } from '@/store/videoProduct';
 import { useVenueStore } from '@/store/venue';
 import { useVenueProducts } from '@/lib/api/queries';
+import type { Product } from '@/types/api';
 
 import VideoSheetLayout from './VideoSheetLayout';
-import IceVersionSheet from './IceVersionSheet';
-import { VariantChip } from './VariantChip';
-import { haptic } from './useVideoSheet';
+import { VariantChip, DecafChip } from './VariantChip';
 
 const DEMO_PARAM = 'demo';
 const VIDEO_PARAM = 'video';
 
+const VARIANT_TYPE_ORDER = ['decaf', 'hot', 'ice', 'lactose_free'];
+
+function sortVariants(products: Product[]): Product[] {
+  return [...products].sort((a, b) => {
+    const ai = VARIANT_TYPE_ORDER.indexOf(a.variantType ?? '');
+    const bi = VARIANT_TYPE_ORDER.indexOf(b.variantType ?? '');
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+}
+
 export default function VideoProductSheet() {
   const mounted = useMounted();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
@@ -28,7 +38,7 @@ export default function VideoProductSheet() {
 
   const videoId = searchParams.get(VIDEO_PARAM);
   const videoProductFromStore = useVideoProductStore((s) => s.selectedProduct);
-  const clearVideoProduct = useVideoProductStore((s) => s.setProduct);
+  const setVideoProduct = useVideoProductStore((s) => s.setProduct);
 
   // Fallback: if ?video= in URL but store is empty (direct navigation),
   // look for the product in already-loaded catalog data (React Query cache).
@@ -51,18 +61,9 @@ export default function VideoProductSheet() {
     ? (realProduct.productVideoPoster ?? realProduct.productPhoto ?? undefined)
     : (mock?.product.productPhoto ?? mock?.posterUrl ?? undefined);
   const productDetails = realProduct?.productDetails ?? mock?.productDetails ?? null;
-  const variantChip = realProduct?.iceVersionChip ?? mock?.variantChip ?? null;
   const chipIcons: Record<string, string> = mock?.chipIcons ?? {};
   const groupMeta = mock?.groupMeta ?? null;
 
-  const iceProduct = realProduct?.iceVersion ?? null;
-  const iceMock = useMemo(
-    () => (mock?.variantSlug ? (MOCK_VIDEO_PRODUCTS[mock.variantSlug] ?? null) : null),
-    [mock],
-  );
-  const hasVariant = !!(iceProduct || iceMock);
-
-  const [iceOpen, setIceOpen] = useState(false);
   const activeKey = realProduct ? `v:${realProduct.id}` : demoSlug;
 
   // Scroll lock
@@ -80,14 +81,93 @@ export default function VideoProductSheet() {
   }, [isOpen, mounted]);
 
   const handleClose = useCallback(() => {
-    clearVideoProduct(null);
-    setIceOpen(false);
+    setVideoProduct(null);
     const params = new URLSearchParams(searchParams.toString());
     params.delete(DEMO_PARAM);
     params.delete(VIDEO_PARAM);
     const qs = params.toString();
     window.history.replaceState(null, '', qs ? `${pathname}?${qs}` : pathname);
-  }, [pathname, searchParams, clearVideoProduct]);
+  }, [pathname, searchParams, setVideoProduct]);
+
+  // ── Variant chip slot ───────────────────────────────────────────────────────
+  const realAlternates = useMemo(() => realProduct?.alternateVersions ?? [], [realProduct]);
+  const hasRealVariants = realProduct?.variantType != null && realAlternates.length > 0;
+
+  const chipSlot = useMemo(() => {
+    // Demo mode: show only alternates (not the current product)
+    if (mock && demoSlug) {
+      const group = VARIANT_GROUPS[demoSlug];
+      if (!group) return null;
+      const alternates = group.filter((slug) => slug !== demoSlug);
+      if (alternates.length === 0) return null;
+      return (
+        <>
+          {alternates.map((slug) => {
+            const m = MOCK_VIDEO_PRODUCTS[slug];
+            if (!m) return null;
+            const navigate = () => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set(DEMO_PARAM, slug);
+              router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            };
+            if (m.product.variantType === 'decaf') {
+              return (
+                <DecafChip
+                  key={slug}
+                  label={m.product.variantChip?.label ?? m.product.productName}
+                  onClick={navigate}
+                />
+              );
+            }
+            return (
+              <VariantChip
+                key={slug}
+                variantType={m.product.variantType ?? null}
+                label={m.product.variantChip?.label ?? m.product.productName}
+                active={false}
+                onClick={navigate}
+              />
+            );
+          })}
+        </>
+      );
+    }
+    // Real product mode: show only alternates (not the current product)
+    if (realProduct && hasRealVariants) {
+      const alternates = sortVariants(realAlternates);
+      return (
+        <>
+          {alternates.map((p) => {
+            const navigate = () => {
+              setVideoProduct(p);
+              const params = new URLSearchParams(searchParams.toString());
+              params.set(VIDEO_PARAM, String(p.id));
+              router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            };
+            if (p.variantType === 'decaf') {
+              return (
+                <DecafChip
+                  key={p.id}
+                  label={p.variantChip?.label ?? p.productName}
+                  onClick={navigate}
+                />
+              );
+            }
+            return (
+              <VariantChip
+                key={p.id}
+                variantType={p.variantType ?? null}
+                label={p.variantChip?.label ?? p.productName}
+                active={false}
+                onClick={navigate}
+              />
+            );
+          })}
+        </>
+      );
+    }
+    return null;
+  }, [mock, demoSlug, realProduct, hasRealVariants, realAlternates, searchParams, pathname, router, setVideoProduct]);
 
   if (!mounted || !product) return null;
 
@@ -104,23 +184,8 @@ export default function VideoProductSheet() {
       resetKey={activeKey}
       onClose={handleClose}
       onAdd={handleClose}
-      variantChipSlot={
-        variantChip && hasVariant ? (
-          <VariantChip
-            variantType={iceProduct?.variantType ?? iceMock?.variantType ?? null}
-            label={variantChip.label}
-            onClick={() => { haptic(25); setIceOpen(true); }}
-          />
-        ) : null
-      }
-    >
-      <IceVersionSheet
-        open={iceOpen}
-        mock={iceMock}
-        iceProduct={iceProduct}
-        onClose={() => setIceOpen(false)}
-      />
-    </VideoSheetLayout>,
+      variantChipSlot={chipSlot}
+    />,
     document.body,
   );
 }

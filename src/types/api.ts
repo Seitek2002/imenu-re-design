@@ -278,6 +278,8 @@ export interface GroupSelection {
 export interface GroupModification {
   id: number;
   name: string;
+  icon?: string | null;
+  isCommentOnly?: boolean;
   selection: GroupSelection;
   items: GroupItem[];
 }
@@ -301,8 +303,8 @@ export interface ProductDetails {
   sections: ProductDetailSection[];
 }
 
-export interface IceVersionChip {
-  label: string;        // «Айс версия» или «Горячая версия»
+export interface VariantChip {
+  label: string;
   photo: string | null;
 }
 
@@ -349,14 +351,12 @@ export interface Product {
   productVideoPoster?: string | null;
   /** Контент листка «Подробнее» */
   productDetails?: ProductDetails | null;
-  /** ID товара-альтернативы (Айс/Горячая версия). null — чип не показывается */
-  iceVersionId?: number | null;
-  /** Данные чипа «Айс версия» / «Горячая версия» */
-  iceVersionChip?: IceVersionChip | null;
-  /** Тип варианта: "ice" — холодный, "hot" — горячий, null — обычный */
-  variantType?: 'ice' | 'hot' | null;
-  /** Полный объект альтернативного товара — встроен в ответ, второй запрос не нужен */
-  iceVersion?: Product | null;
+  /** Тип варианта этого товара */
+  variantType?: 'ice' | 'hot' | 'decaf' | 'lactose_free' | null;
+  /** Чип этого товара в пикере вариантов */
+  variantChip?: VariantChip | null;
+  /** Связанные варианты из той же группы (без вложенных alternateVersions) */
+  alternateVersions?: Product[];
 }
 
 // --- PROMOTIONS (v2) ---

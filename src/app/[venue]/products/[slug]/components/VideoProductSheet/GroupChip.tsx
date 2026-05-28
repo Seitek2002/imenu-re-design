@@ -35,7 +35,7 @@ export default function GroupChip({
     <button
       type='button'
       onClick={onClick}
-      className='relative shrink-0 w-21 active:scale-95 transition-all duration-150 outline-none'
+      className='relative shrink-0 w-23 active:scale-95 transition-all duration-150 outline-none'
       aria-pressed={active}
       aria-label={selectedCount > 0 ? `${label}, выбрано: ${selectedCount}` : label}
     >
@@ -49,12 +49,12 @@ export default function GroupChip({
       {/* Карточка чипа — единый фиксированный размер */}
       <div
         className={`
-          w-full h-27 rounded-[20px] flex flex-col items-center justify-between
-          pt-2.5 pb-2.5 overflow-hidden
+          w-full h-[90px] rounded-2xl flex flex-col items-center justify-between
+          pt-[10px] pb-[10px] px-4 overflow-hidden
           transition-all duration-150
           ${isSelected
             ? active ? 'bg-white/75 ring-2 ring-white shadow-md' : 'bg-white/60'
-            : active ? 'bg-white/50 ring-2 ring-white shadow-md' : 'bg-white/25 backdrop-blur-md ring-1 ring-white/30'
+            : active ? 'bg-white/50 ring-2 ring-white shadow-md' : 'bg-white/30 backdrop-blur-[10px] ring-1 ring-white/30'
           }
         `}
       >

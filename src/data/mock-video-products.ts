@@ -8,11 +8,6 @@ import type { GroupItem, GroupModification, Product, ProductDetails } from '@/ty
 
 export type { ProductDetails };
 
-export interface VariantChip {
-  label: string;
-  photo: string;
-}
-
 export interface GroupMeta {
   columns?: number;
   /** Если true — выбранные элементы отображаются с тёмным фоном (стиль cup-toggle) */
@@ -30,20 +25,10 @@ export interface VideoProductMock {
   posterUrl: string;
   /** Иконка чипа в нижнем ряду. Ключ — GroupModification.name */
   chipIcons: Record<string, string>;
-  /** Первый «специальный» чип перед разделителем (например: Айс версия / Горячая версия) */
-  variantChip?: VariantChip;
   /** Контент для листа «Подробнее» */
   productDetails?: ProductDetails;
   /** Метаданные групп: колонки, стиль выделения. Ключ — GroupModification.id */
   groupMeta?: Record<number, GroupMeta>;
-  /**
-   * Slug альтернативной версии товара в MOCK_VIDEO_PRODUCTS (mock-only).
-   * В реальном API — product.iceVersionId: number.
-   * Если задан — показывается variantChip, по клику открывается bottom sheet.
-   */
-  variantSlug?: string;
-  /** Тип варианта для mock-данных */
-  variantType?: 'ice' | 'hot' | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,8 +73,9 @@ const ID = {
   dopHot: -3308,
   // espresso
   espExtraShot: -3401,
-  // ── Айс версия ────────────────────────────────────────────────────────────
-  productIce: -1001,
+  // ── Варианты ──────────────────────────────────────────────────────────────
+  productIce: -1010,
+  productDecaf: -1011,
   modIceSizeLarge: -7001,
   modIceSizeStd: -7002,
   modIceSizeSmall: -7003,
@@ -259,6 +245,8 @@ const MOKKA_PRODUCT: Product = {
     { id: ID.modSizeSmall, name: 'Маленький 250 г', price: 180 },
   ],
   groupModifications: [MILK_GROUP, SUGAR_GROUP, ADDONS_GROUP, DOP_GROUP, ESPRESSO_GROUP],
+  variantType: 'hot',
+  variantChip: { label: 'Горячая', photo: null },
 };
 
 const MOKKA_ICE_PRODUCT: Product = {
@@ -279,6 +267,30 @@ const MOKKA_ICE_PRODUCT: Product = {
     { id: ID.modIceSizeSmall, name: 'Мини 280 мл',     price: 170 },
   ],
   groupModifications: [ICE_MILK_GROUP, ICE_SYRUP_GROUP, ICE_TOPPING_GROUP, ICE_LEVEL_GROUP],
+  variantType: 'ice',
+  variantChip: { label: 'Айс версия', photo: null },
+};
+
+const MOKKA_DECAF_PRODUCT: Product = {
+  id: ID.productDecaf,
+  productName: 'Мокка Декаф',
+  productDescription: 'Насыщенный мокка без кофеина — весь вкус шоколада и сливочной пенки',
+  productPrice: 235,
+  weight: 350,
+  unit: 'г',
+  unitDisplay: 'г',
+  productPhoto: '/test/mokka-vertical.png',
+  productPhotoSmall: '/test/mokka-vertical.png',
+  productPhotoLarge: '/test/mokka-vertical.png',
+  categories: [],
+  modificators: [
+    { id: ID.modSizeBig,   name: 'Большой 450 г',   price: 285 },
+    { id: ID.modSizeStd,   name: 'Стандарт 350 г',  price: 235 },
+    { id: ID.modSizeSmall, name: 'Маленький 250 г',  price: 195 },
+  ],
+  groupModifications: [MILK_GROUP, SUGAR_GROUP, ADDONS_GROUP, DOP_GROUP],
+  variantType: 'decaf',
+  variantChip: { label: 'Декаф', photo: null },
 };
 
 // ---------------------------------------------------------------------------
@@ -297,13 +309,6 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
       [DOP_GROUP.name]:     '/test/chips/cup.png',
       [ESPRESSO_GROUP.name]:'/test/chips/espresso.png',
     },
-
-    variantChip: {
-      label: 'Айс версия',
-      photo: '/test/chips/ice-version.png',
-    },
-
-    variantSlug: 'mokka-ice',
 
     productDetails: {
       fullTitle: 'Мокка с шоколадным вкусом и мягкой сливочной пенкой',
@@ -349,13 +354,6 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
       [ICE_LEVEL_GROUP.name]:   '/test/chips/ice.png',
     },
 
-    variantChip: {
-      label: 'Горячая версия',
-      photo: '/test/chips/hot-version.png',
-    },
-
-    // variantSlug не задан — у айс-версии нет вложенной «ещё одной» версии
-
     productDetails: {
       fullTitle: 'Мокка Айс — холодный шоколадный кофе со льдом',
       description:
@@ -382,6 +380,56 @@ export const MOCK_VIDEO_PRODUCTS: Record<string, VideoProductMock> = {
       },
     },
   },
+
+  'mokka-decaf': {
+    product: MOKKA_DECAF_PRODUCT,
+    videoUrl: '/test/mokka.mp4',
+    posterUrl: '/test/mokka-vertical.png',
+
+    chipIcons: {
+      [MILK_GROUP.name]:   '/test/chips/milk.png',
+      [SUGAR_GROUP.name]:  '/test/chips/sugar.png',
+      [ADDONS_GROUP.name]: '/test/chips/addons.png',
+      [DOP_GROUP.name]:    '/test/chips/cup.png',
+    },
+
+    productDetails: {
+      fullTitle: 'Мокка Декаф — без кофеина',
+      description:
+        'Все удовольствие от мокко без кофеина. Декаф эспрессо, шоколадный сироп и взбитое молоко — идеально для вечернего кофе.',
+      sections: [
+        {
+          heading: 'Состав',
+          body: 'Декаф эспрессо + шоколадный сироп + молоко',
+        },
+        {
+          heading: 'Вкус',
+          body: 'Насыщенный шоколадный с мягкой кофейной ноткой, без кофеина',
+        },
+      ],
+    },
+
+    groupMeta: {
+      [DOP_GROUP.id]: {
+        segmentPairs: [
+          [ID.dopSleeve,   ID.dopNoSleeve],
+          [ID.dopLid,      ID.dopNoLid],
+          [ID.dopCup,      ID.dopOwnCup],
+          [ID.dopStandard, ID.dopHot],
+        ],
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Variant groups — maps every slug to the full ordered chip list for its group.
+// Order here defines chip order in the UI (left → right).
+// ---------------------------------------------------------------------------
+export const VARIANT_GROUPS: Record<string, string[]> = {
+  'mokka':       ['mokka-decaf', 'mokka',       'mokka-ice'],
+  'mokka-ice':   ['mokka-decaf', 'mokka',       'mokka-ice'],
+  'mokka-decaf': ['mokka-decaf', 'mokka',       'mokka-ice'],
 };
 
 // ---------------------------------------------------------------------------

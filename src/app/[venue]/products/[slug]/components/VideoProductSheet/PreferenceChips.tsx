@@ -61,28 +61,28 @@ export function PreferenceChipButton({
     <button
       type='button'
       onClick={onClick}
-      className='relative shrink-0 w-21 active:scale-95 transition-all duration-150 outline-none'
+      className='relative shrink-0 w-23 active:scale-95 transition-all duration-150 outline-none'
       aria-pressed={active}
       aria-label={selectedOptionLabel ?? label}
     >
       <div
         className={`
-          w-full h-27 rounded-[20px] flex flex-col items-center justify-between
-          pt-2.5 pb-2.5 overflow-hidden transition-all duration-150
+          w-full h-[90px] rounded-2xl flex flex-col items-center justify-between
+          pt-[10px] pb-[10px] px-4 overflow-hidden transition-all duration-150
           ${isSelected
             ? active
               ? 'bg-white/75 ring-2 ring-white shadow-md'
               : 'bg-white/60'
             : active
               ? 'bg-white/50 ring-2 ring-white shadow-md'
-              : 'bg-white/25 backdrop-blur-md ring-1 ring-white/30'
+              : 'bg-white/30 backdrop-blur-[10px] ring-1 ring-white/30'
           }
         `}
       >
         <div className='flex-1 flex items-center justify-center w-full'>
           <Icon size={28} strokeWidth={1.5} className='text-white' />
         </div>
-        <span className='text-[11px] font-semibold text-white text-center leading-tight line-clamp-2 w-full px-1.5 shrink-0'>
+        <span className='text-[11px] font-semibold text-white text-center leading-tight line-clamp-2 w-full shrink-0'>
           {selectedOptionLabel ?? label}
         </span>
       </div>

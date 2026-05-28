@@ -35,9 +35,8 @@ interface Props {
   onClose: () => void;
   onAdd: () => void;
 
-  /** First chip slot — VariantChip (open or return). null = not shown. */
+  /** Variant chip slot — rendered before preference chips in the scroll row. */
   variantChipSlot?: React.ReactNode;
-  /** IceVersionSheet or nothing */
   children?: React.ReactNode;
 }
 
@@ -182,12 +181,16 @@ export default function VideoSheetLayout({
         <div className='justify-end'>
           <div className='relative z-10 shrink-0'>
             <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
-              {variantChipSlot}
               {variantChipSlot && (
-                <div
-                  className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5'
-                  aria-hidden='true'
-                />
+                <>
+                  <div className='flex flex-col gap-2 shrink-0'>
+                    {variantChipSlot}
+                  </div>
+                  <div
+                    className='w-px h-12 bg-white/25 shrink-0 mb-8 mx-0.5'
+                    aria-hidden='true'
+                  />
+                </>
               )}
 
               {PREFERENCE_CHIPS.map((pref) => (
@@ -208,7 +211,7 @@ export default function VideoSheetLayout({
 
               {groups.length > 0 && (
                 <div
-                  className='w-px h-12 bg-white/25 shrink-0 self-center mx-0.5'
+                  className='w-px h-12 bg-white/25 shrink-0 mb-8 mx-0.5'
                   aria-hidden='true'
                 />
               )}
