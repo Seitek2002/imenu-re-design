@@ -5,6 +5,15 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'swiper',
+      'react-leaflet',
+      'country-flag-icons',
+      '@tanstack/react-query',
+    ],
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     qualities: [65, 75],
@@ -22,10 +31,6 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'joinposter.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'joinposter.comnone',
-      }
     ],
 
     // 2. Добавляем промежуточные размеры (640 и 1080)
