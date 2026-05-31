@@ -69,47 +69,53 @@ export default function GroupGrid({
     [counts, type, min, onChange],
   );
 
-  /** Выбор одного варианта в паре (сегмент): сброс другого */
+  /** Выбор одного варианта в паре (сегмент): сброс другого, активный не снимается */
   const handleSegmentSelect = useCallback(
     (pair: [number, number], selectedId: number) => {
+      if ((counts[selectedId] ?? 0) > 0) return; // уже активен — ничего не делаем
       haptic();
       const next = { ...counts };
       for (const id of pair) next[id] = 0;
-      next[selectedId] = next[selectedId] > 0 ? 0 : 1; // toggle
+      next[selectedId] = 1;
       onChange(next);
     },
     [counts, onChange],
   );
 
-  // ── Сегментный рендер (4-col grid, dark selected) ────────────────────────
+  // ── Сегментный рендер: пары сгруппированы, 2 группы в строке ────────────
   if (segmentPairs && segmentPairs.length > 0) {
     const itemById = Object.fromEntries(group.items.map((i) => [i.id, i]));
-    const totalItems = segmentPairs.length * 2;
-    const cols = totalItems <= 4 ? 'grid-cols-2' : 'grid-cols-4';
 
     return (
       <div className='overflow-y-auto overscroll-contain min-h-0'>
-        <div className={`bg-white/15 backdrop-blur-2xl rounded-3xl p-2.5 grid ${cols} gap-2`}>
-          {segmentPairs.flatMap(([id1, id2]) => {
+        <div
+          className='rounded-3xl p-2.5 grid grid-cols-2 gap-2.5'
+          style={{ background: 'linear-gradient(145deg, rgba(196,149,106,0.88), rgba(139,94,60,0.88))', backdropFilter: 'blur(20px)' }}
+        >
+          {segmentPairs.map(([id1, id2]) => {
             const a = itemById[id1];
             const b = itemById[id2];
-            if (!a || !b) return [];
+            if (!a || !b) return null;
             const aSelected = (counts[id1] ?? 0) > 0;
             const bSelected = (counts[id2] ?? 0) > 0;
-            return [
-              <SegmentCard
-                key={id1}
-                item={a}
-                selected={aSelected}
-                onSelect={() => handleSegmentSelect([id1, id2], id1)}
-              />,
-              <SegmentCard
-                key={id2}
-                item={b}
-                selected={bSelected}
-                onSelect={() => handleSegmentSelect([id1, id2], id2)}
-              />,
-            ];
+            return (
+              <div
+                key={`${id1}-${id2}`}
+                className='flex gap-1 rounded-2xl p-1 overflow-hidden'
+                style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
+              >
+                <SegmentCard
+                  item={a}
+                  selected={aSelected}
+                  onSelect={() => handleSegmentSelect([id1, id2], id1)}
+                />
+                <SegmentCard
+                  item={b}
+                  selected={bSelected}
+                  onSelect={() => handleSegmentSelect([id1, id2], id2)}
+                />
+              </div>
+            );
           })}
         </div>
       </div>
@@ -184,21 +190,21 @@ function SegmentCard({
     <button
       type='button'
       onClick={onSelect}
-      className={`
-        relative rounded-2xl p-2 flex flex-col items-center overflow-hidden h-25
-        transition-all duration-150 active:scale-95
-        ${selected ? 'bg-[#7D6150]' : 'bg-white/60'}
-      `}
+      className='relative flex-1 rounded-2xl pt-2.5 pb-2 px-1.5 flex flex-col items-center justify-between overflow-hidden h-25 transition-all duration-200 active:scale-95'
+      style={{ backgroundColor: selected ? '#4B2E15' : 'rgba(212, 165, 116, 0.55)' }}
     >
       <div className='flex-1 flex items-center justify-center w-full'>
-        {item.photo && (
+        {item.photo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.photo} alt='' className='w-14 h-14 object-contain' />
+          <img src={item.photo} alt='' className='w-14.5 h-14.5 object-contain drop-shadow-sm' />
+        ) : (
+          <div className='w-14.5 h-14.5 rounded-xl' style={{ backgroundColor: 'rgba(0,0,0,0.05)' }} />
         )}
       </div>
-      <span className={`text-[11px] font-semibold text-center leading-tight line-clamp-2 ${
-        selected ? 'text-white' : 'text-[#21201F]'
-      }`}>
+      <span
+        className='text-[10px] font-semibold text-center leading-tight line-clamp-2 w-full mt-1'
+        style={{ color: selected ? '#fff' : '#3D2B1F' }}
+      >
         {item.name}
       </span>
     </button>

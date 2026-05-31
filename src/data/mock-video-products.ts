@@ -197,7 +197,7 @@ const DOP_GROUP: GroupModification = {
     item(ID.dopNoLid, 'Без крышки', '0', '0', '/test/cup/no-lid.png'),
     item(ID.dopCup, 'Стакан', '0', '0', '/test/cup/cup.png'),
     item(ID.dopOwnCup, 'Свой стакан', '0', '0', '/test/cup/own.png'),
-    item(ID.dopStandard, 'Стандарт', '0', '0', '/test/cup/standard.png'),
+    item(ID.dopStandard, 'Стандарт', '0', '0', '/test/cup/standart.png'),
     item(ID.dopHot, 'Погорячее', '0', '0', '/test/cup/hot.png'),
   ],
 };
