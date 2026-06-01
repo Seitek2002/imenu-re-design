@@ -164,10 +164,8 @@ export default function VideoSheetLayout({
                 <div
                   className='flex items-end gap-2 shrink-0 overflow-hidden'
                   style={{
-                    maxHeight: expandedGroup ? '0px' : '300px',
-                    opacity: expandedGroup ? 0 : 1,
-                    transition: 'max-height 0.25s ease, opacity 0.2s ease',
-                    pointerEvents: expandedGroup ? 'none' : undefined,
+                    maxHeight: expandedGroup ? '68px' : '300px',
+                    transition: 'max-height 0.25s ease',
                   }}
                 >
                   <div className='flex flex-col gap-2 shrink-0'>
