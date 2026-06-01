@@ -118,7 +118,7 @@ export default function VideoSheetLayout({
             {product.productName}
           </h1>
           {product.productDescription && (
-            <p className='text-white/70 text-sm mt-2 max-w-full line-clamp-2 flex justify-between'>
+            <p className='text-white/70 text-sm mt-2 max-w-full line-clamp-2'>
               {product.productDescription}
               {productDetails && (
                 <button
@@ -144,7 +144,7 @@ export default function VideoSheetLayout({
       </div>
 
       <div className='flex-1 flex flex-col min-h-0'>
-        <div className='relative flex-1 flex flex-col justify-end z-10 px-4 py-2 min-h-0'>
+        <div className={`relative flex-1 flex flex-col justify-end px-4 py-2 min-h-0 ${expandedGroup ? 'z-20' : 'z-10'}`}>
           {expandedGroup ? (
             <GroupGrid
               group={expandedGroup}
