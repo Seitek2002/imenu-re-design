@@ -118,7 +118,7 @@ export default function VideoSheetLayout({
             {product.productName}
           </h1>
           {product.productDescription && (
-            <p className='text-white/70 text-sm mt-2 max-w-full line-clamp-2'>
+            <p className='text-white/70 text-sm mt-2 max-w-full line-clamp-2 flex flex-col'>
               {product.productDescription}
               {productDetails && (
                 <button
@@ -127,7 +127,7 @@ export default function VideoSheetLayout({
                     haptic(25);
                     setDetailOpen(true);
                   }}
-                  className='text-sm mt-1 pl-1 w-fit text-white underline underline-offset-[6px] decoration-white/50 decoration-1'
+                  className='text-sm mt-1 w-fit text-white underline underline-offset-[6px] decoration-white/50 decoration-1'
                 >
                   Подробнее
                 </button>
@@ -161,7 +161,9 @@ export default function VideoSheetLayout({
           <div className='relative z-10 shrink-0'>
             <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
               {variantChipSlot && (
-                <>
+                <div
+                  className={`flex items-end gap-2 shrink-0 transition-opacity duration-200 ${expandedGroup ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                >
                   <div className='flex flex-col gap-2 shrink-0'>
                     {variantChipSlot}
                   </div>
@@ -169,7 +171,7 @@ export default function VideoSheetLayout({
                     className='w-px h-12 bg-white/25 shrink-0 mb-6 mx-0.5'
                     aria-hidden='true'
                   />
-                </>
+                </div>
               )}
 
               {groups.map((g) => (
