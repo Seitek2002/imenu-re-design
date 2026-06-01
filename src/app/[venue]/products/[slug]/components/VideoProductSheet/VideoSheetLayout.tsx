@@ -5,6 +5,8 @@ import { X } from 'lucide-react';
 import type { Product, ProductDetails } from '@/types/api';
 
 import type { GroupMeta } from '@/data/mock-video-products';
+import { useBasketStore, type BasketGroupSelection } from '@/store/basket';
+import { variantPrice } from '@/lib/pricing';
 import { useVideoSheet, haptic } from './useVideoSheet';
 import VideoBackground from './VideoBackground';
 import SizePill from './SizePill';
@@ -35,6 +37,21 @@ interface Props {
   children?: React.ReactNode;
 }
 
+function buildGroupSelections(
+  groups: Product['groupModifications'],
+  counts: Record<number, number>,
+): BasketGroupSelection[] {
+  return (groups ?? [])
+    .map((g) => ({
+      groupId: g.id,
+      groupName: g.name,
+      items: g.items
+        .filter((i) => (counts[i.id] ?? 0) > 0)
+        .map((i) => ({ id: i.id, name: i.name, count: counts[i.id], price: i.price })),
+    }))
+    .filter((g) => g.items.length > 0);
+}
+
 export default function VideoSheetLayout({
   rootClassName,
   rootStyle,
@@ -51,7 +68,10 @@ export default function VideoSheetLayout({
   variantChipSlot,
   children,
 }: Props) {
+  const addToBasket = useBasketStore((s) => s.addToBasket);
+
   const {
+    spotId,
     sizeId,
     counts,
     setCounts,
@@ -67,6 +87,17 @@ export default function VideoSheetLayout({
     handleToggleGroup,
     handleSelectSize,
   } = useVideoSheet({ product, open, resetKey });
+
+  const handleAdd = () => {
+    const mod = product.modificators.find((m) => m.id === sizeId);
+    addToBasket(product, qnty, {
+      flatModId: mod?.id,
+      flatModName: mod?.name,
+      flatModPrice: mod ? variantPrice(mod, spotId) : undefined,
+      groupSelections: buildGroupSelections(groups, counts),
+    });
+    onAdd();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -201,7 +232,7 @@ export default function VideoSheetLayout({
             totalPrice={totalPrice}
             onAdd={() => {
               haptic(60);
-              onAdd();
+              handleAdd();
             }}
           />
         </div>
