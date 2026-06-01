@@ -162,7 +162,13 @@ export default function VideoSheetLayout({
             <div className='flex gap-2 overflow-x-auto no-scrollbar px-3 pb-2 pt-1 items-end'>
               {variantChipSlot && (
                 <div
-                  className={`flex items-end gap-2 shrink-0 transition-opacity duration-200 ${expandedGroup ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                  className='flex items-end gap-2 shrink-0 overflow-hidden'
+                  style={{
+                    maxHeight: expandedGroup ? '0px' : '300px',
+                    opacity: expandedGroup ? 0 : 1,
+                    transition: 'max-height 0.25s ease, opacity 0.2s ease',
+                    pointerEvents: expandedGroup ? 'none' : undefined,
+                  }}
                 >
                   <div className='flex flex-col gap-2 shrink-0'>
                     {variantChipSlot}
