@@ -303,7 +303,7 @@
     "headline": {
       "acceptedPrefix": "Заказ",
       "acceptedAccent": "принят",
-      "preparingPrefix": "Шеф готовит",
+      "preparingPrefix": "Кухня готовит",
       "preparingAccent": "ваш заказ",
       "readyPrefix": "Заказ",
       "ready_takeout": "готов",
