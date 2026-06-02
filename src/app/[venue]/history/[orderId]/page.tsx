@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { safeImageSrc } from '@/lib/image';
 import { ChevronLeft, Coins } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -116,7 +117,10 @@ export default async function OrderDetailPage({ params }: Props) {
 
           <ul className='mt-3 flex flex-col gap-3'>
             {order.orderProducts?.map((it, idx) => {
-              const img = it.product.productPhotoSmall || it.product.productPhoto;
+              const img = safeImageSrc(
+                it.product.productPhotoSmall || it.product.productPhoto,
+                null,
+              );
               const lineTotal = Number(it.price) * it.count;
               return (
                 <li key={`${it.product.id}-${it.modificator}-${idx}`} className='flex items-center gap-3'>

@@ -254,12 +254,9 @@ export default function CartPageClient() {
               </div>
               <button
                 onClick={() => setCheckoutOpen(true)}
-                className='flex-1 bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-lg flex flex-col items-center justify-center leading-tight'
+                className='flex-1 bg-brand text-white font-bold h-12 rounded-xl active:scale-95 transition-transform shadow-lg'
               >
-                <span>{t('placeOrder')}</span>
-                {earnedBonus > 0 && (
-                  <span className='text-[10px] font-semibold opacity-90'>+{earnedBonus} {t('bonusShort')}</span>
-                )}
+                {t('placeOrder')}
               </button>
             </div>
           </div>

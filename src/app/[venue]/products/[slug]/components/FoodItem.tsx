@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Product } from '@/types/api';
 import placeholder from '@/assets/Foods/placeholder.webp';
+import { safeImageSrc } from '@/lib/image';
 import FoodItemImage from './foods/FoodItemImage';
 import FoodItemCounter from './foods/FoodItemCounter';
 import ProductLink from './foods/ProductLink';
@@ -81,8 +82,10 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
     }
   }
 
-  const imageUrl =
-    product.productPhotoSmall || product.productPhoto || placeholder;
+  const imageUrl = safeImageSrc(
+    product.productPhotoSmall || product.productPhoto,
+    placeholder,
+  );
   const isPriority = index < 4;
 
   return (

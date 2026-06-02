@@ -306,8 +306,9 @@ export default function PosPaymentModal({
                 {finalToPayStr} {t('currency')}
               </span>
             </div>
-            <BonusAccrualBadge total={finalToPay} className='mt-1' />
           </div>
+
+          <BonusAccrualBadge total={finalToPay} />
 
           {error && (
             <div className='bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3'>

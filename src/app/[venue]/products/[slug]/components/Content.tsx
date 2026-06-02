@@ -336,18 +336,36 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
   // Scroll-spy: активна та группа, чей верхний край последним пересёк
   // линию ниже sticky-навбара. Offset-based — надёжнее IntersectionObserver
   // для коротких групп (первая «Хиты» легко выпадала из узкой band-полосы).
+  //
+  // Порог = реальный нижний край sticky-бара, а НЕ константа. Видимость ряда
+  // под-вкладок зависит от активной группы (у группы с >1 секцией он есть, у
+  // плоской — нет), поэтому высота бара меняется при смене активной группы.
+  // Бар стоит в потоке перед контентом → его рост сдвигает el.top секций на ту
+  // же величину. С фиксированным порогом это давало петлю: смена активной →
+  // под-вкладки появлялись/исчезали → контент сдвигался → порог пересекался
+  // обратно → активная снова менялась (таб «сам переключался» на границе двух
+  // категорий). Меряя от живого bar.bottom, сдвигаем линию синхронно с el.top —
+  // обратная связь по высоте бара взаимоуничтожается.
   useEffect(() => {
     if (allParentGroups.length === 0) return;
-    const OFFSET = 140;
+    // Допуск должен покрывать воздушный зазор, с которым scrollToElement сажает
+    // цель (offset = 48 + barH + 4 → цель оказывается ~4px НИЖЕ линии bar.bottom).
+    // Без этого клик по первой под-секции группы (её верх ≈ верх родителя)
+    // приземлял родителя на line+4, spy считал его «не доехавшим» и через ~700мс
+    // (после снятия programmatic-guard) перекидывал активную на предыдущего
+    // родителя — «открывалась предыдущая категория».
+    const TOLERANCE = 12;
     const update = () => {
       if (isProgrammaticScrollRef.current) return;
+      const bar = stickyBarRef.current;
+      const line = bar ? bar.getBoundingClientRect().bottom : 140;
       let best = allParentGroups[0].parent.slug;
       for (const g of allParentGroups) {
         const el = document.getElementById(
           `${PARENT_ID_PREFIX}${g.parent.slug}`,
         );
         if (!el) continue;
-        if (el.getBoundingClientRect().top - OFFSET <= 0) {
+        if (el.getBoundingClientRect().top - line <= TOLERANCE) {
           best = g.parent.slug;
         } else {
           break;
@@ -418,16 +436,31 @@ const Content = ({ products, categories, venueSlug, initialSlug }: Props) => {
 
   const handleSubClick = useCallback(
     (slug: string) => {
-      const el = document.getElementById(`subcat-${slug}`);
-      if (!el) return;
+      if (!document.getElementById(`subcat-${slug}`)) return;
+      const owner = allParentGroups.find((g) =>
+        g.sections.some(
+          (s) =>
+            s.category.slug === slug ||
+            (s.subSubSections?.some((ss) => ss.category.slug === slug) ??
+              false),
+        ),
+      );
       isProgrammaticScrollRef.current = true;
-      setActiveSubSlug(slug);
-      scrollToElement(el, 'smooth');
+      // flushSync: активный родитель должен закоммититься ДО измерения высоты
+      // бара в scrollToElement (иначе offset считается под старую группу).
+      // Заодно пинним родителя явно — не отдаём его на откуп scroll-spy, который
+      // на границе мог увести активную на предыдущую категорию.
+      flushSync(() => {
+        if (owner) setActiveSlug(owner.parent.slug);
+        setActiveSubSlug(slug);
+      });
+      const el = document.getElementById(`subcat-${slug}`);
+      if (el) scrollToElement(el, 'smooth');
       window.setTimeout(() => {
         isProgrammaticScrollRef.current = false;
       }, 700);
     },
-    [scrollToElement],
+    [allParentGroups, scrollToElement],
   );
 
   const handleTabClick = useCallback(

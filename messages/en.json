@@ -303,7 +303,7 @@
     "headline": {
       "acceptedPrefix": "Order",
       "acceptedAccent": "accepted",
-      "preparingPrefix": "Chef is cooking",
+      "preparingPrefix": "Kitchen is cooking",
       "preparingAccent": "your order",
       "readyPrefix": "Order is",
       "ready_takeout": "ready",
