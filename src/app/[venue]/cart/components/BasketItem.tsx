@@ -2,6 +2,7 @@
 
 import { memo, useRef } from 'react';
 import Image from 'next/image';
+import { safeImageSrc } from '@/lib/image';
 import { BasketItem as BasketItemType } from '@/store/basket'; // <--- Правильный импорт
 
 import plusIcon from '@/assets/Cart/plus.svg';
@@ -55,7 +56,7 @@ function BasketItem({
           <div className='flex items-center gap-3 flex-1 min-w-0'>
             <div className='relative w-16 h-16 rounded-xl overflow-hidden bg-[#F1F2F3] shrink-0'>
               <Image
-                src={item.productPhoto || '/placeholder.svg'}
+                src={safeImageSrc(item.productPhoto, '/placeholder.svg')}
                 alt={item.productName}
                 fill
                 className='object-cover'

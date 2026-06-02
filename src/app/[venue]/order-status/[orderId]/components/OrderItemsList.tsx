@@ -2,6 +2,7 @@
 
 import { OrderProduct } from '@/lib/order';
 import Image from 'next/image';
+import { safeImageSrc } from '@/lib/image';
 import { useTranslations } from 'next-intl';
 
 export default function OrderItemsList({ items }: { items: OrderProduct[] }) {
@@ -18,7 +19,10 @@ export default function OrderItemsList({ items }: { items: OrderProduct[] }) {
       <ul className='divide-y divide-gray-100'>
         {items.map((item) => {
           const product = item.product;
-          const image = product.productPhotoSmall || product.productPhoto;
+          const image = safeImageSrc(
+            product.productPhotoSmall || product.productPhoto,
+            null,
+          );
 
           return (
             <li

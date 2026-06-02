@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { safeImageSrc } from '@/lib/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -194,15 +195,16 @@ function MiniCartPreview({
         <ul className='max-h-[280px] overflow-y-auto'>
           {visible.map((item) => {
             const lineTotal = Math.round(item.lineUnitPrice * item.quantity);
+            const photo = safeImageSrc(item.productPhoto, null);
             return (
               <li
                 key={item.key}
                 className='flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors'
               >
                 <div className='relative w-10 h-10 rounded-xl overflow-hidden bg-[#F1F2F3] shrink-0'>
-                  {item.productPhoto && (
+                  {photo && (
                     <Image
-                      src={item.productPhoto}
+                      src={photo}
                       alt={item.productName}
                       fill
                       className='object-cover'

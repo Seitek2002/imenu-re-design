@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { safeImageSrc } from '@/lib/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
@@ -438,7 +439,10 @@ export default function CurrentOrderView({ venueSlug }: Props) {
           >
             <ul className='divide-y divide-[#E7E7E7]'>
               {g.orderProducts.map((it) => {
-                const photo = it.product.productPhotoSmall || it.product.productPhoto;
+                const photo = safeImageSrc(
+                  it.product.productPhotoSmall || it.product.productPhoto,
+                  null,
+                );
                 const lineSum = toNumber(it.price) * it.count;
                 return (
                   <li

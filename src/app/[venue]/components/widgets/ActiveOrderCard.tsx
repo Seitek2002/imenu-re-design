@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { safeImageSrc } from '@/lib/image';
 import { useTranslations } from 'next-intl';
 import { ChefHat, Wallet } from 'lucide-react';
 
@@ -253,8 +254,10 @@ function ItemsStack({ products }: { products: OrderV2['orderProducts'] }) {
   return (
     <div className='flex items-center'>
       {shown.map((p, i) => {
-        const img =
-          p.product?.productPhotoSmall || p.product?.productPhoto || null;
+        const img = safeImageSrc(
+          p.product?.productPhotoSmall || p.product?.productPhoto,
+          null,
+        );
         return (
           <div
             key={i}
