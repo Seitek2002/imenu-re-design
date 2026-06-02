@@ -14,6 +14,15 @@ const VirtualFoodItem: FC<Props> = ({ product, index }) => {
   const { ref, inView } = useInView('300px');
   const heightRef = useRef<number>(0);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);
+  // Монтируем лениво (ниже первого экрана карточки не рендерятся для быстрого
+  // первого пейнта), но НЕ размонтируем после первого показа: иначе при скролле
+  // вверх FoodItem пересоздаётся, isLoaded сбрасывается в false и картинка
+  // перемигивает через opacity 0→1 даже из кеша.
+  const [hasRendered, setHasRendered] = useState(false);
+
+  useEffect(() => {
+    if (inView && !hasRendered) setHasRendered(true);
+  }, [inView, hasRendered]);
 
   useEffect(() => {
     if (inView && ref.current && heightRef.current === 0) {
@@ -26,8 +35,11 @@ const VirtualFoodItem: FC<Props> = ({ product, index }) => {
   });
 
   return (
-    <div ref={ref} style={!inView && measuredHeight ? { height: measuredHeight } : undefined}>
-      {inView ? <FoodItem product={product} index={index} /> : null}
+    <div
+      ref={ref}
+      style={!hasRendered && measuredHeight ? { height: measuredHeight } : undefined}
+    >
+      {hasRendered ? <FoodItem product={product} index={index} /> : null}
     </div>
   );
 };
