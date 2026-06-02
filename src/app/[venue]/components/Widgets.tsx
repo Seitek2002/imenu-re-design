@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { useCheckout } from '@/store/checkout';
 import { useVenueStore } from '@/store/venue';
 import { useOrdersV2, useClientBonus } from '@/lib/api/queries';
+import type { OrderV2 } from '@/lib/order';
 import { OrderStatus } from '@/types/api';
 import { calculateOrderProgress } from '@/lib/helpers/progressHelper';
 
@@ -45,13 +46,26 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
 
   // Cron бэка переводит зависший pending → expired/cancelled с лагом до ~6 мин
   // (Kuma 2026-05-25 §5.1), поэтому дублируем фильтр по paymentStatus.
+  //
+  // Отсечка по возрасту: dine-in, который официант не закрыл в POS, застревает
+  // в «Готовится» навсегда (бэк не истекает такие заказы), и ghost висит на
+  // главной сутками. Прячем всё старше 12 часов. createdAt нет/битый → не
+  // прячем (не знаем возраст, лучше показать живой заказ, чем спрятать его).
+  const MAX_ACTIVE_AGE_MS = 12 * 60 * 60 * 1000;
+  const freshEnough = (o: OrderV2) => {
+    const ms = o.createdAt ? new Date(o.createdAt).getTime() : NaN;
+    if (!Number.isFinite(ms)) return true;
+    return Date.now() - ms < MAX_ACTIVE_AGE_MS;
+  };
+
   const activeOrders = (ordersData?.results ?? []).filter(
     (o) =>
       o.status !== OrderStatus.Completed &&
       o.status !== OrderStatus.Cancelled &&
       o.paymentStatus !== 'expired' &&
       o.paymentStatus !== 'failed' &&
-      o.paymentStatus !== 'cancelled',
+      o.paymentStatus !== 'cancelled' &&
+      freshEnough(o),
   );
 
   // Виджет дышит только живыми заказами — pending уходит в /history.

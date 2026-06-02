@@ -12,7 +12,11 @@ const RECOMMEND_LIMIT = 6;
 export default function EmptyBasket() {
   const t = useTranslations('Cart.empty');
   const venueSlug = useVenueStore((state) => state.data?.slug);
-  const { data: products, isLoading } = useVenueProducts(venueSlug);
+  // spotId обязателен: priceFrom/priceTo бэк считает по точке. Без него
+  // подпись «от X» показывает глобальный минимум по всем точкам (напр. 85),
+  // а не цену выбранной точки (100) — расхождение с фактическим списанием.
+  const spotId = useVenueStore((state) => state.spotId);
+  const { data: products, isLoading } = useVenueProducts(venueSlug, spotId);
 
   const recommended = useMemo(() => {
     if (!products || products.length === 0) return [];
