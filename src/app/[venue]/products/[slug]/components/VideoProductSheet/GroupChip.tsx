@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import type { GroupItem, GroupModification } from '@/types/api';
 
@@ -23,12 +23,20 @@ export default function GroupChip({
 }: Props) {
   const [imgError, setImgError] = useState(false);
 
-  const showSelectedPhoto = selectedCount === 1 && !!selectedItem?.photo && !imgError;
+  // Use same fallback as GroupGridItem so the chip image always matches the grid.
+  const resolvedPhoto = selectedItem?.photo || '/splash-placeholder.svg';
+
+  const showSelectedPhoto = selectedCount === 1 && !!selectedItem && !imgError;
   const showGroupIcon     = selectedCount > 1 && !!icon && !imgError;
   const isSelected        = selectedCount > 0;
   const showImage         = showSelectedPhoto || showGroupIcon;
 
-  const imageUrl = showSelectedPhoto ? selectedItem!.photo! : (icon ?? '');
+  const imageUrl = showSelectedPhoto ? resolvedPhoto : (icon ?? '');
+
+  // Reset error state when the image URL changes (e.g. different item selected).
+  useEffect(() => {
+    setImgError(false);
+  }, [imageUrl]);
   const label    = selectedCount === 1 && selectedItem ? selectedItem.name : group.name;
 
   return (
