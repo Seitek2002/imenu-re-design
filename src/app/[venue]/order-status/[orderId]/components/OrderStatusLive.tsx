@@ -66,6 +66,8 @@ export default function OrderStatusLive({ initialOrder }: Props) {
         <PaymentResumeAction
           orderId={order.id}
           paymentUrl={order.paymentUrl}
+          paymentStatus={order.paymentStatus}
+          paymentExpiresAt={order.paymentExpiresAt}
         />
       )}
       <OrderItemsList items={order.orderProducts} />
