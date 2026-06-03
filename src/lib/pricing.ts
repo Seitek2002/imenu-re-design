@@ -26,16 +26,23 @@ export function variantPrice(
 }
 
 /**
- * Цена для карточки товара. Бэк (2026-06) гарантирует, что priceFrom уже
- * учитывает обязательные группы — это цена дефолтного варианта. Реконструировать
- * цену из groupModifications больше не нужно. Фолбэк на productPrice, если
- * priceFrom ещё не пришёл (старый ответ). null — цены нет.
+ * Цена для карточки товара. Бэк отдаёт цену дефолтного варианта (с учётом
+ * обязательных групп) в priceFrom и дублирует в productPrice. Предпочитаем
+ * priceFrom (он же per-spot при `?spotId=`), но ТОЛЬКО когда он > 0.
+ *
+ * Почему не просто `priceFrom != null`: для тех-карт (цена живёт в обязательной
+ * single-группе «порция») при выбранной точке бэк присылает `priceFrom: 0`,
+ * хотя `productPrice` корректный ("450.00"). Старая проверка `!= null`
+ * пропускала 0 как валидную цену → карточка показывала «0 сом» (sierra-group-llc,
+ * ~93 тех-карты). Coerce, т.к. с провода числа приходят строками. null — цены нет.
  */
 export function productPriceLabel(
   p: Pick<Product, 'priceFrom' | 'productPrice'>,
 ): number | null {
-  if (p.priceFrom != null) return p.priceFrom;
-  return p.productPrice || null;
+  const from = p.priceFrom != null ? Number(p.priceFrom) : 0;
+  if (from > 0) return from;
+  const base = Number(p.productPrice);
+  return base > 0 ? base : null;
 }
 
 /**
