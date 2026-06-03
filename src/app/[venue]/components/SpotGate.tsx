@@ -35,13 +35,25 @@ export default function SpotGate({ venue }: { venue: Venue }) {
 
   // Гидратация из куки: если в сторе точки нет, но кука с прошлого выбора жива —
   // подхватываем её, чтобы клиентские цены совпали с SSR и гейт не всплывал.
+  // Единственную точку выбираем автоматически: гейт для неё не всплывает
+  // (spots.length < 2), но без spotId запрос уходит «по всем точкам» и бэк
+  // считает priceFrom по скрытым точкам тоже (см. sierra-group-llc — одна
+  // видимая точка, но priceFrom приходит с другой). Фиксируем точку, пишем куку
+  // и перечитываем SSR, чтобы цена была честной по ней.
   useEffect(() => {
     if (spotId != null) return;
     const fromCookie = readSpotCookieClient(venue.slug);
     if (fromCookie != null && spots.some((s) => s.id === fromCookie)) {
       setContext({ spotId: fromCookie, venueSlug: venue.slug });
+      return;
     }
-  }, [spotId, venue.slug, spots, setContext]);
+    if (spots.length === 1) {
+      const only = spots[0].id;
+      setContext({ spotId: only, venueSlug: venue.slug });
+      writeSpotCookie(venue.slug, only);
+      router.refresh();
+    }
+  }, [spotId, venue.slug, spots, setContext, router]);
 
   if (!mounted) return null;
   // Гейтим только витринные маршруты (где видны per-spot цены): home, products,
