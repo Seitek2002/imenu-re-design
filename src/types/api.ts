@@ -263,6 +263,12 @@ export interface GroupItem {
   name: string;
   price: string; // decimal — доплата к цене позиции
   brutto: string; // вес/объём для подписи
+  /**
+   * Дефолтный вариант группы (бэк, 2026-06). Ровно один item в группе помечен
+   * true; если в админке не проставлен — бэк ставит первому по порядку (items
+   * приходят отсортированными по sort_order). Конфигуратор предвыбирает его.
+   */
+  isDefault?: boolean;
   photo?: string | null;
   thumbnail?: string | null;
 }
@@ -312,13 +318,12 @@ export interface Product {
   productDescription: string | null;
   productPrice: number;
   /**
-   * Диапазон цен по видимым вариантам (2026-05-21). С `?spotId=` считается по
-   * этой точке. Для товара без вариантов priceFrom == priceTo == productPrice.
-   * null — нет ни одного видимого варианта. Используйте вместо productPrice для
-   * подписи «от X сом» (productPrice у товаров с вариантами часто 0).
+   * Цена дефолтного варианта с учётом обязательных групп (бэк, 2026-06): сумма
+   * дефолтов по всем mandatory-группам. С `?spotId=` считается по этой точке.
+   * Бэк гарантирует корректность — НЕ реконструируйте цену из groupModifications.
+   * Используйте для подписи цены в карточке. (`priceTo` удалён бэком 2026-06.)
    */
   priceFrom?: number | null;
-  priceTo?: number | null;
   weight: number;
 
   measureUnit?: string;

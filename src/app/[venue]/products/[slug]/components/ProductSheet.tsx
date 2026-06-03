@@ -29,7 +29,7 @@ import { useMounted } from '@/hooks/useMounted';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import { useVenueProducts, usePromotionsV2 } from '@/lib/api/queries';
-import { variantPrice } from '@/lib/pricing';
+import { hasMandatoryPricedGroups, variantPrice } from '@/lib/pricing';
 import { findActivePromotionForProduct } from '@/lib/promotions';
 
 import plusIcon from '@/assets/Goods/plus.svg';
@@ -771,6 +771,14 @@ const ProductContent = ({
   // Правило: если есть groupModifications, плоские modificators игнорируем.
   const flatMods: Modificator[] = hasGroups ? [] : product.modificators ?? [];
 
+  // Цена формируется выбором обязательной платной группы (size-вариант): бэк уже
+  // включил её дефолт в productPrice, поэтому базу productPrice не прибавляем
+  // (иначе двойной счёт), а цены вариантов показываем абсолютом, не дельтой.
+  const pricingFromGroups = useMemo(
+    () => hasMandatoryPricedGroups(groups),
+    [groups],
+  );
+
   // Мастер включается только когда есть хотя бы одна обязательная группа
   // (min>0) — иначе остаётся одностраничный лист. Каждая обязательная группа —
   // отдельный шаг; все опциональные собраны в один общий шаг (пиллами).
@@ -801,8 +809,9 @@ const ProductContent = ({
 
   const [qnty, setQnty] = useState(1);
   const [counts, setCounts] = useState<CountsState>(() => {
-    // Pre-select the cheapest item in each required single-select group,
-    // so the header price never starts at 0 for variant-style products.
+    // Предвыбираем дефолтный item (бэк помечает isDefault) в каждой обязательной
+    // single-select группе, чтобы цена в шапке стартовала с цены дефолта и
+    // совпадала с productPrice. Фолбэк — первый по порядку (items отсортированы).
     const init: CountsState = {};
     for (const g of groups) {
       if (
@@ -810,10 +819,8 @@ const ProductContent = ({
         g.selection.min > 0 &&
         g.items.length > 0
       ) {
-        const cheapest = g.items.reduce((a, b) =>
-          Number(a.price) <= Number(b.price) ? a : b,
-        );
-        init[cheapest.id] = 1;
+        const def = g.items.find((i) => i.isDefault) ?? g.items[0];
+        init[def.id] = 1;
       }
     }
     return init;
@@ -902,9 +909,14 @@ const ProductContent = ({
   );
 
   const unitPrice = useMemo(() => {
+    // База: вариант (плоский мод) → его цена; товар с обязательной платной
+    // группой → 0 (цена целиком из выбранных item'ов, productPrice её уже
+    // содержит); иначе productPrice + опциональные дельты групп.
     const base = selectedFlat
       ? variantPrice(selectedFlat, spotId)
-      : product.productPrice;
+      : pricingFromGroups
+        ? 0
+        : product.productPrice;
     const add = groups.reduce(
       (acc, g) =>
         acc +
@@ -915,7 +927,7 @@ const ProductContent = ({
       0,
     );
     return base + add;
-  }, [product, selectedFlat, groups, counts, spotId]);
+  }, [product, selectedFlat, groups, counts, spotId, pricingFromGroups]);
 
   const totalPrice = unitPrice * qnty;
 
@@ -1034,7 +1046,7 @@ const ProductContent = ({
                 counts={counts}
                 onChange={handleCurrentChange}
                 error={null}
-                absolutePricing={product.productPrice === 0}
+                absolutePricing={pricingFromGroups}
               />
             )}
 
@@ -1258,7 +1270,7 @@ const ProductContent = ({
                 counts={counts}
                 onChange={setCounts}
                 errors={errors}
-                absolutePricing={product.productPrice === 0}
+                absolutePricing={pricingFromGroups}
               />
             )}
           </div>

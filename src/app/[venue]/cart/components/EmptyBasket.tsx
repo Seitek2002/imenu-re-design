@@ -12,9 +12,9 @@ const RECOMMEND_LIMIT = 6;
 export default function EmptyBasket() {
   const t = useTranslations('Cart.empty');
   const venueSlug = useVenueStore((state) => state.data?.slug);
-  // spotId обязателен: priceFrom/priceTo бэк считает по точке. Без него
-  // подпись «от X» показывает глобальный минимум по всем точкам (напр. 85),
-  // а не цену выбранной точки (100) — расхождение с фактическим списанием.
+  // spotId обязателен: priceFrom бэк считает по точке. Без него подпись цены
+  // показывает значение по другой точке (напр. 85), а не выбранной (100) —
+  // расхождение с фактическим списанием.
   const spotId = useVenueStore((state) => state.spotId);
   const { data: products, isLoading } = useVenueProducts(venueSlug, spotId);
 

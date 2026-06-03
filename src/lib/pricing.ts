@@ -1,4 +1,4 @@
-import type { Modificator, Product } from '@/types/api';
+import type { GroupModification, Modificator, Product } from '@/types/api';
 
 /**
  * Цена плоского модификатора (варианта) на конкретной точке.
@@ -26,13 +26,28 @@ export function variantPrice(
 }
 
 /**
- * Подпись цены для карточки товара. Предпочитает priceFrom/priceTo (по видимым
- * на точке вариантам), считая «от X», если диапазон не схлопнут. Возвращает
- * null, если бэк ещё не прислал priceFrom — вызывающий код берёт свой фолбэк.
+ * Цена для карточки товара. Бэк (2026-06) гарантирует, что priceFrom уже
+ * учитывает обязательные группы — это цена дефолтного варианта. Реконструировать
+ * цену из groupModifications больше не нужно. Фолбэк на productPrice, если
+ * priceFrom ещё не пришёл (старый ответ). null — цены нет.
  */
 export function productPriceLabel(
-  p: Pick<Product, 'priceFrom' | 'priceTo'>,
-): { price: number; isFrom: boolean } | null {
-  if (p.priceFrom == null) return null;
-  return { price: p.priceFrom, isFrom: p.priceTo != null && p.priceTo !== p.priceFrom };
+  p: Pick<Product, 'priceFrom' | 'productPrice'>,
+): number | null {
+  if (p.priceFrom != null) return p.priceFrom;
+  return p.productPrice || null;
+}
+
+/**
+ * true, если цена товара формируется выбором обязательной платной группы
+ * (size-вариант и т.п.). У таких товаров бэк уже включил дефолт этих групп в
+ * productPrice/priceFrom, поэтому при расчёте позиции productPrice как базу
+ * добавлять НЕЛЬЗЯ (иначе двойной счёт) — берём сумму выбранных item'ов.
+ */
+export function hasMandatoryPricedGroups(
+  groups: GroupModification[] | undefined,
+): boolean {
+  return (groups ?? []).some(
+    (g) => g.selection.min > 0 && g.items.some((i) => Number(i.price) > 0),
+  );
 }
