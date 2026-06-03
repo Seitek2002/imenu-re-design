@@ -32,10 +32,9 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
       ? `−${promoPercent}%`
       : tp('itemBadgeGeneric')
     : null;
-  // Бэк (2026-06) гарантирует priceFrom/productPrice с учётом обязательных
-  // групп — это цена дефолтного варианта. Самодельный каскад из
-  // groupModifications больше не нужен (бэк считает корректно сам).
-  const price = productPriceLabel(product) ?? product.productPrice;
+  // Цена дефолтного варианта (productPriceLabel сам предпочитает priceFrom,
+  // но падает на productPrice, когда per-spot priceFrom=0 у тех-карт).
+  const price = productPriceLabel(product);
 
   const imageUrl = safeImageSrc(
     product.productPhotoSmall || product.productPhoto,
@@ -82,7 +81,7 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
 
       <div className='mt-2 flex flex-col flex-1 pointer-events-none'>
         <h2 className='text-[#21201F] text-lg font-semibold'>
-          {price} {tc('currency')}
+          {price != null ? `${price} ${tc('currency')}` : ''}
         </h2>
         <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-hover:text-brand group-active:text-brand transition-colors mt-1 flex-1'>
           {product.productName}
