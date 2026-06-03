@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Product } from '@/types/api';
+import { hasMandatoryPricedGroups } from '@/lib/pricing';
 
 export interface BasketGroupItemSelection {
   id: number; // GroupItem.id
@@ -90,10 +91,15 @@ function computeLineUnitPrice(
   product: Product,
   selection?: AddToBasketSelection,
 ): number {
+  // База: плоский вариант → его абсолютная цена; товар с обязательной платной
+  // группой → 0 (productPrice уже содержит дефолт группы, выбранные item'ы дают
+  // актуальную цену — прибавлять productPrice = двойной счёт); иначе productPrice.
   const base =
     selection?.flatModId != null && selection.flatModPrice != null
       ? selection.flatModPrice
-      : product.productPrice;
+      : hasMandatoryPricedGroups(product.groupModifications)
+        ? 0
+        : product.productPrice;
 
   const groupAdd =
     selection?.groupSelections?.reduce((acc, g) => {

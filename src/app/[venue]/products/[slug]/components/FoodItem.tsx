@@ -1,7 +1,7 @@
 'use client';
 
 import { FC } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Product } from '@/types/api';
 import placeholder from '@/assets/Foods/placeholder.webp';
 import { safeImageSrc } from '@/lib/image';
@@ -11,7 +11,7 @@ import ProductLink from './foods/ProductLink';
 import { useVenueStore } from '@/store/venue';
 import { usePromotionsV2 } from '@/lib/api/queries';
 import { findActivePromotionForProduct } from '@/lib/promotions';
-import { productPriceLabel, variantPrice } from '@/lib/pricing';
+import { productPriceLabel } from '@/lib/pricing';
 
 interface Props {
   product: Product;
@@ -21,7 +21,6 @@ interface Props {
 const FoodItem: FC<Props> = ({ product, index = 0 }) => {
   const tc = useTranslations('Common');
   const tp = useTranslations('Cart.promo');
-  const locale = useLocale();
 
   const venueSlug = useVenueStore((s) => s.data?.slug ?? null);
   const spotId = useVenueStore((s) => s.spotId);
@@ -33,54 +32,10 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
       ? `−${promoPercent}%`
       : tp('itemBadgeGeneric')
     : null;
-  // priceFrom/priceTo (2026-05-21) — диапазон по видимым вариантам, с учётом
-  // выбранной точки. Это приоритетный источник подписи: productPrice у товаров
-  // с вариантами часто 0. Фолбэк ниже остаётся для товаров с groupModifications
-  // (их priceFrom не покрывает — там per-item price, без per-spot).
-  const label = productPriceLabel(product);
-  let price = label?.price ?? product.productPrice;
-  let isFrom = label?.isFrom ?? false;
-
-  if (price === 0) {
-    const groups = product.groupModifications ?? [];
-    const requiredGroups = groups.filter(
-      (g) => g.selection.min > 0 && g.items.length > 0,
-    );
-
-    // 1) Sum of cheapest items across required groups
-    if (requiredGroups.length > 0) {
-      const requiredSum = requiredGroups.reduce((sum, g) => {
-        const cheapest = Math.min(...g.items.map((i) => Number(i.price)));
-        return sum + cheapest * g.selection.min;
-      }, 0);
-      if (requiredSum > 0) {
-        price = requiredSum;
-        isFrom = true;
-      }
-    }
-
-    // 2) Cheapest flat modificator
-    if (price === 0 && product.modificators && product.modificators.length > 0) {
-      const flatMin = Math.min(
-        ...product.modificators.map((m) => variantPrice(m, spotId)),
-      );
-      if (flatMin > 0) {
-        price = flatMin;
-        isFrom = true;
-      }
-    }
-
-    // 3) Cheapest paid item across ANY group (covers groups marked optional in POS)
-    if (price === 0) {
-      const allItemPrices = groups
-        .flatMap((g) => g.items.map((i) => Number(i.price)))
-        .filter((p) => p > 0);
-      if (allItemPrices.length > 0) {
-        price = Math.min(...allItemPrices);
-        isFrom = true;
-      }
-    }
-  }
+  // Бэк (2026-06) гарантирует priceFrom/productPrice с учётом обязательных
+  // групп — это цена дефолтного варианта. Самодельный каскад из
+  // groupModifications больше не нужен (бэк считает корректно сам).
+  const price = productPriceLabel(product) ?? product.productPrice;
 
   const imageUrl = safeImageSrc(
     product.productPhotoSmall || product.productPhoto,
@@ -127,19 +82,7 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
 
       <div className='mt-2 flex flex-col flex-1 pointer-events-none'>
         <h2 className='text-[#21201F] text-lg font-semibold'>
-          {isFrom && locale === 'ky' ? (
-            <>
-              {price} {tc('currency')}{' '}
-              <span className='text-sm font-normal text-gray-500'>{tc('from')}</span>
-            </>
-          ) : (
-            <>
-              {isFrom && (
-                <span className='text-sm font-normal text-gray-500 mr-1'>{tc('from')}</span>
-              )}
-              {price} {tc('currency')}
-            </>
-          )}
+          {price} {tc('currency')}
         </h2>
         <h3 className='text-[#181818] text-sm font-medium leading-tight line-clamp-2 group-hover:text-brand group-active:text-brand transition-colors mt-1 flex-1'>
           {product.productName}
