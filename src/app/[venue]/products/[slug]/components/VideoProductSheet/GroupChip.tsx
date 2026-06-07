@@ -74,10 +74,10 @@ export default function GroupChip({
               src={imageUrl}
               alt=''
               onError={() => setImgError(true)}
-              className='w-14 h-14 object-contain'
+              className='w-10 h-10 object-contain'
             />
           ) : isSelected ? (
-            <div className='w-14 h-14 rounded-xl bg-white/20' />
+            <div className='w-10 h-10 rounded-xl bg-white/20' />
           ) : (
             <div className='w-8 h-8 rounded-full bg-white/60 flex items-center justify-center'>
               <Plus size={19} strokeWidth={2.5} className='text-[#21201F]' />
