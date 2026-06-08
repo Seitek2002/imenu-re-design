@@ -11,7 +11,10 @@ import './globals.css';
 const geistInter = Inter({
   variable: '--font-geist-inter',
   display: 'swap',
-  subsets: ['latin'],
+  // cyrillic обязателен: без него весь русский текст падал на системный
+  // sans-serif, а в Inter рендерились только цифры/латиница — гарнитуры
+  // визуально расходились (см. дизайн Figma 402:591, весь в Inter).
+  subsets: ['latin', 'cyrillic'],
 });
 
 const cruinn = localFont({
@@ -80,10 +83,11 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body
-        className={`${cruinn.variable} ${geistInter.variable} antialiased`}
-      >
+    <html
+      lang={locale}
+      className={`${cruinn.variable} ${geistInter.variable}`}
+    >
+      <body className='antialiased'>
         {/* Блокируем pinch-zoom на iOS Safari — touch-action и viewport user-scalable=no там игнорируются */}
         <script
           dangerouslySetInnerHTML={{
