@@ -1,41 +1,4 @@
-/* Tonal background tints + pulse keyframes for the Widgets v2 redesign. */
-
-.toneBrand::before,
-.toneGreen::before,
-.toneAmber::before,
-.toneRed::before,
-.bonusHeroTint::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.toneBrand::before {
-  background:
-    radial-gradient(120% 80% at 0% 0%, rgba(255, 107, 0, 0.10), transparent 55%),
-    radial-gradient(80% 100% at 100% 100%, rgba(255, 107, 0, 0.05), transparent 60%);
-}
-.toneGreen::before {
-  background:
-    radial-gradient(120% 80% at 0% 0%, rgba(34, 160, 90, 0.10), transparent 55%),
-    radial-gradient(80% 100% at 100% 100%, rgba(34, 160, 90, 0.05), transparent 60%);
-}
-.toneAmber::before {
-  background:
-    radial-gradient(120% 80% at 0% 0%, rgba(217, 119, 6, 0.12), transparent 55%),
-    radial-gradient(80% 100% at 100% 100%, rgba(217, 119, 6, 0.06), transparent 60%);
-}
-.toneRed::before {
-  background:
-    radial-gradient(120% 80% at 0% 0%, rgba(220, 38, 38, 0.10), transparent 55%),
-    radial-gradient(80% 100% at 100% 100%, rgba(220, 38, 38, 0.05), transparent 60%);
-}
-.bonusHeroTint::before {
-  background:
-    radial-gradient(120% 80% at 100% 0%, rgba(128, 49, 201, 0.10), transparent 55%),
-    radial-gradient(80% 100% at 0% 100%, rgba(255, 107, 0, 0.05), transparent 60%);
-}
+/* Live pulse + step-ring pulse keyframes for the Widgets redesign. */
 
 .livePulse {
   animation: livePulse 1.8s ease-out infinite;

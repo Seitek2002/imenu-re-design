@@ -336,8 +336,15 @@
       "deductibleLabel": "of order payable with points",
       "upTo": "up to {n}%",
       "toNextGroup": "To «<b>{name}</b>»",
-      "turnoverSuffix": "in turnover",
-      "historyCta": "Earnings & redemptions history"
+      "turnoverSuffix": "left",
+      "historyCta": "Earnings & redemptions history",
+      "upToWord": "up to",
+      "toNextStatus": "To status «{name}»",
+      "historyFull": "Bonus account earnings & redemptions history",
+      "statusLabel": "YOUR STATUS",
+      "history": "HISTORY",
+      "turnoverLeft": "",
+      "nextDiscount": "{n}% off"
     },
     "chip": {
       "points": "Points",
@@ -355,6 +362,14 @@
       "always": "Around the clock",
       "closesIn": "in {h, plural, =0 {} other {<b># h</b> }}{m, plural, =0 {} other {<b># min</b>}}",
       "opensLater": "Opens later"
+    },
+    "statusShort": {
+      "accepted": "ACCEPTED",
+      "preparing": "PREPARING",
+      "ready": "READY",
+      "delivery": "ON THE WAY",
+      "pending": "PAYMENT",
+      "cancelled": "CANCELLED"
     }
   },
   "Spot": {

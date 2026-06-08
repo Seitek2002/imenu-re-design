@@ -336,8 +336,15 @@
       "deductibleLabel": "можно оплатить баллами",
       "upTo": "до {n}%",
       "toNextGroup": "До «<b>{name}</b>»",
-      "turnoverSuffix": "оборота",
-      "historyCta": "История начислений и списаний"
+      "turnoverSuffix": "",
+      "historyCta": "История начислений и списаний",
+      "upToWord": "до",
+      "toNextStatus": "До статуса «{name}»",
+      "historyFull": "История начислений и списаний по бонусному счёту",
+      "statusLabel": "ВАШ СТАТУС",
+      "history": "ИСТОРИЯ",
+      "turnoverLeft": "осталось",
+      "nextDiscount": "скидка {n}%"
     },
     "chip": {
       "points": "Баллы",
@@ -355,6 +362,14 @@
       "always": "Круглосуточно",
       "closesIn": "через {h, plural, =0 {} one {<b># ч</b> } few {<b># ч</b> } other {<b># ч</b> }}{m, plural, =0 {} one {<b># мин</b>} few {<b># мин</b>} other {<b># мин</b>}}",
       "opensLater": "Откроется позже"
+    },
+    "statusShort": {
+      "accepted": "ПРИНЯТ",
+      "preparing": "ГОТОВИТСЯ",
+      "ready": "ГОТОВ",
+      "delivery": "В ПУТИ",
+      "pending": "ОПЛАТА",
+      "cancelled": "ОТМЕНЁН"
     }
   },
   "Spot": {

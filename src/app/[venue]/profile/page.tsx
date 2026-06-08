@@ -17,8 +17,6 @@ import {
   LogOut,
   User as UserIcon,
   Loader2,
-  CreditCard,
-  Wallet,
 } from 'lucide-react';
 import { useClientStore } from '@/store/client';
 import { useAuthStore } from '@/store/auth';
@@ -227,8 +225,6 @@ function ProfilePageReal() {
           authed={hasToken}
           onLoginRequired={() => setLoginOpen(true)}
         />
-
-        <PaymentSection venueSlug={venue} />
 
         <section className='bg-white rounded-2xl p-4'>
           <div className='text-[13px] font-semibold text-[#21201F]'>{t('quickLinks.title')}</div>
@@ -506,53 +502,6 @@ function LoyaltySection({
           )}
         </div>
       )}
-    </section>
-  );
-}
-
-/**
- * Способ оплаты — статичная вёрстка по макету. Сохранённых способов оплаты в API
- * нет (оплата идёт редиректом на paymentUrl, см. project_payment_contract).
- * TODO: подключить реальные данные, когда появится эндпоинт сохранённых карт.
- */
-function PaymentSection({ venueSlug }: { venueSlug: string }) {
-  const t = useTranslations('Profile.payment');
-  return (
-    <section className='bg-white rounded-2xl p-4'>
-      <div className='flex items-center justify-between'>
-        <div className='text-[13px] font-semibold text-[#21201F]'>
-          {t('title')}
-        </div>
-        <Link
-          href={`/${venueSlug}/profile/payment`}
-          className='flex items-center gap-1 text-[12px] text-[#9E9E9E] active:scale-95 transition-transform'
-        >
-          {t('seeAll')}
-          <ArrowRight size={14} />
-        </Link>
-      </div>
-
-      <div className='mt-3 flex items-stretch gap-2 overflow-x-auto -mx-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
-        <div className='w-[135px] h-[75px] shrink-0 rounded-xl border border-[#E8A145] bg-[#FDF7ED] p-2.5 flex flex-col gap-1'>
-          <div className='flex items-center gap-1.5'>
-            <CreditCard size={16} className='text-[#1A1F71] shrink-0' />
-            <span className='text-[12px] font-bold text-[#1A1F71]'>VISA</span>
-            <span className='ml-auto text-[9px] font-medium text-[#F28A1A] bg-[#FFEBD0] px-1.5 py-0.5 rounded-full whitespace-nowrap'>
-              {t('default')}
-            </span>
-          </div>
-          <div className='text-[12px] text-[#21201F] tracking-widest'>
-            ••••4242
-          </div>
-        </div>
-
-        <div className='w-[135px] h-[75px] shrink-0 rounded-xl border border-[#EDEAE7] p-2.5 flex flex-col gap-1'>
-          <Wallet size={16} className='text-[#6B9A6E]' />
-          <span className='text-[12px] font-medium text-[#21201F]'>
-            {t('cash')}
-          </span>
-        </div>
-      </div>
     </section>
   );
 }

@@ -87,8 +87,9 @@ export default function CartPageClient() {
 
       <section className='bg-white pt-4 mt-4 px-2 rounded-4xl pb-5 lg:mx-auto shadow-sm min-h-[60vh]'>
         {/* Toggle (только без стола — со столом пользователь увозится на /table-order).
-            Если доставка недоступна (venue или spot), показываем только takeout. */}
-        {!tableNumber && canDeliver && canTakeout && (
+            Если доставка недоступна (venue или spot), показываем только takeout.
+            Пустую корзину показываем без переключателя — выбирать способ не для чего. */}
+        {items.length > 0 && !tableNumber && canDeliver && canTakeout && (
           <div className='bg-[#FAFAFA] rounded-full mb-3 p-1 grid grid-cols-2 gap-2'>
             <button
               onClick={() => setOrderType('takeout')}

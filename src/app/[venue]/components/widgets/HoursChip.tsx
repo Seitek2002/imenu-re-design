@@ -54,12 +54,12 @@ export default function HoursChip({ schedules, onClick }: Props) {
       <button
         type='button'
         onClick={onClick}
-        className='relative overflow-hidden rounded-[18px] bg-white p-3.5 text-left shadow-[0_1px_0_rgba(40,28,16,0.04),_0_8px_20px_-16px_rgba(40,28,16,0.10)] active:scale-[0.985] transition-transform cursor-pointer'
+        className='relative w-full cursor-pointer overflow-hidden rounded-[24px] bg-white p-4 text-left shadow-[0px_4px_12px_rgba(115,115,115,0.12)] transition-colors hover:bg-[#FAFAFA] active:bg-[#F5F5F5]'
       >
-        <div className='text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#8E8780]'>
+        <div className='text-[12px] font-medium uppercase text-[#7F7F7F]'>
           {t('chip.scheduleLabel')}
         </div>
-        <div className='mt-2 text-[18px] font-extrabold tracking-tight text-[#0E0E0F]'>
+        <div className='mt-2 text-[clamp(1.5rem,7vw,1.75rem)] font-medium leading-none text-[#323232]'>
           {t('chip.scheduleEmpty')}
         </div>
       </button>
@@ -94,21 +94,19 @@ export default function HoursChip({ schedules, onClick }: Props) {
     <button
       type='button'
       onClick={onClick}
-      className='relative overflow-hidden rounded-[18px] bg-white p-3.5 text-left shadow-[0_1px_0_rgba(40,28,16,0.04),_0_8px_20px_-16px_rgba(40,28,16,0.10)] active:scale-[0.985] transition-transform cursor-pointer w-full'
+      className='relative w-full cursor-pointer overflow-hidden rounded-[24px] bg-white p-4 text-left shadow-[0px_4px_12px_rgba(115,115,115,0.12)] transition-colors hover:bg-[#FAFAFA] active:bg-[#F5F5F5]'
     >
-      <div className='flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#8E8780]'>
+      <div className='flex items-center gap-1.5 text-[12px] font-medium uppercase text-[#7F7F7F]'>
         <span
           aria-hidden
           className={`h-2 w-2 rounded-full ${
-            isOpen
-              ? `bg-[#22A05A] text-[#22A05A] ${styles.livePulse}`
-              : 'bg-red-400'
+            isOpen ? `bg-[#34C759] ${styles.livePulse}` : 'bg-[#9CA3AF]'
           }`}
         />
         {isOpen ? t('chip.openLabel') : t('chip.closedLabel')}
       </div>
 
-      <div className='mt-2 text-[24px] font-extrabold leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
+      <div className='mt-2 text-[clamp(1.5rem,7vw,1.75rem)] font-medium leading-none text-[#323232] tabular-nums'>
         {is24
           ? t('chip.open24')
           : isOpen
@@ -116,7 +114,7 @@ export default function HoursChip({ schedules, onClick }: Props) {
             : t('chip.closedShort')}
       </div>
 
-      <div className='mt-1.5 text-[11.5px] leading-tight font-medium text-[#8E8780]'>
+      <div className='mt-1.5 text-[12px] leading-tight font-medium text-[#7F7F7F]'>
         {is24 ? (
           t('chip.always')
         ) : isOpen && closesInMin != null ? (
@@ -124,7 +122,9 @@ export default function HoursChip({ schedules, onClick }: Props) {
             h: closesInH,
             m: closesInM,
             b: (chunks) => (
-              <b className='font-bold text-[#4B4742] tabular-nums'>{chunks}</b>
+              <b className='font-semibold text-[#323232] tabular-nums'>
+                {chunks}
+              </b>
             ),
           })
         ) : (
@@ -133,14 +133,14 @@ export default function HoursChip({ schedules, onClick }: Props) {
       </div>
 
       {!is24 && (
-        <div className='relative mt-2.5 h-1 rounded-full bg-[#F3EDE3]'>
+        <div className='relative mt-3 h-1.5 rounded-full bg-[#E5E5E5]'>
           <div
-            className='absolute inset-y-0 rounded-full bg-gradient-to-r from-[#4B4742] to-[#8E8780]'
+            className='absolute inset-y-0 rounded-full bg-[#323232]'
             style={{ left: `${winLeft}%`, right: `${100 - winRight}%` }}
           />
           {isOpen && (
             <div
-              className='absolute -top-[3px] h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 border-[#22A05A] bg-white shadow-[0_0_0_2px_rgba(34,160,90,0.15)]'
+              className='absolute -top-[3px] h-3 w-3 -translate-x-1/2 rounded-full border-2 border-[#34C759] bg-white shadow-[0_0_0_2px_rgba(52,199,89,0.15)]'
               style={{ left: `${nowLeft}%` }}
             />
           )}
