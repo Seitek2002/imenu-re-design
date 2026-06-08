@@ -11,10 +11,13 @@ interface Props {
 }
 
 const fmt = (n: number, locale: string) =>
-  n
-    .toLocaleString(locale === 'en' ? 'en-US' : 'ru-RU')
-    .replace(/,/g, ' ');
+  n.toLocaleString(locale === 'en' ? 'en-US' : 'ru-RU').replace(/,/g, ' ');
 
+/**
+ * Бонус-чип для ряда «активный заказ + бонусы» — в дизайн-системе Figma
+ * 402:591: белая карточка rounded-24, тёмный текст #323232 / серый #7F7F7F,
+ * оранжевая точка статуса, чип «+N%» начисления.
+ */
 export default function BonusChip({
   balance,
   accrualPercent,
@@ -25,22 +28,29 @@ export default function BonusChip({
   return (
     <Link
       href={`/${venueSlug}/profile/points`}
-      className='relative overflow-hidden rounded-[18px] bg-white p-3.5 shadow-[0_1px_0_rgba(40,28,16,0.04),_0_8px_20px_-16px_rgba(40,28,16,0.10)] active:scale-[0.985] transition-transform cursor-pointer block'
+      className='block rounded-[24px] bg-white p-4 shadow-[0px_4px_12px_rgba(115,115,115,0.12)] transition-colors active:bg-[#FAFAFA]'
     >
-      <div className='flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#8E8780]'>
-        <span
-          aria-hidden
-          className='h-2 w-2 rounded-full shadow-inner'
-          style={{ background: 'linear-gradient(140deg, #E8C99B, #8E6A3D)' }}
-        />
-        {t('chip.points')}
+      <div className='flex items-center gap-1.5'>
+        <span aria-hidden className='h-2 w-2 rounded-full bg-[#EDB583]' />
+        <span className='text-[12px] font-medium uppercase text-[#7F7F7F]'>
+          {t('bonus.balance')}
+        </span>
       </div>
-      <div className='mt-2 flex items-baseline gap-1 text-[32px] font-black leading-none tracking-tight text-[#0E0E0F] tabular-nums'>
-        {fmt(balance, locale)}
+      <div className='mt-3 flex flex-wrap items-end gap-x-1.5 gap-y-0.5'>
+        <span className='text-[clamp(1.75rem,9vw,2.5rem)] font-semibold leading-none text-[#323232] tabular-nums'>
+          {fmt(balance, locale)}
+        </span>
+        <span className='text-[12px] font-medium uppercase text-[#7F7F7F]'>
+          {t('bonus.points')}
+        </span>
       </div>
-      <div className='mt-1.5 text-[11.5px] leading-tight font-medium text-[#8E8780]'>
-        <span className='font-extrabold text-brand'>+{accrualPercent}%</span>{' '}
-        {t('chip.pointsSub')}
+      <div className='mt-2.5 flex items-center gap-1'>
+        <span className='inline-flex shrink-0 items-center whitespace-nowrap rounded-[10px] bg-[#E5E5E5] px-1.5 py-1 text-[12px] font-medium leading-none text-[#323232] tabular-nums'>
+          +{accrualPercent}%
+        </span>
+        <span className='text-[12px] font-medium leading-tight text-[#7F7F7F]'>
+          {t('chip.pointsSub')}
+        </span>
       </div>
     </Link>
   );

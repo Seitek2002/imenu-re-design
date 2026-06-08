@@ -337,7 +337,14 @@
       "upTo": "{n}% чейин",
       "toNextGroup": "«<b>{name}</b>» чейин",
       "turnoverSuffix": "айлануу",
-      "historyCta": "Чегерүүлөр жана чыгашалардын тарыхы"
+      "historyCta": "Чегерүүлөр жана чыгашалардын тарыхы",
+      "upToWord": "чейин",
+      "toNextStatus": "«{name}» статусуна чейин",
+      "historyFull": "Бонустук эсеп боюнча чегерүүлөр жана чыгашалардын тарыхы",
+      "statusLabel": "СИЗДИН СТАТУС",
+      "history": "ТАРЫХ",
+      "turnoverLeft": "дагы",
+      "nextDiscount": "{n}% арзандатуу"
     },
     "chip": {
       "points": "Баллдар",
@@ -355,6 +362,14 @@
       "always": "Тегеректе",
       "closesIn": "{h, plural, =0 {} other {<b># с</b> }}{m, plural, =0 {} other {<b># мүн</b>}}кийин",
       "opensLater": "Кийинчерээк ачылат"
+    },
+    "statusShort": {
+      "accepted": "КАБЫЛ АЛЫНДЫ",
+      "preparing": "ДАЯРДАЛУУДА",
+      "ready": "ДАЯР",
+      "delivery": "ЖОЛДО",
+      "pending": "ТӨЛӨМ",
+      "cancelled": "ЖОКҠО ЧЫГ."
     }
   },
   "Spot": {

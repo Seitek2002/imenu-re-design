@@ -106,7 +106,7 @@ export default function ActiveOrdersCarousel({ orders, venueSlug }: Props) {
           onClick={() => scrollToIdx(activeIdx - 1)}
           disabled={!canPrev}
           aria-label='Предыдущий заказ'
-          className='hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-white/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(0,0,0,0.18)] border border-[#ECE6DE] text-[#0E0E0F] disabled:opacity-0 disabled:pointer-events-none transition-opacity active:scale-95'
+          className='hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-white/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(0,0,0,0.18)] border border-[#E5E5E5] text-[#323232] disabled:opacity-0 disabled:pointer-events-none transition-opacity active:scale-95'
         >
           <ChevronLeft size={20} strokeWidth={2.4} />
         </button>
@@ -115,7 +115,7 @@ export default function ActiveOrdersCarousel({ orders, venueSlug }: Props) {
           onClick={() => scrollToIdx(activeIdx + 1)}
           disabled={!canNext}
           aria-label='Следующий заказ'
-          className='hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-white/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(0,0,0,0.18)] border border-[#ECE6DE] text-[#0E0E0F] disabled:opacity-0 disabled:pointer-events-none transition-opacity active:scale-95'
+          className='hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-white/95 backdrop-blur shadow-[0_4px_14px_-2px_rgba(0,0,0,0.18)] border border-[#E5E5E5] text-[#323232] disabled:opacity-0 disabled:pointer-events-none transition-opacity active:scale-95'
         >
           <ChevronRight size={20} strokeWidth={2.4} />
         </button>
@@ -135,8 +135,8 @@ export default function ActiveOrdersCarousel({ orders, venueSlug }: Props) {
               aria-current={active}
               className={`h-1.5 rounded-full transition-all ${
                 active
-                  ? 'w-5 bg-[#0E0E0F]'
-                  : 'w-1.5 bg-[#8E8780]/60 hover:bg-[#8E8780]'
+                  ? 'w-5 bg-[#323232]'
+                  : 'w-1.5 bg-[#7F7F7F]/50 hover:bg-[#7F7F7F]'
               }`}
             />
           );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 
 import { useCheckout } from '@/store/checkout';
@@ -17,7 +17,6 @@ import ActiveOrdersCarousel from './widgets/ActiveOrdersCarousel';
 import BonusHero from './widgets/BonusHero';
 import BonusChip from './widgets/BonusChip';
 import HoursChip from './widgets/HoursChip';
-import RedeemChip from './widgets/RedeemChip';
 
 interface IWidgetsProps {
   venueSlug: string;
@@ -31,6 +30,13 @@ interface IWidgetsProps {
  */
 const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const [isScheduleOpen, setScheduleOpen] = useState(false);
+  // «Сейчас» для отсечки устаревших заказов держим в state (ленивая инициализация
+  // + редкий тик), чтобы не звать Date.now() прямо в рендере (react-hooks/purity).
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
   const locale = useLocale();
 
   const { phone } = useCheckout();
@@ -55,7 +61,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const freshEnough = (o: OrderV2) => {
     const ms = o.createdAt ? new Date(o.createdAt).getTime() : NaN;
     if (!Number.isFinite(ms)) return true;
-    return Date.now() - ms < MAX_ACTIVE_AGE_MS;
+    return nowMs - ms < MAX_ACTIVE_AGE_MS;
   };
 
   const activeOrders = (ordersData?.results ?? []).filter(
@@ -90,6 +96,11 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const accrualPercent = venue?.bonusAccrualPercent ?? 0;
   const maxDeductiblePercent = venue?.bonusMaxDeductiblePercent ?? 50;
 
+  // Бонусный счёт в no-order состоянии — единая карточка (BonusHero) по макету
+  // Figma 402:591, в неё уже встроены часы, списание, прогресс и история, так
+  // что отдельный ряд чипов в этом случае не нужен.
+  const showChipRow = hasOrder || !bonusEnabled;
+
   return (
     <>
       <div className='mt-2 flex flex-col gap-2'>
@@ -114,32 +125,52 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
                 ? Number(bonusData.turnoverToNext)
                 : null
             }
+            totalPayedSum={
+              bonusData?.totalPayedSum != null
+                ? Number(bonusData.totalPayedSum)
+                : null
+            }
+            currentGroupRequiredTurnover={
+              bonusData?.clientGroup?.requiredTurnover != null
+                ? Number(bonusData.clientGroup.requiredTurnover)
+                : null
+            }
+            nextGroupRequiredTurnover={
+              bonusData?.nextGroup?.requiredTurnover != null
+                ? Number(bonusData.nextGroup.requiredTurnover)
+                : null
+            }
+            nextGroupDiscountPercent={
+              bonusData?.nextGroup?.discountPercent ?? null
+            }
+            nextGroupLoyaltyType={bonusData?.nextGroup?.loyaltyType ?? null}
+            schedules={venue?.schedules ?? []}
+            onScheduleClick={() => setScheduleOpen(true)}
             venueSlug={venueSlug}
             locale={locale}
           />
         ) : null}
 
-        <div
-          className={`grid gap-2.5 ${
-            bonusEnabled ? 'grid-cols-2' : 'grid-cols-1'
-          }`}
-        >
-          {bonusEnabled &&
-            (hasOrder ? (
+        {showChipRow && (
+          <div
+            className={`grid gap-2.5 ${
+              bonusEnabled ? 'grid-cols-2' : 'grid-cols-1'
+            }`}
+          >
+            {bonusEnabled && hasOrder && (
               <BonusChip
                 balance={bonusData?.bonus ?? 0}
                 accrualPercent={accrualPercent}
                 venueSlug={venueSlug}
                 locale={locale}
               />
-            ) : (
-              <RedeemChip maxDeductiblePercent={maxDeductiblePercent} />
-            ))}
-          <HoursChip
-            schedules={venue?.schedules ?? []}
-            onClick={() => setScheduleOpen(true)}
-          />
-        </div>
+            )}
+            <HoursChip
+              schedules={venue?.schedules ?? []}
+              onClick={() => setScheduleOpen(true)}
+            />
+          </div>
+        )}
       </div>
 
       <ScheduleModal
