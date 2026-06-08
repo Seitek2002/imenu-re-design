@@ -336,14 +336,14 @@
       "deductibleLabel": "баллдар менен төлөсө болот",
       "upTo": "{n}% чейин",
       "toNextGroup": "«<b>{name}</b>» чейин",
-      "turnoverSuffix": "айлануу",
+      "turnoverSuffix": "калды",
       "historyCta": "Чегерүүлөр жана чыгашалардын тарыхы",
       "upToWord": "чейин",
       "toNextStatus": "«{name}» статусуна чейин",
       "historyFull": "Бонустук эсеп боюнча чегерүүлөр жана чыгашалардын тарыхы",
       "statusLabel": "СИЗДИН СТАТУС",
       "history": "ТАРЫХ",
-      "turnoverLeft": "дагы",
+      "turnoverLeft": "",
       "nextDiscount": "{n}% арзандатуу"
     },
     "chip": {

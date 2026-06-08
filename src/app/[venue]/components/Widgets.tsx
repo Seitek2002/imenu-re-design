@@ -13,9 +13,7 @@ import { calculateOrderProgress } from '@/lib/helpers/progressHelper';
 import ScheduleModal from '@/components/modals/ScheduleModal';
 
 import ActiveOrderCard from './widgets/ActiveOrderCard';
-import ActiveOrdersCarousel from './widgets/ActiveOrdersCarousel';
 import BonusHero from './widgets/BonusHero';
-import BonusChip from './widgets/BonusChip';
 import HoursChip from './widgets/HoursChip';
 
 interface IWidgetsProps {
@@ -23,10 +21,11 @@ interface IWidgetsProps {
 }
 
 /**
- * Live-Status section — adaptive hero + 2-up chip row.
- *   - active order → ActiveOrderCard (step ladder, items strip, CTA на Ready)
- *   - no order + bonus on → BonusHero (balance, accrual/cap pair, прогресс)
- *   - no order + bonus off → HoursChip только, на всю ширину
+ * Live-Status section на странице заведения.
+ *   - активные заказы → стопка компактных чипов ActiveOrderCard (тап ведёт на
+ *     /order-status/[id]);
+ *   - бонус-виджет ниже НЕ зависит от наличия заказа: bonus on → BonusHero
+ *     (полный, с прогрессом), bonus off → HoursChip.
  */
 const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const [isScheduleOpen, setScheduleOpen] = useState(false);
@@ -75,9 +74,9 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   );
 
   // Виджет дышит только живыми заказами — pending уходит в /history.
-  // Несколько заказов рисуются responsive snap-каруселью: на mobile одна
-  // карточка + peek, на планшете 2, на десктопе (max-w-175 ≈ 700px) — тоже
-  // 2, но без full-bleed-хака чтобы не вылезать за макс-ширину контейнера.
+  // Заказы — компактные чипы (одна строка + тонкий прогресс). Несколько
+  // активных просто стопкой сверху вниз, отсортированы по прогрессу
+  // (ближе к выдаче — выше).
   const visibleOrders = activeOrders
     .filter((o) => o.status !== OrderStatus.PendingPayment)
     .sort(
@@ -87,7 +86,6 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
     );
 
   const hasOrder = visibleOrders.length > 0;
-  const isMulti = visibleOrders.length > 1;
   const bonusEnabled = venue?.isBonusSystemEnabled ?? false;
 
   // BonusResponse не отдаёт bonusAccrualPercent — берём дефолт venue. Это
@@ -96,24 +94,21 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   const accrualPercent = venue?.bonusAccrualPercent ?? 0;
   const maxDeductiblePercent = venue?.bonusMaxDeductiblePercent ?? 50;
 
-  // Бонусный счёт в no-order состоянии — единая карточка (BonusHero) по макету
-  // Figma 402:591, в неё уже встроены часы, списание, прогресс и история, так
-  // что отдельный ряд чипов в этом случае не нужен.
-  const showChipRow = hasOrder || !bonusEnabled;
+  // Пока venue не загружен (store ещё null при первом рендере / гидратации
+  // sessionStorage), bonusEnabled падает в дефолт false и на миг рисуется
+  // HoursChip «уточните часы», который тут же сменяется на BonusHero. Гасим
+  // этот флеш: ничего не рендерим, пока не знаем venue.
+  if (!venue) return null;
 
   return (
     <>
       <div className='mt-2 flex flex-col gap-2'>
-        {hasOrder ? (
-          isMulti ? (
-            <ActiveOrdersCarousel
-              orders={visibleOrders}
-              venueSlug={venueSlug}
-            />
-          ) : (
-            <ActiveOrderCard order={visibleOrders[0]} venueSlug={venueSlug} />
-          )
-        ) : bonusEnabled ? (
+        {hasOrder &&
+          visibleOrders.map((o) => (
+            <ActiveOrderCard key={o.id} order={o} venueSlug={venueSlug} />
+          ))}
+
+        {bonusEnabled ? (
           <BonusHero
             balance={bonusData?.bonus ?? 0}
             accrualPercent={accrualPercent}
@@ -149,27 +144,11 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
             venueSlug={venueSlug}
             locale={locale}
           />
-        ) : null}
-
-        {showChipRow && (
-          <div
-            className={`grid gap-2.5 ${
-              bonusEnabled ? 'grid-cols-2' : 'grid-cols-1'
-            }`}
-          >
-            {bonusEnabled && hasOrder && (
-              <BonusChip
-                balance={bonusData?.bonus ?? 0}
-                accrualPercent={accrualPercent}
-                venueSlug={venueSlug}
-                locale={locale}
-              />
-            )}
-            <HoursChip
-              schedules={venue?.schedules ?? []}
-              onClick={() => setScheduleOpen(true)}
-            />
-          </div>
+        ) : (
+          <HoursChip
+            schedules={venue?.schedules ?? []}
+            onClick={() => setScheduleOpen(true)}
+          />
         )}
       </div>
 

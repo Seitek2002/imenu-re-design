@@ -336,14 +336,14 @@
       "deductibleLabel": "можно оплатить баллами",
       "upTo": "до {n}%",
       "toNextGroup": "До «<b>{name}</b>»",
-      "turnoverSuffix": "оборота",
+      "turnoverSuffix": "",
       "historyCta": "История начислений и списаний",
       "upToWord": "до",
       "toNextStatus": "До статуса «{name}»",
       "historyFull": "История начислений и списаний по бонусному счёту",
       "statusLabel": "ВАШ СТАТУС",
       "history": "ИСТОРИЯ",
-      "turnoverLeft": "ещё",
+      "turnoverLeft": "осталось",
       "nextDiscount": "скидка {n}%"
     },
     "chip": {

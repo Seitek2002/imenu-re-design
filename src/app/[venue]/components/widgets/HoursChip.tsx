@@ -54,7 +54,7 @@ export default function HoursChip({ schedules, onClick }: Props) {
       <button
         type='button'
         onClick={onClick}
-        className='relative w-full overflow-hidden rounded-[24px] bg-white p-4 text-left shadow-[0px_4px_12px_rgba(115,115,115,0.12)] transition-colors active:bg-[#FAFAFA]'
+        className='relative w-full cursor-pointer overflow-hidden rounded-[24px] bg-white p-4 text-left shadow-[0px_4px_12px_rgba(115,115,115,0.12)] transition-colors hover:bg-[#FAFAFA] active:bg-[#F5F5F5]'
       >
         <div className='text-[12px] font-medium uppercase text-[#7F7F7F]'>
           {t('chip.scheduleLabel')}
@@ -94,7 +94,7 @@ export default function HoursChip({ schedules, onClick }: Props) {
     <button
       type='button'
       onClick={onClick}
-      className='relative w-full overflow-hidden rounded-[24px] bg-white p-4 text-left shadow-[0px_4px_12px_rgba(115,115,115,0.12)] transition-colors active:bg-[#FAFAFA]'
+      className='relative w-full cursor-pointer overflow-hidden rounded-[24px] bg-white p-4 text-left shadow-[0px_4px_12px_rgba(115,115,115,0.12)] transition-colors hover:bg-[#FAFAFA] active:bg-[#F5F5F5]'
     >
       <div className='flex items-center gap-1.5 text-[12px] font-medium uppercase text-[#7F7F7F]'>
         <span

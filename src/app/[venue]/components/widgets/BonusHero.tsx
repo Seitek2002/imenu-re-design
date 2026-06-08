@@ -7,6 +7,8 @@ import { Clock, History } from 'lucide-react';
 
 import type { HoursChipSchedule } from './HoursChip';
 
+import styles from './widgets.module.css';
+
 interface Props {
   balance: number;
   accrualPercent: number;
@@ -140,7 +142,10 @@ export default function BonusHero({
             {t('bonus.statusLabel')}
           </span>
           <div className='inline-flex items-center gap-1.5 rounded-[10px] bg-[#323232] px-2.5 py-1.5'>
-            <span aria-hidden className='h-2 w-2 rounded-full bg-[#EDB583]' />
+            <span
+              aria-hidden
+              className={`h-2 w-2 rounded-full bg-[#EDB583] text-[#EDB583] ${styles.livePulse}`}
+            />
             <span className='truncate text-[10px] font-medium uppercase text-white'>
               {currentGroupName?.trim() || t('bonus.tierGuest')}
             </span>
@@ -148,7 +153,7 @@ export default function BonusHero({
         </div>
         <Link
           href={`/${venueSlug}/profile/points`}
-          className='flex shrink-0 items-center gap-1.5 text-[#323232] transition-opacity active:opacity-60'
+          className='flex shrink-0 cursor-pointer items-center gap-1.5 text-[#323232] transition-opacity hover:opacity-70 active:opacity-60'
         >
           <History size={16} className='shrink-0' strokeWidth={1.8} />
           <span className='text-[14px] font-medium uppercase'>
@@ -210,7 +215,7 @@ export default function BonusHero({
           <button
             type='button'
             onClick={onScheduleClick}
-            className='relative flex min-w-0 flex-col justify-center gap-1 overflow-hidden rounded-[16px] bg-[#F3F3F3] px-4 py-2.5 text-left transition-colors active:bg-[#ECECEC]'
+            className='group relative flex min-w-0 cursor-pointer flex-col justify-center gap-1 overflow-hidden rounded-[16px] bg-[#F3F3F3] px-4 py-2.5 text-left transition-colors hover:bg-[#ECECEC] active:bg-[#E5E5E5]'
           >
             <span className='text-[12px] font-medium text-[#7F7F7F]'>
               {hoursLabel}
@@ -222,7 +227,7 @@ export default function BonusHero({
               aria-hidden
               size={120}
               strokeWidth={1.2}
-              className='pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 text-black opacity-[0.04]'
+              className='pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 text-black opacity-[0.04] transition-opacity group-hover:opacity-[0.08]'
             />
           </button>
 

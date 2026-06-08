@@ -336,14 +336,14 @@
       "deductibleLabel": "of order payable with points",
       "upTo": "up to {n}%",
       "toNextGroup": "To «<b>{name}</b>»",
-      "turnoverSuffix": "in turnover",
+      "turnoverSuffix": "left",
       "historyCta": "Earnings & redemptions history",
       "upToWord": "up to",
       "toNextStatus": "To status «{name}»",
       "historyFull": "Bonus account earnings & redemptions history",
       "statusLabel": "YOUR STATUS",
       "history": "HISTORY",
-      "turnoverLeft": "still",
+      "turnoverLeft": "",
       "nextDiscount": "{n}% off"
     },
     "chip": {
