@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -14,6 +14,9 @@ import {
   Store,
   ShoppingBag,
   MessageSquareText,
+  MessageCircle,
+  Utensils,
+  Gift,
   LogOut,
   User as UserIcon,
   Loader2,
@@ -699,7 +702,7 @@ function EmptyState({
 }) {
   const t = useTranslations('Profile');
   return (
-    <div className='min-h-svh pb-24 flex flex-col'>
+    <div className='min-h-svh pb-28 flex flex-col'>
       <header className='sticky top-0 z-20 bg-[#F8F6F7]/80 backdrop-blur-md px-4 h-14 flex items-center'>
         <Link
           href={`/${venueSlug}`}
@@ -708,29 +711,92 @@ function EmptyState({
         >
           <ChevronLeft size={24} />
         </Link>
-        <h1 className='absolute left-1/2 -translate-x-1/2 font-bold text-lg'>{t('title')}</h1>
+        <h1 className='absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-semibold text-[22px] tracking-[-0.6px] text-[#111]'>
+          {t('loginEmpty.title')}
+        </h1>
       </header>
 
-      <div className='flex-1 flex flex-col items-center justify-center px-6 text-center'>
-        <div className='w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mb-5'>
-          <UserIcon size={36} className='text-[#C4B59C]' strokeWidth={1.5} />
+      <div className='flex-1 flex flex-col justify-center px-6 py-6'>
+        <div className='w-full max-w-[420px] mx-auto flex flex-col gap-10'>
+          {/* Hero + value props */}
+          <div className='flex flex-col items-center gap-10'>
+            <Image
+              src='/login-hero.png'
+              alt=''
+              width={480}
+              height={363}
+              priority
+              className='w-[180px] h-auto select-none pointer-events-none'
+            />
+            <div className='flex flex-col items-center gap-2.5 text-center'>
+              <h2 className='text-[20px] font-semibold text-[#111]'>
+                {t('loginEmpty.heroTitle')}
+              </h2>
+              <p className='text-[16px] leading-[1.3] text-[#7F7F7F] max-w-[340px]'>
+                {t('loginEmpty.heroSubtitle')}
+              </p>
+            </div>
+          </div>
+
+          {/* Perks — на широком макете в ряд; на мобильном переносим в столбец,
+              чтобы длинные русские фразы не рвались посреди слова. */}
+          <div className='w-fit mx-auto flex flex-col items-start gap-3.5 sm:flex-row sm:items-start sm:gap-6'>
+            <Perk
+              icon={<Gift size={20} className='text-[#323232]' strokeWidth={1.75} />}
+              title={t('loginEmpty.perkEarnTitle')}
+              subtitle={t('loginEmpty.perkEarnSubtitle')}
+            />
+            <Perk
+              icon={
+                <span className='text-[17px] font-medium leading-none text-[#323232] underline underline-offset-2'>
+                  С
+                </span>
+              }
+              title={t('loginEmpty.perkSpendTitle')}
+              subtitle={t('loginEmpty.perkSpendSubtitle')}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className='flex flex-col gap-4'>
+            <button
+              onClick={onLoginClick}
+              className='w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-[#2D2D2D] text-white text-[16px] font-medium active:scale-[0.99] transition-transform'
+            >
+              <MessageCircle size={24} strokeWidth={1.75} />
+              {t('loginEmpty.loginButton')}
+            </button>
+            <Link
+              href={`/${venueSlug}`}
+              className='w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-white text-[#323232] text-[16px] font-medium shadow-[0px_4px_6px_rgba(85,85,85,0.1)] active:scale-[0.99] transition-transform'
+            >
+              <Utensils size={24} strokeWidth={1.75} />
+              {t('loginEmpty.menuLink')}
+            </Link>
+          </div>
         </div>
-        <h2 className='text-[18px] font-bold text-[#21201F]'>{t('loginEmpty.title')}</h2>
-        <p className='mt-2 text-[13px] text-[#9E9E9E] max-w-xs'>
-          {t('loginEmpty.description')}
-        </p>
-        <button
-          onClick={onLoginClick}
-          className='mt-6 inline-flex items-center justify-center h-12 px-6 rounded-2xl bg-[#21201F] text-white text-[14px] font-medium active:scale-[0.99] transition-transform'
-        >
-          {t('loginEmpty.loginButton')}
-        </button>
-        <Link
-          href={`/${venueSlug}`}
-          className='mt-3 text-[13px] text-[#9E9E9E] underline-offset-2 hover:underline'
-        >
-          {t('loginEmpty.menuLink')}
-        </Link>
+      </div>
+    </div>
+  );
+}
+
+function Perk({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className='flex items-center gap-2.5'>
+      <span className='shrink-0 w-10 h-10 rounded-full bg-[#E9E7E8] flex items-center justify-center'>
+        {icon}
+      </span>
+      <div className='flex flex-col gap-0.5 leading-[1.25]'>
+        <span className='text-[14px] font-medium text-[#323232]'>{title}</span>
+        <span className='text-[13px] text-[#7F7F7F]'>{subtitle}</span>
       </div>
     </div>
   );
