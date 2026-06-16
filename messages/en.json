@@ -397,7 +397,12 @@
     "logout": "Sign out",
     "loginEmpty": {
       "title": "Sign in to your account",
-      "description": "Confirm your phone number by SMS — you'll see order history, points and check out delivery faster.",
+      "heroTitle": "Tasty and rewarding!",
+      "heroSubtitle": "Earn points on every order and pay with them for up to 50% of your bill",
+      "perkEarnTitle": "Earn points",
+      "perkEarnSubtitle": "1 point = 1 som",
+      "perkSpendTitle": "Pay with points",
+      "perkSpendSubtitle": "up to 50% of the order",
       "loginButton": "Sign in via SMS",
       "menuLink": "Go to menu"
     },
