@@ -26,6 +26,14 @@
   100% { transform: scale(1.6); opacity: 0;   }
 }
 
+/* Пунктир-соединитель степпера: штрихи длиннее/чётче, чем у border-dashed. */
+.dashLine {
+  background-image: linear-gradient(to right, #d9d9d9 0 55%, transparent 55%);
+  background-size: 9px 100%;
+  background-repeat: repeat-x;
+  background-position: left center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .livePulse,
   .stepRingPulse::after {

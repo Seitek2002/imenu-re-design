@@ -370,7 +370,29 @@
       "delivery": "ON THE WAY",
       "pending": "PAYMENT",
       "cancelled": "CANCELLED"
-    }
+    },
+    "stepLabels": {
+      "takeout": {
+        "0": "Accepted",
+        "1": "Preparing",
+        "2": "Ready",
+        "3": "Picked up"
+      },
+      "delivery": {
+        "0": "Accepted",
+        "1": "Preparing",
+        "2": "On the way",
+        "3": "Delivered"
+      },
+      "dinein": {
+        "0": "Accepted",
+        "1": "Preparing",
+        "2": "Served"
+      }
+    },
+    "prevOrder": "Previous order",
+    "nextOrder": "Next order",
+    "gotoOrder": "Go to order {n}"
   },
   "Spot": {
     "pickupFrom": "Pickup from",

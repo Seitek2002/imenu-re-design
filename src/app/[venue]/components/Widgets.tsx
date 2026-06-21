@@ -13,6 +13,7 @@ import { calculateOrderProgress } from '@/lib/helpers/progressHelper';
 import ScheduleModal from '@/components/modals/ScheduleModal';
 
 import ActiveOrderCard from './widgets/ActiveOrderCard';
+import ActiveOrdersCarousel from './widgets/ActiveOrdersCarousel';
 import BonusHero from './widgets/BonusHero';
 import HoursChip from './widgets/HoursChip';
 
@@ -22,7 +23,8 @@ interface IWidgetsProps {
 
 /**
  * Live-Status section на странице заведения.
- *   - активные заказы → стопка компактных чипов ActiveOrderCard (тап ведёт на
+ *   - активные заказы → ActiveOrderCard (карточка со степпером); несколько
+ *     заказов идут snap-каруселью ActiveOrdersCarousel (тап ведёт на
  *     /order-status/[id]);
  *   - бонус-виджет ниже НЕ зависит от наличия заказа: bonus on → BonusHero
  *     (полный, с прогрессом), bonus off → HoursChip.
@@ -74,9 +76,8 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
   );
 
   // Виджет дышит только живыми заказами — pending уходит в /history.
-  // Заказы — компактные чипы (одна строка + тонкий прогресс). Несколько
-  // активных просто стопкой сверху вниз, отсортированы по прогрессу
-  // (ближе к выдаче — выше).
+  // Один заказ — карточка ActiveOrderCard; несколько идут snap-каруселью.
+  // Сортировка по прогрессу (ближе к выдаче — выше / первым в ленте).
   const visibleOrders = activeOrders
     .filter((o) => o.status !== OrderStatus.PendingPayment)
     .sort(
@@ -86,6 +87,7 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
     );
 
   const hasOrder = visibleOrders.length > 0;
+  const isMulti = visibleOrders.length > 1;
   const bonusEnabled = venue?.isBonusSystemEnabled ?? false;
 
   // BonusResponse не отдаёт bonusAccrualPercent — берём дефолт venue. Это
@@ -104,8 +106,10 @@ const Widgets = ({ venueSlug }: IWidgetsProps) => {
     <>
       <div className='mt-2 flex flex-col gap-2'>
         {hasOrder &&
-          visibleOrders.map((o) => (
-            <ActiveOrderCard key={o.id} order={o} venueSlug={venueSlug} />
+          (isMulti ? (
+            <ActiveOrdersCarousel orders={visibleOrders} venueSlug={venueSlug} />
+          ) : (
+            <ActiveOrderCard order={visibleOrders[0]} venueSlug={venueSlug} />
           ))}
 
         {bonusEnabled ? (
