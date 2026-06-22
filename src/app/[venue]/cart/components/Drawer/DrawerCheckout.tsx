@@ -23,6 +23,7 @@ import { parseApiError } from '@/lib/apiErrors';
 import { useClientStore } from '@/store/client';
 import { savePendingPayment } from '@/lib/payment-link-store';
 import { startPaymentRedirect } from '@/store/payment-redirect';
+import { trackPayment } from '@/lib/analytics';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import DeliveryInputs, { type SaveAddressIntent } from '../DeliveryInputs';
 import { createMyAddress } from '@/lib/api/addresses';
@@ -167,12 +168,12 @@ const DrawerCheckout: FC<IProps> = ({
 
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
   // Наличные доступны только при заказе за столом (dinein). Для самовывоза и
-  // доставки оплата всегда онлайн через ELQR — на случай если в стейте остался
-  // 'cash' (например юзер сменил orderType с dinein), сбрасываем в эффекте.
+  // доставки оплата всегда онлайн через ELQR. Вместо сброса стейта в эффекте
+  // (вызывал каскадный ре-рендер) выводим эффективный метод на лету: если cash
+  // недоступен, любое залипшее 'cash' трактуем как 'elqr'.
   const allowCash = orderType === 'dinein';
-  useEffect(() => {
-    if (!allowCash && paymentMethod === 'cash') setPaymentMethod('elqr');
-  }, [allowCash, paymentMethod]);
+  const effectivePaymentMethod: 'elqr' | 'cash' =
+    allowCash ? paymentMethod : 'elqr';
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
   const [pickupTime, setPickupTime] = useState(tt('asap'));
@@ -271,10 +272,23 @@ const DrawerCheckout: FC<IProps> = ({
         .catch(() => {});
     }
 
+    trackPayment('order_create_success', {
+      source: 'cart',
+      orderId: response.id,
+      venueSlug,
+      total: finalTotal,
+      bonusApplied: bonusToApply,
+    });
+
     if (response.paymentUrl) {
       savePendingPayment({
         orderId: response.id,
         paymentUrl: response.paymentUrl,
+      });
+      trackPayment('payment_redirect', {
+        source: 'cart',
+        orderId: response.id,
+        venueSlug,
       });
       startPaymentRedirect(response.paymentUrl);
     } else {
@@ -375,8 +389,8 @@ const DrawerCheckout: FC<IProps> = ({
               : {}),
           };
         }),
-        paymentMethod: (paymentMethod === 'cash' ? 1 : 2) as 1 | 2,
-        paymentMethods: paymentMethod,
+        paymentMethod: (effectivePaymentMethod === 'cash' ? 1 : 2) as 1 | 2,
+        paymentMethods: effectivePaymentMethod,
         useBonus: isBonusUsed,
         ...(isBonusUsed && bonusToApply > 0 ? { bonus: bonusToApply } : {}),
         ...(savedHash ? { hash: savedHash } : {}),
@@ -386,6 +400,15 @@ const DrawerCheckout: FC<IProps> = ({
         })(),
       };
 
+      trackPayment('order_create_attempt', {
+        source: 'cart',
+        venueSlug,
+        serviceMode: orderData.serviceMode,
+        paymentMethod: effectivePaymentMethod,
+        total: finalTotal,
+        bonusApplied: bonusToApply,
+      });
+
       const response = await createOrderMutation.mutateAsync({
         body: orderData,
         venueSlug,
@@ -393,6 +416,7 @@ const DrawerCheckout: FC<IProps> = ({
 
       if (response.status === 'waiting_for_code') {
         setPendingOrderBody(orderData);
+        trackPayment('order_otp_required', { source: 'cart', venueSlug });
         return;
       }
 
@@ -404,6 +428,7 @@ const DrawerCheckout: FC<IProps> = ({
         t: (key) => tErr(key),
         fallback: tErr('generic'),
       });
+      trackPayment('order_create_error', { source: 'cart', venueSlug, error: msg });
       setToastMessage(msg);
       // DevErrorModal оставляем только для разработки.
       if (process.env.NODE_ENV !== 'production') setApiError(error);
@@ -641,7 +666,7 @@ const DrawerCheckout: FC<IProps> = ({
 
               <div className='mt-3'>
                 <PaymentMethodRow
-                  method={paymentMethod}
+                  method={effectivePaymentMethod}
                   onClick={() => setShowPaymentModal(true)}
                 />
               </div>
@@ -802,7 +827,7 @@ const DrawerCheckout: FC<IProps> = ({
 
               <div className='mt-3'>
                 <PaymentMethodRow
-                  method={paymentMethod}
+                  method={effectivePaymentMethod}
                   onClick={() => setShowPaymentModal(true)}
                 />
               </div>
@@ -830,7 +855,7 @@ const DrawerCheckout: FC<IProps> = ({
       <PaymentModal
         open={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        method={paymentMethod}
+        method={effectivePaymentMethod}
         onSelect={setPaymentMethod}
         allowCash={allowCash}
       />

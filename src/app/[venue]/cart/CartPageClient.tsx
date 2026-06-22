@@ -14,6 +14,7 @@ import { useVenueStore } from '@/store/venue';
 import { useCheckoutCalculate } from '@/hooks/useCheckoutCalculate';
 import { useMounted } from '@/hooks/useMounted';
 import { parseApiError } from '@/lib/apiErrors';
+import { maxDeductibleBonus } from '@/lib/bonus';
 import { PenLine } from 'lucide-react';
 import UtensilsSelector from './components/UtensilsSelector';
 import EmptyBasket from './components/EmptyBasket';
@@ -79,11 +80,13 @@ export default function CartPageClient() {
   const availableBonuses = calc.bonusAvailable;
   const orderBaseTotal =
     (calc.raw ? calc.totalPrice + bonusToApply : subtotal + serverDeliveryPrice) - promoDiscount;
-  // Лимит списания бонусов — per-venue (Kuma 2026-05-24), дефолт 50%.
-  // Берём из venue, а не хардкодим: иначе слайдер режет/завышает относительно
-  // того, что реально спишет сервер (см. PosPaymentModal, тот же расчёт).
-  const maxRatio = (venueData?.bonusMaxDeductiblePercent ?? 50) / 100;
-  const maxDeductible = Math.floor(Math.min(availableBonuses, orderBaseTotal * maxRatio));
+  // Лимит списания бонусов — общий хелпер (per-venue percent, дефолт 50%),
+  // тот же, что в OrderSummary/POS/дровере.
+  const maxDeductible = maxDeductibleBonus(
+    availableBonuses,
+    orderBaseTotal,
+    venueData?.bonusMaxDeductiblePercent,
+  );
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>

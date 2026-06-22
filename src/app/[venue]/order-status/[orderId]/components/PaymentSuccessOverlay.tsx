@@ -5,6 +5,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { clearPendingPayment } from '@/lib/payment-link-store';
+import { trackPayment } from '@/lib/analytics';
 
 const STORAGE_KEY = 'payment_success';
 const EVENT_NAME = 'payment-success';
@@ -12,6 +13,7 @@ const EVENT_NAME = 'payment-success';
 /** Call after confirming payment actually succeeded (status transitioned away from PendingPayment) */
 export function markPaymentSuccess(orderId: string | number) {
   try {
+    trackPayment('payment_success', { orderId });
     sessionStorage.setItem(STORAGE_KEY, String(orderId));
     window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: String(orderId) }));
   } catch {

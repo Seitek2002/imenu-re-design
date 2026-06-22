@@ -10,6 +10,7 @@ import {
   useVenueProducts,
 } from '@/lib/api/queries';
 import { pickAppliedPromotion } from '@/lib/promotions';
+import { maxDeductibleBonus } from '@/lib/bonus';
 
 interface Options {
   subtotal: number;
@@ -26,9 +27,11 @@ export function useOrderSummary({ subtotal, deliveryType, deliveryCost }: Option
 
   const { data: bonusData } = useClientBonus({ phone, venueSlug: venue?.slug ?? '' });
   const availableBonuses = bonusData?.bonus ?? 0;
-  // bonusMaxDeductiblePercent per-venue (Kuma 2026-05-24 §4), fallback 50.
-  const maxRatio = (venue?.bonusMaxDeductiblePercent ?? 50) / 100;
-  const maxDeductible = Math.floor(Math.min(availableBonuses, subtotal * maxRatio));
+  const maxDeductible = maxDeductibleBonus(
+    availableBonuses,
+    subtotal,
+    venue?.bonusMaxDeductiblePercent,
+  );
   const effectiveAmount = isBonusUsed ? Math.min(Math.max(0, bonusAmount), maxDeductible) : 0;
   const discount = effectiveAmount;
 

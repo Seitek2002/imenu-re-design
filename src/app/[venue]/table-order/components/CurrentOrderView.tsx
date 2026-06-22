@@ -598,9 +598,8 @@ export default function CurrentOrderView({ venueSlug }: Props) {
         maxDeductible={maxDeductible}
       />
 
-      {posOrder && canPayPos && (
+      {posOrder && canPayPos && isPayOpen && (
         <PosPaymentModal
-          open={isPayOpen}
           onClose={() => setPayOpen(false)}
           orderId={posOrder.id}
           remaining={posRemainingStr}

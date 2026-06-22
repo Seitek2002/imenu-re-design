@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useBonusStore } from '@/store/bonus';
+import { maxDeductibleBonus } from '@/lib/bonus';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 
 import arrow from '@/assets/Cart/details-arrow.svg';
@@ -67,9 +68,10 @@ export default function OrderSummary({
     servicePrice +
     (deliveryType === 'delivery' && !isFreeDelivery ? deliveryCost : 0) -
     promotionDiscount;
-  const maxDeductibleRatio = bonusMaxDeductiblePercent / 100;
-  const sliderMax = Math.floor(
-    Math.min(bonusAvailable, orderBaseTotal * maxDeductibleRatio),
+  const sliderMax = maxDeductibleBonus(
+    bonusAvailable,
+    orderBaseTotal,
+    bonusMaxDeductiblePercent,
   );
   const sliderValue = isBonusUsed
     ? Math.min(Math.max(0, Math.floor(bonusAmount)), sliderMax)
