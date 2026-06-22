@@ -22,6 +22,8 @@ import { parseApiError } from '@/lib/apiErrors';
 
 import { useClientStore } from '@/store/client';
 import { savePendingPayment } from '@/lib/payment-link-store';
+import { startPaymentRedirect } from '@/store/payment-redirect';
+import { trackPayment } from '@/lib/analytics';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 import DeliveryInputs, { type SaveAddressIntent } from '../DeliveryInputs';
 import { createMyAddress } from '@/lib/api/addresses';
@@ -35,7 +37,7 @@ import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 import tableIcon from '@/assets/Cart/table.svg';
 import { useVenueStore } from '@/store/venue';
 import type { Coords } from '@/lib/osm-maps';
-import type { OrderCreateBody } from '@/lib/order';
+import type { OrderCreateBody, OrderCreateResponse } from '@/lib/order';
 
 interface IProps {
   sheetOpen: boolean;
@@ -47,6 +49,10 @@ interface IProps {
   showBonusInput?: boolean;
   availableBonuses?: number;
   maxDeductible?: number;
+  /** Идёт серверный пересчёт (итог ещё не свежий) — оплату придерживаем. */
+  isCalculating?: boolean;
+  /** Серверный расчёт упал — итог недостоверен, платить нельзя. */
+  calcError?: boolean;
 }
 
 const DrawerCheckout: FC<IProps> = ({
@@ -58,6 +64,8 @@ const DrawerCheckout: FC<IProps> = ({
   showBonusInput = false,
   availableBonuses = 0,
   maxDeductible = 0,
+  isCalculating = false,
+  calcError = false,
 }) => {
   const params = useParams();
   const router = useRouter();
@@ -160,12 +168,12 @@ const DrawerCheckout: FC<IProps> = ({
 
   const [paymentMethod, setPaymentMethod] = useState<'elqr' | 'cash'>('elqr');
   // Наличные доступны только при заказе за столом (dinein). Для самовывоза и
-  // доставки оплата всегда онлайн через ELQR — на случай если в стейте остался
-  // 'cash' (например юзер сменил orderType с dinein), сбрасываем в эффекте.
+  // доставки оплата всегда онлайн через ELQR. Вместо сброса стейта в эффекте
+  // (вызывал каскадный ре-рендер) выводим эффективный метод на лету: если cash
+  // недоступен, любое залипшее 'cash' трактуем как 'elqr'.
   const allowCash = orderType === 'dinein';
-  useEffect(() => {
-    if (!allowCash && paymentMethod === 'cash') setPaymentMethod('elqr');
-  }, [allowCash, paymentMethod]);
+  const effectivePaymentMethod: 'elqr' | 'cash' =
+    allowCash ? paymentMethod : 'elqr';
 
   // 🔥 Стейт для времени выдачи, который мы передадим в CheckoutForm
   const [pickupTime, setPickupTime] = useState(tt('asap'));
@@ -233,8 +241,72 @@ const DrawerCheckout: FC<IProps> = ({
     [setDeliveryCoords],
   );
 
+  // Единый «хвост успеха» для обычного и OTP-пути: записать hash верификации,
+  // очистить корзину/бонусы, сохранить клиента и адрес, затем увести на шлюз
+  // (если пришёл paymentUrl) либо на экран статуса. phoneForHash — всегда полный
+  // нормализованный номер, чтобы ключ совпадал с чтением в handlePay и в POS
+  // (раньше обычный путь писал hash под локальными цифрами и больше не находил его).
+  const finalizeOrder = (
+    response: OrderCreateResponse,
+    phoneForHash: string,
+  ) => {
+    if (response.phoneVerificationHash) {
+      localStorage.setItem(
+        `bonus_hash_${venueSlug}_${phoneForHash}`,
+        response.phoneVerificationHash,
+      );
+    }
+
+    clearBasket();
+    resetOrderOptions();
+    resetBonus();
+    queryClient.invalidateQueries({ queryKey: ['bonus'] });
+
+    saveClient({ phone, countryId });
+
+    // Сохраняем адрес в /clients/me/addresses/ — fire-and-forget,
+    // ошибка не должна ломать редирект на оплату.
+    if (hasToken && saveAddressIntent && orderType === 'delivery') {
+      createMyAddress(saveAddressIntent)
+        .then(() => queryClient.invalidateQueries({ queryKey: ['addresses', 'me'] }))
+        .catch(() => {});
+    }
+
+    trackPayment('order_create_success', {
+      source: 'cart',
+      orderId: response.id,
+      venueSlug,
+      total: finalTotal,
+      bonusApplied: bonusToApply,
+    });
+
+    if (response.paymentUrl) {
+      savePendingPayment({
+        orderId: response.id,
+        paymentUrl: response.paymentUrl,
+      });
+      trackPayment('payment_redirect', {
+        source: 'cart',
+        orderId: response.id,
+        venueSlug,
+      });
+      startPaymentRedirect(response.paymentUrl);
+    } else {
+      closeSheet();
+      router.push(`/${venueSlug}/order-status/${response.id}`);
+    }
+  };
+
   const handlePay = async () => {
     if (createOrderMutation.isPending) return;
+
+    // Не оформляем заказ на недостоверном итоге: расчёт упал (показываем ошибку)
+    // или ещё пересчитывается (кнопка и так заблокирована — выходим тихо).
+    if (calcError) {
+      setToastMessage(tErr('calculateFailed'));
+      return;
+    }
+    if (isCalculating) return;
 
     if (!phone) {
       setPhoneError(true);
@@ -317,8 +389,8 @@ const DrawerCheckout: FC<IProps> = ({
               : {}),
           };
         }),
-        paymentMethod: (paymentMethod === 'cash' ? 1 : 2) as 1 | 2,
-        paymentMethods: paymentMethod,
+        paymentMethod: (effectivePaymentMethod === 'cash' ? 1 : 2) as 1 | 2,
+        paymentMethods: effectivePaymentMethod,
         useBonus: isBonusUsed,
         ...(isBonusUsed && bonusToApply > 0 ? { bonus: bonusToApply } : {}),
         ...(savedHash ? { hash: savedHash } : {}),
@@ -328,6 +400,15 @@ const DrawerCheckout: FC<IProps> = ({
         })(),
       };
 
+      trackPayment('order_create_attempt', {
+        source: 'cart',
+        venueSlug,
+        serviceMode: orderData.serviceMode,
+        paymentMethod: effectivePaymentMethod,
+        total: finalTotal,
+        bonusApplied: bonusToApply,
+      });
+
       const response = await createOrderMutation.mutateAsync({
         body: orderData,
         venueSlug,
@@ -335,41 +416,11 @@ const DrawerCheckout: FC<IProps> = ({
 
       if (response.status === 'waiting_for_code') {
         setPendingOrderBody(orderData);
+        trackPayment('order_otp_required', { source: 'cart', venueSlug });
         return;
       }
 
-      if (response.phoneVerificationHash) {
-        localStorage.setItem(
-          `bonus_hash_${venueSlug}_${phone}`,
-          response.phoneVerificationHash,
-        );
-      }
-
-      clearBasket();
-      resetOrderOptions();
-      resetBonus();
-      queryClient.invalidateQueries({ queryKey: ['bonus'] });
-
-      saveClient({ phone, countryId });
-
-      // Сохраняем адрес в /clients/me/addresses/ — fire-and-forget,
-      // ошибка не должна ломать редирект на оплату.
-      if (hasToken && saveAddressIntent && orderType === 'delivery') {
-        createMyAddress(saveAddressIntent)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['addresses', 'me'] }))
-          .catch(() => {});
-      }
-
-      if (response.paymentUrl) {
-        savePendingPayment({
-          orderId: response.id,
-          paymentUrl: response.paymentUrl,
-        });
-        window.location.href = response.paymentUrl;
-      } else {
-        closeSheet();
-        router.push(`/${venueSlug}/order-status/${response.id}`);
-      }
+      finalizeOrder(response, fullPhone);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Payment Error:', error);
@@ -377,6 +428,7 @@ const DrawerCheckout: FC<IProps> = ({
         t: (key) => tErr(key),
         fallback: tErr('generic'),
       });
+      trackPayment('order_create_error', { source: 'cart', venueSlug, error: msg });
       setToastMessage(msg);
       // DevErrorModal оставляем только для разработки.
       if (process.env.NODE_ENV !== 'production') setApiError(error);
@@ -391,36 +443,10 @@ const DrawerCheckout: FC<IProps> = ({
         body: { ...pendingOrderBody, code },
         venueSlug,
       });
+      // pendingOrderBody.phone — уже полный нормализованный номер (orderData.phone).
+      const otpPhone = pendingOrderBody.phone;
       setPendingOrderBody(null);
-      if (response.phoneVerificationHash) {
-        localStorage.setItem(
-          `bonus_hash_${venueSlug}_${pendingOrderBody.phone}`,
-          response.phoneVerificationHash,
-        );
-      }
-      clearBasket();
-      resetOrderOptions();
-      resetBonus();
-      queryClient.invalidateQueries({ queryKey: ['bonus'] });
-
-      saveClient({ phone, countryId });
-
-      if (hasToken && saveAddressIntent && orderType === 'delivery') {
-        createMyAddress(saveAddressIntent)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['addresses', 'me'] }))
-          .catch(() => {});
-      }
-
-      if (response.paymentUrl) {
-        savePendingPayment({
-          orderId: response.id,
-          paymentUrl: response.paymentUrl,
-        });
-        window.location.href = response.paymentUrl;
-      } else {
-        closeSheet();
-        router.push(`/${venueSlug}/order-status/${response.id}`);
-      }
+      finalizeOrder(response, otpPhone);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setOtpError(error?.message ?? 'Неверный код. Попробуйте ещё раз.');
@@ -640,7 +666,7 @@ const DrawerCheckout: FC<IProps> = ({
 
               <div className='mt-3'>
                 <PaymentMethodRow
-                  method={paymentMethod}
+                  method={effectivePaymentMethod}
                   onClick={() => setShowPaymentModal(true)}
                 />
               </div>
@@ -650,10 +676,17 @@ const DrawerCheckout: FC<IProps> = ({
               className='absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-10 pb-8 transition-transform duration-150'
               style={{ transform: `translateY(-${keyboardOffset}px)` }}
             >
+              {calcError && (
+                <div className='mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600'>
+                  {tErr('calculateFailed')}
+                </div>
+              )}
               <BonusAccrualBadge total={finalTotal} className='mb-3' />
               <CheckoutFooter
                 total={finalTotal}
                 isSubmitting={isLoading}
+                isCalculating={isCalculating}
+                disabled={calcError}
                 onPay={handlePay}
               />
             </div>
@@ -794,16 +827,23 @@ const DrawerCheckout: FC<IProps> = ({
 
               <div className='mt-3'>
                 <PaymentMethodRow
-                  method={paymentMethod}
+                  method={effectivePaymentMethod}
                   onClick={() => setShowPaymentModal(true)}
                 />
               </div>
 
               <div className='mt-4'>
+                {calcError && (
+                  <div className='mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600'>
+                    {tErr('calculateFailed')}
+                  </div>
+                )}
                 <BonusAccrualBadge total={finalTotal} className='mb-3' />
                 <CheckoutFooter
                   total={finalTotal}
                   isSubmitting={isLoading}
+                  isCalculating={isCalculating}
+                  disabled={calcError}
                   onPay={handlePay}
                 />
               </div>
@@ -815,7 +855,7 @@ const DrawerCheckout: FC<IProps> = ({
       <PaymentModal
         open={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        method={paymentMethod}
+        method={effectivePaymentMethod}
         onSelect={setPaymentMethod}
         allowCash={allowCash}
       />

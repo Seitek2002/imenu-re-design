@@ -18,6 +18,7 @@ import {
   getPendingPosPayment,
   isPosPaymentLinkFresh,
 } from '@/lib/payment-link-store';
+import { startPaymentRedirect } from '@/store/payment-redirect';
 import PosPaymentModal from './PosPaymentModal';
 import { useTableOrderSocket } from '@/hooks/useTableOrderSocket';
 import { useMounted } from '@/hooks/useMounted';
@@ -177,31 +178,36 @@ export default function CurrentOrderView({ venueSlug }: Props) {
 
   // Resume-payment banner: if user returned from paygate without completing,
   // surface the saved link as long as the bill still has something to pay.
-  const [posResumeUrl, setPosResumeUrl] = useState<string | null>(null);
-  useEffect(() => {
-    if (!posOrder?.id) {
-      setPosResumeUrl(null);
-      return;
-    }
+  // Производим URL чистым useMemo (чтение sessionStorage — не setState), а
+  // очистку протухшей/оплаченной ссылки делаем отдельным side-effect без
+  // setState. «Закрытие» баннера — через сравнение с dismissed-URL (setState
+  // в обработчике, не в эффекте), чтобы новая ссылка после нового платежа
+  // снова показалась.
+  const posResumeUrl = ((): string | null => {
+    if (!posOrder?.id) return null;
     const saved = getPendingPosPayment(posOrder.id);
-    if (!saved) {
-      setPosResumeUrl(null);
-      return;
-    }
-    if (posRemaining <= 0 || !isPosPaymentLinkFresh(saved)) {
+    if (!saved) return null;
+    if (posRemaining <= 0 || !isPosPaymentLinkFresh(saved)) return null;
+    return saved.paymentUrl;
+  })();
+
+  useEffect(() => {
+    if (!posOrder?.id) return;
+    const saved = getPendingPosPayment(posOrder.id);
+    if (saved && (posRemaining <= 0 || !isPosPaymentLinkFresh(saved))) {
       clearPendingPosPayment(posOrder.id);
-      setPosResumeUrl(null);
-      return;
     }
-    setPosResumeUrl(saved.paymentUrl);
   }, [posOrder?.id, posRemaining]);
 
+  const [dismissedResumeUrl, setDismissedResumeUrl] = useState<string | null>(null);
+  const showPosResume = posResumeUrl != null && posResumeUrl !== dismissedResumeUrl;
+
   const handleResumePos = () => {
-    if (posResumeUrl) window.location.href = posResumeUrl;
+    if (posResumeUrl) startPaymentRedirect(posResumeUrl);
   };
   const handleDismissResumePos = () => {
     if (posOrder?.id) clearPendingPosPayment(posOrder.id);
-    setPosResumeUrl(null);
+    setDismissedResumeUrl(posResumeUrl);
   };
 
   // ===== Aggregate counts =====
@@ -268,7 +274,7 @@ export default function CurrentOrderView({ venueSlug }: Props) {
   const hasDraft = draftItems.length > 0;
 
   const posPayButton = canPayPos ? (
-    posResumeUrl ? (
+    showPosResume ? (
       <div className='flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2'>
         <div className='flex-1 min-w-0'>
           <div className='text-[#111111] text-xs font-bold leading-tight'>
@@ -598,9 +604,8 @@ export default function CurrentOrderView({ venueSlug }: Props) {
         maxDeductible={maxDeductible}
       />
 
-      {posOrder && canPayPos && (
+      {posOrder && canPayPos && isPayOpen && (
         <PosPaymentModal
-          open={isPayOpen}
           onClose={() => setPayOpen(false)}
           orderId={posOrder.id}
           remaining={posRemainingStr}
@@ -690,7 +695,6 @@ function TicketCard({
   statusLabel,
   statusTone,
   sum,
-  numericSum: _numericSum,
   originalSum,
   currency,
   children,

@@ -6,11 +6,27 @@ import { useTranslations } from 'next-intl';
 interface Props {
   total: number;
   isSubmitting: boolean;
+  /** Идёт серверный пересчёт — итог ненадёжен, оплату придерживаем. */
+  isCalculating?: boolean;
+  /** Внешняя блокировка (например, расчёт упал). */
+  disabled?: boolean;
   onPay: () => void;
 }
 
-const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
+const CheckoutFooter: FC<Props> = ({
+  total,
+  isSubmitting,
+  isCalculating = false,
+  disabled = false,
+  onPay,
+}) => {
   const t = useTranslations('Cart.footer');
+  const isBlocked = isSubmitting || isCalculating || disabled;
+  const label = isSubmitting
+    ? t('processing')
+    : isCalculating
+      ? t('updating')
+      : t('pay');
 
   return (
     <div className='flex items-center gap-4'>
@@ -21,15 +37,15 @@ const CheckoutFooter: FC<Props> = ({ total, isSubmitting, onPay }) => {
 
       <button
         onClick={onPay}
-        disabled={isSubmitting}
+        disabled={isBlocked}
         className={`
           flex-1 h-14 rounded-2xl font-bold text-white text-lg shadow-lg
           transition-all active:scale-95 flex flex-row items-center justify-center gap-2 leading-tight
           focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none
-          ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-brand hover:brightness-110 hover:shadow-xl cursor-pointer'}
+          ${isBlocked ? 'bg-gray-400 cursor-not-allowed' : 'bg-brand hover:brightness-110 hover:shadow-xl cursor-pointer'}
         `}
       >
-        {isSubmitting ? t('processing') : t('pay')}
+        {label}
       </button>
     </div>
   );

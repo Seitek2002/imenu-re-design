@@ -16,11 +16,12 @@ import {
   OrderV2,
 } from '../order';
 import { API_URL, API_V2_URL } from '../config';
-import { OrderStatus, Product, Promotion } from '@/types/api';
+import { Product, Promotion } from '@/types/api';
 import { normalizePhoneForApi } from '../helpers/phone';
 import type { Locale } from '../locale';
 import { getAccessTokenSnapshot } from '@/store/auth';
 import { gcPendingPaymentsForOrders } from '../payment-link-store';
+import { orderPollInterval } from '../order-poll';
 
 const API_BASE = API_V2_URL;
 
@@ -189,13 +190,8 @@ export const useOrderByIdV2 = (
     queryFn: () => fetchOrderById(id, locale),
     enabled: !!id,
     initialData,
-    refetchInterval: (query) => {
-      const s = query.state.data?.status;
-      if (s === OrderStatus.Completed || s === OrderStatus.Cancelled) {
-        return false;
-      }
-      return 5000;
-    },
+    refetchInterval: (query) =>
+      orderPollInterval(query.state.data?.status, query.state.dataUpdateCount),
     refetchOnWindowFocus: true,
   });
 };

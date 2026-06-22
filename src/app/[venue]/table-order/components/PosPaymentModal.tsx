@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { useCheckout } from '@/store/checkout';
@@ -12,20 +12,24 @@ import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 import { savePendingPosPayment } from '@/lib/payment-link-store';
+import { startPaymentRedirect } from '@/store/payment-redirect';
+import { maxDeductibleBonus } from '@/lib/bonus';
+import { trackPayment } from '@/lib/analytics';
 import { useClientStore } from '@/store/client';
 import { useVenueStore } from '@/store/venue';
 import { toMoneyNumber, subtractMoney, formatMoney } from '@/types/pos-order';
 
 interface Props {
-  open: boolean;
   onClose: () => void;
   orderId: number;
   remaining: string;
   venueSlug: string;
 }
 
+// Монтируется родителем только когда открыта (`{isPayOpen && <PosPaymentModal/>}`),
+// поэтому состояние стартует свежим на каждое открытие — отдельные эффекты сброса
+// по `open` больше не нужны.
 export default function PosPaymentModal({
-  open,
   onClose,
   orderId,
   remaining,
@@ -40,11 +44,10 @@ export default function PosPaymentModal({
   const { data: bonusData } = useClientBonus({ phone: fullPhone, venueSlug });
   const availableBonuses = bonusData?.bonus ?? 0;
   const remainingNum = toMoneyNumber(remaining);
-  // bonusMaxDeductiblePercent per-venue (Kuma 2026-05-24 §4), fallback 50.
-  const maxRatio =
-    (useVenueStore.getState().data?.bonusMaxDeductiblePercent ?? 50) / 100;
-  const maxDeductible = Math.floor(
-    Math.min(availableBonuses, remainingNum * maxRatio),
+  const maxDeductible = maxDeductibleBonus(
+    availableBonuses,
+    remainingNum,
+    useVenueStore.getState().data?.bonusMaxDeductiblePercent,
   );
 
   const [bonusUsed, setBonusUsed] = useState(false);
@@ -52,13 +55,6 @@ export default function PosPaymentModal({
   const bonusToUse = bonusUsed
     ? Math.min(Math.max(0, bonusValue), maxDeductible)
     : 0;
-
-  useEffect(() => {
-    if (open) {
-      setBonusUsed(false);
-      setBonusValue(0);
-    }
-  }, [open]);
 
   const handleBonusToggle = () => {
     if (bonusUsed) {
@@ -84,16 +80,6 @@ export default function PosPaymentModal({
     bonus?: number;
   } | null>(null);
 
-  useEffect(() => {
-    if (!open) {
-      setOtpOpen(false);
-      setOtpError(null);
-      setPendingArgs(null);
-      setError(null);
-      setPhoneError(false);
-    }
-  }, [open]);
-
   const hashStorageKey = (rawPhone: string) =>
     `bonus_hash_${venueSlug}_${rawPhone}`;
 
@@ -105,6 +91,8 @@ export default function PosPaymentModal({
     }
     saveClient({ phone: savedPhone, countryId });
     if (res.paymentUrl) {
+      trackPayment('order_create_success', { source: 'pos', orderId, venueSlug, total: finalToPay, bonusApplied: bonusToUse });
+      trackPayment('payment_redirect', { source: 'pos', orderId, venueSlug });
       // Flag a pending bonus refresh — read on next mount of CurrentOrderView
       // when the paygate redirects the user back to the table page.
       try {
@@ -118,7 +106,7 @@ export default function PosPaymentModal({
         paymentUrl: res.paymentUrl,
         savedAt: Date.now(),
       });
-      window.location.href = res.paymentUrl;
+      startPaymentRedirect(res.paymentUrl);
     }
   };
 
@@ -143,6 +131,7 @@ export default function PosPaymentModal({
 
     const args = { orderId, phone: fullPhone, bonus: bonusToUse };
     try {
+      trackPayment('order_create_attempt', { source: 'pos', orderId, venueSlug, total: finalToPay, bonusApplied: bonusToUse });
       const res = await paymentMutation.mutateAsync({
         ...args,
         ...(savedHash ? { hash: savedHash } : {}),
@@ -151,12 +140,15 @@ export default function PosPaymentModal({
         setPendingArgs(args);
         setOtpError(null);
         setOtpOpen(true);
+        trackPayment('order_otp_required', { source: 'pos', orderId, venueSlug });
         return;
       }
       handlePaymentSuccess(res, fullPhone);
     } catch (err: unknown) {
       const errObj = err as { error?: string } | null;
-      setError(errObj?.error || t('payment.unavailable'));
+      const msg = errObj?.error || t('payment.unavailable');
+      trackPayment('order_create_error', { source: 'pos', orderId, venueSlug, error: msg });
+      setError(msg);
     }
   };
 
@@ -175,8 +167,6 @@ export default function PosPaymentModal({
       );
     }
   };
-
-  if (!open) return null;
 
   return (
     <div className='fixed inset-0 z-200 flex items-end lg:items-center justify-center'>
