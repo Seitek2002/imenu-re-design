@@ -8,6 +8,7 @@ import MainAction from './components/MainAction';
 import TableBillBanner from './components/TableBillBanner';
 import FloatingCartButton from './components/FloatingCartButton';
 import PaymentRedirector from './components/PaymentRedirector';
+import PaymentRedirectOverlay from './components/PaymentRedirectOverlay';
 import PageTransition from './components/PageTransition';
 import SpotGate from './components/SpotGate';
 import VenueInitializer from '@/components/providers/VenueInitializer';
@@ -109,6 +110,7 @@ export default async function VenueLayout({
         <VenueInitializer venue={venueData} />
         <SpotGate venue={venueData} />
         <PaymentRedirector />
+        <PaymentRedirectOverlay />
         <TableBillBanner venueSlug={venueSlug} />
         <FloatingCartButton venueSlug={venueSlug} />
         <MainAction venueSlug={venueSlug} />

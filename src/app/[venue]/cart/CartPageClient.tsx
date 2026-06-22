@@ -79,7 +79,11 @@ export default function CartPageClient() {
   const availableBonuses = calc.bonusAvailable;
   const orderBaseTotal =
     (calc.raw ? calc.totalPrice + bonusToApply : subtotal + serverDeliveryPrice) - promoDiscount;
-  const maxDeductible = Math.floor(Math.min(availableBonuses, orderBaseTotal * 0.5));
+  // Лимит списания бонусов — per-venue (Kuma 2026-05-24), дефолт 50%.
+  // Берём из venue, а не хардкодим: иначе слайдер режет/завышает относительно
+  // того, что реально спишет сервер (см. PosPaymentModal, тот же расчёт).
+  const maxRatio = (venueData?.bonusMaxDeductiblePercent ?? 50) / 100;
+  const maxDeductible = Math.floor(Math.min(availableBonuses, orderBaseTotal * maxRatio));
 
   return (
     <main className='px-2.5 bg-[#F8F6F7] min-h-screen pb-32'>
@@ -272,6 +276,8 @@ export default function CartPageClient() {
             showBonusInput={isBonusEnabled}
             availableBonuses={availableBonuses}
             maxDeductible={maxDeductible}
+            isCalculating={!calc.isFresh && calc.error == null}
+            calcError={calc.error != null}
           />
         </>
       )}

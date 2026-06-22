@@ -171,6 +171,7 @@
     "footer": {
       "totalDue": "To pay",
       "processing": "Processing...",
+      "updating": "Updating…",
       "pay": "Pay for order",
       "confirm": "Confirm?"
     }
@@ -234,6 +235,9 @@
     "resumePayment": "Resume payment",
     "cancelResume": "Cancel order",
     "cancelError": "Failed to cancel order",
+    "redirecting": "Redirecting to payment…",
+    "redirectingDesc": "Opening the secure bank page. Please don't close this tab.",
+    "redirectManual": "Open payment page",
     "steps": {
       "takeout": {
         "0_title": "Order received!",

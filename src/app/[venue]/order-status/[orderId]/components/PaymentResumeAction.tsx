@@ -8,6 +8,7 @@ import {
   getPendingPayment,
 } from '@/lib/payment-link-store';
 import { useCancelOrderV2 } from '@/lib/api/queries';
+import { startPaymentRedirect } from '@/store/payment-redirect';
 import type { PaymentStatus } from '@/lib/order';
 
 interface Props {
@@ -63,7 +64,7 @@ export default function PaymentResumeAction({
   if (!paymentUrl) return null;
 
   const handleResume = () => {
-    window.location.href = paymentUrl;
+    startPaymentRedirect(paymentUrl);
   };
 
   const handleCancel = async () => {

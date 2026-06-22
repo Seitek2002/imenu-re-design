@@ -12,6 +12,7 @@ import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 import { savePendingPosPayment } from '@/lib/payment-link-store';
+import { startPaymentRedirect } from '@/store/payment-redirect';
 import { useClientStore } from '@/store/client';
 import { useVenueStore } from '@/store/venue';
 import { toMoneyNumber, subtractMoney, formatMoney } from '@/types/pos-order';
@@ -118,7 +119,7 @@ export default function PosPaymentModal({
         paymentUrl: res.paymentUrl,
         savedAt: Date.now(),
       });
-      window.location.href = res.paymentUrl;
+      startPaymentRedirect(res.paymentUrl);
     }
   };
 

@@ -194,6 +194,16 @@ export const useOrderByIdV2 = (
       if (s === OrderStatus.Completed || s === OrderStatus.Cancelled) {
         return false;
       }
+      // Лимб ожидания оплаты: резолюция придёт webhook'ом шлюза либо cron'ом
+      // протухания (~5 мин). Поллим всё реже, чтобы не слать десятки запросов
+      // в зависшем pending; возврат во вкладку (refetchOnWindowFocus) — основной
+      // быстрый путь. Активные статусы (готовится/готов/в доставке) держим живо.
+      if (s === OrderStatus.PendingPayment) {
+        const n = query.state.dataUpdateCount;
+        if (n < 4) return 5000;
+        if (n < 8) return 15000;
+        return 30000;
+      }
       return 5000;
     },
     refetchOnWindowFocus: true,
