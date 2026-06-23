@@ -55,10 +55,12 @@ interface CreatePaymentLinkArgs {
   bonus?: number;
   code?: string;
   hash?: string;
+  /** UUID-v4 на попытку оплаты (Kuma 2026-06-23). Тот же ключ во всех retry и OTP. */
+  idempotencyKey?: string;
 }
 
 async function createPaymentLink(
-  { orderId, phone, bonus, code, hash }: CreatePaymentLinkArgs,
+  { orderId, phone, bonus, code, hash, idempotencyKey }: CreatePaymentLinkArgs,
   locale: Locale,
 ): Promise<PaymentLinkResponse> {
   const body: Record<string, unknown> = { phone };
@@ -78,6 +80,7 @@ async function createPaymentLink(
       'Content-Type': 'application/json',
       'Accept-Language': locale,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
     },
     body: JSON.stringify(body),
   });

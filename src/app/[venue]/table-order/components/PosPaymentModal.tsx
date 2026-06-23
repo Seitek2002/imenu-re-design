@@ -12,6 +12,7 @@ import CountryCodeSelect from '@/components/ui/CountryCodeSelect';
 import OtpModal from '@/components/ui/OtpModal';
 import BonusAccrualBadge from '@/components/BonusAccrualBadge';
 import { savePendingPosPayment } from '@/lib/payment-link-store';
+import { useIdempotencyKey } from '@/lib/idempotency';
 import { startPaymentRedirect } from '@/store/payment-redirect';
 import { maxDeductibleBonus } from '@/lib/bonus';
 import { trackPayment } from '@/lib/analytics';
@@ -70,6 +71,14 @@ export default function PosPaymentModal({
   const finalToPay = toMoneyNumber(finalToPayStr);
 
   const paymentMutation = useCreatePosPaymentLink();
+
+  // Idempotency-Key (Kuma 2026-06-23): один ключ на попытку оплаты стола.
+  // Сигнатура из полей, по которым бэк ловит 409 — заказ/остаток/телефон/бонус.
+  // Ключ стабилен в пределах попытки (переживает OTP/retry), меняется при правке.
+  const idempotencyKey = useIdempotencyKey(
+    JSON.stringify({ orderId, remaining, phone: fullPhone, bonus: bonusToUse }),
+  );
+
   const [error, setError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
@@ -135,6 +144,7 @@ export default function PosPaymentModal({
       const res = await paymentMutation.mutateAsync({
         ...args,
         ...(savedHash ? { hash: savedHash } : {}),
+        idempotencyKey,
       });
       if (res.status === 'waiting_for_code') {
         setPendingArgs(args);
@@ -156,7 +166,7 @@ export default function PosPaymentModal({
     if (!pendingArgs) return;
     setOtpError(null);
     try {
-      const res = await paymentMutation.mutateAsync({ ...pendingArgs, code });
+      const res = await paymentMutation.mutateAsync({ ...pendingArgs, code, idempotencyKey });
       setOtpOpen(false);
       setPendingArgs(null);
       handlePaymentSuccess(res, pendingArgs.phone);
