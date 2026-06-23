@@ -15,7 +15,7 @@ interface Props {
   client?: AuthClient | null;
 }
 
-const GENDERS: Gender[] = ['male', 'female', 'other'];
+const GENDERS: Gender[] = ['male', 'female'];
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
