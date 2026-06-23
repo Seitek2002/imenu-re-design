@@ -290,10 +290,13 @@ async function createOrderApi({
   body,
   venueSlug,
   locale,
+  idempotencyKey,
 }: {
   body: OrderCreateBody;
   venueSlug: string;
   locale: Locale;
+  /** UUID-v4 на попытку чекаута (Kuma 2026-06-23). Тот же ключ во всех retry и OTP. */
+  idempotencyKey?: string;
 }): Promise<OrderCreateResponse> {
   const payload = {
     ...body,
@@ -304,7 +307,10 @@ async function createOrderApi({
   // SMS-bypass (Kuma 2026-05-19): с валидным Bearer бэк не требует phone_code.
   const res = await fetch(`${API_BASE}/orders/`, {
     method: 'POST',
-    headers: buildAuthedHeaders(locale),
+    headers: {
+      ...buildAuthedHeaders(locale),
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+    },
     body: JSON.stringify(payload),
   });
 
@@ -324,8 +330,11 @@ export const useCreateOrderV2 = () => {
   const locale = useLocale() as Locale;
 
   return useMutation({
-    mutationFn: (args: { body: OrderCreateBody; venueSlug: string }) =>
-      createOrderApi({ ...args, locale }),
+    mutationFn: (args: {
+      body: OrderCreateBody;
+      venueSlug: string;
+      idempotencyKey?: string;
+    }) => createOrderApi({ ...args, locale }),
   });
 };
 

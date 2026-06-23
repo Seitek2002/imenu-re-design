@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useEffect, useState, useCallback } from 'react';
+import { FC, useEffect, useState, useCallback, useMemo } from 'react';
 import { PenLine } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -19,6 +19,7 @@ import { getCountryById } from '@/lib/helpers/countryCodes';
 import { normalizePhoneForApi, formatPhoneInput, parsePhoneInput } from '@/lib/helpers/phone';
 import { buildOrderRedirectUrl } from '@/lib/config';
 import { parseApiError } from '@/lib/apiErrors';
+import { useIdempotencyKey } from '@/lib/idempotency';
 
 import { useClientStore } from '@/store/client';
 import { savePendingPayment } from '@/lib/payment-link-store';
@@ -186,6 +187,43 @@ const DrawerCheckout: FC<IProps> = ({
   const [phoneError, setPhoneError] = useState(false);
   const [pendingOrderBody, setPendingOrderBody] = useState<OrderCreateBody | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
+
+  // Idempotency-Key (Kuma 2026-06-23): один ключ на попытку чекаута. Сигнатура
+  // покрывает ровно те поля, по которым бэк ловит 409 на изменённый body —
+  // корзина/итог/телефон/бонус/режим. Пока они стабильны, ключ переживает OTP
+  // и retry; любое изменение → новая попытка → новый ключ.
+  const idemSignature = useMemo(
+    () =>
+      JSON.stringify({
+        items: items.map((i) => [
+          i.id,
+          i.quantity,
+          i.flatModId ?? null,
+          i.groupSelections?.flatMap((g) =>
+            g.items.map((it) => [it.id, it.count]),
+          ) ?? null,
+        ]),
+        total: finalTotal,
+        bonus: isBonusUsed ? bonusToApply : 0,
+        phone,
+        countryId,
+        serviceMode: orderType,
+        address: orderType === 'delivery' ? address : '',
+        paymentMethod: effectivePaymentMethod,
+      }),
+    [
+      items,
+      finalTotal,
+      isBonusUsed,
+      bonusToApply,
+      phone,
+      countryId,
+      orderType,
+      address,
+      effectivePaymentMethod,
+    ],
+  );
+  const idempotencyKey = useIdempotencyKey(idemSignature);
 
   useEffect(() => {
     if (sheetOpen) {
@@ -412,6 +450,7 @@ const DrawerCheckout: FC<IProps> = ({
       const response = await createOrderMutation.mutateAsync({
         body: orderData,
         venueSlug,
+        idempotencyKey,
       });
 
       if (response.status === 'waiting_for_code') {
@@ -442,6 +481,7 @@ const DrawerCheckout: FC<IProps> = ({
       const response = await createOrderMutation.mutateAsync({
         body: { ...pendingOrderBody, code },
         venueSlug,
+        idempotencyKey,
       });
       // pendingOrderBody.phone — уже полный нормализованный номер (orderData.phone).
       const otpPhone = pendingOrderBody.phone;
