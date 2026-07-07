@@ -29,6 +29,9 @@ interface Props {
   open: boolean;
   resetKey: string | null;
 
+  /** Демо-товар (`?demo=`, дизайн-ревью на моках) — не пишем в реальную корзину. */
+  isDemo?: boolean;
+
   onClose: () => void;
   onAdd: () => void;
 
@@ -63,6 +66,7 @@ export default function VideoSheetLayout({
   chipIcons = {},
   open,
   resetKey,
+  isDemo = false,
   onClose,
   onAdd,
   variantChipSlot,
@@ -84,18 +88,25 @@ export default function VideoSheetLayout({
     totalPrice,
     groupCounts,
     groupSelectedItems,
+    isValid,
     handleToggleGroup,
     handleSelectSize,
   } = useVideoSheet({ product, open, resetKey });
 
   const handleAdd = () => {
-    const mod = product.modificators.find((m) => m.id === sizeId);
-    addToBasket(product, qnty, {
-      flatModId: mod?.id,
-      flatModName: mod?.name,
-      flatModPrice: mod ? variantPrice(mod, spotId) : undefined,
-      groupSelections: buildGroupSelections(groups, counts),
-    });
+    if (!isValid) return;
+    // Демо-товар — фейковый Product с отрицательным id (см. mock-video-products.ts),
+    // бэк его не знает. Оверлей просто закрывается, как и было до подключения
+    // реального API.
+    if (!isDemo) {
+      const mod = product.modificators.find((m) => m.id === sizeId);
+      addToBasket(product, qnty, {
+        flatModId: mod?.id,
+        flatModName: mod?.name,
+        flatModPrice: mod ? variantPrice(mod, spotId) : undefined,
+        groupSelections: buildGroupSelections(groups, counts),
+      });
+    }
     onAdd();
   };
 
@@ -230,6 +241,7 @@ export default function VideoSheetLayout({
               setQnty(n);
             }}
             totalPrice={totalPrice}
+            disabled={!isValid}
             onAdd={() => {
               haptic(60);
               handleAdd();

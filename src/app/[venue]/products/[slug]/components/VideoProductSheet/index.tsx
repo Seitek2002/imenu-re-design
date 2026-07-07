@@ -9,7 +9,7 @@ import { MOCK_VIDEO_PRODUCTS, VARIANT_GROUPS } from '@/data/mock-video-products'
 import { useVideoProductStore } from '@/store/videoProduct';
 import { useVenueStore } from '@/store/venue';
 import { useVenueProducts } from '@/lib/api/queries';
-import type { Product } from '@/types/api';
+import type { GroupModification, Product } from '@/types/api';
 
 import VideoSheetLayout from './VideoSheetLayout';
 import { VariantChip, DecafChip } from './VariantChip';
@@ -18,6 +18,16 @@ const DEMO_PARAM = 'demo';
 const VIDEO_PARAM = 'video';
 
 const VARIANT_TYPE_ORDER = ['decaf', 'hot', 'ice', 'lactose_free'];
+
+function buildChipIconsFromGroups(
+  groups: GroupModification[] | undefined,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const g of groups ?? []) {
+    if (g.icon) out[g.name] = g.icon;
+  }
+  return out;
+}
 
 function sortVariants(products: Product[]): Product[] {
   return [...products].sort((a, b) => {
@@ -54,6 +64,9 @@ export default function VideoProductSheet() {
 
   const realProduct = videoId ? (videoProductFromStore ?? productFromCache) : null;
   const isOpen = !!(mock || realProduct);
+  // Демо-режим (?demo=) рендерит мок-товар с фейковым отрицательным id — бэк
+  // его не знает, поэтому «Добавить» не должен писать его в настоящую корзину.
+  const isDemo = !realProduct;
 
   const product = realProduct ?? mock?.product ?? null;
   const videoUrl = realProduct?.productVideoLarge ?? mock?.videoUrl ?? '';
@@ -61,7 +74,8 @@ export default function VideoProductSheet() {
     ? (realProduct.productVideoPoster ?? realProduct.productPhoto ?? undefined)
     : (mock?.product.productPhoto ?? mock?.posterUrl ?? undefined);
   const productDetails = realProduct?.productDetails ?? mock?.productDetails ?? null;
-  const chipIcons: Record<string, string> = mock?.chipIcons ?? {};
+  const chipIcons: Record<string, string> =
+    mock?.chipIcons ?? buildChipIconsFromGroups(realProduct?.groupModifications);
   const groupMeta = mock?.groupMeta ?? null;
 
   const activeKey = realProduct ? `v:${realProduct.id}` : demoSlug;
@@ -182,6 +196,7 @@ export default function VideoProductSheet() {
       chipIcons={chipIcons}
       open={isOpen}
       resetKey={activeKey}
+      isDemo={isDemo}
       onClose={handleClose}
       onAdd={handleClose}
       variantChipSlot={chipSlot}
