@@ -6,6 +6,7 @@ import { Product } from '@/types/api';
 import placeholder from '@/assets/Foods/placeholder.webp';
 import { safeImageSrc } from '@/lib/image';
 import FoodItemImage from './foods/FoodItemImage';
+import FoodItemVideo from './foods/FoodItemVideo';
 import FoodItemCounter from './foods/FoodItemCounter';
 import ProductLink from './foods/ProductLink';
 import { useVenueStore } from '@/store/venue';
@@ -54,18 +55,10 @@ const FoodItem: FC<Props> = ({ product, index = 0 }) => {
         />
 
         {product.isVideoProduct && product.productVideo && (
-          <div className='absolute inset-0 rounded-2xl overflow-hidden'>
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-            <video
-              src={product.productVideo}
-              poster={product.productPhoto || undefined}
-              muted
-              loop
-              playsInline
-              autoPlay
-              className='w-full h-full object-cover'
-            />
-          </div>
+          <FoodItemVideo
+            src={product.productVideo}
+            poster={product.productPhoto || undefined}
+          />
         )}
 
         {promoLabel && (
