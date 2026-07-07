@@ -8,6 +8,8 @@ interface Props {
   item: GroupItem;
   count: number;
   canIncrement: boolean;
+  /** false для обязательной single-select группы — снимать выбор нельзя, только менять на другой item */
+  canDecrement?: boolean;
   /** Тёмный стиль выделения (используется для группы настройки стакана) */
   darkSelected?: boolean;
   onInc: () => void;
@@ -22,6 +24,7 @@ export default function GroupGridItem({
   item,
   count,
   canIncrement,
+  canDecrement = true,
   darkSelected = false,
   onInc,
   onDec,
@@ -114,7 +117,8 @@ export default function GroupGridItem({
             <button
               type='button'
               onClick={() => { haptic(); onDec(); }}
-              className='w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-90 transition-transform'
+              disabled={!canDecrement}
+              className='w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-90 transition-transform disabled:opacity-40'
               aria-label='Уменьшить'
             >
               <Minus size={14} strokeWidth={2.5} className='text-[#21201F]' />

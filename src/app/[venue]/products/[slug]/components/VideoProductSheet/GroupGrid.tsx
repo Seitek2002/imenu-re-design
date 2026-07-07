@@ -40,6 +40,11 @@ export default function GroupGrid({
   );
 
   const canIncrementGlobal = max <= 0 || sumInGroup < max;
+  // В обязательной (min>0) single-select группе ровно один item всегда должен
+  // быть выбран — декремент недоступен, переключение возможно только через inc
+  // другого item'а (см. handleInc: 'single' сбрасывает остальные и не позволяет
+  // группе остаться пустой).
+  const canDecrement = !(type === 'single' && min > 0);
 
   const handleInc = useCallback(
     (itemId: number) => {
@@ -59,14 +64,14 @@ export default function GroupGrid({
   const handleDec = useCallback(
     (itemId: number) => {
       const current = counts[itemId] ?? 0;
-      if (current <= 0) return;
-      if (type === 'single' && min === 0) {
+      if (current <= 0 || !canDecrement) return;
+      if (type === 'single') {
         onChange({ ...counts, [itemId]: 0 });
         return;
       }
       onChange({ ...counts, [itemId]: current - 1 });
     },
-    [counts, type, min, onChange],
+    [counts, type, canDecrement, onChange],
   );
 
   /** Выбор одного варианта в паре (сегмент): сброс другого, активный не снимается */
@@ -139,6 +144,7 @@ export default function GroupGrid({
                   item={it}
                   count={count}
                   canIncrement={canIncrement}
+                  canDecrement={canDecrement}
                   darkSelected={darkSelected}
                   onInc={() => handleInc(it.id)}
                   onDec={() => handleDec(it.id)}
@@ -165,6 +171,7 @@ export default function GroupGrid({
               item={it}
               count={count}
               canIncrement={canIncrement}
+              canDecrement={canDecrement}
               darkSelected={darkSelected}
               onInc={() => handleInc(it.id)}
               onDec={() => handleDec(it.id)}
