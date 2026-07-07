@@ -56,6 +56,7 @@ export default function VideoBackground({ src, poster }: Props) {
         autoPlay
         preload='auto'
         disablePictureInPicture
+        disableRemotePlayback
         aria-hidden='true'
         onCanPlay={() => setVideoReady(true)}
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${

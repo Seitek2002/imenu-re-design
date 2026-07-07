@@ -64,6 +64,7 @@ export default function FoodItemVideo({ src, poster }: Props) {
         playsInline
         preload='none'
         disablePictureInPicture
+        disableRemotePlayback
         className='w-full h-full object-cover'
       />
     </div>
