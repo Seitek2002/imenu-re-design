@@ -1,7 +1,7 @@
 'use client';
 
 import type { Modificator } from '@/types/api';
-import { parseSizeModName } from '@/data/mock-video-products';
+import { parseSizeModName } from '@/lib/product-size-label';
 
 interface Props {
   options: Modificator[];

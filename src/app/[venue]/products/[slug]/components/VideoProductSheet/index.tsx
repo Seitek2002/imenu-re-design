@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import dynamic from 'next/dynamic';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useMounted } from '@/hooks/useMounted';
-import { MOCK_VIDEO_PRODUCTS, VARIANT_GROUPS } from '@/data/mock-video-products';
 import { useVideoProductStore } from '@/store/videoProduct';
 import { useVenueStore } from '@/store/venue';
 import { useVenueProducts } from '@/lib/api/queries';
@@ -13,6 +13,15 @@ import type { GroupModification, Product } from '@/types/api';
 
 import VideoSheetLayout from './VideoSheetLayout';
 import { VariantChip, DecafChip } from './VariantChip';
+
+// Demo-режим (`?demo=<slug>`, дизайн-ревью на моках) вынесен в отдельный
+// компонент со своим next/dynamic и рендерится только когда demoSlug реально
+// есть в URL. Next.js прелоадит в SSR-HTML любой import(), до которого можно
+// дотянуться из модуля постоянно смонтированного dynamic()-компонента,
+// независимо от рантайм-условий внутри него — если бы мок-данные жили прямо
+// здесь (в always-mounted VideoProductSheet), их чанк (~30 КБ gzip) грузился
+// бы на каждой странице заведения, даже без единого видео-товара.
+const DemoVideoSheet = dynamic(() => import('./DemoVideoSheet'), { ssr: false });
 
 const DEMO_PARAM = 'demo';
 const VIDEO_PARAM = 'video';
@@ -44,7 +53,6 @@ export default function VideoProductSheet() {
   const pathname = usePathname();
 
   const demoSlug = searchParams.get(DEMO_PARAM);
-  const mock = demoSlug ? (MOCK_VIDEO_PRODUCTS[demoSlug] ?? null) : null;
 
   const videoId = searchParams.get(VIDEO_PARAM);
   const videoProductFromStore = useVideoProductStore((s) => s.selectedProduct);
@@ -63,26 +71,16 @@ export default function VideoProductSheet() {
     : null;
 
   const realProduct = videoId ? (videoProductFromStore ?? productFromCache) : null;
-  const isOpen = !!(mock || realProduct);
-  // Демо-режим (?demo=) рендерит мок-товар с фейковым отрицательным id — бэк
-  // его не знает, поэтому «Добавить» не должен писать его в настоящую корзину.
-  const isDemo = !realProduct;
 
-  const product = realProduct ?? mock?.product ?? null;
-  const videoUrl = realProduct?.productVideoLarge ?? mock?.videoUrl ?? '';
-  const poster = realProduct
-    ? (realProduct.productVideoPoster ?? realProduct.productPhoto ?? undefined)
-    : (mock?.product.productPhoto ?? mock?.posterUrl ?? undefined);
-  const productDetails = realProduct?.productDetails ?? mock?.productDetails ?? null;
-  const chipIcons: Record<string, string> =
-    mock?.chipIcons ?? buildChipIconsFromGroups(realProduct?.groupModifications);
-  const groupMeta = mock?.groupMeta ?? null;
+  const chipIcons: Record<string, string> = buildChipIconsFromGroups(
+    realProduct?.groupModifications,
+  );
 
-  const activeKey = realProduct ? `v:${realProduct.id}` : demoSlug;
+  const activeKey = realProduct ? `v:${realProduct.id}` : null;
 
-  // Scroll lock
+  // Scroll lock — только для реального товара; demo-версия лочит скролл сама.
   useEffect(() => {
-    if (!mounted || !isOpen) return;
+    if (!mounted || !realProduct) return;
     const { body } = document;
     const prevOverflow = body.style.overflow;
     const prevTouch = body.style.touchAction;
@@ -92,7 +90,7 @@ export default function VideoProductSheet() {
       body.style.overflow = prevOverflow;
       body.style.touchAction = prevTouch;
     };
-  }, [isOpen, mounted]);
+  }, [realProduct, mounted]);
 
   const handleClose = useCallback(() => {
     setVideoProduct(null);
@@ -103,100 +101,65 @@ export default function VideoProductSheet() {
     window.history.replaceState(null, '', qs ? `${pathname}?${qs}` : pathname);
   }, [pathname, searchParams, setVideoProduct]);
 
-  // ── Variant chip slot ───────────────────────────────────────────────────────
+  // ── Variant chip slot (только для реального товара) ─────────────────────────
   const realAlternates = useMemo(() => realProduct?.alternateVersions ?? [], [realProduct]);
   const hasRealVariants = realProduct?.variantType != null && realAlternates.length > 0;
 
   const chipSlot = useMemo(() => {
-    // Demo mode: show only alternates (not the current product)
-    if (mock && demoSlug) {
-      const group = VARIANT_GROUPS[demoSlug];
-      if (!group) return null;
-      const alternates = group.filter((slug) => slug !== demoSlug);
-      if (alternates.length === 0) return null;
-      return (
-        <>
-          {alternates.map((slug) => {
-            const m = MOCK_VIDEO_PRODUCTS[slug];
-            if (!m) return null;
-            const navigate = () => {
-              const params = new URLSearchParams(searchParams.toString());
-              params.set(DEMO_PARAM, slug);
-              router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-            };
-            if (m.product.variantType === 'decaf') {
-              return (
-                <DecafChip
-                  key={slug}
-                  label={m.product.variantChip?.label ?? m.product.productName}
-                  onClick={navigate}
-                />
-              );
-            }
+    if (!realProduct || !hasRealVariants) return null;
+    const alternates = sortVariants(realAlternates);
+    return (
+      <>
+        {alternates.map((p) => {
+          const navigate = () => {
+            setVideoProduct(p);
+            const params = new URLSearchParams(searchParams.toString());
+            params.set(VIDEO_PARAM, String(p.id));
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+          };
+          if (p.variantType === 'decaf') {
             return (
-              <VariantChip
-                key={slug}
-                variantType={m.product.variantType ?? null}
-                label={m.product.variantChip?.label ?? m.product.productName}
-                active={false}
-                onClick={navigate}
-              />
-            );
-          })}
-        </>
-      );
-    }
-    // Real product mode: show only alternates (not the current product)
-    if (realProduct && hasRealVariants) {
-      const alternates = sortVariants(realAlternates);
-      return (
-        <>
-          {alternates.map((p) => {
-            const navigate = () => {
-              setVideoProduct(p);
-              const params = new URLSearchParams(searchParams.toString());
-              params.set(VIDEO_PARAM, String(p.id));
-              router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-            };
-            if (p.variantType === 'decaf') {
-              return (
-                <DecafChip
-                  key={p.id}
-                  label={p.variantChip?.label ?? p.productName}
-                  onClick={navigate}
-                />
-              );
-            }
-            return (
-              <VariantChip
+              <DecafChip
                 key={p.id}
-                variantType={p.variantType ?? null}
                 label={p.variantChip?.label ?? p.productName}
-                active={false}
                 onClick={navigate}
               />
             );
-          })}
-        </>
-      );
-    }
-    return null;
-  }, [mock, demoSlug, realProduct, hasRealVariants, realAlternates, searchParams, pathname, router, setVideoProduct]);
+          }
+          return (
+            <VariantChip
+              key={p.id}
+              variantType={p.variantType ?? null}
+              label={p.variantChip?.label ?? p.productName}
+              active={false}
+              onClick={navigate}
+            />
+          );
+        })}
+      </>
+    );
+  }, [realProduct, hasRealVariants, realAlternates, searchParams, pathname, router, setVideoProduct]);
 
-  if (!mounted || !product) return null;
+  // Demo-режим приоритета не имеет над реальным товаром: если оба параметра
+  // почему-то оказались в URL одновременно, реальный товар важнее.
+  if (!realProduct && demoSlug) {
+    return <DemoVideoSheet demoSlug={demoSlug} onClose={handleClose} />;
+  }
+
+  if (!mounted || !realProduct) return null;
 
   return createPortal(
     <VideoSheetLayout
       rootClassName='fixed inset-0 z-110 flex flex-col text-white overflow-hidden pb-6'
-      product={product}
-      videoUrl={videoUrl}
-      poster={poster}
-      productDetails={productDetails}
-      groupMeta={groupMeta}
+      product={realProduct}
+      videoUrl={realProduct.productVideoLarge ?? ''}
+      poster={realProduct.productVideoPoster ?? realProduct.productPhoto ?? undefined}
+      productDetails={realProduct.productDetails ?? null}
+      groupMeta={null}
       chipIcons={chipIcons}
-      open={isOpen}
+      open
       resetKey={activeKey}
-      isDemo={isDemo}
+      isDemo={false}
       onClose={handleClose}
       onAdd={handleClose}
       variantChipSlot={chipSlot}

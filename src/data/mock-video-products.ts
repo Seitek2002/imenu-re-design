@@ -540,19 +540,3 @@ export const VARIANT_GROUPS: Record<string, string[]> = {
   'mokka-ice': ['mokka-decaf', 'mokka', 'mokka-ice'],
   'mokka-decaf': ['mokka-decaf', 'mokka', 'mokka-ice'],
 };
-
-// ---------------------------------------------------------------------------
-// Utils
-// ---------------------------------------------------------------------------
-
-/**
- * Парсит «человеческое» название и вес из строки вида "Большой 450 г".
- */
-export function parseSizeModName(name: string): {
-  label: string;
-  sub: string | null;
-} {
-  const m = name.match(/^(.+?)\s+(\d+\s*[а-яa-z]+)\s*$/i);
-  if (m) return { label: m[1].trim(), sub: m[2].trim() };
-  return { label: name, sub: null };
-}
