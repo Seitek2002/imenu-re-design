@@ -7,9 +7,10 @@ import type { Product, ProductDetails } from '@/types/api';
 import type { GroupMeta } from '@/data/mock-video-products';
 import { useBasketStore, type BasketGroupSelection } from '@/store/basket';
 import { variantPrice } from '@/lib/pricing';
+import { parseSizeModName } from '@/lib/product-size-label';
 import { useVideoSheet, haptic } from './useVideoSheet';
 import VideoBackground from './VideoBackground';
-import SizePill from './SizePill';
+import SizePill, { type SizePillOption } from './SizePill';
 import GroupChip from './GroupChip';
 import GroupGrid from './GroupGrid';
 import BottomBar from './BottomBar';
@@ -84,6 +85,9 @@ export default function VideoSheetLayout({
     detailOpen,
     setDetailOpen,
     groups,
+    chipGroups,
+    sizeGroup,
+    selectedSizeGroupItemId,
     expandedGroup,
     totalPrice,
     groupCounts,
@@ -91,7 +95,28 @@ export default function VideoSheetLayout({
     isValid,
     handleToggleGroup,
     handleSelectSize,
+    handleSelectSizeGroupItem,
   } = useVideoSheet({ product, open, resetKey });
+
+  // Пилюли размера сверху — либо из плоских modificators (мок/демо), либо из
+  // группы с isSizes (реальные тех-карты, см. GroupModification.isSizes).
+  // Первое имеет приоритет, если вдруг заданы оба источника.
+  const hasFlatSizes = product.modificators.length > 0;
+  const sizePillOptions: SizePillOption[] = hasFlatSizes
+    ? product.modificators.map((m) => {
+        const { label, sub } = parseSizeModName(m.name);
+        return { id: m.id, label, sub };
+      })
+    : (sizeGroup?.items.map((i) => {
+        const brutto = Number(i.brutto);
+        return {
+          id: i.id,
+          label: i.name,
+          sub: brutto > 0 ? `${Math.round(brutto)} г` : null,
+        };
+      }) ?? []);
+  const sizePillSelectedId = hasFlatSizes ? sizeId : selectedSizeGroupItemId;
+  const handleSelectSizePill = hasFlatSizes ? handleSelectSize : handleSelectSizeGroupItem;
 
   const handleAdd = () => {
     if (!isValid) return;
@@ -179,9 +204,9 @@ export default function VideoSheetLayout({
         </div>
 
         <SizePill
-          options={product.modificators}
-          selectedId={sizeId}
-          onSelect={handleSelectSize}
+          options={sizePillOptions}
+          selectedId={sizePillSelectedId}
+          onSelect={handleSelectSizePill}
         />
       </div>
 
@@ -220,7 +245,7 @@ export default function VideoSheetLayout({
                 </div>
               )}
 
-              {groups.map((g) => (
+              {chipGroups.map((g) => (
                 <GroupChip
                   key={g.id}
                   group={g}

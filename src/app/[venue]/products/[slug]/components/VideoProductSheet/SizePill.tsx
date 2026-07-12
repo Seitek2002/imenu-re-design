@@ -1,10 +1,13 @@
 'use client';
 
-import type { Modificator } from '@/types/api';
-import { parseSizeModName } from '@/lib/product-size-label';
+export interface SizePillOption {
+  id: number;
+  label: string;
+  sub: string | null;
+}
 
 interface Props {
-  options: Modificator[];
+  options: SizePillOption[];
   selectedId: number | null;
   onSelect: (id: number) => void;
 }
@@ -21,7 +24,6 @@ export default function SizePill({ options, selectedId, onSelect }: Props) {
       >
         {options.map((opt) => {
           const isActive = opt.id === selectedId;
-          const { label, sub } = parseSizeModName(opt.name);
           return (
             <button
               key={opt.id}
@@ -35,10 +37,10 @@ export default function SizePill({ options, selectedId, onSelect }: Props) {
                   : 'text-white/70 hover:text-white/90'
               }`}
             >
-              <div className='text-sm leading-tight'>{label}</div>
-              {sub && (
+              <div className='text-sm leading-tight'>{opt.label}</div>
+              {opt.sub && (
                 <div className='text-sm leading-tight opacity-80 mt-1'>
-                  {sub}
+                  {opt.sub}
                 </div>
               )}
             </button>

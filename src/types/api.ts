@@ -286,6 +286,8 @@ export interface GroupModification {
   name: string;
   icon?: string | null;
   isCommentOnly?: boolean;
+  /** Эта группа отвечает за размер товара — рендерится пилюлями сверху, а не чипом снизу. */
+  isSizes?: boolean;
   selection: GroupSelection;
   items: GroupItem[];
 }

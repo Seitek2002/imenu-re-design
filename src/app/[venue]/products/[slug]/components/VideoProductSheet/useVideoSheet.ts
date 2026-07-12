@@ -54,6 +54,34 @@ export function useVideoSheet({
 
   const groups = useMemo(() => product?.groupModifications ?? [], [product]);
 
+  // Группа с флагом isSizes (бэк, 2026-07) — отвечает за размер товара и
+  // рендерится пилюлями сверху (как SizePill для плоских modificators),
+  // а не чипом в общем ряду снизу.
+  const sizeGroup = useMemo(() => groups.find((g) => g.isSizes) ?? null, [groups]);
+
+  // Ряд чипов снизу не должен дублировать группу размеров.
+  const chipGroups = useMemo(
+    () => (sizeGroup ? groups.filter((g) => g.id !== sizeGroup.id) : groups),
+    [groups, sizeGroup],
+  );
+
+  const selectedSizeGroupItemId = useMemo(() => {
+    if (!sizeGroup) return null;
+    return sizeGroup.items.find((i) => (counts[i.id] ?? 0) > 0)?.id ?? null;
+  }, [sizeGroup, counts]);
+
+  const handleSelectSizeGroupItem = useCallback(
+    (itemId: number) => {
+      if (!sizeGroup) return;
+      haptic(25);
+      const next: Record<number, number> = { ...counts };
+      for (const it of sizeGroup.items) next[it.id] = 0;
+      next[itemId] = 1;
+      setCounts(next);
+    },
+    [sizeGroup, counts],
+  );
+
   // Товар, чья цена формируется выбором обязательной платной группы (тех-карта
   // с «размером»-группой вместо плоских modificators): бэк уже включил дефолт
   // этой группы в productPrice, поэтому его нельзя прибавлять как базу (см.
@@ -135,6 +163,9 @@ export function useVideoSheet({
     detailOpen,
     setDetailOpen,
     groups,
+    chipGroups,
+    sizeGroup,
+    selectedSizeGroupItemId,
     expandedGroup,
     unitPrice,
     totalPrice: unitPrice * qnty,
@@ -143,5 +174,6 @@ export function useVideoSheet({
     isValid,
     handleToggleGroup,
     handleSelectSize,
+    handleSelectSizeGroupItem,
   };
 }
