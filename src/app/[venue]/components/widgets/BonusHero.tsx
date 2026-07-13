@@ -177,14 +177,15 @@ export default function BonusHero({
               </span>
             </div>
             <div className='h-px w-full bg-[#7F7F7F]/20' />
-            <div className='flex items-center gap-1'>
-              <span className='inline-flex shrink-0 items-center whitespace-nowrap rounded-[10px] bg-[#E5E5E5] px-1.5 py-1 text-[12px] font-medium leading-none text-[#323232] tabular-nums'>
+            {/* Чип inline внутри абзаца: во flex-ряду длинные слова (ky
+                «буйрутмадан», ru «оплатить») не дают тексту ужаться и он
+                вылезает за карточку. */}
+            <p className='text-[12px] font-medium leading-tight text-[#7F7F7F] [overflow-wrap:anywhere]'>
+              <span className='mr-1 inline-block whitespace-nowrap rounded-[10px] bg-[#E5E5E5] px-1.5 py-1 align-[-0.15em] text-[12px] font-medium leading-none text-[#323232] tabular-nums'>
                 {t('bonus.upTo', { n: maxDeductiblePercent })}
               </span>
-              <span className='text-[12px] font-medium leading-tight text-[#7F7F7F]'>
-                {t('chip.redeemSub')}
-              </span>
-            </div>
+              {t('chip.redeemSub')}
+            </p>
           </div>
 
           {/* watermark «+N%» — начисление */}
