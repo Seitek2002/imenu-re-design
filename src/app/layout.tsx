@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import QueryProvider from '@/components/providers/QueryProvider';
@@ -88,16 +89,11 @@ export default async function RootLayout({
       className={`${cruinn.variable} ${geistInter.variable}`}
     >
       <body className='antialiased'>
-        {/* Блокируем pinch-zoom на iOS Safari — touch-action и viewport user-scalable=no там игнорируются */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
-              document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
-              document.addEventListener('touchmove', function(e) { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-            `,
-          }}
-        />
+        {/* Блокируем pinch-zoom на iOS Safari — touch-action и viewport user-scalable=no
+            там игнорируются. Внешний файл + beforeInteractive вместо inline-скрипта —
+            тот же момент выполнения (до гидратации), но без dangerouslySetInnerHTML,
+            так что не требует 'unsafe-inline' в CSP script-src. */}
+        <Script src='/pinch-zoom-guard.js' strategy='beforeInteractive' />
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <AuthProvider>{children}</AuthProvider>
