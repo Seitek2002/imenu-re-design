@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
+import { headers } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import QueryProvider from '@/components/providers/QueryProvider';
@@ -82,6 +83,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (
     <html
@@ -92,8 +94,8 @@ export default async function RootLayout({
         {/* Блокируем pinch-zoom на iOS Safari — touch-action и viewport user-scalable=no
             там игнорируются. Внешний файл + beforeInteractive вместо inline-скрипта —
             тот же момент выполнения (до гидратации), но без dangerouslySetInnerHTML,
-            так что не требует 'unsafe-inline' в CSP script-src. */}
-        <Script src='/pinch-zoom-guard.js' strategy='beforeInteractive' />
+            так что не требует 'unsafe-inline' в CSP script-src. Nonce — см. src/proxy.ts. */}
+        <Script src='/pinch-zoom-guard.js' strategy='beforeInteractive' nonce={nonce} />
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <AuthProvider>{children}</AuthProvider>
