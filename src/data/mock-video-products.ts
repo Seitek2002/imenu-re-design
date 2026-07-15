@@ -33,7 +33,7 @@ export interface VideoProductMock {
   /** Контент для листа «Подробнее» */
   productDetails?: ProductDetails;
   /** Метаданные групп: колонки, стиль выделения. Ключ — GroupModification.id */
-  groupMeta?: Record<number, GroupMeta>;
+  groupMeta?: Record<string, GroupMeta>;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,7 +117,7 @@ const item = (
 // Groups
 // ---------------------------------------------------------------------------
 const MILK_GROUP: GroupModification = {
-  id: ID.groupMilk,
+  id: String(ID.groupMilk),
   name: 'Молоко',
   selection: {
     type: 'multiple',
@@ -143,7 +143,7 @@ const MILK_GROUP: GroupModification = {
 };
 
 const SUGAR_GROUP: GroupModification = {
-  id: ID.groupSugar,
+  id: String(ID.groupSugar),
   name: 'Сахар',
   selection: {
     type: 'multiple',
@@ -160,7 +160,7 @@ const SUGAR_GROUP: GroupModification = {
 };
 
 const ADDONS_GROUP: GroupModification = {
-  id: ID.groupAddons,
+  id: String(ID.groupAddons),
   name: 'Добавки',
   selection: {
     type: 'multiple',
@@ -181,7 +181,7 @@ const ADDONS_GROUP: GroupModification = {
 
 /** Группа настройки стакана — 4 колонки, тёмный стиль выделения */
 const DOP_GROUP: GroupModification = {
-  id: ID.groupDop,
+  id: String(ID.groupDop),
   name: 'Опции',
   selection: {
     type: 'multiple',
@@ -203,7 +203,7 @@ const DOP_GROUP: GroupModification = {
 };
 
 const ESPRESSO_GROUP: GroupModification = {
-  id: ID.groupEspresso,
+  id: String(ID.groupEspresso),
   name: 'Эспрессо',
   selection: {
     type: 'multiple',
@@ -227,7 +227,7 @@ const ESPRESSO_GROUP: GroupModification = {
 // Ice version groups
 // ---------------------------------------------------------------------------
 const ICE_MILK_GROUP: GroupModification = {
-  id: ID.groupIceMilk,
+  id: String(ID.groupIceMilk),
   name: 'Молоко',
   selection: {
     type: 'multiple',
@@ -245,7 +245,7 @@ const ICE_MILK_GROUP: GroupModification = {
 };
 
 const ICE_SYRUP_GROUP: GroupModification = {
-  id: ID.groupIceSyrup,
+  id: String(ID.groupIceSyrup),
   name: 'Сироп',
   selection: {
     type: 'single',
@@ -268,7 +268,7 @@ const ICE_SYRUP_GROUP: GroupModification = {
 };
 
 const ICE_TOPPING_GROUP: GroupModification = {
-  id: ID.groupIceTopping,
+  id: String(ID.groupIceTopping),
   name: 'Топпинг',
   selection: {
     type: 'multiple',
@@ -304,7 +304,7 @@ const ICE_TOPPING_GROUP: GroupModification = {
 
 /** Группа льда — сегментный рендер (Много/Мало) */
 const ICE_LEVEL_GROUP: GroupModification = {
-  id: ID.groupIceLevel,
+  id: String(ID.groupIceLevel),
   name: 'Лёд',
   selection: {
     type: 'multiple',

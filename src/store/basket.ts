@@ -11,7 +11,7 @@ export interface BasketGroupItemSelection {
 }
 
 export interface BasketGroupSelection {
-  groupId: number;
+  groupId: string;
   groupName: string;
   items: BasketGroupItemSelection[];
 }

@@ -72,7 +72,7 @@ const GroupsGrid = ({
   groups: GroupModification[];
   counts: CountsState;
   onChange: (next: CountsState) => void;
-  errors: Record<number, string>;
+  errors: Record<string, string>;
   absolutePricing: boolean;
 }) => {
   const required = groups.filter((g) => g.selection.min > 0);
@@ -710,7 +710,7 @@ const OptionalGroupsBar = ({
   counts: CountsState;
   onChange: (next: CountsState) => void;
 }) => {
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const openGroup = groups.find((g) => g.id === openId) ?? null;
 
   return (
@@ -871,7 +871,7 @@ const ProductContent = ({
   const selectedFlat = flatMods.find((m) => m.id === selectedFlatId) ?? null;
 
   const errors = useMemo(() => {
-    const out: Record<number, string> = {};
+    const out: Record<string, string> = {};
     for (const g of groups) {
       const sum = sumGroupCount(g, counts);
       if (sum < g.selection.min) {

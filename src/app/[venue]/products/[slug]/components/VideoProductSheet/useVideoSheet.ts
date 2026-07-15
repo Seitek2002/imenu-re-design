@@ -24,7 +24,7 @@ export function useVideoSheet({
   const [sizeId, setSizeId] = useState<number | null>(null);
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [qnty, setQnty] = useState(1);
-  const [expandedGroupId, setExpandedGroupId] = useState<number | null>(null);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
   const lastResetKeyRef = useRef<string | null>(null);
@@ -117,7 +117,7 @@ export function useVideoSheet({
   }, [product, sizeId, groups, counts, spotId, pricingFromGroups]);
 
   const groupCounts = useMemo(() => {
-    const out: Record<number, number> = {};
+    const out: Record<string, number> = {};
     for (const g of groups) {
       out[g.id] = g.items.reduce((s, i) => s + (counts[i.id] ?? 0), 0);
     }
@@ -125,7 +125,7 @@ export function useVideoSheet({
   }, [groups, counts]);
 
   const groupSelectedItems = useMemo(() => {
-    const out: Record<number, GroupItem | undefined> = {};
+    const out: Record<string, GroupItem | undefined> = {};
     for (const g of groups) {
       out[g.id] = g.items.find((i) => (counts[i.id] ?? 0) > 0);
     }
@@ -143,7 +143,7 @@ export function useVideoSheet({
     [groups, counts],
   );
 
-  const handleToggleGroup = useCallback((id: number) => {
+  const handleToggleGroup = useCallback((id: string) => {
     haptic(25);
     setExpandedGroupId((prev) => (prev === id ? null : id));
   }, []);

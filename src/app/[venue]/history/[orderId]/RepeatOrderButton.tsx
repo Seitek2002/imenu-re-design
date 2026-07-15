@@ -85,7 +85,11 @@ export default function RepeatOrderButton({ order }: Props) {
         for (const gm of it.groupModifications) {
           let entry = grouped.get(gm.groupId);
           if (!entry) {
-            entry = { groupId: gm.groupId, groupName: gm.groupName, items: [] };
+            // История заказов (OrderProductGroupModSelection) — отдельный,
+            // не изменившийся контракт: groupId там по-прежнему number.
+            // BasketGroupSelection.groupId теперь string (см. types/api.ts,
+            // бэк 2026-07-14) — приводим при реконструкции корзины.
+            entry = { groupId: String(gm.groupId), groupName: gm.groupName, items: [] };
             grouped.set(gm.groupId, entry);
           }
           entry.items.push({

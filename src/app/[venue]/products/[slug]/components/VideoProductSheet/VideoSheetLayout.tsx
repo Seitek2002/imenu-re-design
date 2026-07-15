@@ -24,7 +24,7 @@ interface Props {
   videoUrl: string;
   poster?: string;
   productDetails: ProductDetails | null;
-  groupMeta?: Record<number, GroupMeta> | null;
+  groupMeta?: Record<string, GroupMeta> | null;
   chipIcons?: Record<string, string>;
 
   open: boolean;
