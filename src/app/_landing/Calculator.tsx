@@ -80,78 +80,80 @@ export default function Calculator() {
   return (
     <section className='lp-calc' id='calculator' aria-labelledby={`${id}-title`}>
       <div className='lp-wrap'>
-        <div className='lp-calc__head'>
-          <h2 className='lp-h2' id={`${id}-title`}>
-            Сколько останется у вас
-          </h2>
-          <p className='lp-lead lp-lead--on-dark'>
-            Введите оборот, который сейчас идёт через агрегаторы, и посмотрите,
-            сколько вы перестанете отдавать в виде комиссии.
-          </p>
-        </div>
-
         <div className='lp-calc__grid'>
-          <div className='lp-calc__controls'>
-            <div className='lp-field'>
-              <div className='lp-field__row'>
-                <label htmlFor={`${id}-turnover`} className='lp-field__label'>
-                  Оборот через агрегаторы в месяц
-                </label>
-                <output htmlFor={`${id}-turnover`} className='lp-field__value'>
-                  {som(turnover)}
-                </output>
-              </div>
-              <input
-                id={`${id}-turnover`}
-                type='range'
-                className='lp-range'
-                min={turnoverMin}
-                max={turnoverMax}
-                step={10_000}
-                value={turnover}
-                onChange={(e) => setTurnover(Number(e.target.value))}
-                style={{ '--fill': `${turnoverFill}%` } as React.CSSProperties}
-              />
+          <div className='lp-calc__main'>
+            <div className='lp-calc__head'>
+              <h2 className='lp-h2 lp-calc__title' id={`${id}-title`}>
+                Сколько останется у вас
+              </h2>
+              <p className='lp-lead lp-lead--on-dark'>
+                Подставьте свои цифры и сравните комиссию агрегатора
+                с&nbsp;комиссией iMenu.
+              </p>
             </div>
 
-            <fieldset className='lp-field'>
-              <legend className='lp-field__label'>Комиссия вашего агрегатора</legend>
-              <div className='lp-segment'>
-                {RATES.map((r) => (
-                  <label key={r} className='lp-segment__opt'>
-                    <input
-                      type='radio'
-                      name={`${id}-rate`}
-                      value={r}
-                      checked={rate === r}
-                      onChange={() => setRate(r)}
-                    />
-                    <span>{Math.round(r * 100)}%</span>
+            <div className='lp-calc__controls'>
+              <div className='lp-field'>
+                <div className='lp-field__row'>
+                  <label htmlFor={`${id}-turnover`} className='lp-field__label'>
+                    Оборот через агрегаторы в месяц
                   </label>
-                ))}
+                  <output htmlFor={`${id}-turnover`} className='lp-field__value'>
+                    {som(turnover)}
+                  </output>
+                </div>
+                <input
+                  id={`${id}-turnover`}
+                  type='range'
+                  className='lp-range'
+                  min={turnoverMin}
+                  max={turnoverMax}
+                  step={10_000}
+                  value={turnover}
+                  onChange={(e) => setTurnover(Number(e.target.value))}
+                  style={{ '--fill': `${turnoverFill}%` } as React.CSSProperties}
+                />
               </div>
-            </fieldset>
 
-            <div className='lp-field'>
-              <div className='lp-field__row'>
-                <label htmlFor={`${id}-share`} className='lp-field__label'>
-                  Какую часть этих заказов переведёте на прямые
-                </label>
-                <output htmlFor={`${id}-share`} className='lp-field__value'>
-                  {Math.round(share * 100)}%
-                </output>
+              <fieldset className='lp-field'>
+                <legend className='lp-field__label'>Комиссия вашего агрегатора</legend>
+                <div className='lp-segment'>
+                  {RATES.map((r) => (
+                    <label key={r} className='lp-segment__opt'>
+                      <input
+                        type='radio'
+                        name={`${id}-rate`}
+                        value={r}
+                        checked={rate === r}
+                        onChange={() => setRate(r)}
+                      />
+                      <span>{Math.round(r * 100)}%</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className='lp-field'>
+                <div className='lp-field__row'>
+                  <label htmlFor={`${id}-share`} className='lp-field__label'>
+                    Какую часть этих заказов переведёте на прямые
+                  </label>
+                  <output htmlFor={`${id}-share`} className='lp-field__value'>
+                    {Math.round(share * 100)}%
+                  </output>
+                </div>
+                <input
+                  id={`${id}-share`}
+                  type='range'
+                  className='lp-range'
+                  min={0.1}
+                  max={1}
+                  step={0.05}
+                  value={share}
+                  onChange={(e) => setShare(Number(e.target.value))}
+                  style={{ '--fill': `${shareFill}%` } as React.CSSProperties}
+                />
               </div>
-              <input
-                id={`${id}-share`}
-                type='range'
-                className='lp-range'
-                min={0.1}
-                max={1}
-                step={0.05}
-                value={share}
-                onChange={(e) => setShare(Number(e.target.value))}
-                style={{ '--fill': `${shareFill}%` } as React.CSSProperties}
-              />
             </div>
           </div>
 
@@ -182,8 +184,7 @@ export default function Calculator() {
                 </div>
               </div>
               <p className='lp-bars__scale'>
-                Вся шкала — ваш оборот по этим заказам. Заливка — сколько из
-                него уходит на комиссию.
+                Шкала — ваш оборот по этим заказам, заливка — комиссия с него.
               </p>
             </div>
 
@@ -195,7 +196,7 @@ export default function Calculator() {
             </div>
 
             <p className='lp-calc__note'>
-              Расчёт ориентировочный и сравнивает только комиссию с заказа.
+              Расчёт ориентировочный: сравниваем только комиссию с заказа.
               Точные условия фиксируем в договоре.
             </p>
             <p className='lp-sr' aria-live='polite'>

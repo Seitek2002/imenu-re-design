@@ -2,8 +2,9 @@
 // с прежней версии страницы — при изменении тарифов править здесь.
 
 export const CONTACTS = {
-  phone: '+996 706 204 501',
-  tel: '+996706204501',
+  phone: '+996 506 247 356',
+  tel: '+996506247356',
+  hours: '24/7, 365 дней в году',
   whatsapp: 'https://wa.me/996706204501',
   whatsappNumber: '996706204501',
   email: 'adamtechkg@gmail.com',

@@ -50,6 +50,10 @@ export default function Contact() {
               <a href={`tel:${CONTACTS.tel}`}>{CONTACTS.phone}</a>
             </li>
             <li>
+              <span>График работы</span>
+              <p>{CONTACTS.hours}</p>
+            </li>
+            <li>
               <span>WhatsApp</span>
               <a href={CONTACTS.whatsapp} target='_blank' rel='noopener noreferrer'>
                 Написать в WhatsApp

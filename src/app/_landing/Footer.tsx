@@ -25,6 +25,7 @@ export default function Footer() {
         </div>
         <div className='lp-footer__legal'>
           <span>© {year} iMenu.kg</span>
+          <span>Работаем {CONTACTS.hours}</span>
           <span>Бишкек, Кыргызстан</span>
         </div>
       </div>

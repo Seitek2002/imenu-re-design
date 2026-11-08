@@ -1120,9 +1120,11 @@ body:has(.lp) {
    Калькулятор
    ========================================================================== */
 
+/* Секция должна помещаться в экран целиком: на десктопе вертикальные
+   размеры завязаны на svh, чтобы и ноутбук 1366×768 видел её без скролла. */
 .lp-calc {
   margin: 0 var(--lp-inset);
-  padding: clamp(80px, 10vw, 150px) 0;
+  padding: clamp(32px, 8vw, 56px) 0;
   border-radius: var(--lp-radius-xl);
   background: var(--lp-wine);
   color: var(--lp-blush);
@@ -1131,18 +1133,26 @@ body:has(.lp) {
 
 .lp-calc__head {
   display: grid;
-  gap: 20px;
-  margin-bottom: clamp(44px, 6vw, 80px);
+  gap: 12px;
+  margin-bottom: clamp(22px, 4vw, 32px);
+}
+
+.lp-calc__title {
+  font-size: clamp(34px, 4.4vw, 64px);
+}
+
+.lp-calc__head .lp-lead {
+  font-size: clamp(15px, 1.15vw, 17px);
 }
 
 .lp-calc__grid {
   display: grid;
-  gap: 40px;
+  gap: 24px;
 }
 
 .lp-field {
   min-width: 0;
-  margin: 0 0 40px;
+  margin: 0 0 clamp(16px, 2.2vw, 26px);
   padding: 0;
   border: 0;
 }
@@ -1155,25 +1165,26 @@ body:has(.lp) {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-bottom: 4px;
 }
 
 .lp-field__label {
   display: block;
   padding: 0;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--lp-wine-mute);
+  text-wrap: balance;
 }
 
 legend.lp-field__label {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .lp-field__value {
   flex: none;
   color: #fff;
-  font-size: clamp(22px, 2.3vw, 32px);
+  font-size: clamp(20px, 1.8vw, 26px);
   font-weight: 620;
   letter-spacing: -0.025em;
   font-variant-numeric: tabular-nums;
@@ -1183,7 +1194,7 @@ legend.lp-field__label {
 .lp-range {
   display: block;
   width: 100%;
-  height: 36px;
+  height: 32px;
   margin: 0;
   background: transparent;
   cursor: pointer;
@@ -1307,8 +1318,8 @@ legend.lp-field__label {
 }
 
 .lp-segment__opt span {
-  height: 54px;
-  font-size: 19px;
+  height: 46px;
+  font-size: 17px;
   font-weight: 620;
 }
 
@@ -1331,37 +1342,37 @@ legend.lp-field__label {
 }
 
 .lp-calc__result {
-  padding: clamp(24px, 3vw, 44px);
-  border-radius: 28px;
+  padding: clamp(18px, 2.4vw, 32px);
+  border-radius: 24px;
   background: var(--lp-wine-2);
 }
 
 .lp-bars {
   display: grid;
-  gap: 26px;
-  margin-bottom: 36px;
+  gap: 16px;
+  margin-bottom: clamp(18px, 2vw, 24px);
 }
 
 .lp-bar__row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
-  font-size: 15px;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
   color: var(--lp-wine-mute);
 }
 
 .lp-bar__row > span:last-child {
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 620;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .lp-bar__track {
-  height: 16px;
+  height: 12px;
   overflow: hidden;
   border-radius: 99px;
   background: rgba(251, 239, 242, 0.08);
@@ -1385,26 +1396,26 @@ legend.lp-field__label {
 }
 
 .lp-bars__scale {
-  margin: -12px 0 0;
+  margin: -6px 0 0;
   font-size: 13px;
   color: var(--lp-wine-mute);
 }
 
 .lp-calc__total {
   display: grid;
-  gap: 6px;
-  padding-top: 30px;
+  gap: 4px;
+  padding-top: clamp(16px, 2vw, 22px);
   border-top: 1px solid var(--lp-wine-line);
 }
 
 .lp-calc__total-label {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--lp-wine-mute);
 }
 
 .lp-calc__total-value {
   color: var(--lp-raspberry);
-  font-size: clamp(42px, 5.2vw, 84px);
+  font-size: clamp(40px, 4.6vw, 72px);
   font-weight: 640;
   line-height: 1;
   letter-spacing: -0.045em;
@@ -1413,23 +1424,132 @@ legend.lp-field__label {
 }
 
 .lp-calc__note {
-  max-width: 48ch;
-  margin: 22px 0 0;
-  font-size: 14px;
+  max-width: 52ch;
+  margin: 14px 0 0;
+  font-size: 13px;
   color: var(--lp-wine-mute);
 }
 
-@media (min-width: 1024px) {
+/* Телефон: убираем всё второстепенное, чтобы калькулятор с итогом
+   помещался в один экран вместе с ползунками. */
+@media (max-width: 559px) {
+  .lp-calc {
+    padding-block: 24px;
+  }
+
   .lp-calc__head {
-    grid-template-columns: 1fr 1fr;
-    align-items: end;
-    gap: 6vw;
+    margin-bottom: 16px;
+  }
+
+  .lp-calc__title {
+    font-size: clamp(26px, 7.4vw, 32px);
+  }
+
+  .lp-calc__head .lp-lead {
+    display: none;
   }
 
   .lp-calc__grid {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    align-items: start;
-    gap: 6vw;
+    gap: 16px;
+  }
+
+  .lp-field {
+    margin-bottom: 12px;
+  }
+
+  .lp-field__label {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  legend.lp-field__label {
+    margin-bottom: 8px;
+  }
+
+  .lp-field__value {
+    font-size: 19px;
+  }
+
+  .lp-range {
+    height: 28px;
+  }
+
+  .lp-segment__opt span {
+    height: 42px;
+    font-size: 16px;
+  }
+
+  .lp-calc__result {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .lp-bars {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .lp-bar__row {
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  .lp-bar__row > span:last-child {
+    font-size: 15px;
+  }
+
+  .lp-bar__track {
+    height: 10px;
+  }
+
+  .lp-bars__scale {
+    margin-top: -4px;
+    font-size: 12px;
+  }
+
+  .lp-calc__total {
+    padding-top: 14px;
+  }
+
+  .lp-calc__total-label {
+    font-size: 14px;
+  }
+
+  .lp-calc__total-value {
+    font-size: 38px;
+  }
+
+  .lp-calc__note {
+    margin-top: 10px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lp-calc {
+    padding-block: clamp(32px, 7svh, 80px);
+  }
+
+  .lp-calc__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(40px, 5vw, 96px);
+  }
+
+  .lp-calc__title {
+    font-size: clamp(36px, min(4.4vw, 7.5svh), 64px);
+  }
+
+  .lp-calc__head {
+    margin-bottom: clamp(18px, 4svh, 36px);
+  }
+
+  .lp-field {
+    margin-bottom: clamp(12px, 3svh, 30px);
+  }
+
+  .lp-calc__total-value {
+    font-size: clamp(40px, min(4.6vw, 8.5svh), 76px);
   }
 }
 
@@ -2661,9 +2781,14 @@ legend.lp-field__label {
   transition: background-size 0.4s var(--lp-ease);
 }
 
-.lp-contact__direct a {
+.lp-contact__direct a,
+.lp-contact__direct p {
   color: #fff;
   font-size: clamp(18px, 1.6vw, 22px);
+}
+
+.lp-contact__direct p {
+  margin: 0;
 }
 
 .lp-contact__direct a:hover,
