@@ -59,6 +59,11 @@ export default function AuthProvider({
           if (useClientStore.getState().phone) {
             setSoftLoggedOut();
           }
+        } else if (err instanceof TypeError) {
+          // fetch не дошёл до API: офлайн, сбой сети или CORS (локально
+          // localhost → прод-API, который не отдаёт Access-Control-Allow-Origin
+          // для чужих origin). Это не ошибка авторизации — остаёмся гостем.
+          console.warn('Auth bootstrap skipped, API unreachable:', err.message);
         } else {
           console.error('Auth bootstrap failed:', err);
         }
